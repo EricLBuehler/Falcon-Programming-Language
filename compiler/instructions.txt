@@ -1,0 +1,27 @@
+LOAD_CONST - Loads constant object to TOS
+
+STORE_NAME(idx) - Stores TOS-1 to locals[idx]
+
+STORE_GLOBAL(idx) - Stores TOS-1 to globals[idx]
+
+LOAD_NAME(idx) - Loads locals[idx] to TOS
+
+LOAD_GLOBAL(idx) - globals[idx] to TOS
+
+BINOP_ADD - Implements TOS+TOS-1
+
+BINOP_SUB - Implements TOS-TOS-1
+
+BINOP_MUL - Implements TOS+TOS-1
+
+BINOP_DIV - Implements TOS-TOS-1
+
+UNARY_NEG - Implements -TOS
+
+MAKE_FUNCTION(argc) - Creats a function using TOS as code, TOS-1 as tuple of positional arguments, TOS-2 as tuple of
+    keyword arguments, TOS-3 as name. argc is total number of positional and keyword arguments.
+
+RETURN_VAL - Return and pos TOS
+
+CALL_FUNCTION(argc) - Calls callable TOS, with an integer object posargc as TOS-1, and keyword arguments below (value above name)
+    with positional arguments following (left->right descending). argc is the total number of arguemnts passed.
