@@ -6,6 +6,9 @@ object* code_init(object* self, object* args, object* kwargs){
 
 object* code_new(object* args, object* kwargs){
     object* obj=new_object(&CodeType);
+    if (args==NULL){
+        return obj;
+    }
     if (CAST_LIST(args)->size!=5){
         //Error
         return NULL;

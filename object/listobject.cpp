@@ -72,7 +72,7 @@ void list_set(object* self, object* idx, object* val){
         //Error
         return;
     }
-
+    
     DECREF(CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]);
 
     CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]=INCREF(val);

@@ -254,3 +254,42 @@ bool object_find_bool(object* iter, object* needle){
     }
     return false;
 }
+
+object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
+    uint32_t argn=0;
+    uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_len(selfkwargs))->val->to_int();
+
+    //Positional
+    object* key=args->type->slot_next(args);
+    
+    while (key){
+        dict->type->slot_set(dict, selfargs->type->slot_get(selfargs, new_int_fromint(argn)), key);
+        argn++;
+        key=args->type->slot_next(args);
+    }
+    //
+    
+    
+    //Keyword    
+    key=selfkwargs->type->slot_next(selfkwargs);
+    uint32_t argn_tmp=argsnum;
+    while (key){
+        dict->type->slot_set(dict, selfargs->type->slot_get(selfargs, new_int_fromint(argn_tmp)), key);
+        argn_tmp++;
+        key=selfkwargs->type->slot_next(selfkwargs);
+    }
+    
+    for (auto k: (*CAST_DICT(kwargs)->val)){
+        //Check if k.first in self.args
+        if (!object_find_bool(selfargs, k.first)){
+            //Error
+            return NULL;
+        }
+        //
+
+        dict->type->slot_set(dict, k.first, k.second);
+        argn++;
+    }
+
+    return dict;
+}

@@ -41,7 +41,7 @@ object* str_len(object* self){
 }
 
 object* str_repr(object* self){
-    return str_new_fromstr(new string("'"+(*CAST_STRING(self)->val)+"'"));
+    return str_new_fromstr(new string("'"+replace_newlines((*CAST_STRING(self)->val))+"'"));
 }
 
 object* str_str(object* self){

@@ -95,6 +95,7 @@ object* tuple_repr(object* self){
 
 object* tuple_next(object* self){
     if (CAST_TUPLE(self)->idx+1>CAST_TUPLE(self)->size){
+        CAST_TUPLE(self)->idx=0;
         return NULL;
     }
     return CAST_TUPLE(self)->array[CAST_TUPLE(self)->idx++];

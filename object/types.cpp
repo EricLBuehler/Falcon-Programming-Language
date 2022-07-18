@@ -415,3 +415,83 @@ TypeObject NoneType={
 
     (compfunc)none_cmp, //slot_cmp
 };
+
+
+void builtin_del(object* self);
+object* builtin_repr(object* self);
+object* builtin_cmp(object* self, object* other, uint8_t type);
+object* builtin_call(object* self, object* args, object* kwargs);
+
+#define CAST_BUILTIN(obj) ((BuiltinObject*)obj)
+
+typedef struct BuiltinObject{
+    OBJHEAD_EXTRA
+    object* (*function)(object*, object*);
+    object* name;
+    object* args; //Tuple
+    object* kwargs; //Tuple
+    uint32_t argc;
+}BuiltinObject;
+
+TypeObject BuiltinType={
+    new string("builtin_function_or_method"), //name
+    sizeof(BuiltinObject), //size
+    false, //gc_trackable
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)builtin_del, //slot_del
+
+    0, //slot_next
+    0, //slot_get
+    0, //slot_len
+    0, //slot_set
+    0, //slot_append
+
+    (reprfunc)builtin_repr, //slot_repr
+    (reprfunc)builtin_repr, //slot_str
+    (callfunc)builtin_call, //slot_call
+
+    0, //slot_num
+
+    (compfunc)builtin_cmp, //slot_cmp
+};
+
+
+void class_del(object* self);
+object* class_new(object* args, object* kwargs);
+object* class_repr(object* self);
+object* class_cmp(object* self, object* other, uint8_t type);
+
+#define CAST_CLASS(obj) ((ClassObject*)obj)
+
+
+typedef struct ClassObject{
+    OBJHEAD_EXTRA
+    object* dict;
+    object* name;
+}ClassObject;
+
+TypeObject ClassType={
+    new string("class"), //name
+    sizeof(ClassObject), //size
+    true, //gc_trackable
+
+    0, //slot_init
+    (newfunc)class_new, //slot_new
+    (delfunc)class_del, //slot_del
+
+    0, //slot_next
+    0, //slot_get
+    0, //slot_len
+    0, //slot_set
+    0, //slot_append
+
+    (reprfunc)class_repr, //slot_repr
+    (reprfunc)class_repr, //slot_str
+    0, //slot_call
+
+    0, //slot_num
+
+    (compfunc)class_cmp, //slot_cmp
+};

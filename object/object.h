@@ -12,7 +12,7 @@ typedef struct object*(*reprfunc)(struct object*);
 typedef void (*setfunc)(object*, object*, object*);
 typedef void (*appendfunc)(object*, object*);
 typedef struct object*(*compfunc)(struct object*, struct object*, uint8_t type);
-typedef void (*callfunc)(object*, object*, object*);
+typedef object* (*callfunc)(object*, object*, object*);
 
 typedef struct{    
     //binops
@@ -85,8 +85,16 @@ void object_print(object* obj);
 string object_cstr(object* obj);
 
 object* run_vm(object* codeobj, uint32_t* ip);
+void vm_add_err(struct vm* vm, const char *_format, ...);
+void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
+struct object* pop_dataframe(struct datastack* stack);
+void append_to_list(struct gc* gc, struct object* object);
+void add_callframe(struct callstack* stack, object* line, string* name, object* code);
+struct callframe* pop_callframe(struct callstack* stack);
 
 struct vm* vm=NULL;
+const size_t nbuiltins=2;
+object* builtins[nbuiltins];
 
 enum blocktype{
     IF_BLOCK,
@@ -141,8 +149,9 @@ struct vm{
     vector<string*>* snippets;
     string* err;
     string* filedata;
-    
-    struct object* globals;
+
+    object* accumulator;
+    object* globals;
 };
 
 #define CAST_VAR(obj) ((object_var*)obj)
@@ -151,9 +160,12 @@ struct vm{
 
 #define CMP_EQ 0
 
+
 #include "types.cpp"
 #include "gc.h"
 #include "object.cpp"
+
+#include "../builtins/builtins.h"
 #include "integerobject.cpp"
 #include "stringobject.cpp"
 #include "listobject.cpp"
@@ -163,3 +175,5 @@ struct vm{
 #include "tupleobject.cpp"
 #include "funcobject.cpp"
 #include "noneobject.cpp"
+#include "builtinobject.cpp"
+#include "classobject.cpp"
