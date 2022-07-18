@@ -37,6 +37,9 @@ enum token_type{
     T_GTE,
     T_LT,
     T_LTE,
+    T_NONE,
+    T_FALSE,
+    T_TRUE,
 };
 
 string token_type_to_str(enum token_type type){
@@ -78,6 +81,9 @@ string token_type_to_str(enum token_type type){
     case T_GTE:return "GTE";
     case T_LT:return "LT";
     case T_LTE:return "LTE";
+    case T_TRUE:return "TRUE";
+    case T_FALSE:return "FALSE";
+    case T_NONE:return "NONE";
     }
     return "";
 }

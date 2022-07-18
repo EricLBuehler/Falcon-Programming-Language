@@ -84,6 +84,8 @@ class Lexer{
 
         vector<string> KEYWORDS;
 
+        Lexer(){}
+
         Lexer(string text_, vector<string> kwds){
             this->text=text_;
             this->chr=text[0];
@@ -133,7 +135,6 @@ class Lexer{
                     Token t("",T_NEWLINE,start,end);
                     tokens.push_back(t);
                 }
-
                 if (this->chr=='"'){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_string();
@@ -437,6 +438,27 @@ class Lexer{
                 _tok_data res;
                 res.data=output;
                 res.type=T_IN;
+
+                return res;
+            }
+            if (output=="True"){
+                _tok_data res;
+                res.data=output;
+                res.type=T_TRUE;
+
+                return res;
+            }
+            if (output=="False"){
+                _tok_data res;
+                res.data=output;
+                res.type=T_FALSE;
+
+                return res;
+            }
+            if (output=="None"){
+                _tok_data res;
+                res.data=output;
+                res.type=T_NONE;
 
                 return res;
             }
