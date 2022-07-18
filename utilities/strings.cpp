@@ -15,3 +15,14 @@ string replace_newlines(string str){
 
     return str;
 }
+
+string remove_spaces(string word) {
+    string newWord;
+    for (int i = 0; i < word.length(); i++) {
+        if (word[i] != ' ') {
+            newWord += word[i];
+        }
+    }
+
+    return newWord;
+}
