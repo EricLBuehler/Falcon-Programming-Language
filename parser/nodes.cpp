@@ -8,6 +8,10 @@ enum nodetype{
     N_UNARY,
     N_FUNC,
     N_CALL,
+    N_TRUE,
+    N_FALSE,
+    N_NONE,
+    N_CLASS,
 };
 
 enum precedence {
@@ -113,6 +117,12 @@ struct Call{
     vector<Node*>* args;
     vector<Node*>* kwargs;
 };
+
+struct Class{
+    Node* name;
+    vector<Node*>* code;
+};
+
 
 
 void destroy_node(struct Node* node){

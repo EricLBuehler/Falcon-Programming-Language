@@ -14,6 +14,8 @@ class Parser{
         int tok_idx;
         string filedata;
 
+        Parser(){}
+
         Parser(vector<Token> t, string filedata){
             this->tokens=t;
             this->current_tok=this->tokens[0];
@@ -223,6 +225,28 @@ class Parser{
             return node;
         }
 
+        Node* make_true(){
+            Node* node=make_node(N_TRUE);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+            return node;
+        }
+
+        Node* make_false(){
+            Node* node=make_node(N_FALSE);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+            return node;
+        }
+
+        Node* make_none(){
+            Node* node=make_node(N_NONE);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+            return node;
+        }
+
+
         Node* make_grouped_expr(parse_ret* ret){
             this->advance();
             Node* node=this->expr(ret, LOWEST);
@@ -407,6 +431,16 @@ class Parser{
                     left=make_grouped_expr(ret);
                     break;
 
+                case T_TRUE:
+                    left=make_true();
+                    break;
+                case T_FALSE:
+                    left=make_false();
+                    break;
+                case T_NONE:
+                    left=make_none();
+                    break;
+
                 case T_PLUS:
                 case T_MINUS:
                     left=make_unary(ret);
@@ -416,33 +450,6 @@ class Parser{
                     return NULL;
 
             }
-            /*
-            if (this->get_next().type!=T_EOF){
-                switch (this->get_next().type){
-                    case T_EQ:
-                    case T_PLUS:
-                    case T_MINUS:
-                    case T_MUL:
-                    case T_DIV:
-                    case T_NE:
-                    case T_EE:
-                    case T_GT:
-                    case T_GTE:
-                    case T_LT:
-                    case T_LTE:
-                    case T_PERCENT:
-                    case T_NEWLINE:
-                    case T_LPAREN:
-                    case T_LCURLY:
-                    case T_LSQUARE:
-                    case T_COMMA:
-                        break;
-                    
-                    default:
-                        return left;
-                
-                }
-            }*/
             return left;
         }
 
@@ -505,14 +512,17 @@ class Parser{
 
         Node* keyword(parse_ret* ret){
             if (this->current_tok.data=="func"){
-                return function(ret);
+                return make_function(ret);
+            }
+            if (this->current_tok.data=="class"){
+                return make_class(ret);
             }
             this->add_parsing_error(ret, "SyntaxError: Unknown keyword '%s'",this->current_tok.data.c_str());
             this->advance();
             return NULL;
         }
 
-        Node* function(parse_ret* ret){
+        Node* make_function(parse_ret* ret){
             vector<Node*>* args=new vector<Node*>;
             args->clear();
             vector<Node*>* kwargs=new vector<Node*>;
@@ -623,6 +633,53 @@ class Parser{
             f->kwargs=kwargs;
 
             node->node=f;
+            this->advance();
+            return node;
+        }
+
+        Node* make_class(parse_ret* ret){
+            this->advance();
+            Node* name=this->atom(ret);
+            if (name->type!=N_IDENT){
+                this->add_parsing_error(ret, "SyntaxError: Expected identifier, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+            if (!this->current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.nodes.clear();
+            }
+            if (!this->current_tok_is(T_RCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+
+            Node* node=make_node(N_CLASS);
+            node->start=name->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Class* c=(Class*)malloc(sizeof(Class));
+            c->name=name;
+            c->code=new vector<Node*>;
+            c->code->clear();
+            for (Node* n: code.nodes){
+                c->code->push_back(n);
+            }
+
+            node->node=c;
+            
             this->advance();
             return node;
         }
