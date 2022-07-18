@@ -44,6 +44,17 @@ struct compiler* new_compiler(){
     return compiler;
 }
 
+void compiler_del(struct compiler* compiler){
+    DECREF(compiler->consts);
+    DECREF(compiler->names);
+    struct instruction* i=compiler->instructions->first;
+    while (i){
+        struct instruction* i_=i=i->next;;
+        free(i);
+        i=i_;
+    }
+}
+
 int compile_expr(struct compiler* compiler, Node* expr){
     switch (expr->type){
         case N_ASSIGN: {
@@ -289,6 +300,154 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,CALL_FUNCTION, argc, expr->start, expr->end);
             break;
         }
+
+        case N_TRUE: {
+            uint32_t idx;
+            if (!object_find_bool(compiler->consts,trueobj)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, trueobj);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, trueobj);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+            break;
+        }
+
+        case N_FALSE: {
+            uint32_t idx;
+            if (!object_find_bool(compiler->consts,falseobj)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, falseobj);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, falseobj);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+            break;
+        }
+
+        case N_NONE: {
+            uint32_t idx;
+            if (!object_find_bool(compiler->consts,noneobj)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, noneobj);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, noneobj);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+            break;
+        }
+
+        case N_CLASS: {
+            add_instruction(compiler->instructions,LOAD_BUILD_CLASS, 0, expr->start, expr->end);
+            add_instruction(compiler->instructions,LOAD_REGISTER_POP, 0, expr->start, expr->end);
+
+            //Name
+            uint32_t nameidx;
+            if (!_list_contains(compiler->consts, IDENTI(CLASS(expr->node)->name->node)->name )){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, str_new_fromstr(IDENTI(CLASS(expr->node)->name->node)->name));
+                nameidx = NAMEIDX(compiler->consts);
+            }
+            else{
+                nameidx=object_find(compiler->consts, str_new_fromstr(IDENTI(CLASS(expr->node)->name->node)->name));
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
+
+            object* args=tuple_new(NULL, NULL);
+            
+            uint32_t idx;
+            if (!object_find_bool(compiler->consts, args)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, args);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, args);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end); //Faux args
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end); //Same but for kwargs
+
+            //Code
+            parse_ret c;
+            c.nodes=(*CLASS(expr->node)->code);
+            struct compiler* comp=new_compiler();
+            comp->scope=SCOPE_LOCAL;
+            object* code=compile(comp, c);
+            
+            if (!object_find_bool(compiler->consts, code)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, code);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, code);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+
+            add_instruction(compiler->instructions,MAKE_FUNCTION, 0, expr->start, expr->end);            
+        
+            add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
+
+            object* bases=tuple_new(NULL, NULL);
+
+            if (!object_find_bool(compiler->consts, bases)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, bases);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, bases);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+
+
+            object* i=new_int_fromint(3);
+            if (!object_find_bool(compiler->consts, i)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, i);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, i);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+
+            add_instruction(compiler->instructions,READ_REGISTER_PUSH, 0, expr->start, expr->end);
+            
+            add_instruction(compiler->instructions,CALL_FUNCTION, 3, expr->start, expr->end);
+
+            //Store class
+            uint32_t nameidxstore;
+            if (!_list_contains(compiler->names, IDENTI(FUNCT(expr->node)->name->node)->name )){
+                //Create object
+                compiler->names->type->slot_append(compiler->names, str_new_fromstr(IDENTI(FUNCT(expr->node)->name->node)->name));
+                nameidxstore = NAMEIDX(compiler->names);
+            }
+            else{
+                nameidxstore=object_find(compiler->names, str_new_fromstr(IDENTI(FUNCT(expr->node)->name->node)->name));
+            }
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler->instructions,STORE_GLOBAL, nameidxstore, expr->start, expr->end);
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler->instructions,STORE_NAME, nameidxstore, expr->start, expr->end);
+                    break;
+            }
+
+            break;
+        }
+
 
     }
 

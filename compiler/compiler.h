@@ -14,6 +14,9 @@ enum opcode{
     CALL_FUNCTION,
     BUILD_TUPLE,
     BUILD_DICT,
+    LOAD_BUILD_CLASS,
+    LOAD_REGISTER_POP,
+    READ_REGISTER_PUSH,
 };
 
 enum scope{
@@ -49,6 +52,7 @@ struct compiler{
 #define UNARYOP(node) ((UnaryOp*)(node))
 #define FUNCT(node) ((Func*)(node))
 #define CALL(node) ((Call*)(node))
+#define CLASS(node) ((Class*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
 
