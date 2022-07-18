@@ -1,2 +1,4 @@
-# Falcon Programming Language
-Designed by Eric Buehler in 2022
+# Falcon Programming Language Version 2
+### Eric Buehler 2022 ###
+
+This is the most up-to-date version of FPL.
