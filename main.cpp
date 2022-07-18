@@ -24,48 +24,17 @@ string program;
 #include "compiler/compiler.h"
 #include "vm/vm.h"
 
-
-int main(int argc, char** argv) {
-    program="main.fpl";
-    bool verbose=false;
-    bool objdump=false;
-
-    if (argc==2){
-        if ((string)argv[1]==(string)"-h"){
-            cout<<"FPL V1\n";
-            cout<<"Eric Buehler 2022\n\n";
-            cout<<"Standard run: fpl [PROGRAM NAME]\n";
-            cout<<"Verbose run: fpl [PROGRAM NAME] -v\n";
-            cout<<"Object dump run: fpl [PROGRAM NAME] -o\n";
-            cout<<"Help: fpl -h\n";
-        }
-        program=argv[1];
-    }
-
-    if (argc==3){
-        program=argv[1];
-        if ((string)argv[2]==(string)"-v"){
-            verbose=true;
-        }
-        if ((string)argv[2]==(string)"-o"){
-            objdump=true;
-        }
-    }
-
-    if (argc==4){
-        program=argv[1];
-        if ((string)argv[2]==(string)"-v" || (string)argv[3]==(string)"-v"){
-            verbose=true;
-        }
-        if ((string)argv[2]==(string)"-o" || (string)argv[3]==(string)"-o"){
-            objdump=true;
-        }
-    }
-
-    string data=loadFile(program);
+int execute(string data, bool objdump, bool verbose){
+    //Prep constants
+    trueobj=_new_bool_true();
+    falseobj=_new_bool_false();
+    noneobj=_new_none();
+    setup_builtins();
+    //
 
     vector<string> kwds;
     kwds.push_back("func");
+    kwds.push_back("class");
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
@@ -99,12 +68,6 @@ int main(int argc, char** argv) {
     }
 
     cout<<"Parsed.\n";
-
-    //Prep constants
-    trueobj=_new_bool_true();
-    falseobj=_new_bool_false();
-    noneobj=_new_none();
-    //
     
     new_gc();
 
@@ -122,9 +85,12 @@ int main(int argc, char** argv) {
     cout<<"Names: "<<object_cstr(CAST_CODE(code)->co_names)<<"\n";
     cout<<"Consts: "<<object_cstr(CAST_CODE(code)->co_consts)<<"\n";
     cout<<"Code: "<<object_cstr(CAST_CODE(code)->co_code)<<"\n";
-    
+    cout<<"--------\n";
     object* returned=run_vm(code, &vm->ip);
-
+    cout<<"\n--------";
+    if (returned==CALL_ERR || returned==NULL){
+        return -1;
+    }
     cout<<"\nReturned: "<<object_cstr(returned);
 
     if (!vm->haserr){
@@ -135,6 +101,11 @@ int main(int argc, char** argv) {
         }
     }
     else{
+        delete &lexer;
+        compiler_del(compiler);
+        vm_del(vm);
+        DECREF(code);
+        DECREF(returned);
         return -1;
     }
 
@@ -206,6 +177,165 @@ int main(int argc, char** argv) {
         cout<<"\nImmutable "<<immutable_size;
         cout<<"\nTotal "<<total;
     }
+    return 0;
+}
+
+int repl(){
+    //Prep constants
+    trueobj=_new_bool_true();
+    falseobj=_new_bool_false();
+    noneobj=_new_none();
+    //
+
+    vector<string> kwds;
+    kwds.push_back("func");
+
+    struct compiler* compiler;
+    Lexer lexer;
+    object* code;
+    object* returned;
+    Parser parser;
+
+    vm=(struct vm*)malloc(sizeof(struct vm));
+    vm->id=0;
+    vm->ret_val=0;
+    vm->ip=0;
+    vm->objstack=new_datastack();
+    vm->callstack=new_callstack();
+    vm->blockstack=new_blockstack();
     
+    vm->haserr=false;
+    vm->headers=new vector<string*>;
+    vm->headers->clear();
+
+    vm->snippets=new vector<string*>;
+    vm->snippets->clear();
+
+    vm->err=NULL;
+
+    vm->globals=dict_new(NULL, NULL);
+
+    program="<main>";
+
+    while (true){
+        string data="";
+        cout<<"\n>>> ";
+        getline(cin, data);
+
+        if (data=="!exit"){
+            return 0;
+        }
+        else if (data=="!obj"){
+            cout<<"\n";
+            if (vm->callstack->size>0){
+                for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
+                    cout<<(*CAST_STRING(object_str(k.first))->val)<<" = "<<(*CAST_STRING(object_str(k.second))->val)<<endl;
+                }
+            }
+            continue;
+        }
+
+        lexer=Lexer(data,kwds);
+        lexer.pos=Position(program);
+
+        Position end=lexer.tokenize();
+
+        int i=0;
+
+        parser=Parser(lexer.tokens, data);
+        parse_ret ast=parser.parse();
+
+        if (ast.errornum>0){
+            cout<<ast.header<<endl;
+            cout<<ast.snippet<<endl;
+            cout<<ast.arrows<<endl;
+            printf("%s\n",ast.error);
+            continue;
+        }
+        
+        new_gc();
+
+        compiler = new_compiler();
+
+        code=compile(compiler, ast);
+
+        //vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
+        vm->filedata=&data;
+        if (vm->callstack->size==0){
+            add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code);
+            vm->callstack->head->locals=INCREF(vm->globals);
+        }
+        vm->callstack->head->code=code;
+        
+        vm->ip=0;
+        
+        returned=run_vm(code, &vm->ip);
+
+        if (!vm->haserr){
+            cout<<object_cstr(returned);
+        }
+        else{
+            vm->haserr=false;
+            vm->headers->clear();
+            vm->snippets->clear();
+        }
+
+        delete &lexer;
+        //compiler_del(compiler);
+        //vm_del(vm);
+        DECREF(code);
+        DECREF(returned);
+        
+    }
+
+    compiler_del(compiler);
+    vm_del(vm);
+    
+    return 0;
+}
+
+
+int main(int argc, char** argv) {
+    program="main.fpl";
+    bool verbose=false;
+    bool objdump=false;
+    
+    if (argc==1){
+        return repl();
+    }
+
+    if (argc==2){
+        if ((string)argv[1]==(string)"-h"){
+            cout<<"FPL V1\n";
+            cout<<"Eric Buehler 2022\n\n";
+            cout<<"Standard run: fpl [PROGRAM NAME]\n";
+            cout<<"Verbose run: fpl [PROGRAM NAME] -v\n";
+            cout<<"Object dump run: fpl [PROGRAM NAME] -o\n";
+            cout<<"Help: fpl -h\n";
+        }
+        program=argv[1];
+    }
+
+    if (argc==3){
+        program=argv[1];
+        if ((string)argv[2]==(string)"-v"){
+            verbose=true;
+        }
+        if ((string)argv[2]==(string)"-o"){
+            objdump=true;
+        }
+    }
+
+    if (argc==4){
+        program=argv[1];
+        if ((string)argv[2]==(string)"-v" || (string)argv[3]==(string)"-v"){
+            verbose=true;
+        }
+        if ((string)argv[2]==(string)"-o" || (string)argv[3]==(string)"-o"){
+            objdump=true;
+        }
+    }
+    
+    execute(loadFile(program), objdump, verbose);
     return 0;
 }

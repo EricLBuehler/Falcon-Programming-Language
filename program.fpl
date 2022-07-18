@@ -1,7 +1,3 @@
-m=2
-
-func f(a,b=1+2){
-    y=m+a
+class Peregrine{
+    a="Falcon"
 }
-
-f(1)

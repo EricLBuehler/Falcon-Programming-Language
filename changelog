@@ -1,3 +1,12 @@
+7/18/22 3 PM
+Added basic classes
+
+7/18/22 8 45 AM
+Made True/False/None constants user-accessible
+
+7/17/22 5 10 PM
+Added print builtin and builtin infrastructure intergration.
+
 7/16/22 8 30 AM
 Added locals being able to access globals
 
