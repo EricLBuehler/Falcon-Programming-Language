@@ -31,6 +31,9 @@ Build entire Falcon programming language
 Run a script
 ```./fpl program```
 
+Enter REPL
+```./fpl```
+
 Help
 ```./fpl -h```
 
