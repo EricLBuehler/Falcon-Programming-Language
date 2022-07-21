@@ -23,6 +23,5 @@ object* builtin___build_class__(object* self, object* args){
     pop_callframe(vm->callstack);
     
     object* t=new_type(ClassType, CAST_STRING(object_str(CAST_FUNC(function)->name))->val, new_list(), dict);
-    cout<<object_cstr(t);
     return t;
 }
