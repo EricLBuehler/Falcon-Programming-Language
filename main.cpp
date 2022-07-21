@@ -327,6 +327,7 @@ int main(int argc, char** argv) {
             cout<<"Help: fpl -h\n";
         }
         program=argv[1];
+        return 0;
     }
 
     if (argc==3){
