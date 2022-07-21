@@ -324,6 +324,7 @@ int main(int argc, char** argv) {
             cout<<"Standard run: fpl [PROGRAM NAME]\n";
             cout<<"Verbose run: fpl [PROGRAM NAME] -v\n";
             cout<<"Object dump run: fpl [PROGRAM NAME] -o\n";
+            cout<<"Enter REPL: fpl \n";
             cout<<"Help: fpl -h\n";
         }
         program=argv[1];
