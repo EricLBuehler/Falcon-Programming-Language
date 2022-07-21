@@ -36,9 +36,9 @@ void add_instruction(struct instructions* instructions, enum opcode opcode, uint
 
 struct compiler* new_compiler(){
     struct compiler* compiler=(struct compiler*)malloc(sizeof(struct compiler));
-    compiler->consts=list_new(NULL, NULL);
+    compiler->consts=new_list();
     compiler->instructions=new_instructions();
-    compiler->names=list_new(NULL, NULL);
+    compiler->names=new_list();
     compiler->scope=SCOPE_GLOBAL;
     
     return compiler;
@@ -181,8 +181,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //Arguments
             size_t argc=0;
 
-            object* args=tuple_new(NULL, NULL);
-            object* kwargs=tuple_new(NULL, NULL);
+            object* args=new_tuple();
+            object* kwargs=new_tuple();
 
             //Setup args
             for (Node* n: (*FUNCT(expr->node)->args)){
@@ -362,7 +362,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
 
-            object* args=tuple_new(NULL, NULL);
+            object* args=new_tuple();
             
             uint32_t idx;
             if (!object_find_bool(compiler->consts, args)){
@@ -397,7 +397,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         
             add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
 
-            object* bases=tuple_new(NULL, NULL);
+            object* bases=new_tuple();
 
             if (!object_find_bool(compiler->consts, bases)){
                 //Create object
@@ -455,13 +455,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
 }
 
 struct object* compile(struct compiler* compiler, parse_ret ast){
-    object* lines=list_new(NULL, NULL);
+    object* lines=new_list();
     for (Node* n: ast.nodes){
         uint32_t start=compiler->instructions->count;
         compile_expr(compiler, n);
         uint32_t end=compiler->instructions->count;
         
-        object* tuple=tuple_new(NULL, NULL);
+        object* tuple=new_tuple();
         tuple->type->slot_append(tuple, new_int_fromint(start));
         tuple->type->slot_append(tuple, new_int_fromint(end));
         tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
@@ -482,7 +482,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
     add_instruction(compiler->instructions, RETURN_VAL, 0, new Position, new Position);
 
     if (ast.nodes.size()>0){
-        object* tuple=tuple_new(NULL, NULL);
+        object* tuple=new_tuple();
         object* lineno=object_sub(lines->type->slot_len(lines), new_int_fromint(1));
         object* line=lines->type->slot_get(lines, lineno);
         tuple->type->slot_append(tuple, line->type->slot_get(line, new_int_fromint(0)));
@@ -494,7 +494,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         lines->type->slot_set(lines, lineno, tuple);
     }
     else{
-        object* tuple=tuple_new(NULL, NULL);
+        object* tuple=new_tuple();
         tuple->type->slot_append(tuple, new_int_fromint(0));
         tuple->type->slot_append(tuple, new_int_fromint(2));
         tuple->type->slot_append(tuple, new_int_fromint(0));
@@ -502,7 +502,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
     }
 
     reverse_instructions(compiler->instructions);
-    object* instructions=list_new(NULL, NULL);
+    object* instructions=new_list();
     struct instruction* instruction=compiler->instructions->first;
     while (instruction){
         CAST_LIST(instructions)->type->slot_append(instructions, new_int_fromint(instruction->opcode));
@@ -510,13 +510,13 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         instruction=instruction->next;
     }
 
-    object* list=list_new(NULL, NULL);
+    object* list=new_list();
     CAST_LIST(list)->type->slot_append(list, compiler->names);
     CAST_LIST(list)->type->slot_append(list, compiler->consts);
     CAST_LIST(list)->type->slot_append(list, instructions);
     CAST_LIST(list)->type->slot_append(list, object_repr(str_new_fromstr(new string(program))));
     CAST_LIST(list)->type->slot_append(list, lines);
 
-    object* code=code_new(list, NULL);
+    object* code=code_new_fromargs(list);
     return code;
 }
