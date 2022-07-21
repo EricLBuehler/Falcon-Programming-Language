@@ -653,7 +653,5 @@ object* type_cmp(object* self, object* other, uint8_t type){
 }
 
 object* type_call(object* self, object* args, object* kwargs){
-    cout<<"TPCALL";
-
     return CAST_TYPE_(self)->otype.slot_new(self, args, kwargs);
 }

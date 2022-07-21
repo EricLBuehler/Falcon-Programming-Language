@@ -3,7 +3,6 @@ object* class_new(object* type, object* args, object* kwargs){
     
     CAST_CLASS(obj)->dict=CAST_TYPE_(type)->otype.dict;
     CAST_CLASS(obj)->name=str_new_fromstr(CAST_TYPE_(type)->otype.name);
-    cout<<object_cstr(CAST_CLASS(obj)->dict);
     
     return obj;
 }
