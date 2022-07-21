@@ -30,6 +30,19 @@ int execute(string data, bool objdump, bool verbose){
     falseobj=_new_bool_false();
     noneobj=_new_none();
     setup_builtins();
+
+    setup_type_type();
+    setup_int_type();
+    setup_str_type();
+    setup_list_type();
+    setup_dict_type();
+    setup_code_type();
+    setup_bool_type();
+    setup_tuple_type();
+    setup_func_type();
+    setup_none_type();
+    setup_builtin_type();
+    setup_class_type();
     //
 
     vector<string> kwds;
@@ -79,7 +92,7 @@ int execute(string data, bool objdump, bool verbose){
     cout<<object_cstr(CAST_CODE(code)->co_code->type->slot_len(CAST_CODE(code)->co_code))<<" bytes."<<endl<<endl;
 
     vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
-    vm->globals=dict_new(NULL, NULL);
+    vm->globals=new_dict();
     vm->callstack->head->locals=INCREF(vm->globals);
 
     cout<<"Names: "<<object_cstr(CAST_CODE(code)->co_names)<<"\n";
@@ -95,8 +108,8 @@ int execute(string data, bool objdump, bool verbose){
 
     if (!vm->haserr){
         cout<<"\nIP: "<<vm->ip<<"\n\n";
-
-        for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
+        
+        for (auto k: (*CAST_DICT(vm->globals)->val)){
             cout<<(*CAST_STRING(object_str(k.first))->val)<<" = "<<(*CAST_STRING(object_str(k.second))->val)<<endl;
         }
     }
@@ -213,7 +226,7 @@ int repl(){
 
     vm->err=NULL;
 
-    vm->globals=dict_new(NULL, NULL);
+    vm->globals=new_dict();
 
     program="<main>";
 
@@ -335,6 +348,7 @@ int main(int argc, char** argv) {
             objdump=true;
         }
     }
+    
     
     execute(loadFile(program), objdump, verbose);
     return 0;
