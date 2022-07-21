@@ -1,4 +1,4 @@
-# Falcon Programming Language - Revision 3
+# Falcon Programming Language
 ### Eric Buehler 2022 ###
 
 <img src="https://github.com/EricLBuehler/Falcon-Programming-Language/blob/a18101360097063069c242e865a4595219c0f937/logo.jpg" width="208" height="150" align="right" />
