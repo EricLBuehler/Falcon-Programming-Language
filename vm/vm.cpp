@@ -211,11 +211,11 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
-    vm->globals->type->slot_set(vm->callstack->head->locals, name, value); //If globals is same obj as locals then this will still update both
+    vm->globals->type->slot_set(vm->globals, name, value); //If globals is same obj as locals then this will still update both
 }
 
 struct object* vm_get_var_globals(struct vm* vm, object* name){
-    object* o=vm->globals->type->slot_get(vm->callstack->head->locals, name);
+    object* o=vm->globals->type->slot_get(vm->globals, name);
     if (o!=NULL){
         return o;
     }
@@ -335,7 +335,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
                 
 
             //Setup kwargs
-            object* kwargs=dict_new(NULL, NULL);
+            object* kwargs=new_dict();
             object* val;
             for (uint32_t i=0; i<kwargc; i++){
                 val=pop_dataframe(vm->objstack);
@@ -344,7 +344,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             //
 
             //Setup args
-            object* args=tuple_new(NULL, NULL);
+            object* args=new_tuple();
             for (uint32_t i=0; i<posargc; i++){
                 args->type->slot_append(args, pop_dataframe(vm->objstack));
             }
@@ -355,10 +355,11 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             if (object_istype(function->type, &FuncType)){
                 add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, INCREF(CAST_FUNC(function)->code));
             }
-    
-            vm->callstack->head->locals=dict_new(NULL, NULL);
+            
+
+            vm->callstack->head->locals=new_dict();
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (!object_istype(function->type, &BuiltinType)){
+            if (!object_istype(function->type, &BuiltinType) && !object_istype(function->type, &TypeType)){
                 pop_callframe(vm->callstack);
             }
             if (ret==NULL){
@@ -370,7 +371,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
         }
 
         case BUILD_TUPLE: {
-            object* tuple=tuple_new(NULL, NULL);
+            object* tuple=new_tuple();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 tuple->type->slot_append(tuple, pop_dataframe(vm->objstack));
             }
@@ -379,7 +380,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
         }
 
         case BUILD_DICT: {
-            object* dict=dict_new(NULL, NULL);
+            object* dict=new_dict();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 object* name=pop_dataframe(vm->objstack);
                 dict->type->slot_set(dict, name, pop_dataframe(vm->objstack));
@@ -423,12 +424,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
     while (instruction){
         (*ip)++;
         vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
-        if ((*ip)>(*CAST_INT(linetup->type->slot_get(linetup, idx1))->val).to_int()){
+        if ((*ip)>(*CAST_INT(linetup->type->slot_get(linetup, idx1))->val).to_int()){\
             linetup_cntr++;
             linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
             vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
         }
-        
         object* obj=_vm_step(instruction, code->type->slot_next(code), vm);
         if (obj==CALL_ERR){
             return CALL_ERR;
