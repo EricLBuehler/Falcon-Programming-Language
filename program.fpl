@@ -2,5 +2,6 @@ class Peregrine{
     a="Falcon"
 }
 
-c=Peregrine()
 x=Peregrine()
+
+y=Peregrine()
