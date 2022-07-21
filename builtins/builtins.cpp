@@ -15,15 +15,14 @@ object* builtin___build_class__(object* self, object* args){
         return NULL;
     }
 
-    add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, INCREF(CAST_FUNC(function)->code));
+    add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, CAST_FUNC(function)->code);
 
-    vm->callstack->head->locals=dict_new(NULL, NULL);
+    vm->callstack->head->locals=new_dict();
     dict=INCREF(vm->callstack->head->locals);
-    object* ret=function->type->slot_call(function, tuple_new(NULL, NULL), dict_new(NULL, NULL));
+    object* ret=function->type->slot_call(function, new_tuple(), new_dict());
     pop_callframe(vm->callstack);
     
-    object* c=class_new(NULL, NULL);
-    CAST_CLASS(c)->dict=dict;
-    CAST_CLASS(c)->name=INCREF(CAST_FUNC(function)->name);
-    return c;
+    object* t=new_type(ClassType, CAST_STRING(object_str(CAST_FUNC(function)->name))->val, new_list(), dict);
+    cout<<object_cstr(t);
+    return t;
 }
