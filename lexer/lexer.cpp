@@ -128,6 +128,11 @@ class Lexer{
                     continue;
                 }
 
+                if (this->chr=='#'){
+                    make_comment();
+                    continue;
+                }
+
                 if (this->chr=='\n' || this->chr==';'){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
@@ -604,6 +609,12 @@ class Lexer{
 
             }
             return res;
+        }
+
+        void make_comment(){
+            while (this->chr!='\0' && this->chr!='\n' ) {
+                this->advance();
+            }
         }
 
 };
