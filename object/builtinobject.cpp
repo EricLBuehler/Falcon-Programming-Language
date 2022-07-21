@@ -2,19 +2,19 @@ typedef object* (*builtinfunc)(object*, object*);
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc);
 
 void setup_builtins(){
-    object* printargs=tuple_new(NULL, NULL);
+    object* printargs=new_tuple();
     printargs->type->slot_append(printargs, str_new_fromstr(new string("object")));
     printargs->type->slot_append(printargs, str_new_fromstr(new string("end")));
-    object* printkwargs=tuple_new(NULL, NULL);
+    object* printkwargs=new_tuple();
     printkwargs->type->slot_append(printkwargs, str_new_fromstr(new string("\n")));
     builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr(new string("print")), printargs, printkwargs, CAST_INT(printargs->type->slot_len(printargs))->val->to_int());
 
 
-    object* buildclassargs=tuple_new(NULL, NULL);
+    object* buildclassargs=new_tuple();
     buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("bases")));
     buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("name")));
     buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("func")));
-    object* buildclasskwargs=tuple_new(NULL, NULL);
+    object* buildclasskwargs=new_tuple();
     builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr(new string("__build_class__")), buildclassargs, buildclasskwargs, CAST_INT(buildclassargs->type->slot_len(buildclassargs))->val->to_int());
 }
 
@@ -29,7 +29,7 @@ object* new_builtin(builtinfunc function, object* name, object* args, object* kw
 }
 
 object* builtin_call(object* self, object* args, object* kwargs){
-    object* builtinargs=dict_new(NULL, NULL);    
+    object* builtinargs=new_dict();    
 
     return CAST_BUILTIN(self)->function(self, setup_args(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs));
 }

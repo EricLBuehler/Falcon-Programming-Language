@@ -1,4 +1,4 @@
-object* bool_new(object* args, object* kwargs){
+object* bool_new(object* type, object* args, object* kwargs){
     object* obj=new_object(&BoolType);
     CAST_BOOL(obj)->val=true;
     return obj;

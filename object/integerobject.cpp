@@ -32,7 +32,7 @@ object* new_int_frombigint(BigInt* v){
     return o;
 }
 
-object* int_new(object* args, object* kwargs){
+object* int_new(object* type, object* args, object* kwargs){
     object* obj=new_object(&IntType);
     object* val=args->type->slot_get(args, new_int_fromint(0));
     DECREF(args);

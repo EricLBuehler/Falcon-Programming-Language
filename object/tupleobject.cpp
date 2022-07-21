@@ -30,19 +30,23 @@ object* tuple_init(object* self, object* args, object* kwargs){
     return self;
 }
 
-object* tuple_new(object* args, object* kwargs){
+object* new_tuple(){
     object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));
     CAST_TUPLE(obj)->capacity=2; //Start with 2
     CAST_TUPLE(obj)->size=0;
     CAST_TUPLE(obj)->idx=0;
     CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
     
-    if (args!=NULL){
-        DECREF(args);
-    }
-    if (kwargs!=NULL){
-        DECREF(kwargs);
-    }
+    return (object*)obj;
+}
+
+object* tuple_new(object* type, object* args, object* kwargs){
+    object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));
+    CAST_TUPLE(obj)->capacity=2; //Start with 2
+    CAST_TUPLE(obj)->size=0;
+    CAST_TUPLE(obj)->idx=0;
+    CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
+    
     return (object*)obj;
 }
 

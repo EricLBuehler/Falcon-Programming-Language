@@ -4,7 +4,6 @@ object* str_new_fromstr(string* val){
 
     ((StrObject*)obj)->val=new string((*val));
     ((StrObject*)obj)->var_size=val->size()+sizeof(StrObject);
-    
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){
         return (object*)obj;
@@ -14,7 +13,7 @@ object* str_new_fromstr(string* val){
     return o;
 }
 
-object* str_new(object* args, object* kwargs){
+object* str_new(object* type, object* args, object* kwargs){
     object* val=args->type->slot_get(args, new_int_fromint(0));
     DECREF(args);
     DECREF(kwargs);

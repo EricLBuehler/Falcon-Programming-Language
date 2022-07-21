@@ -4,7 +4,23 @@ object* code_init(object* self, object* args, object* kwargs){
     return self;
 }
 
-object* code_new(object* args, object* kwargs){
+object* code_new_fromargs(object* args){
+    object* obj=new_object(&CodeType);
+    if (CAST_LIST(args)->size!=5){
+        //Error
+        return NULL;
+    }
+    CAST_CODE(obj)->co_names=INCREF(args->type->slot_get(args, new_int_fromint(0)));
+    CAST_CODE(obj)->co_consts=INCREF(args->type->slot_get(args, new_int_fromint(1)));
+    CAST_CODE(obj)->co_code=INCREF(args->type->slot_get(args, new_int_fromint(2)));
+    CAST_CODE(obj)->co_file=INCREF(args->type->slot_get(args, new_int_fromint(3)));
+    CAST_CODE(obj)->co_lines=INCREF(args->type->slot_get(args, new_int_fromint(4)));
+    
+    DECREF(args);
+    return obj;
+}
+
+object* code_new(object* type, object* args, object* kwargs){
     object* obj=new_object(&CodeType);
     if (args==NULL){
         return obj;

@@ -1,7 +1,7 @@
 object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
-    CAST_FUNC(obj)->dict=dict_new(NULL, NULL);
+    CAST_FUNC(obj)->dict=new_dict();
     CAST_FUNC(obj)->args=args;
     CAST_FUNC(obj)->kwargs=kwargs;
     CAST_FUNC(obj)->argc=argc;
@@ -10,25 +10,20 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     return obj;
 }
 
-object* func_new(object* args, object* kwargs){
+object* func_new(object* type, object* args, object* kwargs){
     object* obj=new_object(&FuncType);
     if (CAST_LIST(args)->size!=5){
         //Error
         return NULL;
     }
-    CAST_FUNC(obj)->code=args->type->slot_get(args, new_int_fromint(0));
-    CAST_FUNC(obj)->args=args->type->slot_get(args, new_int_fromint(1));
-    CAST_FUNC(obj)->kwargs=args->type->slot_get(args, new_int_fromint(2));
+    CAST_FUNC(obj)->code=INCREF(args->type->slot_get(args, new_int_fromint(0)));
+    CAST_FUNC(obj)->args=INCREF(args->type->slot_get(args, new_int_fromint(1)));
+    CAST_FUNC(obj)->kwargs=INCREF(args->type->slot_get(args, new_int_fromint(2)));
     CAST_FUNC(obj)->argc=CAST_INT(args->type->slot_get(args, new_int_fromint(3)))->val->to_int();
     CAST_FUNC(obj)->name=args->type->slot_get(args, new_int_fromint(4));
-    CAST_FUNC(obj)->dict=dict_new(NULL, NULL);
+    CAST_FUNC(obj)->dict=new_dict();
     
-    if (args!=NULL){
-        DECREF(args);
-    }
-    if (kwargs!=NULL){
-        DECREF(kwargs);
-    }
+    DECREF(args);
     return obj;
 }
 

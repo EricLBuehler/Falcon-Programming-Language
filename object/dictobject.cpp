@@ -1,15 +1,18 @@
-object* dict_new(object* args, object* kwargs){
+object* new_dict(){
     object_var* obj=new_object_var(&DictType, 0);
     CAST_DICT(obj)->val=new unordered_map<object*, object*>;
     CAST_DICT(obj)->val->clear();
     obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
+    
+    return (object*)obj;
+}
 
-    if (args!=NULL){
-        DECREF(args);
-    }
-    if (kwargs!=NULL){
-        DECREF(kwargs);
-    }
+object* dict_new(object* type, object* args, object* kwargs){
+    object_var* obj=new_object_var(&DictType, 0);
+    CAST_DICT(obj)->val=new unordered_map<object*, object*>;
+    CAST_DICT(obj)->val->clear();
+    obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
+    
     return (object*)obj;
 }
 

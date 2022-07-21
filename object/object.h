@@ -6,13 +6,14 @@ typedef void (*delfunc)(struct object*);
 typedef struct object*(*binopfunc)(struct object*,struct object*);
 typedef struct object*(*unaryfunc)(struct object*);
 typedef struct object*(*getfunc)(struct object*, struct object*);
-typedef struct object*(*newfunc)(object* args, object* kwargs);
+typedef struct object*(*newfunc)(object* type, object* args, object* kwargs);
 typedef struct object*(*lenfunc)(struct object*);
 typedef struct object*(*reprfunc)(struct object*);
 typedef void (*setfunc)(object*, object*, object*);
 typedef void (*appendfunc)(object*, object*);
 typedef struct object*(*compfunc)(struct object*, struct object*, uint8_t type);
 typedef object* (*callfunc)(object*, object*, object*);
+
 
 typedef struct{    
     //binops
@@ -26,9 +27,18 @@ typedef struct{
 }NumberMethods;
 
 typedef struct object_type{
+    size_t refcnt;
+    object* ob_prev;
+    object* ob_next;
+    uint32_t gen;
+    object_type* type;
+
     string* name;
     size_t size;
     bool gc_trackable;
+    object* bases;
+    size_t dict_offset; //If 0, no dict
+    object* dict; //None if no dict
 
     initfunc slot_init;
     newfunc slot_new;
@@ -51,10 +61,9 @@ typedef struct object_type{
     compfunc slot_cmp;
 }TypeObject;
 
-#define OBJHEAD uint32_t refcnt; struct object* ob_prev; struct object* ob_next; uint32_t gen;
+#define OBJHEAD size_t refcnt; struct object* ob_prev; struct object* ob_next; uint32_t gen;
 #define OBJHEAD_EXTRA OBJHEAD TypeObject* type;
 #define OBJHEAD_VAR OBJHEAD_EXTRA uint32_t var_size; uint32_t gc_ref;
-
 
 
 typedef struct object{
@@ -91,6 +100,14 @@ struct object* pop_dataframe(struct datastack* stack);
 void append_to_list(struct gc* gc, struct object* object);
 void add_callframe(struct callstack* stack, object* line, string* name, object* code);
 struct callframe* pop_callframe(struct callstack* stack);
+
+object* new_list();
+object* new_none();
+object* new_dict();
+object* new_tuple();
+object* new_code_fromargs(object* args);
+object* new_bool_true();
+object* new_bool_false();
 
 struct vm* vm=NULL;
 const size_t nbuiltins=2;
@@ -160,7 +177,7 @@ struct vm{
 
 #define CMP_EQ 0
 
-
+#include "typeobject.cpp"
 #include "types.cpp"
 #include "gc.h"
 #include "object.cpp"
