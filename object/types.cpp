@@ -41,6 +41,7 @@ TypeObject IntType={
     0, //dict_offset
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     0, //slot_init
     (newfunc)int_new, //slot_new
@@ -97,6 +98,7 @@ TypeObject StrType={
     0, //dict_offset
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     0, //slot_init
     (newfunc)str_new, //slot_new
@@ -160,6 +162,7 @@ TypeObject ListType={
     0, //dict_offset
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     (initfunc)list_init, //slot_init
     (newfunc)list_new, //slot_new
@@ -216,6 +219,7 @@ static TypeObject DictType={
     0, //dict_offset
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     0, //slot_init
     (newfunc)dict_new, //slot_new
@@ -274,6 +278,7 @@ TypeObject CodeType={
     0, //dict_offset
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     (initfunc)code_init, //slot_init
     (newfunc)code_new, //slot_new
@@ -350,6 +355,7 @@ TypeObject BoolType={
     0, //dict_offset
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     0, //slot_init
     (newfunc)bool_new, //slot_new
@@ -409,6 +415,7 @@ TypeObject TupleType={
     0, //dict_offset
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     (initfunc)tuple_init, //slot_init
     (newfunc)tuple_new, //slot_new
@@ -466,6 +473,7 @@ TypeObject FuncType={
     offsetof(FuncObject, dict), //dict_offset
     NULL, //dict
     (getattrfunc)object_genericgetattr, //slot_getattr
+    (setattrfunc)object_genericsetattr, //slot_setattr
 
     0, //slot_init
     (newfunc)func_new, //slot_new
@@ -515,6 +523,7 @@ TypeObject NoneType={
     0, //dict_offset
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     0, //slot_init
     (newfunc)none_new, //slot_new
@@ -569,6 +578,7 @@ TypeObject BuiltinType={
     0, //dict_offset    
     NULL, //dict
     0, //slot_getattr
+    0, //slot_setattr
 
     0, //slot_init
     0, //slot_new
@@ -622,7 +632,7 @@ TypeObject ClassType={
     offsetof(ClassObject, dict), //dict_offset
     NULL, //dict
     (getattrfunc)object_genericgetattr, //slot_getattr
-
+    (setattrfunc)object_genericsetattr, //slot_setattr
     0, //slot_init
     (newfunc)class_new, //slot_new
     (delfunc)class_del, //slot_del
@@ -674,4 +684,13 @@ object* type_get(object* self, object* attr){
     }
     vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(self).c_str(), object_cstr(attr).c_str());
     return NULL;
+}
+
+void type_set(object* obj, object* attr, object* val){
+    if (CAST_TYPE_(obj)->otype.dict!=NULL){
+        CAST_TYPE_(obj)->otype.dict->type->slot_set(CAST_TYPE_(obj)->otype.dict, attr, val);
+        return;
+    }
+    vm_add_err(vm, "AttributeError: %s is read only",object_cstr(obj).c_str());
+    return;
 }

@@ -264,6 +264,15 @@ bool object_find_bool_dict_keys(object* dict, object* needle){
     return false;
 }
 
+object* object_find_dict_keys(object* dict, object* needle){
+    for (auto k: (*CAST_DICT(dict)->val)){
+        if (istrue(object_cmp(k.first,needle, CMP_EQ))){
+            return k.first;
+        }
+    }
+    return NULL;
+}
+
 object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
     uint32_t argn=0;
     uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_len(selfkwargs))->val->to_int();
@@ -312,10 +321,17 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
 
 object* object_genericgetattr(object* obj, object* attr){
     //Check dict
-    object* dict= (object*)((char*)obj->type + obj->type->dict_offset);
-    if (obj->type->dict!=NULL){
-        if (object_find_bool_dict_keys(obj->type->dict, attr)){
-            return obj->type->dict->type->slot_get(obj->type->dict, attr);
+    if (obj->type->dict_offset!=0){
+        object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
+        if (object_find_bool_dict_keys(dict, attr)){
+            return dict->type->slot_get(dict, attr);
+        }
+    }
+    //Check type dict
+    if (obj->type->dict_offset!=0){
+        object* dict = obj->type->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            return dict->type->slot_get(dict, attr);
         }
     }
     vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(obj).c_str(), object_cstr(attr).c_str());
@@ -328,4 +344,24 @@ object* object_getattr(object* obj, object* attr){
     }
     vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(obj).c_str(), object_cstr(attr).c_str());
     return NULL;
+}
+
+void object_genericsetattr(object* obj, object* attr, object* val){
+    //Check dict
+    if (obj->type->dict_offset!=0){
+        object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
+        dict->type->slot_set(dict, attr, val);
+        return;
+    }
+    vm_add_err(vm, "AttributeError: %s is read only",object_cstr(obj).c_str());
+    return;
+}
+
+void object_setattr(object* obj, object* attr, object* val){
+    if (obj->type->slot_setattr!=NULL){
+        obj->type->slot_setattr(obj, attr,val);
+        return;
+    }
+    vm_add_err(vm, "AttributeError: %s is read only",object_cstr(obj).c_str());
+    return;
 }

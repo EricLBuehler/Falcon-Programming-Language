@@ -22,6 +22,11 @@ object* dict_len(object* self){
 
 object* dict_get(object* self, object* key){
     if (CAST_DICT(self)->val->find(key)==CAST_DICT(self)->val->end()){
+        //Check non-immutable key
+        object* o=object_find_dict_keys(self,key);
+        if (o!=NULL){
+            return CAST_DICT(self)->val->at(o);
+        }
         //Error!
         return NULL;
     }
@@ -29,6 +34,30 @@ object* dict_get(object* self, object* key){
 }
 
 void dict_set(object* self, object* key, object* val){
+    //Fast path for immutables
+    if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        //Do not incref key!
+        if ((*CAST_DICT(self)->val)[key]==val){ //Same val
+            //Do not incref val!
+            return;
+        }
+        (*CAST_DICT(self)->val)[key]=INCREF(val);
+        CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+        return;
+    }
+
+    for (auto k: (*CAST_DICT(self)->val)){
+        if (istrue(object_cmp(key, k.first, CMP_EQ))){
+            if (istrue(object_cmp(val, k.second, CMP_EQ))){ //Same val
+                //Do not incref val!
+                return;
+            }
+            (*CAST_DICT(self)->val)[key]=INCREF(val);
+            CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+            return;
+        }
+    }
+
     (*CAST_DICT(self)->val)[INCREF(key)]=INCREF(val);
     CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
 }

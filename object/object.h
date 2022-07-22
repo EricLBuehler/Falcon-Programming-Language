@@ -14,6 +14,7 @@ typedef void (*appendfunc)(object*, object*);
 typedef struct object*(*compfunc)(struct object*, struct object*, uint8_t type);
 typedef object* (*callfunc)(object*, object*, object*);
 typedef object* (*getattrfunc)(object*, object*);
+typedef void (*setattrfunc)(object*, object*, object*);
 
 
 typedef struct{    
@@ -41,6 +42,7 @@ typedef struct object_type{
     size_t dict_offset; //If 0, no dict
     object* dict; //None if no dict
     getattrfunc slot_getattr;
+    setattrfunc slot_setattr;
 
     initfunc slot_init;
     newfunc slot_new;
@@ -94,6 +96,8 @@ object* object_str(object* obj);
 object* object_repr(object* obj);
 void object_print(object* obj);
 string object_cstr(object* obj);
+object* object_genericgetattr(object* obj, object* attr);
+void object_genericsetattr(object* obj, object* attr, object* val);
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(struct vm* vm, const char *_format, ...);
@@ -110,7 +114,6 @@ object* new_tuple();
 object* new_code_fromargs(object* args);
 object* new_bool_true();
 object* new_bool_false();
-object* object_genericgetattr(object* obj, object* attr);
 
 struct vm* vm=NULL;
 const size_t nbuiltins=2;

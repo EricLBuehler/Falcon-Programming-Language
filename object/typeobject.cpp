@@ -4,6 +4,7 @@ object* type_repr(object* self);
 object* type_cmp(object* self, object* other, uint8_t type);
 object* type_call(object* self, object* args, object* kwargs);
 object* type_get(object* self, object* attr);
+void type_set(object* obj, object* attr, object* val);
 
 #define CAST_TYPE(obj) ((TypeObject*)obj)
 #define CAST_TYPE_(obj) ((TypeObjectHeap*)obj)
@@ -27,6 +28,7 @@ TypeObject TypeType={
     0, //dict_offset
     NULL, //dict
     (getattrfunc)type_get, //slot_getattr
+    (setattrfunc)type_set, //slot_getattr
 
     0, //slot_init
     (newfunc)type_new, //slot_new
@@ -68,6 +70,7 @@ object* new_type(TypeObject type, string* name, object* bases, object* dict){
         type.dict_offset, //dict_offset
         dict, //dict
         type.slot_getattr, //slot_getattr
+        type.slot_setattr, //etattr
 
         type.slot_init, //slot_init
         type.slot_new, //slot_new
