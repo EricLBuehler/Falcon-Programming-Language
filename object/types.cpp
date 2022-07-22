@@ -40,6 +40,7 @@ TypeObject IntType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
+    0, //slot_getattr
 
     0, //slot_init
     (newfunc)int_new, //slot_new
@@ -95,6 +96,7 @@ TypeObject StrType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
+    0, //slot_getattr
 
     0, //slot_init
     (newfunc)str_new, //slot_new
@@ -157,6 +159,7 @@ TypeObject ListType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
+    0, //slot_getattr
 
     (initfunc)list_init, //slot_init
     (newfunc)list_new, //slot_new
@@ -212,6 +215,7 @@ static TypeObject DictType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
+    0, //slot_getattr
 
     0, //slot_init
     (newfunc)dict_new, //slot_new
@@ -269,6 +273,7 @@ TypeObject CodeType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
+    0, //slot_getattr
 
     (initfunc)code_init, //slot_init
     (newfunc)code_new, //slot_new
@@ -344,6 +349,7 @@ TypeObject BoolType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
+    0, //slot_getattr
 
     0, //slot_init
     (newfunc)bool_new, //slot_new
@@ -402,6 +408,7 @@ TypeObject TupleType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
+    0, //slot_getattr
 
     (initfunc)tuple_init, //slot_init
     (newfunc)tuple_new, //slot_new
@@ -458,6 +465,7 @@ TypeObject FuncType={
     NULL, //bases
     offsetof(FuncObject, dict), //dict_offset
     NULL, //dict
+    (getattrfunc)object_genericgetattr, //slot_getattr
 
     0, //slot_init
     (newfunc)func_new, //slot_new
@@ -506,6 +514,7 @@ TypeObject NoneType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
+    0, //slot_getattr
 
     0, //slot_init
     (newfunc)none_new, //slot_new
@@ -559,6 +568,7 @@ TypeObject BuiltinType={
     NULL, //bases
     0, //dict_offset    
     NULL, //dict
+    0, //slot_getattr
 
     0, //slot_init
     0, //slot_new
@@ -596,6 +606,7 @@ typedef struct ClassObject{
     OBJHEAD_EXTRA
     object* dict;
     object* name;
+    object* otype;
 }ClassObject;
 
 TypeObject ClassType={
@@ -610,6 +621,7 @@ TypeObject ClassType={
     NULL, //bases
     offsetof(ClassObject, dict), //dict_offset
     NULL, //dict
+    (getattrfunc)object_genericgetattr, //slot_getattr
 
     0, //slot_init
     (newfunc)class_new, //slot_new
@@ -654,4 +666,12 @@ object* type_cmp(object* self, object* other, uint8_t type){
 
 object* type_call(object* self, object* args, object* kwargs){
     return CAST_TYPE_(self)->otype.slot_new(self, args, kwargs);
+}
+
+object* type_get(object* self, object* attr){
+    if (CAST_TYPE_(self)->otype.dict!=NULL){
+        return CAST_TYPE_(self)->otype.dict->type->slot_get(CAST_TYPE_(self)->otype.dict, attr);
+    }
+    vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(self).c_str(), object_cstr(attr).c_str());
+    return NULL;
 }

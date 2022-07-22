@@ -255,26 +255,40 @@ bool object_find_bool(object* iter, object* needle){
     return false;
 }
 
+bool object_find_bool_dict_keys(object* dict, object* needle){
+    for (auto k: (*CAST_DICT(dict)->val)){
+        if (istrue(object_cmp(k.first,needle, CMP_EQ))){
+            return true;
+        }
+    }
+    return false;
+}
+
 object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
     uint32_t argn=0;
     uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_len(selfkwargs))->val->to_int();
 
     //Positional
     object* key=args->type->slot_next(args);
+    object* names=new_list();
     
     while (key){
         dict->type->slot_set(dict, selfargs->type->slot_get(selfargs, new_int_fromint(argn)), key);
         argn++;
+        names->type->slot_append(names, selfargs->type->slot_get(selfargs, new_int_fromint(argn-1)));
         key=args->type->slot_next(args);
     }
     //
+
     
     
     //Keyword    
     key=selfkwargs->type->slot_next(selfkwargs);
     uint32_t argn_tmp=argsnum;
     while (key){
-        dict->type->slot_set(dict, selfargs->type->slot_get(selfargs, new_int_fromint(argn_tmp)), key);
+        if (!object_find_bool(names, selfargs->type->slot_get(selfargs, new_int_fromint(argn_tmp)))){
+            dict->type->slot_set(dict, selfargs->type->slot_get(selfargs, new_int_fromint(argn_tmp)), key);
+        }
         argn_tmp++;
         key=selfkwargs->type->slot_next(selfkwargs);
     }
@@ -283,6 +297,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){
             //Error
+            DECREF(names);
             return NULL;
         }
         //
@@ -291,5 +306,26 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         argn++;
     }
 
+    DECREF(names);
     return dict;
+}
+
+object* object_genericgetattr(object* obj, object* attr){
+    //Check dict
+    object* dict= (object*)((char*)obj->type + obj->type->dict_offset);
+    if (obj->type->dict!=NULL){
+        if (object_find_bool_dict_keys(obj->type->dict, attr)){
+            return obj->type->dict->type->slot_get(obj->type->dict, attr);
+        }
+    }
+    vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(obj).c_str(), object_cstr(attr).c_str());
+    return NULL;
+}
+
+object* object_getattr(object* obj, object* attr){
+    if (obj->type->slot_getattr!=NULL){
+        return obj->type->slot_getattr(obj, attr);
+    }
+    vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(obj).c_str(), object_cstr(attr).c_str());
+    return NULL;
 }

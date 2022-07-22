@@ -1,8 +1,9 @@
 object* class_new(object* type, object* args, object* kwargs){
-    object* obj=new_object(&ClassType);
+    object* obj=new_object((TypeObject*)INCREF((object*)&(CAST_TYPE_(type)->otype) ));
     
     CAST_CLASS(obj)->dict=CAST_TYPE_(type)->otype.dict;
     CAST_CLASS(obj)->name=str_new_fromstr(CAST_TYPE_(type)->otype.name);
+    CAST_CLASS(obj)->otype=type;
     
     return obj;
 }

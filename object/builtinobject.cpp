@@ -29,8 +29,7 @@ object* new_builtin(builtinfunc function, object* name, object* args, object* kw
 }
 
 object* builtin_call(object* self, object* args, object* kwargs){
-    object* builtinargs=new_dict();    
-
+    object* builtinargs=new_dict();
     return CAST_BUILTIN(self)->function(self, setup_args(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs));
 }
 

@@ -13,6 +13,7 @@ typedef void (*setfunc)(object*, object*, object*);
 typedef void (*appendfunc)(object*, object*);
 typedef struct object*(*compfunc)(struct object*, struct object*, uint8_t type);
 typedef object* (*callfunc)(object*, object*, object*);
+typedef object* (*getattrfunc)(object*, object*);
 
 
 typedef struct{    
@@ -39,6 +40,7 @@ typedef struct object_type{
     object* bases;
     size_t dict_offset; //If 0, no dict
     object* dict; //None if no dict
+    getattrfunc slot_getattr;
 
     initfunc slot_init;
     newfunc slot_new;
@@ -108,6 +110,7 @@ object* new_tuple();
 object* new_code_fromargs(object* args);
 object* new_bool_true();
 object* new_bool_false();
+object* object_genericgetattr(object* obj, object* attr);
 
 struct vm* vm=NULL;
 const size_t nbuiltins=2;
