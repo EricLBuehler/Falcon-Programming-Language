@@ -163,6 +163,7 @@ class Lexer{
                     Position end=this->pos.copy();
                     Token t(res.data,res.type,start,end);
                     tokens.push_back(t);
+                    continue;
                 }
 
                 if (this->chr==':'){
@@ -400,7 +401,7 @@ class Lexer{
         _tok_data make_identifier(){
             string output;
 
-            while (this->chr!='\0' && (isalpha(this->chr) || this->chr=='_' || this->chr=='.' || isdigit(this->chr)) && this->chr!='=' \
+            while (this->chr!='\0' && (isalpha(this->chr) || this->chr=='_'  || isdigit(this->chr)) && this->chr!='=' \
             && this->chr!='*' && this->chr!='-' && this->chr!='/' && this->chr!='+' && this->chr!=')'\
             && this->chr!='(' && this->chr!='{' && this->chr!='}' ) {
                 output.push_back(this->chr);
@@ -569,46 +570,48 @@ class Lexer{
         }
 
         _tok_data make_dot(){
-            _tok_data res;
-            res.data=this->chr;
-            res.type=T_EQ;
             this->advance();
             if (this->chr!='.'){
                 int dotcount = 1;
+                
+                if (isdigit(this->chr)){
+                    string output="0.";
 
-                string output="0.";
-
-                while (this->chr!='\0') {
-                    if (this->chr=='.'){
-                        if (dotcount==1){
+                    while (this->chr!='\0') {
+                        if (this->chr=='.'){
+                            if (dotcount==1){
+                                break;
+                            }
+                            dotcount++;
+                            
+                            output.push_back(this->chr);
+                        }
+                        else if (isdigit(this->chr)){
+                            output.push_back(this->chr);
+                        }
+                        else{
                             break;
                         }
-                        dotcount++;
-                        
-                        output.push_back(this->chr);
-                    }
-                    else if (isdigit(this->chr)){
-                        output.push_back(this->chr);
-                    }
-                    else{
-                        break;
-                    }
 
-                    this->advance();
-                }
-                _tok_data res;
-                res.data=output;
-
-                if (dotcount==0){
-                    res.type=T_INT;
-                }
-                if (dotcount==1){
+                        this->advance();
+                    }
+                    
+                    _tok_data res;
+                    res.data=output;
                     res.type=T_FLOAT;
+                    return res;
                 }
-                return res;
+                else{
+                    _tok_data res=make_identifier();
+                    res.type=T_DOTIDENT;
+                    return res;
+                }
+                
 
             }
-            return res;
+            //Error!
+            cout<<"Unexpected .";
+            while (true);
         }
 
         void make_comment(){
