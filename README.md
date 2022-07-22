@@ -12,7 +12,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter cou
 - Only tested on Windows
 
 ### Sample Program ###
-```python
+```js
 class Peregrine{
     a="Falcon"
 }
