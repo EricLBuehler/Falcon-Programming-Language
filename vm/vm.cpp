@@ -410,6 +410,13 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             break;
         }  
 
+        case STORE_ATTR: {
+            object* obj=pop_dataframe(vm->objstack);
+            object* val=peek_dataframe(vm->objstack); //For multiple assignment
+            object* attr=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object_setattr(obj, attr, val);
+        }
+
         default:
             return NULL;
             
