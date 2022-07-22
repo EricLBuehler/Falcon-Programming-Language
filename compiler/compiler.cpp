@@ -479,6 +479,42 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_DOTASSIGN: {
+            compile_expr(compiler, DOTASSIGN(expr->node)->right);
+            vector<Node*>* names=DOT(DOTASSIGN(expr->node)->dot->node)->names;
+            
+            for (size_t i=0; i<names->size(); i++){
+                uint32_t idx;
+                if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_append(compiler->names, str_new_fromstr(IDENTI(names->at(i)->node)->name));
+                    idx = NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(IDENTI(names->at(i)->node)->name));
+                }
+
+                if (i==0){
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler->instructions,LOAD_GLOBAL, idx, expr->start, expr->end);
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler->instructions,LOAD_NAME, idx, expr->start, expr->end);
+                            break;
+                    }
+                    continue;
+                }            
+                if (i==names->size()-1){
+                    add_instruction(compiler->instructions,STORE_ATTR, idx, expr->start, expr->end);
+                    continue;
+                }     
+                add_instruction(compiler->instructions,LOAD_ATTR, idx, expr->start, expr->end);
+            }
+            break;
+        }        
+
     }
 
     return 0;
