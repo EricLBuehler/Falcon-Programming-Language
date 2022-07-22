@@ -17,13 +17,19 @@ class Peregrine{
     a="Falcon"
 }
 
-func f(){
-    print("Hello!")
-}
-
 x=Peregrine()
 
 y=Peregrine()
+
+a=Peregrine.a
+b=x.a
+
+func f(x,c="A"){
+    print("Function f says: ","")
+    print(c)
+}
+
+f(1,2)
 ```
 
 ### Usage ###
