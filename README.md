@@ -53,4 +53,4 @@ Below are useful references.
 
 ### Licenses ###
 - [MIT License](LICENSE)
-- [BIGINT - MIT License](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/object/BigInt.hpp)
+- [BigInt - MIT License](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/object/BigInt.hpp)
