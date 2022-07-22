@@ -1,4 +1,4 @@
-m=2
+m="Placeholder value"
 
 class Peregrine{
     a=m
@@ -20,5 +20,3 @@ func f(x,c="A"){
 }
 
 f(1,2)
-
-print(1,2,3)
