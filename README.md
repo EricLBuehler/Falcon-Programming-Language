@@ -52,5 +52,5 @@ Below are useful references.
 - <a href='https://github.com/python/cpython'>CPython</a>
 
 ### License ###
--[MIT License](LICENSE)
--[BIGINT - MIT License](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/4fdb62775a20efcccf0be59fd97a91fbf55ab6b5/object/BigInt.hpp)
+- [MIT License](LICENSE)
+- [BIGINT - MIT License](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/object/BigInt.hpp)
