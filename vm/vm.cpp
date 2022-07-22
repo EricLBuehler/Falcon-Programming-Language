@@ -354,10 +354,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             //Call
             if (object_istype(function->type, &FuncType)){
                 add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, INCREF(CAST_FUNC(function)->code));
-            }
-            
+                vm->callstack->head->locals=new_dict();
+            }            
 
-            vm->callstack->head->locals=new_dict();
             object* ret=function->type->slot_call(function, args, kwargs);
             if (!object_istype(function->type, &BuiltinType) && !object_istype(function->type, &TypeType)){
                 pop_callframe(vm->callstack);
@@ -402,7 +401,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
         case READ_REGISTER_PUSH: {
             add_dataframe(vm, vm->objstack, vm->accumulator);
             break;
-        }        
+        }      
+
+        case LOAD_ATTR: {
+            object* obj=pop_dataframe(vm->objstack);
+            object* attr=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            add_dataframe(vm, vm->objstack, object_getattr(obj, attr));
+            break;
+        }  
 
         default:
             return NULL;
