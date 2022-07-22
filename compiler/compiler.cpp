@@ -141,6 +141,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
             break;     
         }
+        
         case N_IDENT: {
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(expr->node)->name)){
@@ -448,6 +449,35 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_DOT: {
+            vector<Node*>* names=DOT(expr->node)->names;
+            for (size_t i=0; i<names->size(); i++){
+                uint32_t idx;
+                if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_append(compiler->names, str_new_fromstr(IDENTI(names->at(i)->node)->name));
+                    idx = NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(IDENTI(names->at(i)->node)->name));
+                }
+
+                if (i==0){
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler->instructions,LOAD_GLOBAL, idx, expr->start, expr->end);
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler->instructions,LOAD_NAME, idx, expr->start, expr->end);
+                            break;
+                    }
+                    continue;
+                }                
+                add_instruction(compiler->instructions,LOAD_ATTR, idx, expr->start, expr->end);
+            }
+            break;
+        }
 
     }
 
