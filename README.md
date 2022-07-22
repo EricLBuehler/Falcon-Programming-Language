@@ -46,8 +46,10 @@ Help
 ```./fpl -h```
 
 ### Links ###
-- https://github.com/dannyvankooten/pepper-lang
-- https://github.com/faheel/BigInt
+Below are useful references.
+- <a href='https://github.com/dannyvankooten/pepper-lang'>Pepper Lang</a>
+- <a href='https://github.com/faheel/BigInt'>BigInt</a> (I used)
+- <a href='https://github.com/python/cpython'>CPython</a>
 
 ### License ###
 [MIT License](LICENSE)
