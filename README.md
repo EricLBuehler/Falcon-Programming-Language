@@ -13,8 +13,10 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 
 ### Sample Program ###
 ```js
+m="Placeholder value"
+
 class Peregrine{
-    a="Falcon"
+    a=m
 }
 
 x=Peregrine()
@@ -22,7 +24,10 @@ x=Peregrine()
 y=Peregrine()
 
 a=Peregrine.a
+x.a=5
 b=x.a
+print(Peregrine.a)
+print(y.a)
 
 func f(x,c="A"){
     print("Function f says: ","")
