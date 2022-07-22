@@ -51,6 +51,6 @@ Below are useful references.
 - <a href='https://github.com/faheel/BigInt'>BigInt</a> (I used this library)
 - <a href='https://github.com/python/cpython'>CPython</a>
 
-### License ###
+### Licenses ###
 - [MIT License](LICENSE)
 - [BIGINT - MIT License](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/object/BigInt.hpp)
