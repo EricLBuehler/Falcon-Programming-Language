@@ -17,6 +17,9 @@ m="Placeholder value"
 
 class Peregrine{
     a=m
+    func f(){
+        print("Function called!")
+    }
 }
 
 x=Peregrine()
@@ -35,6 +38,8 @@ func f(x,c="A"){
 }
 
 f(1,2)
+
+print(x.f())
 ```
 
 ### Usage ###
