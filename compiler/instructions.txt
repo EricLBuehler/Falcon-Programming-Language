@@ -25,3 +25,5 @@ RETURN_VAL - Return and pos TOS
 
 CALL_FUNCTION(argc) - Calls callable TOS, with an integer object posargc as TOS-1, and keyword arguments below (value above name)
     with positional arguments following (left->right descending). argc is the total number of arguemnts passed.
+
+LOAD_ATTR(idx) - Implements getattr(TOS, locals[idx])
