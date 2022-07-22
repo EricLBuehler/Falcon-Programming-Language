@@ -45,5 +45,9 @@ Enter REPL
 Help
 ```./fpl -h```
 
+### Links ###
+- https://github.com/dannyvankooten/pepper-lang
+- https://github.com/faheel/BigInt
+
 ### License ###
 [MIT License](LICENSE)
