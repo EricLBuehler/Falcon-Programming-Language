@@ -131,7 +131,7 @@ class Parser{
         }
         
         bool isname(nodetype type){
-            if (type==N_IDENT || type==N_ASSIGN){
+            if (type==N_IDENT || type==N_ASSIGN || type==N_DOT){
                 return true;
             }
             return false;
@@ -222,6 +222,30 @@ class Parser{
             Identifier* i=(Identifier*)malloc(sizeof(Identifier));
             i->name=new string(this->current_tok.data);
             node->node=i;
+            
+            if (this->next_tok_is(T_DOTIDENT)){
+                Node* newnode=make_node(N_DOT);
+                newnode->start=node->start;
+                newnode->end=node->end;
+                Dot* d=(Dot*)malloc(sizeof(Dot));
+                d->names=new vector<Node*>;
+                d->names->clear();
+                d->names->push_back(node);
+                while (this->next_tok_is(T_DOTIDENT)){
+                    this->advance();
+                    Node* n=make_node(N_IDENT);
+                    n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                    n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+                    Identifier* i=(Identifier*)malloc(sizeof(Identifier));
+                    i->name=new string(this->current_tok.data);
+                    n->node=i;
+
+                    d->names->push_back(n);
+                }
+                
+                newnode->node=d;
+                return newnode;
+            }
             return node;
         }
 
@@ -288,6 +312,25 @@ class Parser{
                 this->add_parsing_error(ret, "SyntaxError: Cannot assign to literal, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 return NULL;
+            }
+            
+            if (left->type==N_DOT){
+                Node* node=make_node(N_DOTASSIGN);
+                node->start=left->start;
+                node->end=left->end;
+
+                DotAssign* assign=(DotAssign*)malloc(sizeof(DotAssign));
+                assign->dot=left;
+
+                this->advance();
+                Node* right=this->expr(ret, LOWEST);
+                if (right==NULL){
+                    return NULL;
+                }
+                assign->right=right;
+
+                node->node=assign;
+                return node;
             }
 
             Node* node=make_node(N_ASSIGN);
@@ -464,7 +507,7 @@ class Parser{
                     this->advance();
                     return left;
                 }
-                this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->add_parsing_error(ret, "SyntaxError: Invalid syntaxA.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 return left;
             }

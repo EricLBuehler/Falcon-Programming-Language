@@ -12,6 +12,8 @@ enum nodetype{
     N_FALSE,
     N_NONE,
     N_CLASS,
+    N_DOT,
+    N_DOTASSIGN,
 };
 
 enum precedence {
@@ -123,7 +125,14 @@ struct Class{
     vector<Node*>* code;
 };
 
+struct Dot{
+    vector<Node*>* names;
+};
 
+struct DotAssign{
+    Node* dot;
+    Node* right;
+};
 
 void destroy_node(struct Node* node){
     if (node->type==N_INT){
