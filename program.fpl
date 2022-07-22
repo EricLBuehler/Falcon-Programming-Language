@@ -1,5 +1,7 @@
+m=2
+
 class Peregrine{
-    a="Falcon"
+    a=m
 }
 
 x=Peregrine()
@@ -7,7 +9,10 @@ x=Peregrine()
 y=Peregrine()
 
 a=Peregrine.a
+x.a=5
 b=x.a
+print(Peregrine.a)
+print(y.a)
 
 func f(x,c="A"){
     print("Function f says: ","")
@@ -15,3 +20,5 @@ func f(x,c="A"){
 }
 
 f(1,2)
+
+print(1,2,3)
