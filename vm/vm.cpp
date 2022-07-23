@@ -332,6 +332,20 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
                     return NULL;
                 }
             }
+
+            if (object_istype(function->type, &BuiltinType)){
+                if (CAST_BUILTIN(function)->argc-CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int()>posargc \
+                || CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()<kwargc \
+                || CAST_BUILTIN(function)->argc<argc){
+                    if (CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()==0 || \
+                    CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int()==CAST_BUILTIN(function)->argc){
+                        vm_add_err(vm, "ValueError: expected %d argument(s).",CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int());
+                        return NULL;
+                    }
+                    vm_add_err(vm, "ValueError: expected %d to %d arguments.",CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int(), CAST_FUNC(function)->argc);
+                    return NULL;
+                }
+            }
                 
 
             //Setup kwargs
@@ -355,9 +369,8 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             if (object_istype(function->type, &FuncType)){
                 add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, INCREF(CAST_FUNC(function)->code));
                 vm->callstack->head->locals=new_dict();
-            }            
-
-            object* ret=function->type->slot_call(function, args, kwargs);
+            }
+            object* ret=object_call(function, args, kwargs);
             if (!object_istype(function->type, &BuiltinType) && !object_istype(function->type, &TypeType)){
                 pop_callframe(vm->callstack);
             }
@@ -444,9 +457,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         object* obj=_vm_step(instruction, code->type->slot_next(code), vm);
         if (obj==CALL_ERR){
+            CAST_LIST(code)->idx=0;
             return CALL_ERR;
         }
         if (obj!=NULL){
+            CAST_LIST(code)->idx=0;
             return obj;
         }
         if (vm->haserr){
@@ -455,10 +470,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 cout<<"  "<<(*(*vm->snippets)[i])<<endl;
             }
             printf("%s\n",vm->err);
+            CAST_LIST(code)->idx=0;
             return NULL;
         }
         instruction=code->type->slot_next(code);
     }
+
+    CAST_LIST(code)->idx=0;
 
     return new_none();
 }
