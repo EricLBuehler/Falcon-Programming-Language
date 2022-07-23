@@ -566,6 +566,7 @@ class Parser{
         }
 
         Node* make_function(parse_ret* ret){
+            cout<<"making func";
             vector<Node*>* args=new vector<Node*>;
             args->clear();
             vector<Node*>* kwargs=new vector<Node*>;
@@ -621,6 +622,9 @@ class Parser{
                     
                     this->advance();
                     args->push_back(base);
+                    if (this->current_tok_is(T_RPAREN)){
+                        break;
+                    }
                     this->advance();
                 }
             }
