@@ -16,9 +16,9 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 m="Placeholder value"
 
 class Peregrine{
-    a=m
-    func f(){
-        print("Function called!")
+    var=1
+    func f(self){
+        print(self.var)
     }
 }
 
@@ -26,20 +26,19 @@ x=Peregrine()
 
 y=Peregrine()
 
-a=Peregrine.a
-x.a=5
-b=x.a
-print(Peregrine.a)
-print(y.a)
+a=Peregrine.var
+x.var=5
+b=x.var
+
+x.f(x)
+y.f(y)
 
 func f(x,c="A"){
     print("Function f says: ","")
     print(c)
 }
 
-f(1,2)
-
-print(x.f())
+f(1)
 ```
 
 ### Usage ###
