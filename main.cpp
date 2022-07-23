@@ -80,7 +80,9 @@ int execute(string data, bool objdump, bool verbose){
         return -1;
     }
 
-    cout<<"Parsed.\n";
+    if (verbose){
+        cout<<"Parsed.\n";
+    }
     
     new_gc();
 
@@ -88,107 +90,115 @@ int execute(string data, bool objdump, bool verbose){
 
 
     object* code=compile(compiler, ast);
-    cout<<(*CAST_INT(CAST_CODE(code)->co_code->type->slot_len(CAST_CODE(code)->co_code))->val)/2<<" instructions."<<endl;
-    cout<<object_cstr(CAST_CODE(code)->co_code->type->slot_len(CAST_CODE(code)->co_code))<<" bytes."<<endl<<endl;
+    if (verbose){
+        cout<<(*CAST_INT(CAST_CODE(code)->co_code->type->slot_len(CAST_CODE(code)->co_code))->val)/2<<" instructions."<<endl;
+        cout<<object_cstr(CAST_CODE(code)->co_code->type->slot_len(CAST_CODE(code)->co_code))<<" bytes."<<endl<<endl;
+    }
 
     vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
     vm->globals=new_dict();
     vm->callstack->head->locals=INCREF(vm->globals);
 
-    cout<<"Names: "<<object_cstr(CAST_CODE(code)->co_names)<<"\n";
-    cout<<"Consts: "<<object_cstr(CAST_CODE(code)->co_consts)<<"\n";
-    cout<<"Code: "<<object_cstr(CAST_CODE(code)->co_code)<<"\n";
-    cout<<"--------\n";
+    if (verbose){
+        cout<<"Names: "<<object_cstr(CAST_CODE(code)->co_names)<<"\n";
+        cout<<"Consts: "<<object_cstr(CAST_CODE(code)->co_consts)<<"\n";
+        cout<<"Code: "<<object_cstr(CAST_CODE(code)->co_code)<<"\n";
+        cout<<"--------\n";
+    }
     object* returned=run_vm(code, &vm->ip);
-    cout<<"\n--------";
+    if (verbose){
+        cout<<"--------";
+    }
     if (returned==CALL_ERR || returned==NULL){
         return -1;
     }
-    cout<<"\nReturned: "<<object_cstr(returned);
+    if (verbose){
+        cout<<"\nReturned: "<<object_cstr(returned);
 
-    if (!vm->haserr){
-        cout<<"\nIP: "<<vm->ip<<"\n\n";
-        
-        for (auto k: (*CAST_DICT(vm->globals)->val)){
-            cout<<(*CAST_STRING(object_str(k.first))->val)<<" = "<<(*CAST_STRING(object_str(k.second))->val)<<endl;
+        if (!vm->haserr){
+            cout<<"\nIP: "<<vm->ip<<"\n\n";
+            
+            for (auto k: (*CAST_DICT(vm->globals)->val)){
+                cout<<(*CAST_STRING(object_str(k.first))->val)<<" = "<<(*CAST_STRING(object_str(k.second))->val)<<endl;
+            }
         }
-    }
-    else{
-        delete &lexer;
-        compiler_del(compiler);
-        vm_del(vm);
-        DECREF(code);
-        DECREF(returned);
-        return -1;
-    }
-
-    if (objdump){
-        cout<<endl<<endl;
-        cout<<"Gen 0:\n";
-        object* node=gc.gen0;
-        while (node){
-            cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
-            cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" ref\n";
-            node=node->ob_next;
-        }
-        cout<<"\n";
-
-        cout<<"Gen 1:\n";
-        node=gc.gen1;
-        while (node){
-            cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
-            cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" ref\n";
-            node=node->ob_next;
-        }
-        cout<<"\n";
-
-        cout<<"Gen 2:\n";
-        node=gc.gen2;
-        while (node){
-            cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
-            cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" ref\n";
-            node=node->ob_next;
-        }
-        cout<<"\n";
-
-        cout<<"Immutables:\n";
-        
-        node=immutable_objs;
-        while (node){
-            cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
-            cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" refs\n";
-            node=node->ob_next;
-        }
-        cout<<"\n\n";
-
-        uint32_t total=0;
-        
-        node=gc.gen0;
-        while (node){
-            total++;
-            node=node->ob_next;
-        }
-        
-        node=gc.gen1;
-        while (node){
-            total++;
-            node=node->ob_next;
-        }
-        node=gc.gen2;
-        while (node){
-            total++;
-            node=node->ob_next;
-        }
-        
-        node=immutable_objs;
-        while (node){
-            total++;
-            node=node->ob_next;
+        else{
+            delete &lexer;
+            compiler_del(compiler);
+            vm_del(vm);
+            DECREF(code);
+            DECREF(returned);
+            return -1;
         }
 
-        cout<<"gen0 "<<gc.gen0_n<<"\ngen1 "<<gc.gen1_n<<"\ngen2 "<<gc.gen2_n;
-        cout<<"\nImmutable "<<immutable_size;
-        cout<<"\nTotal "<<total;
+        if (objdump){
+            cout<<endl<<endl;
+            cout<<"Gen 0:\n";
+            object* node=gc.gen0;
+            while (node){
+                cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
+                cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" ref\n";
+                node=node->ob_next;
+            }
+            cout<<"\n";
+
+            cout<<"Gen 1:\n";
+            node=gc.gen1;
+            while (node){
+                cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
+                cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" ref\n";
+                node=node->ob_next;
+            }
+            cout<<"\n";
+
+            cout<<"Gen 2:\n";
+            node=gc.gen2;
+            while (node){
+                cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
+                cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" ref\n";
+                node=node->ob_next;
+            }
+            cout<<"\n";
+
+            cout<<"Immutables:\n";
+            
+            node=immutable_objs;
+            while (node){
+                cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
+                cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" refs\n";
+                node=node->ob_next;
+            }
+            cout<<"\n\n";
+
+            uint32_t total=0;
+            
+            node=gc.gen0;
+            while (node){
+                total++;
+                node=node->ob_next;
+            }
+            
+            node=gc.gen1;
+            while (node){
+                total++;
+                node=node->ob_next;
+            }
+            node=gc.gen2;
+            while (node){
+                total++;
+                node=node->ob_next;
+            }
+            
+            node=immutable_objs;
+            while (node){
+                total++;
+                node=node->ob_next;
+            }
+
+            cout<<"gen0 "<<gc.gen0_n<<"\ngen1 "<<gc.gen1_n<<"\ngen2 "<<gc.gen2_n;
+            cout<<"\nImmutable "<<immutable_size;
+            cout<<"\nTotal "<<total;
+        }
     }
     return 0;
 }
@@ -326,9 +336,9 @@ int main(int argc, char** argv) {
             cout<<"Object dump run: fpl [PROGRAM NAME] -o\n";
             cout<<"Enter REPL: fpl \n";
             cout<<"Help: fpl -h\n";
+            return 0;
         }
         program=argv[1];
-        return 0;
     }
 
     if (argc==3){
