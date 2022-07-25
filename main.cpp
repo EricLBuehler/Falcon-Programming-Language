@@ -25,25 +25,8 @@ string program;
 #include "vm/vm.h"
 
 int execute(string data, bool objdump, bool verbose){
-    //Prep constants
-    trueobj=_new_bool_true();
-    falseobj=_new_bool_false();
-    noneobj=_new_none();
-    setup_builtins();
-
-    setup_type_type();
-    setup_int_type();
-    setup_str_type();
-    setup_list_type();
-    setup_dict_type();
-    setup_code_type();
-    setup_bool_type();
-    setup_tuple_type();
-    setup_func_type();
-    setup_none_type();
-    setup_builtin_type();
-    setup_class_type();
-    //
+    //Prep constants and types
+    setup_types_consts();
 
     vector<string> kwds;
     kwds.push_back("func");

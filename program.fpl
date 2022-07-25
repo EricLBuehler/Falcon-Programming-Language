@@ -1,7 +1,7 @@
 m="Placeholder value"
 
 class Peregrine{
-    var=1
+    var=m
     func f(self){
         print(self.var)
     }
@@ -13,6 +13,7 @@ y=Peregrine()
 
 a=Peregrine.var
 x.var=5
+y.var="Value"
 b=x.var
 
 x.f(x)
