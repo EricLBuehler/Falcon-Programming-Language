@@ -11,12 +11,14 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - GCC compiler installed
 - Only tested on Windows
 
-### Sample Program ###
+### Example Program ###
+
+#### Source ####
 ```js
 m="Placeholder value"
 
 class Peregrine{
-    var=1
+    var=m
     func f(self){
         print(self.var)
     }
@@ -28,6 +30,7 @@ y=Peregrine()
 
 a=Peregrine.var
 x.var=5
+y.var="Value"
 b=x.var
 
 x.f(x)
@@ -39,6 +42,15 @@ func f(x,c="A"){
 }
 
 f(1)
+```
+
+#### Output ####
+When run with ```./fpl.exe program.fpl```
+
+```
+5
+Value
+Function f says: A
 ```
 
 ### Usage ###
