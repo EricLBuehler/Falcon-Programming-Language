@@ -98,6 +98,8 @@ void object_print(object* obj);
 string object_cstr(object* obj);
 object* object_genericgetattr(object* obj, object* attr);
 void object_genericsetattr(object* obj, object* attr, object* val);
+void object_del(object* object);
+bool object_find_bool_dict_keys(object* dict, object* needle);
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(struct vm* vm, const char *_format, ...);
@@ -114,6 +116,7 @@ object* new_tuple();
 object* new_code_fromargs(object* args);
 object* new_bool_true();
 object* new_bool_false();
+object* str_new_fromstr(string* val);
 
 struct vm* vm=NULL;
 const size_t nbuiltins=2;
@@ -183,6 +186,9 @@ struct vm{
 
 #define CMP_EQ 0
 
+#define SETSLOT(tp, base, slot) tp->slot=base->slot;
+object* finalize_type(TypeObject* newtype);
+
 #include "typeobject.cpp"
 #include "types.cpp"
 #include "gc.h"
@@ -199,4 +205,4 @@ struct vm{
 #include "funcobject.cpp"
 #include "noneobject.cpp"
 #include "builtinobject.cpp"
-#include "classobject.cpp"
+#include "objectobject.cpp"

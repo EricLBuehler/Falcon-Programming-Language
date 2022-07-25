@@ -604,38 +604,35 @@ void setup_builtin_type(){
 }
 
 
-void class_del(object* self);
-object* class_new(object* type, object* args, object* kwargs);
-object* class_repr(object* self);
-object* class_cmp(object* self, object* other, uint8_t type);
+object* object_new(object* type, object* args, object* kwargs);
+object* object_repr_(object* self);
+object* object_init(object* self, object* args, object* kwargs);
+object* object_cmp_(object* self, object* other, uint8_t type);
 
-#define CAST_CLASS(obj) ((ClassObject*)obj)
+#define CAST_BOBJ(obj) ((ClassObject*)obj)
 
 
-typedef struct ClassObject{
+typedef struct ObjectObject{
     OBJHEAD_EXTRA
-    object* dict;
-    object* name;
-    object* otype;
-}ClassObject;
+}ObjectObject;
 
-TypeObject ClassType={
+TypeObject ObjectType={
     0, //refcnt
     0, //ob_prev
     0, //ob_next
     0, //gen
     &TypeType, //type
-    new string("class"), //name
-    sizeof(ClassObject), //size
+    new string("object"), //name
+    sizeof(ObjectObject), //size
     true, //gc_trackable
     NULL, //bases
-    offsetof(ClassObject, dict), //dict_offset
+    0, //dict_offset
     NULL, //dict
-    (getattrfunc)object_genericgetattr, //slot_getattr
-    (setattrfunc)object_genericsetattr, //slot_setattr
-    0, //slot_init
-    (newfunc)class_new, //slot_new
-    (delfunc)class_del, //slot_del
+    0, //slot_getattr
+    0, //slot_setattr
+    (initfunc)object_init, //slot_init
+    (newfunc)object_new, //slot_new
+    (delfunc)object_del, //slot_del
 
     0, //slot_next
     0, //slot_get
@@ -643,19 +640,18 @@ TypeObject ClassType={
     0, //slot_set
     0, //slot_append
 
-    (reprfunc)class_repr, //slot_repr
-    (reprfunc)class_repr, //slot_str
+    (reprfunc)object_repr_, //slot_repr
+    (reprfunc)object_repr_, //slot_str
     0, //slot_call
 
     0, //slot_number
 
-    (compfunc)class_cmp, //slot_cmp
+    (compfunc)object_cmp_, //slot_cmp
 };
 
-void setup_class_type(){
-    finalize_type(&ClassType);
+void setup_object_type(){
+    finalize_type(&ObjectType);
 }
-
 
 
 
@@ -666,31 +662,116 @@ object* type_new(object* type, object* args, object* kwargs){
 void type_del(object* self){}
 
 object* type_repr(object* self){
-    string s="<"+(*CAST_TYPE_(self)->otype.type->name)+" '"+(*CAST_TYPE_(self)->otype.name)+"'>";
+    string s="<class '"+(*CAST_TYPE(self)->name)+"'>";
     return str_new_fromstr(new string(s));
 }
 
-object* type_cmp(object* self, object* other, uint8_t type){
-    return new_none();
-}
-
 object* type_call(object* self, object* args, object* kwargs){
-    return CAST_TYPE_(self)->otype.slot_new(self, args, kwargs);
+    object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
+    o->type->slot_init(o, args, kwargs);
+    return o;
 }
 
 object* type_get(object* self, object* attr){
-    if (CAST_TYPE_(self)->otype.dict!=NULL){
-        return CAST_TYPE_(self)->otype.dict->type->slot_get(CAST_TYPE_(self)->otype.dict, attr);
+    //ESSENTIALLY the same as object_genericgetattr, but this checks metatype
+
+    // metatype should alwaye be TypeType.? right??
+    
+    //Check us and then our bases
+
+    //Check instance dict
+    if ( CAST_TYPE(self)->dict_offset!=0){
+        object* dict= (*(object**)((char*)self + self->type->dict_offset));
+        if (object_find_bool_dict_keys(dict, attr)){
+            return dict->type->slot_get(dict, attr);
+        }
     }
+    //Check type dict
+    if (CAST_TYPE(self)->dict!=0){
+        object* dict = self->type->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            return dict->type->slot_get(dict, attr);
+        }
+    }
+
+    uint32_t total_bases = CAST_INT(self->type->bases->type->slot_len(self->type->bases))->val->to_long_long();
+    for (uint32_t i=total_bases; i>0; i--){
+        TypeObject* base_tp=CAST_TYPE(self->type->bases->type->slot_get(self->type->bases, new_int_fromint(i-1)));
+
+        //Check type dict
+        if (base_tp->dict!=0){
+            object* dict = base_tp->dict;
+            if (object_find_bool_dict_keys(dict, attr)){
+                return dict->type->slot_get(dict, attr);
+            }
+        }
+    }
+
+
     vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(self).c_str(), object_cstr(attr).c_str());
     return NULL;
 }
 
 void type_set(object* obj, object* attr, object* val){
-    if (CAST_TYPE_(obj)->otype.dict!=NULL){
-        CAST_TYPE_(obj)->otype.dict->type->slot_set(CAST_TYPE_(obj)->otype.dict, attr, val);
+    //Check dict
+    if (CAST_TYPE(obj)->dict_offset!=0){
+        object* dict= (*(object**)((char*)obj + CAST_TYPE(obj)->dict_offset));
+        dict->type->slot_set(dict, attr, val);
         return;
     }
     vm_add_err(vm, "AttributeError: %s is read only",object_cstr(obj).c_str());
     return;
+}
+
+void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp){
+    SETSLOT(tp_tp, base_tp, slot_getattr);
+    SETSLOT(tp_tp, base_tp, slot_setattr);
+    SETSLOT(tp_tp, base_tp, slot_init);
+    SETSLOT(tp_tp, base_tp, slot_new);
+    SETSLOT(tp_tp, base_tp, slot_del);    
+    SETSLOT(tp_tp, base_tp, slot_next);
+    SETSLOT(tp_tp, base_tp, slot_get);
+    SETSLOT(tp_tp, base_tp, slot_len);
+    SETSLOT(tp_tp, base_tp, slot_set);
+    SETSLOT(tp_tp, base_tp, slot_append);
+    SETSLOT(tp_tp, base_tp, slot_repr);
+    SETSLOT(tp_tp, base_tp, slot_str);
+    SETSLOT(tp_tp, base_tp, slot_call);
+    SETSLOT(tp_tp, base_tp, slot_cmp);
+
+    //Inheritance of number methods could be updated to be special
+    SETSLOT(tp_tp, base_tp, slot_number);
+}
+
+object* finalize_type(TypeObject* newtype){
+    object* tp=(object*)malloc(sizeof(TypeObject));
+    memcpy(tp, newtype, sizeof(TypeObject));
+
+    TypeObject* tp_tp=CAST_TYPE(tp);
+
+    //tp is the what we'll copy to...
+
+    //Clean out bases
+    if (tp_tp->bases==NULL){
+        tp_tp->bases=new_list();
+    }    
+    tp_tp->bases->type->slot_append(tp_tp->bases, INCREF((object*)&ObjectType));
+    uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
+
+    //This is a slower method than could theoritically be done.
+    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
+    //also breaks fewer rules...
+    
+    for (uint32_t i=total_bases; i>0; i--){
+        TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
+        //Dirty inheritance here... go over each
+        _inherit_slots(tp_tp, base_tp);
+        //
+    }
+    //Hack to ensure retention of original slots
+    _inherit_slots(tp_tp, newtype);
+
+    tp_tp->refcnt=1;
+
+    return tp;
 }

@@ -7,13 +7,6 @@ object* type_get(object* self, object* attr);
 void type_set(object* obj, object* attr, object* val);
 
 #define CAST_TYPE(obj) ((TypeObject*)obj)
-#define CAST_TYPE_(obj) ((TypeObjectHeap*)obj)
-
-typedef struct TypeObjectHeap{
-    OBJHEAD_EXTRA
-    TypeObject otype;
-}TypeObjectHeap;
-
 
 TypeObject TypeType={
     0, //refcnt
@@ -22,10 +15,10 @@ TypeObject TypeType={
     0, //gen
     &TypeType, //type
     new string("type"), //name
-    sizeof(TypeObjectHeap), //size
+    sizeof(TypeObject), //size
     false, //gc_trackable
     NULL, //bases
-    0, //dict_offset
+    offsetof(TypeObject, dict), //dict_offset
     NULL, //dict
     (getattrfunc)type_get, //slot_getattr
     (setattrfunc)type_set, //slot_getattr
@@ -46,55 +39,86 @@ TypeObject TypeType={
 
     0, //slot_number
 
-    (compfunc)type_cmp, //slot_cmp
+    0, //slot_cmp
 };
 
-TypeObject* finalize_type(TypeObject* type){
-    //Inherit here..
-    return type;
-}
 
-object* new_type(TypeObject type, string* name, object* bases, object* dict){
-    TypeObject* type_=(TypeObject*)malloc(sizeof(TypeObject));
-    memcpy(type_, &type, sizeof(TypeObject));
+object* newtp_init(object* self, object* args, object* kwargs);
+object* newtp_new(object* self, object* args, object* kwargs);
+void newtp_del(object* self);
+object* newtp_next(object* self);
+object* newtp_get(object* self, object* idx);
+object* newtp_len(object* self);
+void newtp_set(object* self, object* idx, object* val);
+void newtp_append(object* self, object* val);
+object* newtp_repr(object* self);
+object* newtp_str(object* self);
+object* newtp_call(object* self, object* args, object* kwargs);
+object* newtp_cmp(object* self, object* other, uint8_t type);
+
+object* newtp_add(object* self, object* other);
+object* newtp_sub(object* self, object* other);
+object* newtp_mul(object* self, object* other);
+object* newtp_div(object* self, object* other);
+
+object* newtp_neg(object* self);
+
+
+NumberMethods newtp_number={    
+    //binops
+    newtp_add,
+    newtp_sub,
+    newtp_mul,
+    newtp_div,
+
+    //unaryops
+    newtp_neg,
+};
+
+typedef struct NewTypeObject{
+    OBJHEAD_EXTRA;
+    object* dict;
+}NewTypeObject;
+
+#define CAST_NEWTYPE(obj) ((NewTypeObject*)(obj))
+
+
+object* new_type(string* name, object* bases, object* dict){
     TypeObject newtype={
         0, //refcnt
         0, //ob_prev
         0, //ob_next
         0, //gen
-        type_, //type
+        &TypeType, //type
         name, //name
-        type.size, //size
-        type.gc_trackable, //gc_trackable
+        sizeof(NewTypeObject), //size
+        true, //gc_trackable
         bases, //bases
-        type.dict_offset, //dict_offset
+        0, //dict_offset
         dict, //dict
-        type.slot_getattr, //slot_getattr
-        type.slot_setattr, //etattr
+        object_genericgetattr, //slot_getattr
+        object_genericsetattr, //slot_setattr
 
-        type.slot_init, //slot_init
-        type.slot_new, //slot_new
-        type.slot_del, //slot_del
+        newtp_init, //slot_init
+        newtp_new, //slot_new
+        newtp_del, //slot_del
 
-        type.slot_next, //slot_next
-        type.slot_get, //slot_get
-        type.slot_len, //slot_len
-        type.slot_set, //slot_set
-        type.slot_append, //slot_append
+        newtp_next, //slot_next
+        newtp_get, //slot_get
+        newtp_len, //slot_len
+        newtp_set, //slot_set
+        newtp_append, //slot_append
 
-        type.slot_repr, //slot_repr
-        type.slot_str, //slot_str
-        type.slot_call, //slot_call
+        newtp_repr, //slot_repr
+        newtp_str, //slot_str
+        newtp_call, //slot_call
 
-        type.slot_number, //slot_number
+        &newtp_number, //slot_number
 
-        type.slot_cmp, //slot_cmp
+        newtp_cmp, //slot_cmp
     };
-    finalize_type(&newtype);
-
-    object* t=new_object(&TypeType);
-    CAST_TYPE_(t)->otype=newtype;
-    return t;
+    
+    return finalize_type(&newtype);
 }
 
 object* type_new(object* type, object* args, object* kwargs);
@@ -105,3 +129,5 @@ object* type_call(object* self, object* args, object* kwargs);
 void setup_type_type(){
     finalize_type(&TypeType);
 }
+
+#include "typeobject_newtp.cpp"

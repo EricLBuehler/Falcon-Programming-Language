@@ -328,10 +328,23 @@ object* object_genericgetattr(object* obj, object* attr){
         }
     }
     //Check type dict
-    if (obj->type->dict_offset!=0){
+    if (obj->type->dict!=0){
         object* dict = obj->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             return dict->type->slot_get(dict, attr);
+        }
+    }
+    //Check bases
+    uint32_t total_bases = CAST_INT(obj->type->bases->type->slot_len(obj->type->bases))->val->to_long_long();
+    for (uint32_t i=0; i<total_bases; i++){
+        TypeObject* base_tp=CAST_TYPE(obj->type->bases->type->slot_get(obj->type->bases, new_int_fromint(i-1)));
+
+        //Check type dict
+        if (base_tp->dict!=0){
+            object* dict = base_tp->dict;
+            if (object_find_bool_dict_keys(dict, attr)){
+                return dict->type->slot_get(dict, attr);
+            }
         }
     }
     vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(obj).c_str(), object_cstr(attr).c_str());
@@ -347,12 +360,35 @@ object* object_getattr(object* obj, object* attr){
 }
 
 void object_genericsetattr(object* obj, object* attr, object* val){
-    //Check dict
+     //Try instance dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
         dict->type->slot_set(dict, attr, val);
         return;
     }
+    //Check type dict 
+    if (obj->type->dict!=0){
+        object* dict = obj->type->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            dict->type->slot_set(dict, attr, val);
+            return;
+        }
+    }
+    //Check bases
+    uint32_t total_bases = CAST_INT(obj->type->bases->type->slot_len(obj->type->bases))->val->to_long_long();
+    for (uint32_t i=0; i<total_bases; i++){
+        TypeObject* base_tp=CAST_TYPE(obj->type->bases->type->slot_get(obj->type->bases, new_int_fromint(i-1)));
+
+        //Check type dict
+        if (base_tp->dict!=0){
+            object* dict = base_tp->dict;
+            if (object_find_bool_dict_keys(dict, attr)){
+                dict->type->slot_set(dict, attr, val);
+                return;
+            }
+        }
+    }
+
     vm_add_err(vm, "AttributeError: %s is read only",object_cstr(obj).c_str());
     return;
 }
@@ -364,4 +400,8 @@ void object_setattr(object* obj, object* attr, object* val){
     }
     vm_add_err(vm, "AttributeError: %s is read only",object_cstr(obj).c_str());
     return;
+}
+
+object* object_call(object* obj, object* args, object* kwargs){
+    return obj->type->slot_call(obj, args,kwargs);
 }
