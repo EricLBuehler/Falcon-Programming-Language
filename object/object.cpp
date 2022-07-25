@@ -405,3 +405,4 @@ void object_setattr(object* obj, object* attr, object* val){
 object* object_call(object* obj, object* args, object* kwargs){
     return obj->type->slot_call(obj, args,kwargs);
 }
+
