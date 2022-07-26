@@ -318,10 +318,12 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             if (function->type->slot_call==NULL){
                 vm_add_err(vm, "TypeError: '%s' object is not callable.",function->type->name->c_str());
                 return NULL;
-            }               
+            }             
+
+            cout<<function->type;  
 
             if (object_istype(function->type, &FuncType)){
-                if (CAST_FUNC(function)->argc-CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int()>posargc \
+                if (CAST_FUNC(function)->argc-CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()>posargc \
                 || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
                 || CAST_FUNC(function)->argc<argc){
                     if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
@@ -334,7 +336,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             }
 
             if (object_istype(function->type, &BuiltinType)){
-                if (CAST_BUILTIN(function)->argc-CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int()>posargc \
+                if (CAST_BUILTIN(function)->argc-CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()>posargc \
                 || CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()<kwargc \
                 || CAST_BUILTIN(function)->argc<argc){
                     if (CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()==0 || \
