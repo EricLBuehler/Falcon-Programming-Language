@@ -99,10 +99,13 @@ object* object_str(object* obj);
 object* object_repr(object* obj);
 void object_print(object* obj);
 string object_cstr(object* obj);
+object* object_getattr(object* obj, object* attr);
+void object_setattr(object* obj, object* attr, object* val);
 object* object_genericgetattr(object* obj, object* attr);
 void object_genericsetattr(object* obj, object* attr, object* val);
 void object_del(object* object);
 bool object_find_bool_dict_keys(object* dict, object* needle);
+object* object_call(object* obj, object* args, object* kwargs);
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(struct vm* vm, const char *_format, ...);
@@ -120,6 +123,7 @@ object* new_code_fromargs(object* args);
 object* new_bool_true();
 object* new_bool_false();
 object* str_new_fromstr(string* val);
+object* new_int_fromint(int i);
 
 struct vm* vm=NULL;
 
@@ -182,6 +186,18 @@ struct vm{
 };
 
 #define CAST_VAR(obj) ((object_var*)obj)
+#define CAST_INT(obj) ((IntObject*)obj)
+#define CAST_STRING(obj) ((StrObject*)obj)
+#define CAST_LIST(obj) ((ListObject*)obj)
+#define CAST_DICT(obj) ((DictObject*)obj)
+#define CAST_CODE(obj) ((CodeObject*)obj)
+#define CAST_BOOL(obj) ((BoolObject*)obj)
+#define CAST_TUPLE(obj) ((TupleObject*)obj)
+#define CAST_FUNC(obj) ((FuncObject*)obj)
+#define CAST_NONE(obj) ((NoneObject*)obj)
+#define CAST_BUILTIN(obj) ((BuiltinObject*)obj)
+#define CAST_BOBJ(obj) ((ClassObject*)obj)
+#define CAST_TYPE(obj) ((TypeObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
@@ -189,6 +205,20 @@ struct vm{
 
 #define SETSLOT(tp, base, slot) tp->slot=base->slot;
 object* finalize_type(TypeObject* newtype);
+
+#ifdef DEBUG
+ostream& operator<<(ostream& os, object* o)
+{
+    cout<<object_cstr(o);
+    return os;
+}
+
+ostream& operator<<(ostream& os, TypeObject* o)
+{
+    cout<<object_cstr((object*)o);
+    return os;
+}
+#endif
 
 #include "typeobject.cpp"
 #include "types.cpp"

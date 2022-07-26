@@ -12,8 +12,6 @@ object* new_int_fromint(int v);
 object* new_int_fromstr(string* v);
 object* new_int_frombigint(BigInt* v);
 
-#define CAST_INT(obj) ((IntObject*)obj)
-
 typedef struct IntObject{
     OBJHEAD_EXTRA
     BigInt* val;
@@ -77,8 +75,6 @@ object* str_cmp(object* self, object* other, uint8_t type);
 
 object* str_new_fromstr(string* val);
 
-#define CAST_STRING(obj) ((StrObject*)obj)
-
 typedef struct StrObject{
     OBJHEAD_VAR
     string* val;
@@ -136,8 +132,6 @@ void list_set(object* self, object* idx, object* val);
 object* list_repr(object* self);
 object* list_next(object* self);
 object* list_cmp(object* self, object* other, uint8_t type);
-
-#define CAST_LIST(obj) ((ListObject*)obj)
 
 
 typedef struct ListObject{
@@ -197,7 +191,6 @@ void dict_set(object* self, object* key, object* val);
 object* dict_repr(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
 
-#define CAST_DICT(obj) ((DictObject*)obj)
 
 
 typedef struct DictObject{
@@ -252,7 +245,6 @@ object* code_new(object* type, object* args, object* kwargs);
 object* code_repr(object* self);
 object* code_cmp(object* self, object* other, uint8_t type);
 
-#define CAST_CODE(obj) ((CodeObject*)obj)
 
 
 typedef struct CodeObject{
@@ -318,7 +310,6 @@ object* bool_cmp(object* self, object* other, uint8_t type);
 object* new_bool_true();
 object* new_bool_false();
 
-#define CAST_BOOL(obj) ((BoolObject*)obj)
 
 typedef struct BoolObject{
     OBJHEAD_EXTRA
@@ -391,7 +382,6 @@ object* tuple_repr(object* self);
 object* tuple_next(object* self);
 object* tuple_cmp(object* self, object* other, uint8_t type);
 
-#define CAST_TUPLE(obj) ((TupleObject*)obj)
 
 
 typedef struct TupleObject{
@@ -447,7 +437,6 @@ object* func_repr(object* self);
 object* func_cmp(object* self, object* other, uint8_t type);
 object* func_call(object* self, object* args, object* callfunc);
 
-#define CAST_FUNC(obj) ((FuncObject*)obj)
 
 
 typedef struct FuncObject{
@@ -504,7 +493,6 @@ void none_del(object* self);
 object* none_repr(object* self);
 object* none_cmp(object* self, object* other, uint8_t type);
 
-#define CAST_NONE(obj) ((NoneObject*)obj)
 
 typedef struct NoneObject{
     OBJHEAD_EXTRA
@@ -554,7 +542,6 @@ object* builtin_repr(object* self);
 object* builtin_cmp(object* self, object* other, uint8_t type);
 object* builtin_call(object* self, object* args, object* kwargs);
 
-#define CAST_BUILTIN(obj) ((BuiltinObject*)obj)
 
 typedef struct BuiltinObject{
     OBJHEAD_EXTRA
@@ -609,7 +596,6 @@ object* object_repr_(object* self);
 object* object_init(object* self, object* args, object* kwargs);
 object* object_cmp_(object* self, object* other, uint8_t type);
 
-#define CAST_BOBJ(obj) ((ClassObject*)obj)
 
 
 typedef struct ObjectObject{
@@ -714,8 +700,8 @@ object* type_get(object* self, object* attr){
 
 void type_set(object* obj, object* attr, object* val){
     //Check dict
-    if (CAST_TYPE(obj)->dict_offset!=0){
-        object* dict= (*(object**)((char*)obj + CAST_TYPE(obj)->dict_offset));
+    if (obj->type->dict_offset!=0){
+        object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
         dict->type->slot_set(dict, attr, val);
         return;
     }
@@ -775,3 +761,6 @@ object* finalize_type(TypeObject* newtype){
 
     return tp;
 }
+
+
+#include "typeobject_newtp.cpp"

@@ -6,7 +6,6 @@ object* type_call(object* self, object* args, object* kwargs);
 object* type_get(object* self, object* attr);
 void type_set(object* obj, object* attr, object* val);
 
-#define CAST_TYPE(obj) ((TypeObject*)obj)
 
 TypeObject TypeType={
     0, //refcnt
@@ -129,5 +128,3 @@ object* type_call(object* self, object* args, object* kwargs);
 void setup_type_type(){
     TypeType=(*(TypeObject*)finalize_type(&TypeType));
 }
-
-#include "typeobject_newtp.cpp"

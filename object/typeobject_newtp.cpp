@@ -6,7 +6,24 @@ object* newtp_new(object* self, object* args, object* kwargs){
     CAST_NEWTYPE(o)->dict=new_dict();
     o->type->dict_offset=offsetof(NewTypeObject, dict);
 
+    //Setup dunder attributes
     object_setattr(o, str_new_fromstr(new string("__class__")), self);
+
+    //Try to call __new__
+    object* n=object_getattr(o, str_new_fromstr(new string("__new__")));
+    if (n==NULL){
+        vm->haserr=false;
+        vm->headers->clear();
+        vm->snippets->clear();
+    }
+    else{
+        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
+        vm->callstack->head->locals=new_dict();
+        args->type->slot_append(args, self);
+        object_call(n, args, kwargs);
+        pop_callframe(vm->callstack);
+        return o;
+    }
     return o;
 }
 void newtp_del(object* self){
