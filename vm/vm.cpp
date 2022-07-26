@@ -465,7 +465,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             return obj;
         }
         if (vm->haserr){
-            for (int i=0; i<vm->headers->size(); i++){
+            for (int i=vm->headers->size()-1; i>=0; i--){
                 cout<<(*(*vm->headers)[i])<<endl;
                 cout<<"  "<<(*(*vm->snippets)[i])<<endl;
             }
