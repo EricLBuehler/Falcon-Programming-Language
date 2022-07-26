@@ -680,14 +680,14 @@ object* type_get(object* self, object* attr){
     //Check us and then our bases
 
     //Check instance dict
-    if ( CAST_TYPE(self)->dict_offset!=0){
+    if ( self->type->dict_offset!=0){
         object* dict= (*(object**)((char*)self + self->type->dict_offset));
         if (object_find_bool_dict_keys(dict, attr)){
             return dict->type->slot_get(dict, attr);
         }
     }
     //Check type dict
-    if (CAST_TYPE(self)->dict!=0){
+    if (self->type->dict!=0){
         object* dict = self->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             return dict->type->slot_get(dict, attr);

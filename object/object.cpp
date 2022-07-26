@@ -1,3 +1,17 @@
+#ifdef DEBUG
+ostream& operator<<(ostream& os, object* o)
+{
+    cout<<object_cstr(o);
+    return os;
+}
+
+ostream& operator<<(ostream& os, TypeObject* o)
+{
+    cout<<object_cstr((object*)o);
+    return os;
+}
+#endif
+
 bool DECREF(struct object* object){
     object->refcnt--;
     if(object->refcnt==0){
@@ -413,16 +427,3 @@ object* object_call(object* obj, object* args, object* kwargs){
     return obj->type->slot_call(obj, args,kwargs);
 }
 
-#ifdef DEBUG
-ostream& operator<<(ostream& os, object* o)
-{
-    cout<<object_cstr(o);
-    return os;
-}
-
-ostream& operator<<(ostream& os, TypeObject* o)
-{
-    cout<<object_cstr((object*)o);
-    return os;
-}
-#endif

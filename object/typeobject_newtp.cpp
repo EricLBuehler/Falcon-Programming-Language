@@ -26,7 +26,15 @@ void newtp_append(object* self, object* val){
     return;
 }
 object* newtp_repr(object* self){
-    return new_none();
+    char buf[32];
+    sprintf(buf, "0x%x", self);
+
+    string s="<";
+    s+=self->type->name->c_str();
+    s+=" object @ ";
+    s+=buf;
+    s+=">";
+    return str_new_fromstr(new string(s));
 }
 object* newtp_str(object* self){
     char buf[32];
