@@ -223,7 +223,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             c.nodes=(*FUNCT(expr->node)->code);
             struct compiler* comp=new_compiler();
             comp->scope=SCOPE_LOCAL;
+            struct compiler* compiler_=compiler;
+            compiler=comp;
             object* code=compile(comp, c);
+            compiler=compiler_;
 
             DECREF(CAST_CODE(code)->co_file);
             CAST_CODE(code)->co_file=object_repr(str_new_fromstr(IDENTI(FUNCT(expr->node)->name->node)->name));
@@ -386,7 +389,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             c.nodes=(*CLASS(expr->node)->code);
             struct compiler* comp=new_compiler();
             comp->scope=SCOPE_LOCAL;
+            struct compiler* compiler_=compiler;
+            compiler=comp;
             object* code=compile(comp, c);
+            compiler=compiler_;
 
             DECREF(CAST_CODE(code)->co_file);
             CAST_CODE(code)->co_file=object_repr(str_new_fromstr(IDENTI(FUNCT(expr->node)->name->node)->name));
