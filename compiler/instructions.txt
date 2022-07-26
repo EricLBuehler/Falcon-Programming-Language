@@ -29,3 +29,13 @@ CALL_FUNCTION(argc) - Calls callable TOS, with an integer object posargc as TOS-
 LOAD_ATTR(idx) - Implements getattr(TOS, names[idx])
 
 STORE_ATTR(idx) - Implements TOS. (names[idx]) =TOS-1
+
+LOAD_BUILD_CLASS - Loads __build_class__
+
+LOAD_REGISTER_POP - Pops TOS and stores it to interpreter accumulator
+
+READ_REGISTER_PUSH - Pushes interpreter accumulator to TOS
+
+CALL_METHOD(argc) - Calls callable TOS, TOS-1 is object with attribute (TOS), and with an integer object posargc as TOS-2, and keyword arguments below (value above name)
+    with positional arguments following (left->right descending). argc is the total number of arguemnts passed. Adds argument
+    self as instance.

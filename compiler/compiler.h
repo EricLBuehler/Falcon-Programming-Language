@@ -19,6 +19,7 @@ enum opcode{
     READ_REGISTER_PUSH,
     LOAD_ATTR,
     STORE_ATTR,
+    CALL_METHOD,
 };
 
 enum scope{
@@ -57,6 +58,7 @@ struct compiler{
 #define CLASS(node) ((Class*)(node))
 #define DOT(node) ((Dot*)(node))
 #define DOTASSIGN(node) ((DotAssign*)(node))
+#define DOTCALL(node) ((DotCall*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
 

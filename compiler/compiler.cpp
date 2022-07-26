@@ -522,6 +522,94 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }        
 
+        case N_DOTCALL: {
+            vector<Node*>* names=DOT(DOTCALL(expr->node)->dot->node)->names;
+            
+            for (size_t i=0; i<names->size(); i++){
+                uint32_t idx;
+                if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_append(compiler->names, str_new_fromstr(IDENTI(names->at(i)->node)->name));
+                    idx = NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(IDENTI(names->at(i)->node)->name));
+                }
+
+                if (i==0){
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler->instructions,LOAD_GLOBAL, idx, expr->start, expr->end);
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler->instructions,LOAD_NAME, idx, expr->start, expr->end);
+                            break;
+                    }
+                    continue;
+                }            
+                if (i==names->size()-1){
+                    add_instruction(compiler->instructions,LOAD_REGISTER_POP, 0, expr->start, expr->end);
+
+                    //Args (iterate backwards)
+                    for (auto it =  (*DOTCALL(expr->node)->args).rbegin(); it != (*DOTCALL(expr->node)->args).rend(); ++it){
+                        compile_expr(compiler, *it);
+                    }
+                    //Kwargs (iterate backwards)
+                    for (auto it =  (*DOTCALL(expr->node)->kwargs).rbegin(); it != (*DOTCALL(expr->node)->kwargs).rend(); ++it){
+                        uint32_t idx;
+                        if (!_list_contains(compiler->consts, IDENTI(ASSIGN((*it)->node)->name->node)->name)){
+                            //Create object
+                            compiler->consts->type->slot_append(compiler->consts, str_new_fromstr(IDENTI(ASSIGN((*it)->node)->name->node)->name));
+                            idx = NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, str_new_fromstr(IDENTI(ASSIGN((*it)->node)->name->node)->name));
+                        }
+                        add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+                        compile_expr(compiler, ASSIGN((*it)->node)->right);
+                    }
+                    
+                    //Num of pos args
+                    uint32_t idx;
+                    object* size=new_int_fromint(DOTCALL(expr->node)->args->size());
+                    uint32_t argc=DOTCALL(expr->node)->args->size()+DOTCALL(expr->node)->kwargs->size();
+
+                    if (!object_find_bool(compiler->consts,size)){
+                        //Create object
+                        compiler->consts->type->slot_append(compiler->consts, size);
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, size);
+                    }
+                    
+                    add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+                    add_instruction(compiler->instructions,READ_REGISTER_PUSH, 0, expr->start, expr->end);
+                    add_instruction(compiler->instructions,READ_REGISTER_PUSH, 0, expr->start, expr->end);
+                    
+                    //Object
+                    if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
+                        //Create object
+                        compiler->names->type->slot_append(compiler->names, str_new_fromstr(IDENTI(names->at(i)->node)->name));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(IDENTI(names->at(i)->node)->name));
+                    }
+
+
+                    add_instruction(compiler->instructions,LOAD_ATTR, idx, expr->start, expr->end);
+
+                    add_instruction(compiler->instructions,CALL_METHOD, argc, expr->start, expr->end);
+                    continue;
+                }     
+                add_instruction(compiler->instructions,LOAD_ATTR, idx, expr->start, expr->end);
+            }
+            break;
+        }        
+
     }
 
     return 0;
