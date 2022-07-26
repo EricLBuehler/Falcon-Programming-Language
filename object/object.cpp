@@ -132,6 +132,10 @@ object* new_object(TypeObject* type){
         gc_collect(0);
     }
     
+    if (gc.gen1_n>=gc.gen1_thresh){
+        gc_collect(1);
+    }
+    
     return object;
 }
 
@@ -165,6 +169,10 @@ object_var* new_object_var(TypeObject* type, size_t size){
 
     if (gc.gen0_n==gc.gen0_thresh){
         gc_collect(0);
+    }
+
+    if (gc.gen1_n>=gc.gen1_thresh){
+        gc_collect(1);
     }
 
     return object;

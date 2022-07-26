@@ -7,13 +7,14 @@ void new_gc(){
     gc.gen1_n=0;
     gc.gen2_n=0;
 
-    gc.gen0_thresh=700;
+    gc.gen0_thresh=80;
     gc.gen1_thresh=10;
     gc.gen2_thresh=10;
 }
 
 void gc_collect(int gen){
     object* obj;
+    object* next;
     if (gen==1){
         obj=gc.gen1;
     }
@@ -63,23 +64,26 @@ void gc_collect(int gen){
                     if (gc.gen1!=NULL && gc.gen1->ob_next!=NULL){
                         gc.gen1->ob_next->ob_prev=obj->ob_next;
                     }
-                    else{
-                        gc.gen1=obj->ob_next;
-                    }
-                    gc.gen1=obj->ob_next;
+                    next=obj->ob_next;
+                    obj->ob_next=gc.gen1;
+                    gc.gen1=obj;
+                    obj->ob_prev=NULL;
                     gc.gen1_n++;
+                    
                 }
                 else if (gen==1){
                     if (gc.gen2!=NULL && gc.gen2->ob_next!=NULL){
                         gc.gen2->ob_next->ob_prev=obj->ob_next;
                     }
-                    else{
-                        gc.gen2=obj->ob_next;
-                    }
-                    gc.gen2=obj->ob_next;
+                    next=obj->ob_next;
+                    obj->ob_next=gc.gen2;
+                    gc.gen2=obj;
+                    obj->ob_prev=NULL;
                     gc.gen2_n++;
                 }
             }
+            obj=next;
+            continue;
         }
         obj=obj->ob_next;
     }
@@ -92,5 +96,5 @@ void gc_collect(int gen){
     }
     else{
         gc.gen0_n=0;
-    } 
+    }
 }
