@@ -93,7 +93,7 @@ int execute(string data, bool objdump, bool verbose){
     if (verbose){
         cout<<"--------";
     }
-    cout<<code;
+    
     if (returned==CALL_ERR || returned==NULL){
         return -1;
     }
