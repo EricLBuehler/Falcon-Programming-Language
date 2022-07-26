@@ -83,6 +83,9 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
+const size_t nbuiltins=2;
+object* builtins[nbuiltins];
+
 
 bool DECREF(struct object* object);
 struct object* INCREF(struct object* object);
@@ -119,8 +122,6 @@ object* new_bool_false();
 object* str_new_fromstr(string* val);
 
 struct vm* vm=NULL;
-const size_t nbuiltins=2;
-object* builtins[nbuiltins];
 
 enum blocktype{
     IF_BLOCK,

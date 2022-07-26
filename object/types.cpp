@@ -63,7 +63,7 @@ TypeObject IntType={
 };
 
 void setup_int_type(){
-    finalize_type(&IntType);
+    IntType=(*(TypeObject*)finalize_type(&IntType));
 }
 
 
@@ -120,7 +120,7 @@ TypeObject StrType={
 };
 
 void setup_str_type(){
-    finalize_type(&StrType);
+    StrType=(*(TypeObject*)finalize_type(&StrType));
 }
 
 
@@ -184,7 +184,7 @@ TypeObject ListType={
 };
 
 void setup_list_type(){
-    finalize_type(&ListType);
+    ListType=(*(TypeObject*)finalize_type(&ListType));
 }
 
 
@@ -241,7 +241,7 @@ static TypeObject DictType={
 };
 
 void setup_dict_type(){
-    finalize_type(&DictType);
+    DictType=(*(TypeObject*)finalize_type(&DictType));
 }
 
 
@@ -300,7 +300,7 @@ TypeObject CodeType={
 };
 
 void setup_code_type(){
-    finalize_type(&CodeType);
+    CodeType=(*(TypeObject*)finalize_type(&CodeType));
 }
 
 
@@ -377,7 +377,7 @@ TypeObject BoolType={
 };
 
 void setup_bool_type(){
-    finalize_type(&BoolType);
+    BoolType=(*(TypeObject*)finalize_type(&BoolType));
 }
 
 
@@ -437,7 +437,7 @@ TypeObject TupleType={
 };
 
 void setup_tuple_type(){
-    finalize_type(&TupleType);
+    TupleType=(*(TypeObject*)finalize_type(&TupleType));
 }
 
 
@@ -495,7 +495,7 @@ TypeObject FuncType={
 };
 
 void setup_func_type(){
-    finalize_type(&FuncType);
+    FuncType=(*(TypeObject*)finalize_type(&FuncType));
 }
 
 
@@ -545,7 +545,7 @@ TypeObject NoneType={
 };
 
 void setup_none_type(){
-    finalize_type(&NoneType);
+    NoneType=(*(TypeObject*)finalize_type(&NoneType));
 }
 
 
@@ -600,7 +600,7 @@ TypeObject BuiltinType={
 };
 
 void setup_builtin_type(){
-    finalize_type(&BuiltinType);
+    BuiltinType=(*(TypeObject*)finalize_type(&BuiltinType));
 }
 
 
@@ -650,7 +650,7 @@ TypeObject ObjectType={
 };
 
 void setup_object_type(){
-    finalize_type(&ObjectType);
+    ObjectType=(*(TypeObject*)finalize_type(&ObjectType));
 }
 
 
@@ -746,7 +746,7 @@ void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp){
 object* finalize_type(TypeObject* newtype){
     object* tp=(object*)malloc(sizeof(TypeObject));
     memcpy(tp, newtype, sizeof(TypeObject));
-
+        
     TypeObject* tp_tp=CAST_TYPE(tp);
 
     //tp is the what we'll copy to...
@@ -754,7 +754,7 @@ object* finalize_type(TypeObject* newtype){
     //Clean out bases
     if (tp_tp->bases==NULL){
         tp_tp->bases=new_list();
-    }    
+    }
     tp_tp->bases->type->slot_append(tp_tp->bases, INCREF((object*)&ObjectType));
     uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
 

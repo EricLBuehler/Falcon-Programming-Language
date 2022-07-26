@@ -337,8 +337,7 @@ object* object_genericgetattr(object* obj, object* attr){
     //Check bases
     uint32_t total_bases = CAST_INT(obj->type->bases->type->slot_len(obj->type->bases))->val->to_long_long();
     for (uint32_t i=0; i<total_bases; i++){
-        TypeObject* base_tp=CAST_TYPE(obj->type->bases->type->slot_get(obj->type->bases, new_int_fromint(i-1)));
-
+        TypeObject* base_tp=CAST_TYPE(obj->type->bases->type->slot_get(obj->type->bases, new_int_fromint(i)));
         //Check type dict
         if (base_tp->dict!=0){
             object* dict = base_tp->dict;

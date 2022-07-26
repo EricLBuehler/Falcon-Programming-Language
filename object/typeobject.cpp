@@ -117,7 +117,7 @@ object* new_type(string* name, object* bases, object* dict){
 
         newtp_cmp, //slot_cmp
     };
-    
+        
     return finalize_type(&newtype);
 }
 
@@ -127,7 +127,7 @@ object* type_repr(object* self);
 object* type_cmp(object* self, object* other, uint8_t type);
 object* type_call(object* self, object* args, object* kwargs);
 void setup_type_type(){
-    finalize_type(&TypeType);
+    TypeType=(*(TypeObject*)finalize_type(&TypeType));
 }
 
 #include "typeobject_newtp.cpp"
