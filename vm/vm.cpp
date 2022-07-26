@@ -470,7 +470,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             break;
         }
 
-        case LOAD_REGISTER_POP: {;
+        case LOAD_REGISTER_POP: {
             vm->accumulator=pop_dataframe(vm->objstack);
             break;
         }
@@ -504,7 +504,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
 object* run_vm(object* codeobj, uint32_t* ip){
     object* code=CAST_CODE(codeobj)->co_code;
     object* lines=CAST_CODE(codeobj)->co_lines;
-
+    
     uint32_t linetup_cntr=0;
     object* instruction=code->type->slot_next(code);
     object* linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));

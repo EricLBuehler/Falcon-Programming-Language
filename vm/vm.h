@@ -2,7 +2,7 @@
 
 
 
-#define CALL_ERR (object*)0x100
+#define CALL_ERR (object*)0xffff
 
 
 #include "binary_ops/simple.cpp"
