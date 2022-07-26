@@ -1,9 +1,9 @@
 # Falcon Programming Language
 ### Eric Buehler 2022 ###
 
-<img src="https://github.com/EricLBuehler/Falcon-Programming-Language/blob/520ff2f5f5ba71243d86b5b3275b2ba5580cb3ed/logo.jpg" width="160" height="160" align="right" />
+<img src="https://github.com/EricLBuehler/Falcon-Programming-Language/blob/a18101360097063069c242e865a4595219c0f937/logo.jpg" width="208" height="150" align="right" />
 
-Falcon is an object-oriented interpreted programming language, with a focus on readability and simplicity. It is dynamically typed, and has automatic garbage collection based on reference counting and a tri-generational garbage collector. In comparison to other languages, it a hybrid of Python and C, with the benefits of Python and the syntax of C.
+Falcon is an object-oriented interpreted programming language, with a focus on readability and simplicity. It is dynamically typed, and has automatic garbage collection based on reference counting and a 3 generation generational garbage collector. In comparison to other languages, it a hybrid of Python and C, with the benefits of Python and the syntax of C.
 
 Falcon is implemented in C++. However, although the compiler and interpreter do not use object oriented features and could mostly be compiled in C, the lexer and parser make heavy use of such features.
 
@@ -11,14 +11,12 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - GCC compiler installed
 - Only tested on Windows
 
-### Example Program ###
-
-#### Source ####
+### Sample Program ###
 ```js
 m="Placeholder value"
 
 class Peregrine{
-    var=m
+    var=1
     func f(self){
         print(self.var)
     }
@@ -30,7 +28,6 @@ y=Peregrine()
 
 a=Peregrine.var
 x.var=5
-y.var="Value"
 b=x.var
 
 x.f(x)
@@ -44,21 +41,15 @@ func f(x,c="A"){
 f(1)
 ```
 
-#### Output ####
-When run with ```./fpl.exe program.fpl```
-
-```
-5
-Value
-Function f says: A
-```
-
 ### Usage ###
 Build entire Falcon programming language
 ```build.bat```
 
 Run a script
 ```./fpl program```
+
+Enter REPL
+```./fpl```
 
 Help
 ```./fpl -h```

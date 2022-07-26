@@ -1,3 +1,6 @@
+7/26/22 4 30 PM
+Added CALL_METHOD functionality (automatic self argument passing)
+
 7/25/22 4 30 PM
 Overhauled type system to reduce rulebreaking and implement inheritance
 

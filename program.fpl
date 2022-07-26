@@ -16,8 +16,8 @@ x.var=5
 y.var="Value"
 b=x.var
 
-x.f(x)
-y.f(y)
+x.f()
+y.f()
 
 func f(x,c="A"){
     print("Function f says: ","")
