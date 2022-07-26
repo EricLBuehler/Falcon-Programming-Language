@@ -14,6 +14,7 @@
 #include <map>
 using namespace std;
 
+#define DEBUG
 
 string program;
 
@@ -26,6 +27,7 @@ string program;
 
 int execute(string data, bool objdump, bool verbose){
     //Prep constants and types
+    new_gc();
     setup_types_consts();
 
     vector<string> kwds;
@@ -66,8 +68,7 @@ int execute(string data, bool objdump, bool verbose){
     if (verbose){
         cout<<"Parsed.\n";
     }
-    
-    new_gc();
+
 
     struct compiler* compiler = new_compiler();
 
@@ -92,6 +93,7 @@ int execute(string data, bool objdump, bool verbose){
     if (verbose){
         cout<<"--------";
     }
+    cout<<code;
     if (returned==CALL_ERR || returned==NULL){
         return -1;
     }
@@ -177,6 +179,7 @@ int execute(string data, bool objdump, bool verbose){
                 total++;
                 node=node->ob_next;
             }
+            
 
             cout<<"gen0 "<<gc.gen0_n<<"\ngen1 "<<gc.gen1_n<<"\ngen2 "<<gc.gen2_n;
             cout<<"\nImmutable "<<immutable_size;
