@@ -14,6 +14,7 @@ enum nodetype{
     N_CLASS,
     N_DOT,
     N_DOTASSIGN,
+    N_DOTCALL,
 };
 
 enum precedence {
@@ -132,6 +133,12 @@ struct Dot{
 struct DotAssign{
     Node* dot;
     Node* right;
+};
+
+struct DotCall{
+    Node* dot;
+    vector<Node*>* args;
+    vector<Node*>* kwargs;
 };
 
 void destroy_node(struct Node* node){

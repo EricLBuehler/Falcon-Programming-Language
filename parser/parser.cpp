@@ -377,16 +377,31 @@ class Parser{
             kwargs->clear();
 
             if (this->current_tok_is(T_RPAREN)){
-                Node* node=make_node(N_CALL);
-                node->start=left->start;
-                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-                
-                Call* c=(Call*)malloc(sizeof(Call));
-                c->args=args;
-                c->kwargs=kwargs;
-                c->object=left;
-                
-                node->node=c;
+                Node* node;
+                if (left->type==N_DOT){
+                    node=make_node(N_DOTCALL);
+                    node->start=left->start;
+                    node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                    
+                    DotCall* c=(DotCall*)malloc(sizeof(DotCall));
+                    c->args=args;
+                    c->kwargs=kwargs;
+                    c->dot=left;
+                    
+                    node->node=c;
+                }
+                else{
+                    node=make_node(N_CALL);
+                    node->start=left->start;
+                    node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                    
+                    Call* c=(Call*)malloc(sizeof(Call));
+                    c->args=args;
+                    c->kwargs=kwargs;
+                    c->object=left;
+                    
+                    node->node=c;
+                }
 
                 this->advance();
 
@@ -435,16 +450,31 @@ class Parser{
             }
             
 
-            Node* node=make_node(N_CALL);
-            node->start=left->start;
-            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-            
-            Call* c=(Call*)malloc(sizeof(Call));
-            c->args=args;
-            c->kwargs=kwargs;
-            c->object=left;
-            
-            node->node=c;
+            Node* node;
+            if (left->type==N_DOT){
+                node=make_node(N_DOTCALL);
+                node->start=left->start;
+                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                
+                DotCall* c=(DotCall*)malloc(sizeof(DotCall));
+                c->args=args;
+                c->kwargs=kwargs;
+                c->dot=left;
+                
+                node->node=c;
+            }
+            else{
+                node=make_node(N_CALL);
+                node->start=left->start;
+                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                
+                Call* c=(Call*)malloc(sizeof(Call));
+                c->args=args;
+                c->kwargs=kwargs;
+                c->object=left;
+                
+                node->node=c;
+            }
 
             this->advance();
 
