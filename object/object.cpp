@@ -413,3 +413,10 @@ object* object_call(object* obj, object* args, object* kwargs){
     return obj->type->slot_call(obj, args,kwargs);
 }
 
+#ifdef DEBUG
+ostream& operator<<(ostream& os, object* o)
+{
+    cout<<object_cstr(o);
+    return os;
+}
+#endif

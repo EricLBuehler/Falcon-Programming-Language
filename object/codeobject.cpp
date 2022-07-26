@@ -46,8 +46,17 @@ void code_del(object* obj){
 }
 
 object* code_repr(object* self){
+    char buf[32];
+    sprintf(buf, "0x%x", self);
+
     string s="<code ";
+    s+=" @ ";
+    s+=buf;
+    s+=", file ";
     s+=object_cstr(CAST_CODE(self)->co_file);
+    s+=", line ";
+    object* first=CAST_CODE(self)->co_lines->type->slot_get(CAST_CODE(self)->co_lines, new_int_fromint(0));
+    s+=CAST_INT(first->type->slot_get(first, new_int_fromint(2)))->val->operator+(1).to_string();
     s+=">";
     return str_new_fromstr(new string(s));
 }
