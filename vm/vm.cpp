@@ -308,6 +308,70 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             return pop_dataframe(vm->objstack);
         }
 
+        case CALL_METHOD: {
+            object* function=pop_dataframe(vm->objstack);
+            object* head=pop_dataframe(vm->objstack);
+
+            if (function->type->slot_call==NULL){
+                vm_add_err(vm, "TypeError: '%s' object is not callable.",function->type->name->c_str());
+                return NULL;
+            }
+
+            uint32_t argc=CAST_INT(arg)->val->to_int()+1;
+            uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int()+1;
+            uint32_t kwargc=argc-posargc;     
+
+            if (function->type->slot_call==NULL){
+                vm_add_err(vm, "TypeError: '%s' object is not callable.",function->type->name->c_str());
+                return NULL;
+            }
+            
+            if (object_istype(function->type, &FuncType)){
+                if (CAST_FUNC(function)->argc-CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()>posargc \
+                || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
+                || CAST_FUNC(function)->argc<argc){
+                    if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
+                        vm_add_err(vm, "ValueError: expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
+                        return NULL;
+                    }
+                    vm_add_err(vm, "ValueError: expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
+                    return NULL;
+                }
+            }
+                
+
+            //Setup kwargs
+            object* kwargs=new_dict();
+            object* val;
+            for (uint32_t i=0; i<kwargc; i++){
+                val=pop_dataframe(vm->objstack);
+                kwargs->type->slot_set(kwargs, pop_dataframe(vm->objstack), val);
+            }
+            //
+
+            //Setup args
+            object* args=new_tuple();
+            args->type->slot_append(args, head);
+            for (uint32_t i=0; i<posargc-1; i++){
+                args->type->slot_append(args, pop_dataframe(vm->objstack));
+            }
+            
+            //
+
+            //Call
+            if (object_istype(function->type, &FuncType)){
+                add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, INCREF(CAST_FUNC(function)->code));
+                vm->callstack->head->locals=new_dict();
+            }
+            object* ret=object_call(function, args, kwargs);
+            pop_callframe(vm->callstack);
+            if (ret==NULL){
+                return CALL_ERR;
+            }
+            add_dataframe(vm, vm->objstack, ret);
+            break;
+        }
+
         case CALL_FUNCTION: {   
             object* function=pop_dataframe(vm->objstack);
 
@@ -318,19 +382,17 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             if (function->type->slot_call==NULL){
                 vm_add_err(vm, "TypeError: '%s' object is not callable.",function->type->name->c_str());
                 return NULL;
-            }             
-
-            cout<<function->type;  
-
+            }
+            
             if (object_istype(function->type, &FuncType)){
                 if (CAST_FUNC(function)->argc-CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()>posargc \
                 || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
                 || CAST_FUNC(function)->argc<argc){
                     if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
-                        vm_add_err(vm, "ValueError: expected %d argument(s).",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int());
+                        vm_add_err(vm, "ValueError: expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
                         return NULL;
                     }
-                    vm_add_err(vm, "ValueError: expected %d to %d arguments.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc);
+                    vm_add_err(vm, "ValueError: expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
                     return NULL;
                 }
             }
@@ -408,7 +470,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             break;
         }
 
-        case LOAD_REGISTER_POP: {
+        case LOAD_REGISTER_POP: {;
             vm->accumulator=pop_dataframe(vm->objstack);
             break;
         }
