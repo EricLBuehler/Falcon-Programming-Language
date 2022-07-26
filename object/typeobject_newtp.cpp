@@ -5,6 +5,8 @@ object* newtp_new(object* self, object* args, object* kwargs){
     object* o=new_object((TypeObject*)self);
     CAST_NEWTYPE(o)->dict=new_dict();
     o->type->dict_offset=offsetof(NewTypeObject, dict);
+
+    object_setattr(o, str_new_fromstr(new string("__class__")), self);
     return o;
 }
 void newtp_del(object* self){
