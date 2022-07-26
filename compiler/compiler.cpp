@@ -163,6 +163,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             break;
         }
+        
         case N_FUNC: {
             //Name
             uint32_t nameidx;
@@ -223,8 +224,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             struct compiler* comp=new_compiler();
             comp->scope=SCOPE_LOCAL;
             object* code=compile(comp, c);
-             
-            idx;
+
+            DECREF(CAST_CODE(code)->co_file);
+            CAST_CODE(code)->co_file=object_repr(str_new_fromstr(IDENTI(FUNCT(expr->node)->name->node)->name));
+            
+            
             if (!object_find_bool(compiler->consts, code)){
                 //Create object
                 compiler->consts->type->slot_append(compiler->consts, code);
@@ -383,6 +387,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
             struct compiler* comp=new_compiler();
             comp->scope=SCOPE_LOCAL;
             object* code=compile(comp, c);
+
+            DECREF(CAST_CODE(code)->co_file);
+            CAST_CODE(code)->co_file=object_repr(str_new_fromstr(IDENTI(FUNCT(expr->node)->name->node)->name));
             
             if (!object_find_bool(compiler->consts, code)){
                 //Create object
