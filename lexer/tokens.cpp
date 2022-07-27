@@ -40,7 +40,7 @@ enum token_type{
     T_NONE,
     T_FALSE,
     T_TRUE,
-    T_DOTIDENT,s
+    T_DOTIDENT,
 };
 
 string token_type_to_str(enum token_type type){
