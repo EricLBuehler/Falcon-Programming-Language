@@ -198,8 +198,19 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
         frame=frame->next;        
     }
     for (size_t i=0; i<nbuiltins; i++){
-        if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
-            return builtins[i];
+        if (object_istype(builtins[i]->type, &BuiltinType)){
+            if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
+                return builtins[i];
+            }
+        }
+        else{
+            if (builtins[i]->type->name->compare((*CAST_STRING(name)->val))==0){
+                return builtins[i];
+            }
+            if (object_istype(builtins[i]->type, &TypeType) && \
+            CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+                return builtins[i];
+            }
         }
     }
 
@@ -220,8 +231,19 @@ struct object* vm_get_var_globals(struct vm* vm, object* name){
         return o;
     }
     for (size_t i=0; i<nbuiltins; i++){
-        if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
-            return builtins[i];
+        if (object_istype(builtins[i]->type, &BuiltinType)){
+            if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
+                return builtins[i];
+            }
+        }
+        else{
+            if (builtins[i]->type->name->compare((*CAST_STRING(name)->val))==0){
+                return builtins[i];
+            }
+            if (object_istype(builtins[i]->type, &TypeType) && \
+            CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+                return builtins[i];
+            }
         }
     }
     
@@ -435,7 +457,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
                 vm->callstack->head->locals=new_dict();
             }
             object* ret=object_call(function, args, kwargs);
-            if (!object_istype(function->type, &BuiltinType) && !object_istype(function->type, &TypeType)){
+            if (object_istype(function->type, &FuncType)){
                 pop_callframe(vm->callstack);
             }
             if (ret==NULL){
@@ -444,6 +466,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             add_dataframe(vm, vm->objstack, ret);
             
             break;            
+        }
+
+        case BUILD_LIST: {
+            object* list=new_list();
+            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+                list->type->slot_append(list, pop_dataframe(vm->objstack));
+            }
+            add_dataframe(vm, vm->objstack, list);
+            break;
         }
 
         case BUILD_TUPLE: {
