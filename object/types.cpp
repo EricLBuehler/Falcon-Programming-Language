@@ -654,7 +654,9 @@ object* type_repr(object* self){
 
 object* type_call(object* self, object* args, object* kwargs){
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
-    o->type->slot_init(o, args, kwargs);
+    if (o->type->slot_init!=NULL){
+        o->type->slot_init(o, args, kwargs);
+    }
     return o;
 }
 
@@ -694,7 +696,7 @@ object* type_get(object* self, object* attr){
     }
 
 
-    vm_add_err(vm, "AttributeError: %s has no attribute '%s'",object_cstr(self).c_str(), object_cstr(attr).c_str());
+    vm_add_err(vm, "AttributeError: %s has no attribute '%s'",self->type->name->c_str(), object_cstr(attr).c_str());
     return NULL;
 }
 
@@ -705,7 +707,7 @@ void type_set(object* obj, object* attr, object* val){
         dict->type->slot_set(dict, attr, val);
         return;
     }
-    vm_add_err(vm, "AttributeError: %s is read only",object_cstr(obj).c_str());
+    vm_add_err(vm, "AttributeError: %s is read only",obj->type->name->c_str());
     return;
 }
 
