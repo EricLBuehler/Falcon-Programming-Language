@@ -1,7 +1,7 @@
 # Falcon Programming Language
 ### Eric Buehler 2022 ###
 
-<img src="https://github.com/EricLBuehler/Falcon-Programming-Language/blob/a92a45e40b6b3d678ae358b453a596dfd5ef7e56/logo.jpg" width="160" height="160" align="right" />
+<img src="https://github.com/EricLBuehler/Falcon-Programming-Language/blob/a18101360097063069c242e865a4595219c0f937/logo.jpg" width="208" height="150" align="right" />
 
 Falcon is an object-oriented interpreted programming language, with a focus on readability and simplicity. It is dynamically typed, and has automatic garbage collection based on reference counting and a 3 generation generational garbage collector. In comparison to other languages, it a hybrid of Python and C, with the benefits of Python and the syntax of C.
 
@@ -16,7 +16,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 m="Placeholder value"
 
 class Peregrine{
-    var=m
+    var=1
     func f(self){
         print(self.var)
     }
@@ -28,11 +28,10 @@ y=Peregrine()
 
 a=Peregrine.var
 x.var=5
-y.var="Value"
 b=x.var
 
-x.f()
-y.f()
+x.f(x)
+y.f(y)
 
 func f(x,c="A"){
     print("Function f says: ","")

@@ -5,16 +5,18 @@
 #include <ctype.h>
 #include <ostream>
 #include <cmath>
+#include <map>
 #include <unordered_map>
 #include <algorithm>
 #include <cstring>
 #include <sstream>
 #include <float.h>
 #include <stdlib.h>
-#include <map>
+
 using namespace std;
 
 #define DEBUG
+#define CALL_ERR (object*)0xffff
 
 string program;
 
@@ -33,6 +35,8 @@ int execute(string data, bool objdump, bool verbose){
     vector<string> kwds;
     kwds.push_back("func");
     kwds.push_back("class");
+    kwds.push_back("return");
+
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
@@ -104,7 +108,7 @@ int execute(string data, bool objdump, bool verbose){
             cout<<"\nIP: "<<vm->ip<<"\n\n";
             
             for (auto k: (*CAST_DICT(vm->globals)->val)){
-                cout<<(*CAST_STRING(object_str(k.first))->val)<<" = "<<(*CAST_STRING(object_str(k.second))->val)<<endl;
+                cout<<object_cstr(k.first)<<" = "<<(*CAST_STRING(object_repr(k.second))->val)<<endl;
             }
         }
         else{
