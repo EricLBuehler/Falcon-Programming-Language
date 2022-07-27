@@ -39,3 +39,9 @@ READ_REGISTER_PUSH - Pushes interpreter accumulator to TOS
 CALL_METHOD(argc) - Calls callable TOS, TOS-1 is object with attribute (TOS), and with an integer object posargc as TOS-2, and keyword arguments below (value above name)
     with positional arguments following (left->right descending). argc is the total number of arguemnts passed. Adds argument
     self as instance.
+
+BUILD_TUPLE(n) - Pops n frames of stack (L->R and Top->Down) and pushes tuple
+
+BUILD_DICT(n) - Pops n*2 frames of stack (L->R and Top->Down) with name above value and pushes dict
+
+BUILD_LIST(n) - Pops n frames of stack (L->R and Top->Down) and pushes list (similar to BUILD_TUPLE)

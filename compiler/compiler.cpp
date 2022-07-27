@@ -616,6 +616,36 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }        
 
+        case N_RETURN: {
+            compile_expr(compiler, RETURN(expr->node)->node);
+            add_instruction(compiler->instructions, RETURN_VAL, 0, new Position, new Position);
+        }
+
+        case N_LIST: {
+            for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
+                compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+            }
+            add_instruction(compiler->instructions, BUILD_LIST, LIST(expr->node)->list->size(), new Position, new Position);
+            break;
+        }
+
+        case N_TUPLE: {
+            for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
+                compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+            }
+            add_instruction(compiler->instructions, BUILD_TUPLE, LIST(expr->node)->list->size(), new Position, new Position);
+            break;
+        }
+
+        case N_DICT: {
+            for (size_t i=DICT(expr->node)->keys->size(); i>0; i--){
+                compile_expr(compiler, DICT(expr->node)->vals->at(i-1)); //Value
+                compile_expr(compiler, DICT(expr->node)->keys->at(i-1)); //Value
+            }
+            add_instruction(compiler->instructions, BUILD_DICT, DICT(expr->node)->keys->size(), new Position, new Position);
+            break;
+        }
+
     }
 
     return 0;
@@ -655,9 +685,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         tuple->type->slot_append(tuple, line->type->slot_get(line, new_int_fromint(0)));
         tuple->type->slot_append(tuple, object_add(line->type->slot_get(line, new_int_fromint(1)), new_int_fromint(2)));
         tuple->type->slot_append(tuple, line->type->slot_get(line, new_int_fromint(2)));
-
-
-        DECREF(line);
+        
         lines->type->slot_set(lines, lineno, tuple);
     }
     else{

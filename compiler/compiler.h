@@ -20,6 +20,7 @@ enum opcode{
     LOAD_ATTR,
     STORE_ATTR,
     CALL_METHOD,
+    BUILD_LIST,
 };
 
 enum scope{
@@ -59,6 +60,9 @@ struct compiler{
 #define DOT(node) ((Dot*)(node))
 #define DOTASSIGN(node) ((DotAssign*)(node))
 #define DOTCALL(node) ((DotCall*)(node))
+#define RETURN(node) ((Return*)(node))
+#define LIST(node) ((List*)(node))
+#define DICT(node) ((Dict*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
 
