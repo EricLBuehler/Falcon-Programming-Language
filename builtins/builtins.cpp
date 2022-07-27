@@ -22,6 +22,6 @@ object* builtin___build_class__(object* self, object* args){
     object* ret=function->type->slot_call(function, new_tuple(), new_dict());
     pop_callframe(vm->callstack);
     
-    object* t=new_type(ClassType, CAST_STRING(object_str(CAST_FUNC(function)->name))->val, new_list(), dict);
+    object* t=new_type(CAST_STRING(object_str(CAST_FUNC(function)->name))->val, new_list(), dict);
     return t;
 }
