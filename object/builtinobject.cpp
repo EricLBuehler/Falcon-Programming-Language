@@ -20,9 +20,9 @@ void setup_builtins(){
     builtins[2]=(object*)&TypeType;
     builtins[3]=(object*)&IntType;
     builtins[4]=(object*)&StrType;
-    builtins[3]=(object*)&DictType;
-    builtins[4]=(object*)&ListType;
-    builtins[4]=(object*)&TupleType;
+    builtins[5]=(object*)&DictType;
+    builtins[6]=(object*)&ListType;
+    builtins[7]=(object*)&TupleType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

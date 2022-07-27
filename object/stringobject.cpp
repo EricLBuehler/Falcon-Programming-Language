@@ -14,6 +14,17 @@ object* str_new_fromstr(string* val){
 }
 
 object* str_new(object* type, object* args, object* kwargs){
+    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+        object_var* obj=new_object_var(&StrType, 0);
+        ((StrObject*)obj)->val=new string("");
+
+        object* o = in_immutables((struct object*)obj);
+        if (o==NULL){
+            return (object*)obj;
+        }
+        DECREF((struct object*)obj);
+        return o;
+    }
     object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
     DECREF(args);
     DECREF(kwargs);

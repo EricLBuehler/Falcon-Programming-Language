@@ -34,6 +34,16 @@ object* new_int_frombigint(BigInt* v){
 
 object* int_new(object* type, object* args, object* kwargs){
     object* obj=new_object(&IntType);
+    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+        ((IntObject*)obj)->val=new BigInt(0);
+
+        object* o = in_immutables((struct object*)obj);
+        if (o==NULL){
+            return (object*)obj;
+        }
+        DECREF((struct object*)obj);
+        return o;
+    }
     object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
     DECREF(args);
     DECREF(kwargs);
