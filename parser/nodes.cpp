@@ -15,6 +15,10 @@ enum nodetype{
     N_DOT,
     N_DOTASSIGN,
     N_DOTCALL,
+    N_RETURN,
+    N_LIST,  //
+    N_TUPLE, // Same internally (List)
+    N_DICT,
 };
 
 enum precedence {
@@ -140,6 +144,20 @@ struct DotCall{
     vector<Node*>* args;
     vector<Node*>* kwargs;
 };
+
+struct Return{
+    Node* node;
+};
+
+struct List{
+    vector<Node*>* list;
+};
+
+struct Dict{
+    vector<Node*>* keys;
+    vector<Node*>* vals;
+};
+
 
 void destroy_node(struct Node* node){
     if (node->type==N_INT){

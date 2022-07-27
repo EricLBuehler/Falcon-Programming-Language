@@ -274,6 +274,9 @@ class Parser{
         Node* make_grouped_expr(parse_ret* ret){
             this->advance();
             Node* node=this->expr(ret, LOWEST);
+            if (this->current_tok_is(T_COMMA)){
+                return make_tuple(ret, node);
+            }
             if (node==NULL){
                 return NULL;
             }
@@ -366,6 +369,185 @@ class Parser{
             unary->opr=type;
 
             node->node=unary;
+            return node;
+        }
+
+        Node* make_list(parse_ret* ret){
+            this->advance();
+            vector<Node*>* list=new vector<Node*>;
+
+            if (this->current_tok_is(T_RSQUARE)){
+                this->advance();
+                Node* node=make_node(N_LIST);
+                node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
+                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                
+                List* l=(List*)malloc(sizeof(List));
+                l->list=list;
+                
+                node->node=l;
+                return node;
+            }
+            
+            Node* expr=this->expr(ret, LOWEST);
+            if (ret->errornum>0){
+                delete list;
+                return NULL;
+            }
+            list->push_back(expr);
+
+            while(this->current_tok_is(T_COMMA)){
+                this->advance();
+                Node* expr=this->expr(ret, LOWEST);
+                if (ret->errornum>0){
+                    delete list;
+                    return NULL;
+                }
+                list->push_back(expr);
+                if (this->current_tok_is(T_RSQUARE)){
+                    break;
+                }
+            }
+
+            Node* node=make_node(N_LIST);
+            node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            List* l=(List*)malloc(sizeof(List));
+            l->list=list;
+            
+            node->node=l;
+            return node;
+        }
+
+        Node* make_tuple(parse_ret* ret, Node* base){
+            this->advance();
+            vector<Node*>* list=new vector<Node*>;
+            list->push_back(base);
+
+            if (this->current_tok_is(T_RPAREN)){
+                this->advance();
+                Node* node=make_node(N_TUPLE);
+                node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
+                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                
+                List* l=(List*)malloc(sizeof(List));
+                l->list=list;
+                
+                node->node=l;
+                return node;
+            }
+            
+            Node* expr=this->expr(ret, LOWEST);
+            if (ret->errornum>0){
+                delete list;
+                return NULL;
+            }
+            list->push_back(expr);
+
+            while(this->current_tok_is(T_COMMA)){
+                this->advance();
+                Node* expr=this->expr(ret, LOWEST);
+                if (ret->errornum>0){
+                    delete list;
+                    return NULL;
+                }
+                list->push_back(expr);
+                if (this->current_tok_is(T_RPAREN)){
+                    break;
+                }
+            }
+
+            Node* node=make_node(N_TUPLE);
+            node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            List* l=(List*)malloc(sizeof(List));
+            l->list=list;
+            
+            node->node=l;
+            return node;
+        }
+
+        Node* make_dict(parse_ret* ret){
+            this->advance();
+            vector<Node*>* keys=new vector<Node*>;
+            vector<Node*>* vals=new vector<Node*>;
+
+            if (this->current_tok_is(T_RCURLY)){
+                this->advance();
+                Node* node=make_node(N_DICT);
+                node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
+                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                
+                Dict* d=(Dict*)malloc(sizeof(Dict));
+                d->keys=keys;
+                d->vals=vals;
+                
+                node->node=d;
+                return node;
+            }
+            
+            Node* key=this->expr(ret, LOWEST);
+            if (ret->errornum>0){
+                delete vals;
+                delete keys;
+                return NULL;
+            }
+            if (!this->current_tok_is(T_COLON)){
+                this->add_parsing_error(ret, "SyntaxError: Expected :");
+                delete vals;
+                delete keys;
+                return NULL;
+            }
+            this->advance();
+            Node* value=this->expr(ret, LOWEST);
+            if (ret->errornum>0){
+                delete vals;
+                delete keys;
+                return NULL;
+            }
+            keys->push_back(key);
+            vals->push_back(value);
+
+            while(this->current_tok_is(T_COMMA)){
+                this->advance();
+                Node* key=this->expr(ret, LOWEST);
+                if (ret->errornum>0){
+                    delete vals;
+                    delete keys;
+                    return NULL;
+                }
+                if (!this->current_tok_is(T_COLON)){
+                    this->add_parsing_error(ret, "SyntaxError: Expected :");
+                    delete vals;
+                    delete keys;
+                    return NULL;
+                }
+                this->advance();
+                Node* value=this->expr(ret, LOWEST);
+                if (ret->errornum>0){
+                    delete vals;
+                    delete keys;
+                    return NULL;
+                }
+                keys->push_back(key);
+                vals->push_back(value);
+
+                if (this->current_tok_is(T_RCURLY)){
+                    break;
+                }
+            }
+
+            Node* node=make_node(N_DICT);
+            node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            Dict* d=(Dict*)malloc(sizeof(Dict));
+            d->keys=keys;
+            d->vals=vals;
+            
+            node->node=d;
             return node;
         }
 
@@ -504,6 +686,14 @@ class Parser{
                     left=make_grouped_expr(ret);
                     break;
 
+                case T_LSQUARE:
+                    left=make_list(ret);
+                    break;
+
+                case T_LCURLY:
+                    left=make_dict(ret);
+                    break;
+
                 case T_TRUE:
                     left=make_true();
                     break;
@@ -537,7 +727,7 @@ class Parser{
                     this->advance();
                     return left;
                 }
-                this->add_parsing_error(ret, "SyntaxError: Invalid syntaxA.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 return left;
             }
@@ -589,6 +779,9 @@ class Parser{
             }
             if (this->current_tok.data=="class"){
                 return make_class(ret);
+            }
+            if (this->current_tok.data=="return"){
+                return make_return(ret);
             }
             this->add_parsing_error(ret, "SyntaxError: Unknown keyword '%s'",this->current_tok.data.c_str());
             this->advance();
@@ -755,6 +948,25 @@ class Parser{
             }
 
             node->node=c;
+            
+            this->advance();
+            return node;
+        }
+
+        Node* make_return(parse_ret* ret){
+            Node* node=make_node(N_RETURN);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            this->advance();
+            skip_newline;
+            Node* n=this->expr(ret, LOWEST);
+
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Return* r=(Return*)malloc(sizeof(Return));
+            r->node=n;
+
+            node->node=r;
             
             this->advance();
             return node;
