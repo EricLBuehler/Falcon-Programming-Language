@@ -16,7 +16,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 m="Placeholder value"
 
 class Peregrine{
-    var=1
+    var=m
     func f(self){
         print(self.var)
     }
@@ -28,10 +28,11 @@ y=Peregrine()
 
 a=Peregrine.var
 x.var=5
+y.var="Value"
 b=x.var
 
-x.f(x)
-y.f(y)
+x.f()
+y.f()
 
 func f(x,c="A"){
     print("Function f says: ","")
@@ -39,6 +40,8 @@ func f(x,c="A"){
 }
 
 f(1)
+
+dictionary={1:[1,2,3], 2:{1:"A"}, "Hello":"World", [123]:2}
 ```
 
 ### Usage ###
