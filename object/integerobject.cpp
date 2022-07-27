@@ -34,13 +34,15 @@ object* new_int_frombigint(BigInt* v){
 
 object* int_new(object* type, object* args, object* kwargs){
     object* obj=new_object(&IntType);
-    object* val=args->type->slot_get(args, new_int_fromint(0));
+    object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
     DECREF(args);
     DECREF(kwargs);
-    if (!object_istype(val->type, &IntType) || !object_istype(val->type, &StrType)){
+    if (!object_istype(val->type, &IntType) && !object_istype(val->type, &StrType)){
         DECREF(obj);
+        vm_add_err(vm, "ValueError: Expected argument to be int or str, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
         return NULL;
     }
+    
     if (object_istype(val->type, &IntType)){
         ((IntObject*)obj)->val=((IntObject*)val)->val;
     }

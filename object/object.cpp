@@ -233,6 +233,10 @@ string object_cstr(object* obj){
     return (*CAST_STRING(object_str(obj))->val);
 }
 
+string object_crepr(object* obj){
+    return (*CAST_STRING(object_repr(obj))->val);
+}
+
 object* object_cmp(object* self, object* other, uint8_t type){
     return self->type->slot_cmp(self, other, type);
 }

@@ -195,7 +195,7 @@ object* dict_cmp(object* self, object* other, uint8_t type);
 
 typedef struct DictObject{
     OBJHEAD_VAR
-    unordered_map<object*, object*>* val;
+    map<object*, object*>* val;
 }DictObject;
 
 
@@ -640,9 +640,33 @@ void setup_object_type(){
 }
 
 
+object* new_type(string* name, object* bases, object* dict);
 
 object* type_new(object* type, object* args, object* kwargs){
-    return new_none();
+    //Argument size checking
+    if (CAST_INT(args->type->slot_len(args))->val->to_long()!=3){
+        vm_add_err(vm, "ValueError: Expected 3 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_long());
+        return NULL;
+    }
+    //
+    if (!object_istype(args->type->slot_get(args, new_int_fromint(0))->type, &StrType)){
+        vm_add_err(vm, "ValueError: Expected first argument to be string, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        return NULL;
+    }
+    if (!object_istype(args->type->slot_get(args, new_int_fromint(1))->type, &ListType) || \
+    !object_istype(args->type->slot_get(args, new_int_fromint(1))->type, &TupleType)){
+        vm_add_err(vm, "ValueError: Expected first argument to be list or tuple, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        return NULL;
+    }
+    if (!object_istype(args->type->slot_get(args, new_int_fromint(2))->type, &DictType)){
+        vm_add_err(vm, "ValueError: Expected first argument to be dict, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        return NULL;
+    }
+    //
+    string* name=CAST_STRING(args->type->slot_get(args, new_int_fromint(0)))->val;
+    object* bases=args->type->slot_get(args, new_int_fromint(1));
+    object* dict=args->type->slot_get(args, new_int_fromint(2));
+    return new_type(name, bases, dict);
 }
 
 void type_del(object* self){}
@@ -653,9 +677,19 @@ object* type_repr(object* self){
 }
 
 object* type_call(object* self, object* args, object* kwargs){
+    //Special case
+    if (object_istype(CAST_TYPE(self), &TypeType)){
+        if (CAST_INT(args->type->slot_len(args))->val->to_long()==1){
+            return (object*)(args->type->slot_get(args, new_int_fromint(0))->type);
+        }
+    }
+
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
-    if (o->type->slot_init!=NULL){
+    if (o != NULL && o->type->slot_init!=NULL){
         o->type->slot_init(o, args, kwargs);
+    }
+    if (o==NULL){
+        return CALL_ERR;
     }
     return o;
 }

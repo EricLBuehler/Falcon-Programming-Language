@@ -16,6 +16,13 @@ void setup_builtins(){
     buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("func")));
     object* buildclasskwargs=new_tuple();
     builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr(new string("__build_class__")), buildclassargs, buildclasskwargs, CAST_INT(buildclassargs->type->slot_len(buildclassargs))->val->to_int());
+
+    builtins[2]=(object*)&TypeType;
+    builtins[3]=(object*)&IntType;
+    builtins[4]=(object*)&StrType;
+    builtins[3]=(object*)&DictType;
+    builtins[4]=(object*)&ListType;
+    builtins[4]=(object*)&TupleType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

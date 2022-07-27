@@ -83,7 +83,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=2;
+const size_t nbuiltins=5;
 object* builtins[nbuiltins];
 
 
@@ -106,6 +106,7 @@ void object_genericsetattr(object* obj, object* attr, object* val);
 void object_del(object* object);
 bool object_find_bool_dict_keys(object* dict, object* needle);
 object* object_call(object* obj, object* args, object* kwargs);
+string object_crepr(object* obj);
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(struct vm* vm, const char *_format, ...);
@@ -209,13 +210,13 @@ object* finalize_type(TypeObject* newtype);
 #ifdef DEBUG
 ostream& operator<<(ostream& os, object* o)
 {
-    cout<<object_cstr(o);
+    cout<<object_crepr(o);
     return os;
 }
 
 ostream& operator<<(ostream& os, TypeObject* o)
 {
-    cout<<object_cstr((object*)o);
+    cout<<object_crepr((object*)o);
     return os;
 }
 #endif

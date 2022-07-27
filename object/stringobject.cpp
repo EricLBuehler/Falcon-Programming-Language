@@ -14,18 +14,20 @@ object* str_new_fromstr(string* val){
 }
 
 object* str_new(object* type, object* args, object* kwargs){
-    object* val=args->type->slot_get(args, new_int_fromint(0));
+    object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
     DECREF(args);
     DECREF(kwargs);
-    if (!object_istype(val->type, &IntType)){
+    if (!object_istype(val->type, &IntType) && !object_istype(val->type, &StrType)){
+        DECREF(val);
+        vm_add_err(vm, "ValueError: Expected argument to be int or str, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
         return NULL;
     }
 
-    string* str=new string(((IntObject*)val)->val->to_string());
+    string s=object_cstr(val);
 
-    object_var* obj=new_object_var(&StrType, str->size());
-    ((StrObject*)obj)->val=str;
-    ((StrObject*)obj)->var_size=str->size()+sizeof(StrObject);
+    object_var* obj=new_object_var(&StrType, s.size());
+    ((StrObject*)obj)->val=new string(s);
+    ((StrObject*)obj)->var_size=s.size()+sizeof(StrObject);
 
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){
