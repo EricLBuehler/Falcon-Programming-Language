@@ -21,6 +21,7 @@ enum opcode{
     STORE_ATTR,
     CALL_METHOD,
     BUILD_LIST,
+    BINOP_IS,
 };
 
 enum scope{
@@ -65,6 +66,8 @@ struct compiler{
 #define DICT(node) ((Dict*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
+
+parse_ret parseretglbl;
 
 struct object* compile(struct compiler* compiler, parse_ret ast);
 

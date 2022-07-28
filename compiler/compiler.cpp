@@ -97,6 +97,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 case T_DIV:
                     add_instruction(compiler->instructions,BINOP_DIV,0, expr->start, expr->end);
                     break;
+                case T_IS:
+                    add_instruction(compiler->instructions,BINOP_IS,0, expr->start, expr->end);
+                    break;
             }
             break;
         }

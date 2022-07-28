@@ -45,3 +45,5 @@ BUILD_TUPLE(n) - Pops n frames of stack (L->R and Top->Down) and pushes tuple
 BUILD_DICT(n) - Pops n*2 frames of stack (L->R and Top->Down) with name above value and pushes dict
 
 BUILD_LIST(n) - Pops n frames of stack (L->R and Top->Down) and pushes list (similar to BUILD_TUPLE)
+
+BINOP_IS - Implements TOS is TOS-1
