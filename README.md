@@ -53,7 +53,9 @@ true=x == y
 maybe=x is y
 same=x is x
 print(500==500)
-print(500 is 500)
+if 500 is 500{
+    print("500 is the same object as 500")
+}
 ```
 
 ### Usage ###
