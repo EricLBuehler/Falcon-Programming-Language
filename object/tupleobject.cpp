@@ -41,11 +41,25 @@ object* new_tuple(){
 }
 
 object* tuple_new(object* type, object* args, object* kwargs){
+    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+        object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));
+        CAST_TUPLE(obj)->capacity=2; //Start with 2
+        CAST_TUPLE(obj)->size=0;
+        CAST_TUPLE(obj)->idx=0;
+        CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
+        
+        return (object*)obj;
+    }
+    //Append
     object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));
     CAST_TUPLE(obj)->capacity=2; //Start with 2
     CAST_TUPLE(obj)->size=0;
     CAST_TUPLE(obj)->idx=0;
     CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
+
+    for (size_t i=0; i<CAST_INT(args->type->slot_len(args))->val->to_int(); i++){
+        tuple_append((object*)obj, INCREF(args->type->slot_get(args, new_int_fromint(i))));
+    }
     
     return (object*)obj;
 }
@@ -88,7 +102,7 @@ object* tuple_repr(object* self){
     string s="";
     s+="(";
     for (int i=0; i<CAST_TUPLE(self)->size; i++){
-        s+=(*CAST_STRING(object_repr(CAST_TUPLE(self)->array[i]))->val);
+        s+=object_crepr(CAST_TUPLE(self)->array[i]);
         if (i!=CAST_TUPLE(self)->size-1){
             s+=", ";
         }
