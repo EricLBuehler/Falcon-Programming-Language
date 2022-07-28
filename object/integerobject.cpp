@@ -33,8 +33,9 @@ object* new_int_frombigint(BigInt* v){
 }
 
 object* int_new(object* type, object* args, object* kwargs){
+    int len=CAST_INT(args->type->slot_len(args))->val->to_int();
     object* obj=new_object(&IntType);
-    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+    if (len==0){
         ((IntObject*)obj)->val=new BigInt(0);
 
         object* o = in_immutables((struct object*)obj);
