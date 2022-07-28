@@ -48,7 +48,9 @@ l=list(1,2,3,4,5)
 x=object()
 y=object()
 
-true=x == x
+true=x == y
+maybe=x is y
+same=x is x
 ```
 
 ### Usage ###
