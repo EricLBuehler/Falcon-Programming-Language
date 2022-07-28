@@ -86,6 +86,8 @@ static object* noneobj=NULL;
 const size_t nbuiltins=8;
 object* builtins[nbuiltins];
 
+Parser parser;
+
 
 bool DECREF(struct object* object);
 struct object* INCREF(struct object* object);
