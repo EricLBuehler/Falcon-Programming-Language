@@ -8,12 +8,24 @@ object* new_dict(){
 }
 
 object* dict_new(object* type, object* args, object* kwargs){
+    if (CAST_INT(kwargs->type->slot_len(kwargs))->val->to_int()==0){
+        object_var* obj=new_object_var(&DictType, 0);
+        CAST_DICT(obj)->val=new map<object*, object*>;
+        CAST_DICT(obj)->val->clear();
+        obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
+        return (object*)obj;    
+    }
+
     object_var* obj=new_object_var(&DictType, 0);
     CAST_DICT(obj)->val=new map<object*, object*>;
     CAST_DICT(obj)->val->clear();
     obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
     
-    return (object*)obj;
+    for (auto k: (*CAST_DICT(kwargs)->val)){
+        dict_set((object*)obj, k.first, k.second);
+    }
+    
+    return (object*)obj;    
 }
 
 object* dict_len(object* self){
@@ -67,9 +79,9 @@ object* dict_repr(object* self){
     s+="{";
     int i=0;
     for (auto k: (*CAST_DICT(self)->val)){
-        s+=(*CAST_STRING(object_repr(k.first))->val);
+        s+=object_crepr(k.first);
         s+=": ";
-        s+=(*CAST_STRING(object_repr(k.second))->val);
+        s+=object_crepr(k.second);
         if (i!=CAST_DICT(self)->val->size()-1){
             s+=", ";
         }
