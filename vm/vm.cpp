@@ -542,6 +542,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             }
             break;
         }
+        case RUN: {
+            object* code=CAST_CODE(vm->callstack->head->code)->co_consts->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_consts, arg);
+            object* lcls=vm->callstack->head->locals;
+            add_callframe(vm->callstack, INCREF(new_int_fromint(0)), NULL, code);
+            vm->callstack->head->locals=lcls;
+            uint32_t ip=0;
+            run_vm(code, &ip);
+            break;
+        }
 
         default:
             return NULL;
