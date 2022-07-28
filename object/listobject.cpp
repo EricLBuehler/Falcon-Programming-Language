@@ -10,26 +10,6 @@ void list_resize(ListObject* obj, size_t size){
     free(buf);
 }
 
-object* list_init(object* self, object* args, object* kwargs){
-    object* val=args->type->slot_get(args, new_int_fromint(0));
-    if (!object_istype(val->type, &IntType) || !object_istype(val->type, &ListType) || !object_istype(val->type, &StrType)){
-        DECREF(self);
-        return NULL;
-    }
-    
-    CAST_LIST(self)->array[CAST_LIST(self)->size++]=val;
-    
-    if (CAST_LIST(self)->size == CAST_LIST(self)->capacity){ //Alloc more space
-        list_resize(CAST_LIST(self), CAST_LIST(self)->size);
-    }
-
-    ((object_var*)self)->var_size=sizeof(ListObject)+CAST_LIST(self)->size;
-
-    DECREF(args);
-    DECREF(kwargs);
-    return self;
-}
-
 object* new_list(){
     object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
     CAST_LIST(obj)->capacity=2; //Start with 2
@@ -90,7 +70,10 @@ void list_set(object* self, object* idx, object* val){
         //Error
         return;
     }
-    
+
+    if (CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]->type->size==0){
+        ((object_var*)CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()])->gc_ref++;
+    } 
     DECREF(CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]);
 
     CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]=INCREF(val);

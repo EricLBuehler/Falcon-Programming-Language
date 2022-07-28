@@ -10,25 +10,6 @@ void tuple_resize(TupleObject* obj, size_t size){
     free(buf);
 }
 
-object* tuple_init(object* self, object* args, object* kwargs){
-    object* val=args->type->slot_get(args, new_int_fromint(0));
-    if (!object_istype(val->type, &IntType) || !object_istype(val->type, &ListType) || !object_istype(val->type, &StrType)){
-        DECREF(self);
-        return NULL;
-    }
-    
-    CAST_TUPLE(self)->array[CAST_TUPLE(self)->size++]=val;
-    
-    if (CAST_TUPLE(self)->size == CAST_TUPLE(self)->capacity){ //Alloc more space
-        tuple_resize(CAST_TUPLE(self), CAST_TUPLE(self)->size);
-    }
-
-    ((object_var*)self)->var_size=sizeof(TupleObject)+CAST_TUPLE(self)->size;
-
-    DECREF(args);
-    DECREF(kwargs);
-    return self;
-}
 
 object* new_tuple(){
     object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));

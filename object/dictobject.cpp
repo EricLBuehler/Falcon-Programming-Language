@@ -64,6 +64,10 @@ void dict_set(object* self, object* key, object* val){
                 //Do not incref val!
                 return;
             }
+            if (key->type->size==0){
+                ((object_var*)key)->gc_ref++;
+            }
+            DECREF(key);
             (*CAST_DICT(self)->val)[key]=INCREF(val);
             CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
             return;

@@ -158,7 +158,7 @@ TypeObject ListType={
     0, //slot_getattr
     0, //slot_setattr
 
-    (initfunc)list_init, //slot_init
+    0, //slot_init
     (newfunc)list_new, //slot_new
     (delfunc)list_del, //slot_del
 
@@ -407,7 +407,7 @@ TypeObject TupleType={
     0, //slot_getattr
     0, //slot_setattr
 
-    (initfunc)tuple_init, //slot_init
+    0, //slot_init
     (newfunc)tuple_new, //slot_new
     (delfunc)list_del, //slot_del
 
@@ -687,9 +687,6 @@ object* type_call(object* self, object* args, object* kwargs){
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
     if (o != NULL && o->type->slot_init!=NULL){
         o->type->slot_init(o, args, kwargs);
-    }
-    if (o==NULL){
-        return CALL_ERR;
     }
     return o;
 }
