@@ -49,6 +49,7 @@ enum precedence get_precedence(Token t){
             return LOGICAL_AND;
         case T_EE:
         case T_NE:
+        case T_IS:
             return EQUALS;
         case T_GT:
         case T_LT:

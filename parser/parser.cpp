@@ -753,6 +753,7 @@ class Parser{
                     case T_LT:
                     case T_LTE:
                     case T_PERCENT:
+                    case T_IS:
                         left=make_binop(ret, left, this->current_tok.type);
                         break;
                     
