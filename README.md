@@ -43,7 +43,12 @@ f(1)
 
 dictionary={1:[1,2,3], 2:{1:"A"}, "Hello":"World", [123]:2}
 
-x=list(1,2,3,4,5)
+l=list(1,2,3,4,5)
+
+x=object()
+y=object()
+
+true=x == x
 ```
 
 ### Usage ###
