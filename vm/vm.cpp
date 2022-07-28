@@ -316,6 +316,13 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             break;
         }
 
+        case BINOP_EE:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            binop_ee(vm, left, right);
+            break;
+        }
+
         case UNARY_NEG:{
             struct object* right=pop_dataframe(vm->objstack);
             unary_neg(vm, right);
