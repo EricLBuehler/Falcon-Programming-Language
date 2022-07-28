@@ -417,3 +417,9 @@ object* object_call(object* obj, object* args, object* kwargs){
     return obj->type->slot_call(obj, args,kwargs);
 }
 
+object* object_istruthy(object* obj){
+    if (obj->type->slot_number==NULL || obj->type->slot_number->slot_bool==NULL){
+        return new_bool_false();
+    }
+    return obj->type->slot_number->slot_bool(obj);
+}

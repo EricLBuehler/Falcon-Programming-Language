@@ -14,6 +14,11 @@ object* object_repr_(object* self){
 object* object_init(object* self, object* args, object* kwargs){
     return self;
 }
+
+object* object_bool(object* self){
+    return new_bool_true();
+}
+
 object* object_cmp_(object* self, object* other, uint8_t type){
     if (type==CMP_EQ){
         if (self==other){

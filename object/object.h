@@ -26,6 +26,9 @@ typedef struct{
 
     //unaryops
     unaryfunc slot_neg;
+
+    //other
+    unaryfunc slot_bool;
 }NumberMethods;
 
 typedef struct object_type{
@@ -172,7 +175,6 @@ struct datastack{
 struct vm{
     struct datastack* objstack;
     struct callstack* callstack;
-    struct blockstack* blockstack;
     uint32_t id;
 
     int ret_val;

@@ -75,5 +75,11 @@ object* bool_cmp(object* self, object* other, uint8_t type){
     return new_bool_false();
 }
 
+object* bool_bool(object* self){
+    if (CAST_BOOL(self)->val==1){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
 
 void bool_del(object* obj){}

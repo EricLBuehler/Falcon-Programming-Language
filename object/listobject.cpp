@@ -47,6 +47,10 @@ object* list_new(object* type, object* args, object* kwargs){
     return (object*)obj;
 }
 
+object* list_bool(object* self){
+    return new_bool_true();
+}
+
 object* list_len(object* self){
     return new_int_fromint(CAST_LIST(self)->size);
 }

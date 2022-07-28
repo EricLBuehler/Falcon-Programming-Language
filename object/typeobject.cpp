@@ -5,7 +5,18 @@ object* type_cmp(object* self, object* other, uint8_t type);
 object* type_call(object* self, object* args, object* kwargs);
 object* type_get(object* self, object* attr);
 void type_set(object* obj, object* attr, object* val);
+object* type_bool(object* self);
 
+static NumberMethods type_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)type_bool, //slot_bool
+};
 
 TypeObject TypeType={
     0, //refcnt
@@ -36,7 +47,7 @@ TypeObject TypeType={
     (reprfunc)type_repr, //slot_str
     (callfunc)type_call, //slot_call
 
-    0, //slot_number
+    &type_num_methods, //slot_number
 
     0, //slot_cmp
 };
@@ -61,6 +72,7 @@ object* newtp_mul(object* self, object* other);
 object* newtp_div(object* self, object* other);
 
 object* newtp_neg(object* self);
+object* newtp_bool(object* self);
 
 
 NumberMethods newtp_number={    
@@ -72,6 +84,8 @@ NumberMethods newtp_number={
 
     //unaryops
     newtp_neg,
+
+    newtp_bool,
 };
 
 typedef struct NewTypeObject{
@@ -80,7 +94,6 @@ typedef struct NewTypeObject{
 }NewTypeObject;
 
 #define CAST_NEWTYPE(obj) ((NewTypeObject*)(obj))
-
 
 object* new_type(string* name, object* bases, object* dict){
     TypeObject newtype={

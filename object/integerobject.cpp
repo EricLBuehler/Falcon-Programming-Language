@@ -117,6 +117,13 @@ object* int_cmp(object* self, object* other, uint8_t type){
     return new_bool_false();
 }
 
+object* int_bool(object* self){
+    if ((*CAST_INT(self)->val)>0){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+
 void int_del(object* obj){
     delete ((IntObject*)obj)->val;
 }

@@ -49,6 +49,10 @@ object* tuple_new(object* type, object* args, object* kwargs){
     return (object*)obj;
 }
 
+object* tuple_bool(object* self){
+    return new_bool_true();
+}
+
 object* tuple_len(object* self){
     return new_int_fromint(CAST_TUPLE(self)->size);
 }

@@ -75,3 +75,7 @@ object* code_cmp(object* self, object* other, uint8_t type){
     }
     return new_bool_false();
 }
+
+object* code_bool(object* self){
+    return new_bool_true();
+}

@@ -54,6 +54,10 @@ object* func_cmp(object* self, object* other, uint8_t type){
     return new_bool_false();
 }
 
+object* func_bool(object* self){
+    return new_bool_true();
+}
+
 void func_del(object* obj){
     DECREF(CAST_FUNC(obj)->code);
     DECREF(CAST_FUNC(obj)->name);

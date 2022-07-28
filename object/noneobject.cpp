@@ -16,6 +16,10 @@ object* none_repr(object* self){
     return str_new_fromstr(new string("None"));
 }
 
+object* none_bool(object* self){
+    return new_bool_false();
+}
+
 object* none_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
         return new_bool_false();

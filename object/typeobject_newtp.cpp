@@ -144,3 +144,7 @@ object* newtp_div(object* self, object* other){
 object* newtp_neg(object* self){
     return new_none();
 }
+
+object* newtp_bool(object* self){
+    return new_bool_true();
+}

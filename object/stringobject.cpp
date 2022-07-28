@@ -60,6 +60,10 @@ object* str_str(object* self){
     return str_new_fromstr(CAST_STRING(self)->val);
 }
 
+object* str_bool(object* self){
+    return new_bool_true();
+}
+
 object* str_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
         return new_bool_false();

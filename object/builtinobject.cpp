@@ -55,6 +55,9 @@ object* builtin_cmp(object* self, object* other, uint8_t type){
     return new_bool_true();
 }
 
+object* builtin_bool(object* self){
+    return new_bool_true();
+}
 
 void builtin_del(object* obj){
     delete CAST_BUILTIN(obj)->name;

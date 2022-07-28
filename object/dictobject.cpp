@@ -31,6 +31,10 @@ object* dict_new(object* type, object* args, object* kwargs){
     return (object*)obj;    
 }
 
+object* dict_bool(object* self){
+    return new_bool_true();
+}
+
 object* dict_len(object* self){
     return new_int_fromint(((DictObject*)self)->val->size());
 }

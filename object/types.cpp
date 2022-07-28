@@ -7,6 +7,7 @@ object* int_div(object* self, object* other);
 object* int_neg(object* self);
 object* int_repr(object* self);
 object* int_cmp(object* self, object* other, uint8_t type);
+object* int_bool(object* self);
 
 object* new_int_fromint(int v);
 object* new_int_fromstr(string* v);
@@ -24,6 +25,8 @@ static NumberMethods int_num_methods{
     (binopfunc)int_div, //slot_div
 
     (unaryfunc)int_neg, //slot_neg
+
+    (unaryfunc)int_bool, //slot_bool
 };
 
 TypeObject IntType={
@@ -72,6 +75,7 @@ object* str_len(object* self);
 object* str_repr(object* self);
 object* str_str(object* self);
 object* str_cmp(object* self, object* other, uint8_t type);
+object* str_bool(object* self);
 
 object* str_new_fromstr(string* val);
 
@@ -80,6 +84,16 @@ typedef struct StrObject{
     string* val;
 }StrObject;
 
+static NumberMethods str_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)str_bool, //slot_bool
+};
 
 TypeObject StrType={
     0, //refcnt
@@ -110,7 +124,7 @@ TypeObject StrType={
     (reprfunc)str_str, //slot_str
     0, //slot_call
 
-    0, //slot_number
+    &str_num_methods, //slot_number
 
     (compfunc)str_cmp, //slot_cmp
 };
@@ -132,6 +146,7 @@ void list_set(object* self, object* idx, object* val);
 object* list_repr(object* self);
 object* list_next(object* self);
 object* list_cmp(object* self, object* other, uint8_t type);
+object* list_bool(object* self);
 
 
 typedef struct ListObject{
@@ -142,6 +157,16 @@ typedef struct ListObject{
     size_t idx;
 }ListObject;
 
+static NumberMethods list_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)list_bool, //slot_bool
+};
 
 TypeObject ListType={
     0, //refcnt
@@ -172,7 +197,7 @@ TypeObject ListType={
     (reprfunc)list_repr, //slot_str
     0, //slot_call
 
-    0, //slot_number
+    &list_num_methods, //slot_number
 
     (compfunc)list_cmp, //slot_cmp
 };
@@ -190,7 +215,7 @@ object* dict_get(object* self, object* idx);
 void dict_set(object* self, object* key, object* val);
 object* dict_repr(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
-
+object* dict_bool(object* self);
 
 
 typedef struct DictObject{
@@ -198,6 +223,16 @@ typedef struct DictObject{
     map<object*, object*>* val;
 }DictObject;
 
+static NumberMethods dict_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)dict_bool, //slot_bool
+};
 
 static TypeObject DictType={
     0, //refcnt
@@ -228,7 +263,7 @@ static TypeObject DictType={
     (reprfunc)dict_repr, //slot_str
     0, //slot_call
 
-    0, //slot_number
+    &dict_num_methods, //slot_number
 
     (compfunc)dict_cmp, //slot_cmp
 };
@@ -244,8 +279,7 @@ void code_del(object* self);
 object* code_new(object* type, object* args, object* kwargs);
 object* code_repr(object* self);
 object* code_cmp(object* self, object* other, uint8_t type);
-
-
+object* code_bool(object* self);
 
 typedef struct CodeObject{
     OBJHEAD_EXTRA
@@ -256,6 +290,16 @@ typedef struct CodeObject{
     object* co_lines;
 }CodeObject;
 
+static NumberMethods code_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)code_bool, //slot_bool
+};
 
 TypeObject CodeType={
     0, //refcnt
@@ -286,7 +330,7 @@ TypeObject CodeType={
     (reprfunc)code_repr, //slot_str
     0, //slot_call
 
-    0, //slot_number
+    &code_num_methods, //slot_number
 
     (compfunc)code_cmp, //slot_cmp
 };
@@ -306,6 +350,7 @@ object* bool_div(object* self, object* other);
 object* bool_neg(object* self);
 object* bool_repr(object* self);
 object* bool_cmp(object* self, object* other, uint8_t type);
+object* bool_bool(object* self);
 
 object* new_bool_true();
 object* new_bool_false();
@@ -315,7 +360,6 @@ typedef struct BoolObject{
     OBJHEAD_EXTRA
     uint8_t val;
 }BoolObject;
-
 
 bool istrue(object* boolean){
     if (CAST_BOOL(boolean)->val==1){
@@ -331,6 +375,8 @@ static NumberMethods bool_num_methods{
     (binopfunc)bool_div, //slot_div
 
     (unaryfunc)bool_neg, //slot_neg
+
+    (unaryfunc)bool_bool, //slot_bool
 };
 
 TypeObject BoolType={
@@ -381,8 +427,7 @@ object* tuple_new(object* type, object* args, object* kwargs);
 object* tuple_repr(object* self);
 object* tuple_next(object* self);
 object* tuple_cmp(object* self, object* other, uint8_t type);
-
-
+object* tuple_bool(object* self);
 
 typedef struct TupleObject{
     OBJHEAD_VAR
@@ -391,6 +436,17 @@ typedef struct TupleObject{
     size_t size;
     size_t idx;
 }TupleObject;
+
+static NumberMethods tuple_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)tuple_bool, //slot_bool
+};
 
 TypeObject TupleType={
     0, //refcnt
@@ -421,7 +477,7 @@ TypeObject TupleType={
     (reprfunc)tuple_repr, //slot_str
     0, //slot_call
 
-    0, //slot_number
+    &tuple_num_methods, //slot_number
 
     (compfunc)tuple_cmp, //slot_cmp
 };
@@ -436,7 +492,7 @@ object* func_new(object* type, object* args, object* kwargs);
 object* func_repr(object* self);
 object* func_cmp(object* self, object* other, uint8_t type);
 object* func_call(object* self, object* args, object* callfunc);
-
+object* func_bool(object* self);
 
 
 typedef struct FuncObject{
@@ -448,6 +504,17 @@ typedef struct FuncObject{
     uint32_t argc;
     object* name;
 }FuncObject;
+
+static NumberMethods func_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)func_bool, //slot_bool
+};
 
 TypeObject FuncType={
     0, //refcnt
@@ -478,7 +545,7 @@ TypeObject FuncType={
     (reprfunc)func_repr, //slot_str
     (callfunc)func_call, //slot_call
 
-    0, //slot_number
+    &func_num_methods, //slot_number
 
     (compfunc)func_cmp, //slot_cmp
 };
@@ -492,11 +559,23 @@ object* none_new( object* args, object* kwargs);
 void none_del(object* self);
 object* none_repr(object* self);
 object* none_cmp(object* self, object* other, uint8_t type);
+object* none_bool(object* self);
 
 
 typedef struct NoneObject{
     OBJHEAD_EXTRA
 }NoneObject;
+
+static NumberMethods none_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)none_bool, //slot_bool
+};
 
 TypeObject NoneType={
     0, //refcnt
@@ -527,7 +606,7 @@ TypeObject NoneType={
     (reprfunc)none_repr, //slot_str
     0, //slot_call
 
-    0, //slot_number
+    &none_num_methods, //slot_number
 
     (compfunc)none_cmp, //slot_cmp
 };
@@ -541,6 +620,7 @@ void builtin_del(object* self);
 object* builtin_repr(object* self);
 object* builtin_cmp(object* self, object* other, uint8_t type);
 object* builtin_call(object* self, object* args, object* kwargs);
+object* builtin_bool(object* self);
 
 
 typedef struct BuiltinObject{
@@ -551,6 +631,17 @@ typedef struct BuiltinObject{
     object* kwargs; //Tuple
     uint32_t argc;
 }BuiltinObject;
+
+static NumberMethods builtin_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)builtin_bool, //slot_bool
+};
 
 TypeObject BuiltinType={
     0, //refcnt
@@ -581,7 +672,7 @@ TypeObject BuiltinType={
     (reprfunc)builtin_repr, //slot_str
     (callfunc)builtin_call, //slot_call
 
-    0, //slot_number
+    &builtin_num_methods, //slot_number
 
     (compfunc)builtin_cmp, //slot_cmp
 };
@@ -595,12 +686,23 @@ object* object_new(object* type, object* args, object* kwargs);
 object* object_repr_(object* self);
 object* object_init(object* self, object* args, object* kwargs);
 object* object_cmp_(object* self, object* other, uint8_t type);
-
+object* object_bool(object* self);
 
 
 typedef struct ObjectObject{
     OBJHEAD_EXTRA
 }ObjectObject;
+
+static NumberMethods object_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)object_bool, //slot_bool
+};
 
 TypeObject ObjectType={
     0, //refcnt
@@ -630,7 +732,7 @@ TypeObject ObjectType={
     (reprfunc)object_repr_, //slot_str
     0, //slot_call
 
-    0, //slot_number
+    &object_num_methods, //slot_number
 
     (compfunc)object_cmp_, //slot_cmp
 };
@@ -793,6 +895,10 @@ object* finalize_type(TypeObject* newtype){
     tp_tp->refcnt=1;
 
     return tp;
+}
+
+object* type_bool(object* self){
+    return new_bool_true();
 }
 
 
