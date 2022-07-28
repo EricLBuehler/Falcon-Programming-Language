@@ -468,6 +468,13 @@ class Lexer{
 
                 return res;
             }
+            if (output=="is"){
+                _tok_data res;
+                res.data=output;
+                res.type=T_IS;
+
+                return res;
+            }
 
             _tok_data res;
             res.data=output;

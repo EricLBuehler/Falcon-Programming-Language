@@ -41,6 +41,7 @@ enum token_type{
     T_FALSE,
     T_TRUE,
     T_DOTIDENT,
+    T_IS,
 };
 
 string token_type_to_str(enum token_type type){
@@ -86,6 +87,7 @@ string token_type_to_str(enum token_type type){
     case T_FALSE:return "FALSE";
     case T_NONE:return "NONE";
     case T_DOTIDENT:return "DOTIDENT";
+    case T_IS:return "IS";
     }
     return "";
 }
