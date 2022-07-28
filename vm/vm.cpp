@@ -408,7 +408,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             break;
         }
 
-        case CALL_FUNCTION: {   
+        case CALL_FUNCTION: {
             object* function=pop_dataframe(vm->objstack);
 
             uint32_t argc=CAST_INT(arg)->val->to_int();
@@ -463,6 +463,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
                 args->type->slot_append(args, pop_dataframe(vm->objstack));
             }
             
+            
             //
 
             //Call
@@ -471,6 +472,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
                 vm->callstack->head->locals=new_dict();
             }
             object* ret=object_call(function, args, kwargs);
+            
             if (object_istype(function->type, &FuncType)){
                 pop_callframe(vm->callstack);
             }
