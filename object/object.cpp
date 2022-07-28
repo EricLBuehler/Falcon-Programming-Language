@@ -320,7 +320,6 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){
             //Error
-            DECREF(names);
             return NULL;
         }
         //
@@ -328,8 +327,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         dict->type->slot_set(dict, k.first, k.second);
         argn++;
     }
-
-    DECREF(names);
+    
     return dict;
 }
 
