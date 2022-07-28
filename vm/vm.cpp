@@ -12,14 +12,6 @@ struct callstack* new_callstack(){
     return call;
 }
 
-struct blockstack* new_blockstack(){
-    struct blockstack* block=(struct blockstack*)malloc(sizeof(struct blockstack));
-    block->head=NULL;
-    block->size=0;
-    return block;
-}
-
-
 void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
     struct dataframe* frame=(struct dataframe*)malloc(sizeof(struct dataframe));
     frame->next=stack->head;
@@ -87,6 +79,10 @@ void vm_add_err(struct vm* vm, const char *_format, ...) {
     
     struct callframe* callframe=vm->callstack->head;
     while (callframe){    
+        if (callframe->name==NULL){
+            vm->headers->push_back(NULL);
+            vm->snippets->push_back(NULL);
+        }
         vm->headers->push_back(new string("In file "+object_cstr(CAST_CODE(vm->callstack->head->code)->co_file)+", line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)));
         
         int line=0;
@@ -136,7 +132,6 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->ip=0;
     vm->objstack=new_datastack();
     vm->callstack=new_callstack();
-    vm->blockstack=new_blockstack();
     
     vm->haserr=false;
     vm->headers=new vector<string*>;
@@ -166,12 +161,6 @@ void vm_del(struct vm* vm){
         struct dataframe* j_=j=j->next;;
         free(i);
         j=j_;
-    }
-    struct blockframe* k=vm->blockstack->head;
-    while (k){
-        struct blockframe* k_=k=k->next;;
-        free(k);
-        k=k_;
     }
 
     DECREF(vm->globals);
@@ -539,6 +528,19 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
             object* attr=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object_setattr(obj, attr, val);
+            break;
+        }
+
+        case RUN_IF: {
+            if (istrue(object_istruthy(pop_dataframe(vm->objstack)))){
+                object* code=CAST_CODE(vm->callstack->head->code)->co_consts->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_consts, arg);
+                object* lcls=vm->callstack->head->locals;
+                add_callframe(vm->callstack, INCREF(new_int_fromint(0)), NULL, code);
+                vm->callstack->head->locals=lcls;
+                uint32_t ip=0;
+                run_vm(code, &ip);
+            }
+            break;
         }
 
         default:
@@ -577,6 +579,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         if (vm->haserr){
             for (int i=vm->headers->size()-1; i>=0; i--){
+                if ((*vm->headers)[i]==NULL){
+                    continue;
+                }
                 cout<<(*(*vm->headers)[i])<<endl;
                 cout<<"  "<<(*(*vm->snippets)[i])<<endl;
             }
