@@ -31,6 +31,10 @@ object* tuple_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
+    if (object_istype(args->type->slot_get(args, new_int_fromint(0))->type, &TupleType)){
+        return INCREF(args->type->slot_get(args, new_int_fromint(0)));
+    }
+
     //Append
     object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));
     CAST_TUPLE(obj)->capacity=2; //Start with 2

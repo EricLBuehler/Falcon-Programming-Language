@@ -30,6 +30,9 @@ object* list_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
+    if (object_istype(args->type->slot_get(args, new_int_fromint(0))->type, &ListType)){
+        return INCREF(args->type->slot_get(args, new_int_fromint(0)));
+    }
     //Append
     object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
     CAST_LIST(obj)->capacity=2; //Start with 2

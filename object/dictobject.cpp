@@ -15,6 +15,9 @@ object* dict_new(object* type, object* args, object* kwargs){
         obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
         return (object*)obj;    
     }
+    if (object_istype(args->type->slot_get(args, new_int_fromint(0))->type, &DictType)){
+        return INCREF(args->type->slot_get(args, new_int_fromint(0)));
+    }
 
     object_var* obj=new_object_var(&DictType, 0);
     CAST_DICT(obj)->val=new map<object*, object*>;
