@@ -22,6 +22,7 @@ enum opcode{
     CALL_METHOD,
     BUILD_LIST,
     BINOP_IS,
+    BINOP_EE,
 };
 
 enum scope{
