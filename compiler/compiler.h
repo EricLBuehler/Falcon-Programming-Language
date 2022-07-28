@@ -24,6 +24,7 @@ enum opcode{
     BINOP_IS,
     BINOP_EE,
     RUN_IF,
+    RUN,
 };
 
 enum scope{
@@ -67,6 +68,7 @@ struct compiler{
 #define LIST(node) ((List*)(node))
 #define DICT(node) ((Dict*)(node))
 #define IF(node) ((If*)(node))
+#define ELSE(node) ((Else*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
 
