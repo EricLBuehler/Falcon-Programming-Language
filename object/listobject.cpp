@@ -41,11 +41,25 @@ object* new_list(){
 }
 
 object* list_new(object* type, object* args, object* kwargs){
+    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+        object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
+        CAST_LIST(obj)->capacity=2; //Start with 2
+        CAST_LIST(obj)->size=0;
+        CAST_LIST(obj)->idx=0;
+        CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
+        
+        return (object*)obj;
+    }
+    //Append
     object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
     CAST_LIST(obj)->capacity=2; //Start with 2
     CAST_LIST(obj)->size=0;
     CAST_LIST(obj)->idx=0;
     CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
+
+    for (size_t i=0; i<CAST_INT(args->type->slot_len(args))->val->to_int(); i++){
+        list_append((object*)obj, INCREF(args->type->slot_get(args, new_int_fromint(i))));
+    }
     
     return (object*)obj;
 }
@@ -111,8 +125,8 @@ void list_del(object* obj){
 object* list_repr(object* self){
     string s="";
     s+="[";
-    for (int i=0; i<CAST_LIST(self)->size; i++){
-        s+=(*CAST_STRING(object_repr(CAST_LIST(self)->array[i]))->val);
+    for (size_t i=0; i<CAST_LIST(self)->size; i++){
+        s+=object_crepr(CAST_LIST(self)->array[i]);
         if (i!=CAST_LIST(self)->size-1){
             s+=", ";
         }
