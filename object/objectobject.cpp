@@ -2,7 +2,14 @@ object* object_new(object* type, object* args, object* kwargs){
     return new_object(CAST_TYPE(type));
 }
 object* object_repr_(object* self){
-    return str_new_fromstr(new string("object_genericrepr"));
+    char buf[32];
+    sprintf(buf, "0x%x", self);
+
+    string s="<";
+    s+="object @ ";
+    s+=buf;
+    s+=">";
+    return str_new_fromstr(new string(s));
 }
 object* object_init(object* self, object* args, object* kwargs){
     return self;
