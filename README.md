@@ -13,7 +13,49 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 
 ### Sample Program ###
 ```js
+m="Placeholder value"
 
+class Peregrine{
+    var=m
+    func f(self){
+        print(self.var)
+    }
+}
+
+x=Peregrine()
+
+y=Peregrine()
+
+a=Peregrine.var
+x.var=5
+y.var="Value"
+b=x.var
+
+x.f()
+y.f()
+
+func f(x,c="A"){
+    print("Function f says: ","")
+    print(c)
+}
+
+f(1)
+
+dictionary={1:[1,2,3], 2:{1:"A"}, "Hello":"World", [123]:2}
+
+l=list(1,2,3,4,5)
+
+x=object()
+y=object()
+
+
+true=x == y
+maybe=x is y
+same=x is x
+print(500==500)
+if 500 is 500{
+    print("500 is the same object as 500")
+}
 ```
 
 ### Usage ###
