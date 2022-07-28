@@ -58,7 +58,7 @@ int execute(string data, bool objdump, bool verbose){
     }
 
 
-    Parser parser(lexer.tokens, data);
+    parser=Parser(lexer.tokens, data);
     parse_ret ast=parser.parse();
 
     if (ast.errornum>0){
@@ -78,6 +78,13 @@ int execute(string data, bool objdump, bool verbose){
 
 
     object* code=compile(compiler, ast);
+    if (code==NULL){
+        cout<<parseretglbl.header<<endl;
+        cout<<parseretglbl.snippet<<endl;
+        printf("%s\n",parseretglbl.error);
+        return -1;
+    }
+    
     if (verbose){
         cout<<(*CAST_INT(CAST_CODE(code)->co_code->type->slot_len(CAST_CODE(code)->co_code))->val)/2<<" instructions."<<endl;
         cout<<object_cstr(CAST_CODE(code)->co_code->type->slot_len(CAST_CODE(code)->co_code))<<" bytes."<<endl<<endl;
