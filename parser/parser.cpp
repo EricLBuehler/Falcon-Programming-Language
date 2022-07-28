@@ -786,8 +786,8 @@ class Parser{
             }
             if (this->current_tok.data=="if"){
                 return make_if(ret);
-            }
-            this->add_parsing_error(ret, "SyntaxError: Unknown keyword '%s'",this->current_tok.data.c_str());
+            }            
+            this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
             this->advance();
             return NULL;
         }
@@ -976,6 +976,48 @@ class Parser{
             return node;
         }
 
+        Node* make_else(parse_ret* ret, Node* base){
+            Token t=this->current_tok;
+            this->advance(); 
+            
+            if (!this->current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.nodes.clear();
+            }
+            if (!this->current_tok_is(T_RCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }         
+
+            Node* node=make_node(N_ELSE);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Else* e=(Else*)malloc(sizeof(Else));
+            e->base=base;
+            e->code=new vector<Node*>;
+            e->code->clear();
+            for (Node* n: code.nodes){
+                e->code->push_back(n);
+            }
+
+            node->node=e;
+            
+            this->advance();
+            return node;
+        }
+
         Node* make_if(parse_ret* ret){
             this->advance();
 
@@ -1016,6 +1058,12 @@ class Parser{
             node->node=i;
             
             this->advance();
+
+            skip_newline;
+
+            if (this->current_tok_is(T_KWD) && this->current_tok.data=="else"){
+                return this->make_else(ret, node);
+            }
             return node;
         }
 

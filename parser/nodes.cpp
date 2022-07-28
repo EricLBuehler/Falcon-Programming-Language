@@ -20,6 +20,7 @@ enum nodetype{
     N_TUPLE, // Same internally (List)
     N_DICT,
     N_IF,
+    N_ELSE,
 };
 
 enum precedence {
@@ -164,6 +165,12 @@ struct If{
     Node* expr;
     vector<Node*>* code;
 };
+
+struct Else{
+    Node* base;
+    vector<Node*>* code;
+};
+
 
 
 void destroy_node(struct Node* node){
