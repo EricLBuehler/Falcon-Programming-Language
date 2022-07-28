@@ -19,6 +19,7 @@ enum nodetype{
     N_LIST,  //
     N_TUPLE, // Same internally (List)
     N_DICT,
+    N_IF,
 };
 
 enum precedence {
@@ -157,6 +158,11 @@ struct List{
 struct Dict{
     vector<Node*>* keys;
     vector<Node*>* vals;
+};
+
+struct If{
+    Node* expr;
+    vector<Node*>* code;
 };
 
 

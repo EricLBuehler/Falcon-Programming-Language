@@ -784,6 +784,9 @@ class Parser{
             if (this->current_tok.data=="return"){
                 return make_return(ret);
             }
+            if (this->current_tok.data=="if"){
+                return make_if(ret);
+            }
             this->add_parsing_error(ret, "SyntaxError: Unknown keyword '%s'",this->current_tok.data.c_str());
             this->advance();
             return NULL;
@@ -968,6 +971,49 @@ class Parser{
             r->node=n;
 
             node->node=r;
+            
+            this->advance();
+            return node;
+        }
+
+        Node* make_if(parse_ret* ret){
+            this->advance();
+
+            Node* expr=this->expr(ret, LOWEST);   
+            
+            if (!this->current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.nodes.clear();
+            }
+            if (!this->current_tok_is(T_RCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }         
+
+            Node* node=make_node(N_IF);
+            node->start=expr->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            If* i=(If*)malloc(sizeof(If));
+            i->expr=expr;
+            i->code=new vector<Node*>;
+            i->code->clear();
+            for (Node* n: code.nodes){
+                i->code->push_back(n);
+            }
+
+            node->node=i;
             
             this->advance();
             return node;
