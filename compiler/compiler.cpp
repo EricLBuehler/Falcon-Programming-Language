@@ -617,8 +617,14 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }        
 
         case N_RETURN: {
+            if (compiler->scope==SCOPE_GLOBAL){
+                parser.add_parsing_error(&parseretglbl, "SyntaxError: Return outside function");
+                return 0x100;
+            }
+
             compile_expr(compiler, RETURN(expr->node)->node);
-            add_instruction(compiler->instructions, RETURN_VAL, 0, new Position, new Position);
+            add_instruction(compiler->instructions, RETURN_VAL, 0, expr->start, expr->end);
+            break;
         }
 
         case N_LIST: {
@@ -655,7 +661,11 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
     object* lines=new_list();
     for (Node* n: ast.nodes){
         uint32_t start=compiler->instructions->count;
-        compile_expr(compiler, n);
+        
+        int i=compile_expr(compiler, n);
+        if (i==0x100){
+            return NULL;
+        }
         uint32_t end=compiler->instructions->count;
         
         object* tuple=new_tuple();
