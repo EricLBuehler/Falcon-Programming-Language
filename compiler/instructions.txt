@@ -49,3 +49,5 @@ BUILD_LIST(n) - Pops n frames of stack (L->R and Top->Down) and pushes list (sim
 BINOP_IS - Implements TOS is TOS-1
 
 BINOP_EE - Implements TOS == TOS-1
+
+RUN_IF(idx) - Runs code object as consts[idx] if TOS is truthy

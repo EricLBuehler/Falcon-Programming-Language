@@ -658,6 +658,36 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_IF: {
+            compile_expr(compiler, IF(expr->node)->expr);
+
+            //Code
+            parse_ret c;
+            c.nodes=(*IF(expr->node)->code);
+            struct compiler* comp=new_compiler();
+            comp->scope=SCOPE_LOCAL; //Can just pretend... vm makes no effort to make scope local
+            struct compiler* compiler_=compiler;
+            compiler=comp;
+            object* code=compile(comp, c);
+            compiler=compiler_;
+            
+            DECREF(CAST_CODE(code)->co_file);
+            CAST_CODE(code)->co_file=object_repr(str_new_fromstr(new string("if")));
+            
+            uint32_t idx;
+            if (!object_find_bool(compiler->consts, code)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, code);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, code);
+            }
+
+            add_instruction(compiler->instructions,RUN_IF, idx, expr->start, expr->end);
+            break;
+        }
+
     }
 
     return 0;
