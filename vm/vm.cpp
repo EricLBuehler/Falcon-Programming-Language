@@ -242,7 +242,7 @@ struct object* vm_get_var_globals(struct vm* vm, object* name){
 
 
 
-object* _vm_step(object* instruction, object* arg, struct vm* vm){
+object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
     //Run one instruction
     switch (CAST_INT(instruction)->val->to_int()){
         case LOAD_CONST:{
@@ -531,24 +531,16 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm){
             break;
         }
 
-        case RUN_IF: {
-            if (istrue(object_istruthy(pop_dataframe(vm->objstack)))){
-                object* code=CAST_CODE(vm->callstack->head->code)->co_consts->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_consts, arg);
-                object* lcls=vm->callstack->head->locals;
-                add_callframe(vm->callstack, INCREF(new_int_fromint(0)), NULL, code);
-                vm->callstack->head->locals=lcls;
-                uint32_t ip=0;
-                run_vm(code, &ip);
+        case POP_JMP_TOS_FALSE: {
+            if (!istrue(object_istruthy(peek_dataframe(vm->objstack)))){
+                pop_dataframe(vm->objstack);
+                (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
             }
             break;
         }
-        case RUN: {
-            object* code=CAST_CODE(vm->callstack->head->code)->co_consts->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_consts, arg);
-            object* lcls=vm->callstack->head->locals;
-            add_callframe(vm->callstack, INCREF(new_int_fromint(0)), NULL, code);
-            vm->callstack->head->locals=lcls;
-            uint32_t ip=0;
-            run_vm(code, &ip);
+
+        case JUMP_DELTA: {
+            (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
             break;
         }
 
@@ -577,7 +569,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
             vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
         }
-        object* obj=_vm_step(instruction, code->type->slot_next(code), vm);
+        uint32_t ip_=(*ip);
+        object* obj=_vm_step(instruction, code->type->slot_next(code), vm, ip);
+        if ((*ip)!=ip_){
+            for (uint32_t i=0; i<((*ip)-ip_)*2; i++){
+                code->type->slot_next(code);
+            }
+        }
         if (obj==CALL_ERR){
             CAST_LIST(code)->idx=0;
             return CALL_ERR;
