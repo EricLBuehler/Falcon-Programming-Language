@@ -858,7 +858,22 @@ void type_set(object* obj, object* attr, object* val){
     return;
 }
 
-void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp){
+void _inherit_number_slots(NumberMethods* m, TypeObject* base_tp){
+    if (base_tp->slot_number==NULL){
+        return;
+    }
+    
+    m->slot_add=base_tp->slot_number->slot_add;
+    m->slot_sub=base_tp->slot_number->slot_sub;
+    m->slot_mul=base_tp->slot_number->slot_mul;
+    m->slot_div=base_tp->slot_number->slot_div;
+
+    m->slot_neg=base_tp->slot_number->slot_neg;
+
+    m->slot_bool=base_tp->slot_number->slot_bool;
+}
+
+void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp, NumberMethods* m){
     SETSLOT(tp_tp, base_tp, slot_getattr);
     SETSLOT(tp_tp, base_tp, slot_setattr);
     SETSLOT(tp_tp, base_tp, slot_init);
@@ -873,12 +888,14 @@ void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp){
     SETSLOT(tp_tp, base_tp, slot_str);
     SETSLOT(tp_tp, base_tp, slot_call);
     SETSLOT(tp_tp, base_tp, slot_cmp);
+    SETSLOT(tp_tp, base_tp, slot_subscr);
 
     //Inheritance of number methods could be updated to be special
-    SETSLOT(tp_tp, base_tp, slot_number);
+    _inherit_number_slots(m, base_tp);
 }
 
 object* finalize_type(TypeObject* newtype){
+    cout<<"    "<<newtype;
     object* tp=(object*)malloc(sizeof(TypeObject));
     memcpy(tp, newtype, sizeof(TypeObject));
         
@@ -897,14 +914,21 @@ object* finalize_type(TypeObject* newtype){
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
     //also breaks fewer rules...
     
+    
+
+    NumberMethods* m=(NumberMethods*)malloc(sizeof(NumberMethods));
+    memset(m, 0, sizeof(NumberMethods));
     for (uint32_t i=total_bases; i>0; i--){
         TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
         //Dirty inheritance here... go over each
-        _inherit_slots(tp_tp, base_tp);
+        _inherit_slots(tp_tp, base_tp, m);
         //
     }
     //Hack to ensure retention of original slots
-    _inherit_slots(tp_tp, newtype);
+    _inherit_slots(tp_tp, newtype, m);
+    
+
+    tp_tp->slot_number=m;
 
     tp_tp->refcnt=1;
 

@@ -190,28 +190,28 @@ object* object_add(object* left, object* right){
 }
 
 object* object_sub(object* left, object* right){
-    if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_add==NULL || right->type->slot_number->slot_add==NULL){
+    if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_sub==NULL || right->type->slot_number->slot_sub==NULL){
         return NULL;
     }
     return left->type->slot_number->slot_sub(left, right);
 }
 
 object* object_mul(object* left, object* right){
-    if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_add==NULL || right->type->slot_number->slot_add==NULL){
+    if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_mul==NULL || right->type->slot_number->slot_mul==NULL){
         return NULL;
     }
     return left->type->slot_number->slot_mul(left, right);
 }
 
 object* object_div(object* left, object* right){
-    if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_add==NULL || right->type->slot_number->slot_add==NULL){
+    if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_div==NULL || right->type->slot_number->slot_div==NULL){
         return NULL;
     }
     return left->type->slot_number->slot_div(left, right);
 }
 
 object* object_neg(object* right){
-    if (right->type->slot_number==NULL || right->type->slot_number->slot_add==NULL){
+    if (right->type->slot_number==NULL || right->type->slot_number->slot_neg==NULL){
         return NULL;
     }
     return right->type->slot_number->slot_neg(right);
