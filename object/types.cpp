@@ -895,7 +895,6 @@ void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp, NumberMethods* m){
 }
 
 object* finalize_type(TypeObject* newtype){
-    cout<<"    "<<newtype;
     object* tp=(object*)malloc(sizeof(TypeObject));
     memcpy(tp, newtype, sizeof(TypeObject));
         
