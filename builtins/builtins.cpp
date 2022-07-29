@@ -11,7 +11,7 @@ object* builtin___build_class__(object* self, object* args){
     object* dict;
 
     if (!object_istype(function->type, &FuncType)){
-        vm_add_err(vm, "TypeError: expected function");
+        vm_add_err(TypeError, vm, "expected function");
         return NULL;
     }
 
