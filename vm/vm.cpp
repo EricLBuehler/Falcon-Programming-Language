@@ -544,6 +544,13 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case BINOP_SUBSCR: {
+            object* idx=pop_dataframe(vm->objstack);
+            object* base=pop_dataframe(vm->objstack);
+            add_dataframe(vm, vm->objstack, object_subscript(base, idx));
+            break;
+        }
+
         default:
             return NULL;
             
