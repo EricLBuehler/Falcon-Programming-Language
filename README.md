@@ -51,9 +51,9 @@ x=object()
 y=object()
 
 
-true=x == y
-maybe=x is y
-same=x is x
+true = x == y
+maybe = x is y
+same = x is x
 print(500==500)
 
 if 500 is 200{
