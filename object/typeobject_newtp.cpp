@@ -55,7 +55,7 @@ void newtp_del(object* self){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
     }
@@ -79,7 +79,7 @@ object* newtp_len(object* self){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
         return val;
@@ -103,7 +103,7 @@ object* newtp_repr(object* self){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
         return val;
@@ -131,7 +131,7 @@ object* newtp_str(object* self){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
         return val;
@@ -181,7 +181,7 @@ object* newtp_call(object* self, object* args, object* kwargs){
 
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(function)->code)->co_file)), INCREF(CAST_FUNC(function)->code));
         vm->callstack->head->locals=new_dict();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object* val=object_call(function, args, kwargs);
         pop_callframe(vm->callstack);
         return val;
@@ -205,7 +205,7 @@ object* newtp_add(object* self, object* other){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
         return val;
@@ -224,7 +224,7 @@ object* newtp_sub(object* self, object* other){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
         return val;
@@ -262,7 +262,7 @@ object* newtp_div(object* self, object* other){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
         return val;
@@ -282,7 +282,7 @@ object* newtp_neg(object* self){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
         return val;
@@ -302,7 +302,28 @@ object* newtp_bool(object* self){
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
         vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_append(args, self);
+        object* val=object_call(n, args, new_dict());
+        pop_callframe(vm->callstack);
+        return val;
+    }
+}
+
+
+object* newtp_subscr(object* self, object* other){
+    object* n=object_getattr(self, str_new_fromstr(new string("__subscr__")));
+    if (n==NULL){
+        vm->haserr=false;
+        vm->headers->clear();
+        vm->snippets->clear();
+        delete vm->err;
+        return NULL;
+    }
+    else{
+        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
+        vm->callstack->head->locals=new_dict();
+        object* args=new_tuple();
+        args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         pop_callframe(vm->callstack);
         return val;

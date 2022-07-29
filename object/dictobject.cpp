@@ -35,6 +35,17 @@ object* dict_bool(object* self){
     return new_bool_true();
 }
 
+object* dict_subscr(object* self, object* other){
+    uint32_t idx=CAST_INT(other)->val->to_long();
+    for (auto k: (*CAST_DICT(self)->val)){
+        if (istrue(object_cmp(other, k.first, CMP_EQ))){
+            return  (*CAST_DICT(self)->val)[k.first];
+        }
+    }
+    vm_add_err(vm, "KeyError: %s is not a key", object_crepr(other));
+    return (object*)0x1;
+}
+
 object* dict_len(object* self){
     return new_int_fromint(((DictObject*)self)->val->size());
 }

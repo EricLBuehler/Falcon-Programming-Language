@@ -57,6 +57,7 @@ typedef struct object_type{
     lenfunc slot_len;
     setfunc slot_set;
     appendfunc slot_append;
+    binopfunc slot_subscr;
 
     reprfunc slot_repr;
     reprfunc slot_str;

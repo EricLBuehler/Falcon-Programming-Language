@@ -51,6 +51,19 @@ object* list_bool(object* self){
     return new_bool_true();
 }
 
+object* list_subscr(object* self, object* other){
+    if (!object_istype(other->type,&IntType)){
+        vm_add_err(vm, "TypeError: List must be indexed by int not '%s'",other->type->name->c_str());
+        return (object*)0x1;
+    }
+    uint32_t idx=CAST_INT(other)->val->to_long();
+    if (idx>=CAST_LIST(self)->size){
+        vm_add_err(vm, "IndexError: List index out of range");
+        return (object*)0x1;
+    }
+    return CAST_LIST(self)->array[idx];
+}
+
 object* list_len(object* self){
     return new_int_fromint(CAST_LIST(self)->size);
 }

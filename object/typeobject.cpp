@@ -42,6 +42,7 @@ TypeObject TypeType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
+    0, //slot_subscr
 
     (reprfunc)type_repr, //slot_repr
     (reprfunc)type_repr, //slot_str
@@ -65,6 +66,7 @@ object* newtp_repr(object* self);
 object* newtp_str(object* self);
 object* newtp_call(object* self, object* args, object* kwargs);
 object* newtp_cmp(object* self, object* other, uint8_t type);
+object* newtp_subscr(object* self, object* other);
 
 object* newtp_add(object* self, object* other);
 object* newtp_sub(object* self, object* other);
@@ -120,6 +122,7 @@ object* new_type(string* name, object* bases, object* dict){
         newtp_len, //slot_len
         newtp_set, //slot_set
         newtp_append, //slot_append
+        newtp_subscr, //slot_subscr
 
         newtp_repr, //slot_repr
         newtp_str, //slot_str
