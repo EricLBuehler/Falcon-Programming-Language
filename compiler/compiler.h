@@ -25,6 +25,7 @@ enum opcode{
     BINOP_EE,
     POP_JMP_TOS_FALSE,
     JUMP_DELTA,
+    BINOP_SUBSCR,
 };
 
 enum scope{
@@ -70,6 +71,7 @@ struct compiler{
 #define IF(node) ((If*)(node))
 #define ELSE(node) ((Else*)(node))
 #define CONTROL(node) ((Control*)(node))
+#define SUBSCR(node) ((Subscript*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
 

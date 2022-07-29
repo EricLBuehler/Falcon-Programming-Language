@@ -659,7 +659,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_IF: {
-            cout<<"IF";
             compile_expr(compiler, IF(expr->node)->expr);
 
             add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(expr->node)->code), expr->start, expr->end); 
@@ -672,7 +671,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_ELSE : {
-            cout<<"ELSE";
             if (ELSE(expr->node)->base!=NULL){
                 compile_expr(compiler, ELSE(expr->node)->base); //Compile first options
             }
@@ -711,6 +709,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }      
                 }
             }
+            break;
+        }
+
+        case N_SUBSCR: {
+            compile_expr(compiler, SUBSCR(expr->node)->left);
+            compile_expr(compiler, SUBSCR(expr->node)->expr);
+            add_instruction(compiler->instructions,BINOP_SUBSCR, 0, expr->start, expr->end);
             break;
         }
 
