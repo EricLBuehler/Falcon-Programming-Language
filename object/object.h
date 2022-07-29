@@ -90,6 +90,13 @@ static object* noneobj=NULL;
 const size_t nbuiltins=9;
 object* builtins[nbuiltins];
 
+object* TypeError=NULL;
+object* ValueError=NULL;
+object* AttributeError=NULL;
+object* IndexError=NULL;
+object* KeyError=NULL;
+object* NameError=NULL;
+
 Parser parser;
 
 
@@ -115,7 +122,7 @@ object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
 
 object* run_vm(object* codeobj, uint32_t* ip);
-void vm_add_err(struct vm* vm, const char *_format, ...);
+void vm_add_err(object* exception, struct vm* vm, const char *_format, ...);
 void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
 struct object* pop_dataframe(struct datastack* stack);
 void append_to_list(struct gc* gc, struct object* object);
@@ -181,10 +188,7 @@ struct vm{
     int ret_val;
     uint32_t ip;
 
-    bool haserr;
-    vector<string*>* headers;
-    vector<string*>* snippets;
-    string* err;
+    object* exception;
     string* filedata;
 
     object* accumulator;
@@ -204,12 +208,13 @@ struct vm{
 #define CAST_BUILTIN(obj) ((BuiltinObject*)obj)
 #define CAST_BOBJ(obj) ((ClassObject*)obj)
 #define CAST_TYPE(obj) ((TypeObject*)obj)
+#define CAST_EXCEPTION(obj) ((ExceptionObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
 #define CMP_EQ 0
 
-#define SETSLOT(tp, base, slot) tp->slot=base->slot;
+#define SETSLOT(tp, base, slot) if (base_tp->slot_new!=NULL){tp->slot=base->slot;}
 object* finalize_type(TypeObject* newtype);
 
 #ifdef DEBUG
@@ -243,6 +248,7 @@ ostream& operator<<(ostream& os, TypeObject* o)
 #include "noneobject.cpp"
 #include "builtinobject.cpp"
 #include "objectobject.cpp"
+#include "exceptionobject.cpp"
 
 void setup_types_consts(){
     setup_object_type();
@@ -263,4 +269,5 @@ void setup_types_consts(){
     setup_func_type();
     setup_none_type();
     setup_builtin_type();
+    setup_exception_type();
 }

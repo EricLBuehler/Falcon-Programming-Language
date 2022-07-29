@@ -41,7 +41,7 @@ object* dict_subscr(object* self, object* other){
             return  (*CAST_DICT(self)->val)[k.first];
         }
     }
-    vm_add_err(vm, "KeyError: %s is not a key", object_crepr(other));
+    vm_add_err(KeyError, vm, "%s is not a key", object_crepr(other));
     return (object*)0x1;
 }
 

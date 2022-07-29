@@ -2,10 +2,7 @@ object* newtp_init(object* self, object* args, object* kwargs){
     //Try to call __new__
     object* n=object_getattr(self, str_new_fromstr(new string("__init__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
     }
     else{
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
@@ -28,10 +25,7 @@ object* newtp_new(object* self, object* args, object* kwargs){
     //Try to call __new__
     object* n=object_getattr(o, str_new_fromstr(new string("__new__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
     }
     else{
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
@@ -46,10 +40,7 @@ object* newtp_new(object* self, object* args, object* kwargs){
 void newtp_del(object* self){
     object* n=object_getattr(self, str_new_fromstr(new string("__del__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
     }
     else{
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
@@ -69,10 +60,7 @@ object* newtp_get(object* self, object* idx){
 object* newtp_len(object* self){
     object* n=object_getattr(self, str_new_fromstr(new string("__len__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
         return NULL;
     }
     else{
@@ -94,10 +82,7 @@ void newtp_append(object* self, object* val){
 object* newtp_repr(object* self){
     object* n=object_getattr(self, str_new_fromstr(new string("__repr__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
     }
     else{
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
@@ -122,10 +107,7 @@ object* newtp_repr(object* self){
 object* newtp_str(object* self){
     object* n=object_getattr(self, str_new_fromstr(new string("__str__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
     }
     else{
         add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
@@ -151,10 +133,7 @@ object* newtp_call(object* self, object* args, object* kwargs){
     //Try to call __call__
     object* function=object_getattr(self, str_new_fromstr(new string("__call__")));
     if (function==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
     }
     else{
         uint32_t argc=CAST_INT(args->type->slot_len(args))->val->operator+((*CAST_INT(kwargs->type->slot_len(kwargs))->val)).to_int()+1;
@@ -162,7 +141,7 @@ object* newtp_call(object* self, object* args, object* kwargs){
         uint32_t kwargc=argc-posargc;     
 
         if (function->type->slot_call==NULL){
-            vm_add_err(vm, "TypeError: '%s' object is not callable.",function->type->name->c_str());
+            vm_add_err(TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
             return NULL;
         }
         
@@ -171,10 +150,10 @@ object* newtp_call(object* self, object* args, object* kwargs){
             || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
             || CAST_FUNC(function)->argc<argc){
                 if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
-                    vm_add_err(vm, "ValueError: expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
+                    vm_add_err(ValueError, vm, "expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
                     return NULL;
                 }
-                vm_add_err(vm, "ValueError: expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
+                vm_add_err(ValueError, vm, "expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
                 return NULL;
             }
         }
@@ -195,10 +174,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
 object* newtp_add(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr(new string("__add__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
         return NULL;
     }
     else{
@@ -214,10 +190,7 @@ object* newtp_add(object* self, object* other){
 object* newtp_sub(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr(new string("__sub__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
         return NULL;
     }
     else{
@@ -233,10 +206,7 @@ object* newtp_sub(object* self, object* other){
 object* newtp_mul(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr(new string("__mul__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
         return NULL;
     }
     else{
@@ -252,10 +222,7 @@ object* newtp_mul(object* self, object* other){
 object* newtp_div(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr(new string("__div__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
         return NULL;
     }
     else{
@@ -272,10 +239,7 @@ object* newtp_div(object* self, object* other){
 object* newtp_neg(object* self){
     object* n=object_getattr(self, str_new_fromstr(new string("__neg__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
         return NULL;
     }
     else{
@@ -292,10 +256,7 @@ object* newtp_neg(object* self){
 object* newtp_bool(object* self){
     object* n=object_getattr(self, str_new_fromstr(new string("__bool__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
         return NULL;
     }
     else{
@@ -313,10 +274,7 @@ object* newtp_bool(object* self){
 object* newtp_subscr(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr(new string("__subscr__")));
     if (n==NULL){
-        vm->haserr=false;
-        vm->headers->clear();
-        vm->snippets->clear();
-        delete vm->err;
+        vm->exception=NULL;
         return NULL;
     }
     else{
