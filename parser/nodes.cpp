@@ -19,6 +19,7 @@ enum nodetype{
     N_LIST,  //
     N_TUPLE, // Same internally (List)
     N_DICT,
+    N_CONTROL,
     N_IF,
     N_ELSE,
 };
@@ -169,6 +170,10 @@ struct If{
 struct Else{
     Node* base;
     vector<Node*>* code;
+};
+
+struct Control{
+    vector<Node*>* bases;
 };
 
 

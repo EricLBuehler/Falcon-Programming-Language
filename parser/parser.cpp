@@ -1013,12 +1013,108 @@ class Parser{
             }
 
             node->node=e;
+
+            
+            vector<Node*>* bases=new vector<Node*>;
+
+            bases->push_back(base);
+            bases->push_back(node);
+
+            Node* n=make_node(N_CONTROL);
+            n->start=bases->front()->start;
+            n->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Control* ei=(Control*)malloc(sizeof(Control));
+            ei->bases=bases;
+
+            n->node=ei;
+            
+            this->advance();
+            return n;
+        }
+
+        Node* make_else_(parse_ret* ret, Node* base){
+            Token t=this->current_tok;
+            this->advance(); 
+            
+            if (!this->current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.nodes.clear();
+            }
+            if (!this->current_tok_is(T_RCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }         
+
+            Node* node=make_node(N_ELSE);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Else* e=(Else*)malloc(sizeof(Else));
+            e->base=base;
+            e->code=new vector<Node*>;
+            e->code->clear();
+            for (Node* n: code.nodes){
+                e->code->push_back(n);
+            }
+
+            node->node=e;
+            this->advance();
+            return node;
+        }
+
+        Node* make_elif(parse_ret* ret, Node* base){
+            vector<Node*>* bases=new vector<Node*>;
+            bases->clear();
+
+            bases->push_back(base);
+
+            while (this->current_tok_is(T_KWD) &&\
+            this->current_tok.data=="elif"){
+                Node* n=this->make_elif_(ret);
+                if (n==NULL){
+                    delete bases;
+                    return n;
+                }
+                bases->push_back(n);
+                skip_newline;
+            }
+
+            if (this->current_tok_is(T_KWD) && this->current_tok.data=="else"){
+                Node* n=make_else_(ret, NULL);
+                if (n==NULL){
+                    delete bases;
+                    return n;
+                }
+                bases->push_back(n);
+                this->advance();
+            }
+
+            Node* node=make_node(N_CONTROL);
+            node->start=base->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Control* ei=(Control*)malloc(sizeof(Control));
+            ei->bases=bases;
+
+            node->node=ei;
             
             this->advance();
             return node;
         }
 
-        Node* make_if(parse_ret* ret){
+        Node* make_elif_(parse_ret* ret){
             this->advance();
 
             Node* expr=this->expr(ret, LOWEST);   
@@ -1058,13 +1154,73 @@ class Parser{
             node->node=i;
             
             this->advance();
+            return node;
+        }
+
+        Node* make_if(parse_ret* ret){
+            vector<Node*>* bases=new vector<Node*>;
+            this->advance();
+
+            Node* expr=this->expr(ret, LOWEST);   
+            
+            if (!this->current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                delete bases;
+                return NULL;
+            }
+            this->advance();
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.nodes.clear();
+            }
+            if (!this->current_tok_is(T_RCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                delete bases;
+                return NULL;
+            }         
+
+            Node* node=make_node(N_IF);
+            node->start=expr->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            If* i=(If*)malloc(sizeof(If));
+            i->expr=expr;
+            i->code=new vector<Node*>;
+            i->code->clear();
+            for (Node* n: code.nodes){
+                i->code->push_back(n);
+            }
+
+            node->node=i;
+
+            bases->push_back(node);
+            
+            this->advance();
 
             skip_newline;
 
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="else"){
                 return this->make_else(ret, node);
             }
-            return node;
+            if (this->current_tok_is(T_KWD) && this->current_tok.data=="elif"){
+                return this->make_elif(ret, node);
+            }
+
+            Node* n=make_node(N_CONTROL);
+            n->start=bases->front()->start;
+            n->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Control* ei=(Control*)malloc(sizeof(Control));
+            ei->bases=bases;
+
+            n->node=ei;
+            return n;
         }
 
 };
