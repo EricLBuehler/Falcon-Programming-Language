@@ -36,7 +36,6 @@ object* dict_bool(object* self){
 }
 
 object* dict_subscr(object* self, object* other){
-    uint32_t idx=CAST_INT(other)->val->to_long();
     for (auto k: (*CAST_DICT(self)->val)){
         if (istrue(object_cmp(other, k.first, CMP_EQ))){
             return  (*CAST_DICT(self)->val)[k.first];
