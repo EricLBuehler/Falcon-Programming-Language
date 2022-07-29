@@ -65,6 +65,9 @@ else{
 }
 
 print("Done")
+
+print(l[3])
+print(dictionary[[123]])
 ```
 
 ### Usage ###
