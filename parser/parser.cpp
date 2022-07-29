@@ -592,14 +592,14 @@ class Parser{
             
 
             Node* expr=this->expr(ret, LOWEST);
+            if (ret->errornum>0){
+                return NULL;
+            }
             if (expr->type==N_ASSIGN){
                 kwargs->push_back(expr);
             }
             else {
                 args->push_back(expr);
-            }
-            if (ret->errornum>0){
-                return NULL;
             }
             
             
@@ -660,6 +660,29 @@ class Parser{
 
             this->advance();
 
+            return node;
+        }
+
+        Node* make_subscr(parse_ret* ret, Node* left){
+            this->advance();
+            Node* expr=this->expr(ret, LOWEST);
+            if (!this->current_tok_is(T_RSQUARE)){
+                this->add_parsing_error(ret, "SyntaxError: Expected ], got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            
+            this->advance();
+            
+            Node* node=make_node(N_SUBSCR);
+            node->start=left->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            Subscript* s=(Subscript*)malloc(sizeof(Subscript));
+            s->left=left;
+            s->expr=expr;
+            
+            node->node=s;
             return node;
         }
 
@@ -759,6 +782,10 @@ class Parser{
                     
                     case T_LPAREN:
                         left=make_call(ret, left);
+                        break;
+
+                    case T_LSQUARE:
+                        left=make_subscr(ret, left);
                         break;
 
                     default:

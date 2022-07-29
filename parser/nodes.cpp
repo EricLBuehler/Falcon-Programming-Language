@@ -22,6 +22,7 @@ enum nodetype{
     N_CONTROL,
     N_IF,
     N_ELSE,
+    N_SUBSCR,
 };
 
 enum precedence {
@@ -174,6 +175,11 @@ struct Else{
 
 struct Control{
     vector<Node*>* bases;
+};
+
+struct Subscript{
+    Node* left;
+    Node* expr;
 };
 
 
