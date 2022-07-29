@@ -12,6 +12,8 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - Only tested on Windows
 
 ### Sample Program ###
+
+#### Program ####
 ```js
 m="Placeholder value"
 
@@ -68,6 +70,20 @@ print("Done")
 
 print(l[3])
 print(dictionary[[123]])
+```
+
+#### Output ####
+When run with ```./fpl.exe program.fpl```
+
+```
+5
+Value
+Function f says: A
+True
+500 is not the same object as 200, but is the same as 500
+Done
+4
+2
 ```
 
 ### Usage ###
