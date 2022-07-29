@@ -659,68 +659,79 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_IF: {
+            cout<<"IF";
             compile_expr(compiler, IF(expr->node)->expr);
 
-            //Code
-            parse_ret c;
-            c.nodes=(*IF(expr->node)->code);
-            struct compiler* comp=new_compiler();
-            comp->scope=SCOPE_LOCAL; //Can just pretend... vm makes no effort to make scope local
-            struct compiler* compiler_=compiler;
-            compiler=comp;
-            object* code=compile(comp, c);
-            compiler=compiler_;
-            
-            DECREF(CAST_CODE(code)->co_file);
-            CAST_CODE(code)->co_file=object_repr(str_new_fromstr(new string("if")));
-            
-            uint32_t idx;
-            if (!object_find_bool(compiler->consts, code)){
-                //Create object
-                compiler->consts->type->slot_append(compiler->consts, code);
-                idx = NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, code);
-            }
+            add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(expr->node)->code), expr->start, expr->end); 
 
-            add_instruction(compiler->instructions,RUN_IF, idx, expr->start, expr->end);
+            //Code
+            for (Node* n: (*IF(expr->node)->code)){
+                compile_expr(compiler, n);
+            }           
             break;
         }
 
-        case N_ELSE: {
-            compile_expr(compiler, ELSE(expr->node)->base); //Compile first options
+        case N_ELSE : {
+            cout<<"ELSE";
+            if (ELSE(expr->node)->base!=NULL){
+                compile_expr(compiler, ELSE(expr->node)->base); //Compile first options
+            }
 
             //Code
-            parse_ret c;
-            c.nodes=(*IF(expr->node)->code);
-            struct compiler* comp=new_compiler();
-            comp->scope=SCOPE_LOCAL; //Can just pretend... vm makes no effort to make scope local
-            struct compiler* compiler_=compiler;
-            compiler=comp;
-            object* code=compile(comp, c);
-            compiler=compiler_;
-            
-            DECREF(CAST_CODE(code)->co_file);
-            CAST_CODE(code)->co_file=object_repr(str_new_fromstr(new string("if")));
-            
-            uint32_t idx;
-            if (!object_find_bool(compiler->consts, code)){
-                //Create object
-                compiler->consts->type->slot_append(compiler->consts, code);
-                idx = NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, code);
-            }
+            for (Node* n: (*ELSE(expr->node)->code)){
+                compile_expr(compiler, n);
+            }      
+            break;
+        }
 
-            add_instruction(compiler->instructions,RUN, idx, expr->start, expr->end);
+        case N_CONTROL : {
+            uint32_t target=num_instructions(CONTROL(expr->node)->bases);
+            uint32_t instrs=0;
+            for (Node* n: (*CONTROL(expr->node)->bases)){
+                if (n->type==N_IF){
+                    instrs+=num_instructions(IF(n->node)->code);
+                    instrs+=num_instructions(IF(n->node)->expr);
+                    instrs+=1;
+                    compile_expr(compiler, IF(n->node)->expr);
+                    
+                    add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(n->node)->code)+1, n->start, n->end);
+
+                    //Code
+                    for (Node* node: (*IF(n->node)->code)){
+                        compile_expr(compiler, node);
+                    }
+
+                    add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, n->start, n->end);
+                }
+                if (n->type==N_ELSE){
+                    instrs+=num_instructions(ELSE(n->node)->code);
+                    //Code
+                    for (Node* n: (*ELSE(n->node)->code)){
+                        compile_expr(compiler, n);
+                    }      
+                }
+            }
             break;
         }
 
     }
 
     return 0;
+}
+
+uint32_t num_instructions(vector<Node*>* nodes){
+    struct compiler* comp=new_compiler();
+    for (Node* n: (*nodes)){        
+        compile_expr(comp, n);
+    }
+    return comp->instructions->count;
+}
+
+uint32_t num_instructions(Node* node){
+    struct compiler* comp=new_compiler();      
+    compile_expr(comp, node);
+        
+    return comp->instructions->count;
 }
 
 struct object* compile(struct compiler* compiler, parse_ret ast){

@@ -50,4 +50,6 @@ BINOP_IS - Implements TOS is TOS-1
 
 BINOP_EE - Implements TOS == TOS-1
 
-RUN_IF(idx) - Runs code object as consts[idx] if TOS is truthy
+POP_JMP_TOS_FALSE(idx) - Adds idx to IP and pops TOS if TOS is falsy
+
+JUMP_TO(idx) - Unconditionally adds idx to IP

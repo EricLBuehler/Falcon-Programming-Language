@@ -23,8 +23,8 @@ enum opcode{
     BUILD_LIST,
     BINOP_IS,
     BINOP_EE,
-    RUN_IF,
-    RUN,
+    POP_JMP_TOS_FALSE,
+    JUMP_DELTA,
 };
 
 enum scope{
@@ -69,11 +69,14 @@ struct compiler{
 #define DICT(node) ((Dict*)(node))
 #define IF(node) ((If*)(node))
 #define ELSE(node) ((Else*)(node))
+#define CONTROL(node) ((Control*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
 
 parse_ret parseretglbl;
 
 struct object* compile(struct compiler* compiler, parse_ret ast);
+uint32_t num_instructions(vector<Node*>* nodes);
+uint32_t num_instructions(Node* node);
 
 #include "compiler.cpp"
