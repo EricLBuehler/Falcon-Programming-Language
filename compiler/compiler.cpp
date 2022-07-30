@@ -719,6 +719,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_RAISE: {
+            compile_expr(compiler, RAISE(expr->node)->expr);
+            add_instruction(compiler->instructions, RAISE_EXC, 0, expr->start, expr->end);
+            break;
+        }
+
     }
 
     return 0;
@@ -756,7 +762,6 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
         lines->type->slot_append(lines, tuple);
     }
-
     uint32_t idx;
     if (!object_find_bool(compiler->consts, noneobj)){
         //Create object
@@ -787,7 +792,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         tuple->type->slot_append(tuple, new_int_fromint(0));
         lines->type->slot_append(lines, tuple);
     }
-
+    
     reverse_instructions(compiler->instructions);
     object* instructions=new_list();
     struct instruction* instruction=compiler->instructions->first;

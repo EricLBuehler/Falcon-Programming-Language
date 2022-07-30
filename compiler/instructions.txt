@@ -55,3 +55,5 @@ POP_JMP_TOS_FALSE(idx) - Adds idx to IP and pops TOS if TOS is falsy
 JUMP_TO(idx) - Unconditionally adds idx to IP
 
 BINOP_SUBSCR - Implements TOS=TOS[TOS-1]
+
+RAISE_EXC - Attempts to raise TOS as exception
