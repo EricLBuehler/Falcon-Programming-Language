@@ -80,10 +80,12 @@ When run with ```./fpl.exe program.fpl```
 Value
 Function f says: A
 True
-500 is not the same object as 200, but is the same as 500
 Done
 4
 2
+In file 'program.fpl', line 52, in <module>
+    raise ValueError("500 is not the same object as 200, but is the same as 500")
+ValueError: 500 is not the same object as 200, but is the same as 500
 ```
 
 ### Usage ###
