@@ -41,30 +41,13 @@ void object_del(object* object){
     object->type->slot_del(object);
     //GC collect it later.... or...
     if (!object->type->gc_trackable){
-        if (object->ob_next!=NULL){
-            object->ob_next->ob_prev=NULL;
-        }
-        immutable_objs=object->ob_next;
-        free(object);
-        immutable_size--;
-    }
-    else{
-        if (object->gen!=2){                
-            if (object->gen==1){
-                gc.gen1=object->ob_next;
-                gc.gen1_n--;
+        if (object->refcnt==0){
+            if (object->ob_next!=NULL){
+                object->ob_next->ob_prev=NULL;
             }
-            else{
-                if (object->ob_prev!=NULL){
-                    object->ob_prev->ob_next=object->ob_next;
-                }
-                else{
-                    gc.gen0=object->ob_next;
-                }
-                object->ob_next->ob_prev=object->ob_prev;
-                gc.gen0_n--;
-            }
+            immutable_objs=object->ob_next;
             free(object);
+            immutable_size--;
         }
     }
 }
@@ -431,4 +414,18 @@ object* object_subscript(object* base, object* idx){
     }
     object* obj=base->type->slot_subscr(base, idx);
     return obj;
+}
+
+bool object_issubclass(object* obj, TypeObject* t){
+    if ((void*)obj->type==(void*)t){
+        return true;
+    }
+    object* base=obj->type->bases->type->slot_next(obj->type->bases);
+    while (base){
+        if ((void*)base==(void*)t){
+            return true;
+        }
+        base=obj->type->bases->type->slot_next(obj->type->bases);
+    }
+    return false;
 }

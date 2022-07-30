@@ -7,8 +7,8 @@ void new_gc(){
     gc.gen1_n=0;
     gc.gen2_n=0;
 
-    gc.gen0_thresh=80;
-    gc.gen1_thresh=10;
+    gc.gen0_thresh=700;
+    gc.gen1_thresh=100;
     gc.gen2_thresh=10;
 }
 
@@ -29,7 +29,13 @@ void gc_collect(int gen){
         && ((struct object*)obj)->refcnt == 0 ){ //No outside references, so we can free
             if (obj->gen!=2){                
                 if (obj->gen==1){
-                    gc.gen1=obj->ob_next;
+                    if (obj->ob_prev!=NULL){
+                        obj->ob_prev->ob_next=obj->ob_next;
+                    }
+                    else{
+                        gc.gen1=obj->ob_next;
+                    }                    
+                    obj->ob_next->ob_prev=obj->ob_prev;
                     gc.gen1_n--;
                 }
                 else{
@@ -45,6 +51,9 @@ void gc_collect(int gen){
 
                 free(obj);
             }        
+            else{
+
+            }
         }
         else{
             if (gen!=2){
