@@ -144,6 +144,9 @@ void vm_del(struct vm* vm){
 }
 
 void vm_add_var_locals(struct vm* vm, object* name, object* value){
+    if (vm->globals->type->slot_get(vm->globals, name)!=NULL){
+        ((object_var*)vm->globals->type->slot_get(vm->globals, name))->gc_ref--;
+    }
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
@@ -181,6 +184,9 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
 }
 
 void vm_add_var_globals(struct vm* vm, object* name, object* value){
+    if (vm->globals->type->slot_get(vm->globals, name)!=NULL){
+        ((object_var*)vm->globals->type->slot_get(vm->globals, name))->gc_ref--;
+    }
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
