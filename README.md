@@ -56,20 +56,21 @@ maybe = x is y
 same = x is x
 print(500==500)
 
-if 500 is 200{
-    print("500 is not the same object as 200")
-}
-elif 500 is 500{
-    print("500 is not the same object as 200, but is the same as 500")
-}
-else{
-    print("Else condition reached")
-}
 
 print("Done")
 
 print(l[3])
 print(dictionary[[123]])
+
+if 500 is 200{
+    raise SyntaxError("500 is not the same object as 200")
+}
+elif 500 is 500{
+    raise ValueError("500 is not the same object as 200, but is the same as 500")
+}
+else{
+    raise AttributeError("Else condition reached")
+}
 ```
 
 #### Output ####
