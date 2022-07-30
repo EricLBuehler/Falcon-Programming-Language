@@ -39,6 +39,7 @@ int execute(string data, bool objdump, bool verbose){
     kwds.push_back("if");
     kwds.push_back("else");
     kwds.push_back("elif");
+    kwds.push_back("raise");
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
