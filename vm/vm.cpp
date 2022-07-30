@@ -358,7 +358,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
             //Call
             if (object_istype(function->type, &FuncType)){
-                add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, INCREF(CAST_FUNC(function)->code));
+                add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(CAST_FUNC(function)->name)->val, INCREF(CAST_FUNC(function)->code));
                 vm->callstack->head->locals=new_dict();
             }
             object* ret=object_call(function, args, kwargs);
@@ -430,11 +430,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
             //Call
             if (object_istype(function->type, &FuncType)){
-                add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, INCREF(CAST_FUNC(function)->code));
+                add_callframe(vm->callstack, INCREF(new_int_fromint(0)),  CAST_STRING(CAST_FUNC(function)->name)->val, INCREF(CAST_FUNC(function)->code));
                 vm->callstack->head->locals=new_dict();
             }
             object* ret=object_call(function, args, kwargs);
-            
             if (object_istype(function->type, &FuncType)){
                 pop_callframe(vm->callstack);
             }
@@ -552,12 +551,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
     object* idx2=new_int_fromint(2);
     while (instruction){
         (*ip)++;
-        vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
-        if ((*ip)>(*CAST_INT(linetup->type->slot_get(linetup, idx1))->val).to_int()){\
+        if ((*ip)>(*CAST_INT(linetup->type->slot_get(linetup, idx1))->val).to_int()){
             linetup_cntr++;
             linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
-            vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
         }
+        vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
+
         uint32_t ip_=(*ip);
         object* obj=_vm_step(instruction, code->type->slot_next(code), vm, ip);
         if ((*ip)!=ip_){
