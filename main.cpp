@@ -113,7 +113,7 @@ int execute(string data, bool objdump, bool verbose){
     if (verbose){
         cout<<"\nReturned: "<<object_cstr(returned);
 
-        if (!vm->haserr){
+        if (vm->exception==NULL){
             cout<<"\nIP: "<<vm->ip<<"\n\n";
             
             for (auto k: (*CAST_DICT(vm->globals)->val)){
