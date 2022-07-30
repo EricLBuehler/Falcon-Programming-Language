@@ -1,10 +1,13 @@
 object* exception_new(object* type, object* args, object* kwargs){
+    object* node=immutable_objs;
     object* tp = new_object((TypeObject*)type);
+    CAST_EXCEPTION(tp)->err=new_none();
     if (CAST_INT(args->type->slot_len(args))->val->to_long()==1){
+        DECREF(tp);
         return vm_setup_err((TypeObject*)type, vm, object_cstr(args->type->slot_get(args, new_int_fromint(0)) ).c_str() );
     }
 
-    CAST_EXCEPTION(tp)->err=new_none(); //new string("");
+    CAST_EXCEPTION(tp)->err=new_none();
     return tp;
 }
 
