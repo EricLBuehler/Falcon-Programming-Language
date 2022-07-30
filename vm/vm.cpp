@@ -578,7 +578,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 if (callframe->name==NULL){
                     callframe=callframe->next;
                 }
-                cout<<"In file "+object_cstr(CAST_CODE(vm->callstack->head->code)->co_file)+", line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
+                cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
                 
                 int line=0;
                 int target=CAST_INT(callframe->line)->val->to_int();
