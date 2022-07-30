@@ -65,7 +65,7 @@ struct callframe* pop_callframe(struct callstack* stack){
     return frame;
 }
 
-void vm_add_err(object* exception, struct vm* vm, const char *_format, ...) {
+void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {
     if (vm->exception!=NULL){
         return;
     }
@@ -75,46 +75,7 @@ void vm_add_err(object* exception, struct vm* vm, const char *_format, ...) {
     char format[length];
     sprintf(format, "%s", _format);
     
-    vm->exception=CAST_TYPE(exception)->type->slot_call(exception, new_tuple(), new_dict()); //Create new exception object
-    
-    struct callframe* callframe=vm->callstack->head;
-    while (callframe){    
-        if (callframe->name==NULL){
-            CAST_EXCEPTION(vm->exception)->headers->push_back(NULL);
-            CAST_EXCEPTION(vm->exception)->snippets->push_back(NULL);
-        }
-        CAST_EXCEPTION(vm->exception)->headers->push_back(new string("In file "+object_cstr(CAST_CODE(vm->callstack->head->code)->co_file)+", line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)));
-        
-        int line=0;
-        int target=CAST_INT(callframe->line)->val->to_int();
-        int startidx=0;
-        int endidx=0;
-        int idx=0;
-        bool entered=false;
-        while (true){
-            if (line==target && !entered){
-                startidx=idx;
-                entered=true;
-            }
-            if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
-                endidx=idx;
-                break;
-            }
-            else if ((*vm->filedata)[idx]=='\n'){
-                line++;
-            }
-            idx++;
-        }
-
-        string snippet="";
-        for (int i=startidx; i<endidx; i++){
-            snippet+=(*vm->filedata)[i];
-        }
-
-        CAST_EXCEPTION(vm->exception)->snippets->push_back(new string(remove_spaces(snippet)));
-        
-        callframe=callframe->next;
-    }
+    vm->exception=exception->type->slot_call((object*)exception, new_tuple(), new_dict()); //Create new exception object
 
     char *msg = (char*)malloc(sizeof(char)*length);
 
@@ -122,7 +83,28 @@ void vm_add_err(object* exception, struct vm* vm, const char *_format, ...) {
     vsnprintf(msg, length, format, args);
     va_end(args);
     
-    CAST_EXCEPTION(vm->exception)->err=new string(msg);
+    DECREF(CAST_EXCEPTION(vm->exception)->err);
+    CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(new string(msg));
+}
+
+object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {    
+    va_list args;
+    const int length=256;
+    char format[length];
+    sprintf(format, "%s", _format);
+    
+    object* exc=exception->type->slot_call((object*)exception, new_tuple(), new_dict()); //Create new exception object  
+
+    char *msg = (char*)malloc(sizeof(char)*length);
+
+    va_start(args, _format);
+    vsnprintf(msg, length, format, args);
+    va_end(args);
+    
+    DECREF(CAST_EXCEPTION(exc)->err);
+    CAST_EXCEPTION(exc)->err=str_new_fromstr(new string(msg));
+
+    return exc;
 }
 
 struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, string* filedata){
@@ -194,7 +176,7 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
         }
     }
 
-    vm_add_err(NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+    vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
     return NULL;
 }
 
@@ -227,7 +209,7 @@ struct object* vm_get_var_globals(struct vm* vm, object* name){
         }
     }
     
-    vm_add_err(NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+    vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
     return NULL;
 }
 
@@ -329,7 +311,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* head=pop_dataframe(vm->objstack);
 
             if (function->type->slot_call==NULL){
-                vm_add_err(TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
                 return NULL;
             }
 
@@ -338,7 +320,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             uint32_t kwargc=argc-posargc;     
 
             if (function->type->slot_call==NULL){
-                vm_add_err(TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
                 return NULL;
             }
             
@@ -347,10 +329,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
                 || CAST_FUNC(function)->argc<argc){
                     if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
-                        vm_add_err(ValueError, vm, "expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
+                        vm_add_err(&ValueError, vm, "expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
                         return NULL;
                     }
-                    vm_add_err(ValueError, vm, "expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
+                    vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
                     return NULL;
                 }
             }
@@ -396,7 +378,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             uint32_t kwargc=argc-posargc;     
 
             if (function->type->slot_call==NULL){
-                vm_add_err(TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
                 return NULL;
             }
             
@@ -405,10 +387,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
                 || CAST_FUNC(function)->argc<argc){
                     if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
-                        vm_add_err(ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
+                        vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
                         return NULL;
                     }
-                    vm_add_err(ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
+                    vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
                     return NULL;
                 }
             }
@@ -419,10 +401,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 || CAST_BUILTIN(function)->argc<argc){
                     if (CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()==0 || \
                     CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int()==CAST_BUILTIN(function)->argc){
-                        vm_add_err(ValueError, vm, "expected %d argument(s).",CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int());
+                        vm_add_err(&ValueError, vm, "expected %d argument(s).",CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int());
                         return NULL;
                     }
-                    vm_add_err(ValueError, vm, "expected %d to %d arguments.",CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int(), CAST_FUNC(function)->argc);
+                    vm_add_err(&ValueError, vm, "expected %d to %d arguments.",CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int(), CAST_FUNC(function)->argc);
                     return NULL;
                 }
             }
@@ -583,16 +565,45 @@ object* run_vm(object* codeobj, uint32_t* ip){
             return obj;
         }
         if (vm->exception!=NULL){
-            /*
-            for (int i=vm->headers->size()-1; i>=0; i--){
-                if ((*vm->headers)[i]==NULL){
-                    continue;
+            struct callframe* callframe=vm->callstack->head;
+            while (callframe){    
+                if (callframe->name==NULL){
+                    callframe=callframe->next;
                 }
-                cout<<(*(*vm->headers)[i])<<endl;
-                cout<<"  "<<(*(*vm->snippets)[i])<<endl;
+                cout<<"In file "+object_cstr(CAST_CODE(vm->callstack->head->code)->co_file)+", line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
+                
+                int line=0;
+                int target=CAST_INT(callframe->line)->val->to_int();
+                int startidx=0;
+                int endidx=0;
+                int idx=0;
+                bool entered=false;
+                while (true){
+                    if (line==target && !entered){
+                        startidx=idx;
+                        entered=true;
+                    }
+                    if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
+                        endidx=idx;
+                        break;
+                    }
+                    else if ((*vm->filedata)[idx]=='\n'){
+                        line++;
+                    }
+                    idx++;
+                }
+
+                string snippet="";
+                for (int i=startidx; i<endidx; i++){
+                    snippet+=(*vm->filedata)[i];
+                }
+
+                cout<<remove_spaces(snippet)<<endl;
+                
+                callframe=callframe->next;
             }
-            printf("%s\n",vm->err);*/
-            cout<<vm->exception;
+
+            cout<<vm->exception->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err)<<endl;
             CAST_LIST(code)->idx=0;
             return NULL;
         }
