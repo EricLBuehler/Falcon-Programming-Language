@@ -1256,6 +1256,7 @@ class Parser{
         Node* make_raise(parse_ret* ret){
             this->advance();
             Node* expr=this->expr(ret, LOWEST);
+            this->advance();
 
             Node* n=make_node(N_RAISE);
             n->start=expr->start;
