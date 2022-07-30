@@ -524,6 +524,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case RAISE_EXC: {
+            if (!object_issubclass(peek_dataframe(vm->objstack), &ExceptionType)){
+                vm_add_err(&TypeError, vm, "Exceptions must be subclass of Exception");
+                break;
+            }
+            vm->exception=pop_dataframe(vm->objstack);
+            break;
+        }
+
         default:
             return NULL;
             
@@ -598,7 +607,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     snippet+=(*vm->filedata)[i];
                 }
 
-                cout<<remove_spaces(snippet)<<endl;
+                cout<<snippet<<endl;
                 
                 callframe=callframe->next;
             }
