@@ -1,32 +1,28 @@
 object* exception_new(object* type, object* args, object* kwargs){
     object* tp = new_object((TypeObject*)type);
-    CAST_EXCEPTION(tp)->headers=new vector<string*>;
-    CAST_EXCEPTION(tp)->snippets=new vector<string*>;
-    CAST_EXCEPTION(tp)->err=new string("");
+    if (CAST_INT(args->type->slot_len(args))->val->to_long()==1){
+        return vm_setup_err((TypeObject*)type, vm, object_cstr(args->type->slot_get(args, new_int_fromint(0)) ).c_str() );
+    }
+
+    CAST_EXCEPTION(tp)->err=new_none(); //new string("");
     return tp;
 }
 
 void exception_del(object* self){
-    CAST_EXCEPTION(self)->headers;
-    CAST_EXCEPTION(self)->snippets;
-    CAST_EXCEPTION(self)->err;
+    DECREF(CAST_EXCEPTION(self)->err);
 }
 
 object* exception_repr(object* self){
     string s="";
-    for (int i=CAST_EXCEPTION(vm->exception)->headers->size(); i>0; i--){
-        if (CAST_EXCEPTION(vm->exception)->headers->at(i-1)==NULL){
-            continue;
-        }
-        s+=(*CAST_EXCEPTION(vm->exception)->headers->at(i-1))+"\n";
-        s+=(*CAST_EXCEPTION(vm->exception)->snippets->at(i-1))+"\n";
-    }
     s+=self->type->name->c_str();
-    s+=": ";
-    s+=(*CAST_EXCEPTION(vm->exception)->err)+"\n";
+    s+="(";
+    s+=object_crepr(CAST_EXCEPTION(self)->err)+")";
     return str_new_fromstr(new string(s));
 }
 
+object* exception_str(object* self){
+    return CAST_EXCEPTION(self)->err;
+}
 object* exception_bool(object* self){
     return new_bool_true();
 }

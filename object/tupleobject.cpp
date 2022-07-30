@@ -129,12 +129,12 @@ object* tuple_cmp(object* self, object* other, uint8_t type){
 
 object* tuple_subscr(object* self, object* other){
     if (!object_istype(other->type,&IntType)){
-        vm_add_err(TypeError, vm, "List must be indexed by int not '%s'",other->type->name->c_str());
+        vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",other->type->name->c_str());
         return (object*)0x1;
     }
     uint32_t idx=CAST_INT(other)->val->to_long();
     if (idx>=CAST_TUPLE(self)->size){
-        vm_add_err(IndexError, vm, "List index out of range");
+        vm_add_err(&IndexError, vm, "List index out of range");
         return (object*)0x1;
     }
     return CAST_TUPLE(self)->array[idx];

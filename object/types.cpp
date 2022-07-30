@@ -759,14 +759,13 @@ void setup_object_type(){
 object* exception_new(object* type, object* args, object* kwargs);
 void exception_del(object* self);
 object* exception_repr(object* self);
+object* exception_str(object* self);
 object* exception_cmp(object* self, object* other, uint8_t type);
 object* exception_call(object* type, object* args, object* kwargs);
 
 typedef struct ExceptionObject{
     OBJHEAD_EXTRA
-    vector<string*>* headers;
-    vector<string*>* snippets;
-    string* err;
+    object* err;
 }ExceptionObject;
 
 static NumberMethods exception_num_methods{
@@ -807,7 +806,7 @@ TypeObject ExceptionType={
     0, //slot_subscr
 
     (reprfunc)exception_repr, //slot_repr
-    (reprfunc)exception_repr, //slot_str
+    (reprfunc)exception_str, //slot_str
     0, //slot_call
 
     &exception_num_methods, //slot_number
@@ -857,12 +856,12 @@ object* new_type_exception(string* name, object* bases, object* dict){
 
 void setup_exception_type(){
     ExceptionType=(*(TypeObject*)finalize_type(&ExceptionType));
-    TypeError=new_type_exception(new string("TypeError"), new_tuple(), new_dict());
-    ValueError=new_type_exception(new string("ValueError"), new_tuple(), new_dict());
-    AttributeError=new_type_exception(new string("AttributeError"), new_tuple(), new_dict());
-    IndexError=new_type_exception(new string("IndexError"), new_tuple(), new_dict());
-    KeyError=new_type_exception(new string("KeyError"), new_tuple(), new_dict());
-    NameError=new_type_exception(new string("NameError"), new_tuple(), new_dict());
+    TypeError=(*(TypeObject*)new_type_exception(new string("TypeError"), new_tuple(), new_dict()));
+    ValueError=(*(TypeObject*)new_type_exception(new string("ValueError"), new_tuple(), new_dict()));
+    AttributeError=(*(TypeObject*)new_type_exception(new string("AttributeError"), new_tuple(), new_dict()));
+    IndexError=(*(TypeObject*)new_type_exception(new string("IndexError"), new_tuple(), new_dict()));
+    KeyError=(*(TypeObject*)new_type_exception(new string("KeyError"), new_tuple(), new_dict()));
+    NameError=(*(TypeObject*)new_type_exception(new string("NameError"), new_tuple(), new_dict()));
 }
 
 
@@ -873,21 +872,21 @@ object* new_type(string* name, object* bases, object* dict);
 object* type_new(object* type, object* args, object* kwargs){
     //Argument size checking
     if (CAST_INT(args->type->slot_len(args))->val->to_long()!=3){
-        vm_add_err(ValueError, vm, "Expected 3 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_long());
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_long());
         return NULL;
     }
     //
     if (!object_istype(args->type->slot_get(args, new_int_fromint(0))->type, &StrType)){
-        vm_add_err(ValueError, vm, "Expected first argument to be string, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Expected first argument to be string, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
         return NULL;
     }
     if (!object_istype(args->type->slot_get(args, new_int_fromint(1))->type, &ListType) || \
     !object_istype(args->type->slot_get(args, new_int_fromint(1))->type, &TupleType)){
-        vm_add_err(ValueError, vm, "Expected first argument to be list or tuple, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Expected first argument to be list or tuple, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
         return NULL;
     }
     if (!object_istype(args->type->slot_get(args, new_int_fromint(2))->type, &DictType)){
-        vm_add_err(ValueError, vm, "Expected first argument to be dict, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Expected first argument to be dict, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
         return NULL;
     }
     //
@@ -954,7 +953,7 @@ object* type_get(object* self, object* attr){
     }
 
 
-    vm_add_err(AttributeError, vm, "%s has no attribute '%s'",self->type->name->c_str(), object_cstr(attr).c_str());
+    vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",self->type->name->c_str(), object_cstr(attr).c_str());
     return NULL;
 }
 
@@ -965,7 +964,7 @@ void type_set(object* obj, object* attr, object* val){
         dict->type->slot_set(dict, attr, val);
         return;
     }
-    vm_add_err(AttributeError, vm, "%s is read only",obj->type->name->c_str());
+    vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
     return;
 }
 

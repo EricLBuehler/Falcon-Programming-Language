@@ -358,7 +358,7 @@ object* object_genericgetattr(object* obj, object* attr){
             }
         }
     }
-    vm_add_err(AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
+    vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
     return NULL;
 }
 
@@ -366,7 +366,7 @@ object* object_getattr(object* obj, object* attr){
     if (obj->type->slot_getattr!=NULL){
         return obj->type->slot_getattr(obj, attr);
     }
-    vm_add_err(AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
+    vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
     return NULL;
 }
 
@@ -400,7 +400,7 @@ void object_genericsetattr(object* obj, object* attr, object* val){
         }
     }
 
-    vm_add_err(AttributeError, vm, "%s is read only",obj->type->name->c_str());
+    vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
     return;
 }
 
@@ -409,7 +409,7 @@ void object_setattr(object* obj, object* attr, object* val){
         obj->type->slot_setattr(obj, attr,val);
         return;
     }
-    vm_add_err(AttributeError, vm, "%s is read only",obj->type->name->c_str());
+    vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
     return;
 }
 
@@ -426,7 +426,7 @@ object* object_istruthy(object* obj){
 
 object* object_subscript(object* base, object* idx){
     if (base->type->slot_subscr==NULL){
-        vm_add_err(TypeError, vm, "Type '%s' is not subscriptable",base->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Type '%s' is not subscriptable",base->type->name->c_str());
         return NULL;
     }
     object* obj=base->type->slot_subscr(base, idx);

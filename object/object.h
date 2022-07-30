@@ -87,15 +87,15 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=9;
+const size_t nbuiltins=16;
 object* builtins[nbuiltins];
 
-object* TypeError=NULL;
-object* ValueError=NULL;
-object* AttributeError=NULL;
-object* IndexError=NULL;
-object* KeyError=NULL;
-object* NameError=NULL;
+TypeObject TypeError;
+TypeObject ValueError;
+TypeObject AttributeError;
+TypeObject IndexError;
+TypeObject KeyError;
+TypeObject NameError;
 
 Parser parser;
 
@@ -122,7 +122,8 @@ object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
 
 object* run_vm(object* codeobj, uint32_t* ip);
-void vm_add_err(object* exception, struct vm* vm, const char *_format, ...);
+void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
+object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
 void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
 struct object* pop_dataframe(struct datastack* stack);
 void append_to_list(struct gc* gc, struct object* object);
@@ -214,18 +215,16 @@ struct vm{
 
 #define CMP_EQ 0
 
-#define SETSLOT(tp, base, slot) if (base_tp->slot_new!=NULL){tp->slot=base->slot;}
+#define SETSLOT(tp, base, slot) if (base_tp->slot!=NULL){tp->slot=base->slot;}
 object* finalize_type(TypeObject* newtype);
 
 #ifdef DEBUG
-ostream& operator<<(ostream& os, object* o)
-{
+ostream& operator<<(ostream& os, object* o){
     cout<<object_crepr(o);
     return os;
 }
 
-ostream& operator<<(ostream& os, TypeObject* o)
-{
+ostream& operator<<(ostream& os, TypeObject* o){
     cout<<object_crepr((object*)o);
     return os;
 }
@@ -251,13 +250,12 @@ ostream& operator<<(ostream& os, TypeObject* o)
 #include "exceptionobject.cpp"
 
 void setup_types_consts(){
-    setup_object_type();
+    setup_object_type(); 
 
     trueobj=_new_bool_true();
     falseobj=_new_bool_false();
     noneobj=_new_none();
-    setup_builtins();
-    
+
     setup_type_type();
     setup_int_type();
     setup_str_type();
@@ -270,4 +268,8 @@ void setup_types_consts(){
     setup_none_type();
     setup_builtin_type();
     setup_exception_type();
+
+    
+
+    setup_builtins();
 }

@@ -9,7 +9,6 @@ void setup_builtins(){
     printkwargs->type->slot_append(printkwargs, str_new_fromstr(new string("\n")));
     builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr(new string("print")), printargs, printkwargs, CAST_INT(printargs->type->slot_len(printargs))->val->to_int());
 
-
     object* buildclassargs=new_tuple();
     buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("bases")));
     buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("name")));
@@ -24,6 +23,13 @@ void setup_builtins(){
     builtins[6]=(object*)&ListType;
     builtins[7]=(object*)&TupleType;
     builtins[8]=(object*)&ObjectType;
+    builtins[9]=(object*)&TypeError;
+    builtins[10]=(object*)&ValueError;
+    builtins[11]=(object*)&AttributeError;
+    builtins[12]=(object*)&KeyError;
+    builtins[13]=(object*)&NameError;
+    builtins[14]=(object*)&IndexError;
+    builtins[15]=(object*)&ExceptionType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){
@@ -42,6 +48,7 @@ object* builtin_call(object* self, object* args, object* kwargs){
 }
 
 object* builtin_repr(object* self){
+    cout<<"BREPR";
     return str_new_fromstr(new string("<builtin function or method "+object_cstr(CAST_BUILTIN(self)->name)+">" ));
 }
 

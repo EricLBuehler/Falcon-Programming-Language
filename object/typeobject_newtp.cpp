@@ -141,7 +141,7 @@ object* newtp_call(object* self, object* args, object* kwargs){
         uint32_t kwargc=argc-posargc;     
 
         if (function->type->slot_call==NULL){
-            vm_add_err(TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+            vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
             return NULL;
         }
         
@@ -150,10 +150,10 @@ object* newtp_call(object* self, object* args, object* kwargs){
             || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
             || CAST_FUNC(function)->argc<argc){
                 if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
-                    vm_add_err(ValueError, vm, "expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
+                    vm_add_err(&ValueError, vm, "expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
                     return NULL;
                 }
-                vm_add_err(ValueError, vm, "expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
+                vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
                 return NULL;
             }
         }
