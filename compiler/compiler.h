@@ -52,6 +52,7 @@ struct compiler{
     struct object* names;
     struct instructions* instructions;
     enum scope scope;
+    object* lines;
 };
 
 #define INTLIT(node) ((IntLiteral*)(node))
