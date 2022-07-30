@@ -23,6 +23,7 @@ enum nodetype{
     N_IF,
     N_ELSE,
     N_SUBSCR,
+    N_RAISE,
 };
 
 enum precedence {
@@ -182,6 +183,9 @@ struct Subscript{
     Node* expr;
 };
 
+struct Raise{
+    Node* expr;
+};
 
 
 void destroy_node(struct Node* node){

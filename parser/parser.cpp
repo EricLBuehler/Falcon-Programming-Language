@@ -813,7 +813,10 @@ class Parser{
             }
             if (this->current_tok.data=="if"){
                 return make_if(ret);
-            }            
+            }   
+            if (this->current_tok.data=="raise"){
+                return make_raise(ret);
+            }                   
             this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
             this->advance();
             return NULL;
@@ -1247,6 +1250,21 @@ class Parser{
             ei->bases=bases;
 
             n->node=ei;
+            return n;
+        }
+
+        Node* make_raise(parse_ret* ret){
+            this->advance();
+            Node* expr=this->expr(ret, LOWEST);
+
+            Node* n=make_node(N_RAISE);
+            n->start=expr->start;
+            n->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Raise* r=(Raise*)malloc(sizeof(Raise));
+            r->expr=expr;
+
+            n->node=r;
             return n;
         }
 
