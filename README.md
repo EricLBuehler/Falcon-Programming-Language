@@ -17,22 +17,31 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```id```
 - ```input```
 
-- Exceptions
-    - ```Exception```
-    - ```TypeError```
-    - ```ValueError```
-    - ```AttributeError```
-    - ```KeyError```
-    - ```NameError```
-    - ```IndexError```
-- Types
-    - ```str```
-    - ```int```
-    - ```list```
-    - ```dict```
-    - ```tuple```
-    - ```object```
+<details>
+<summary>Exceptions</summary>
+
+- ```Exception```
+- ```TypeError```
+- ```ValueError```
+- ```AttributeError```
+- ```KeyError```
+- ```NameError```
+- ```IndexError```
     
+</details>    
+
+
+<details>
+<summary>Types</summary>
+
+- ```str```
+- ```int```
+- ```list```
+- ```dict```
+- ```tuple```
+- ```object```
+    
+</details>    
 
 ### Sample Program ###
 
