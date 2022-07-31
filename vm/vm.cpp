@@ -159,9 +159,10 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
     struct callframe* frame=vm->callstack->head;
     while(frame){
         object* o=frame->locals->type->slot_get(frame->locals, name);
-        if (o!=NULL && vm->exception==NULL){
-        return o;
+        if (o!=NULL && o!=(object*)0x1 && vm->exception==NULL){
+            return o;
         }
+        vm->exception=NULL;
         frame=frame->next;        
     }
     vm->exception=NULL;
@@ -530,7 +531,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         if (obj==CALL_ERR){
             CAST_LIST(code)->idx=0;
-            goto exceptioncase;
+            return NULL;
+            //goto exceptioncase;
         }
         if (obj!=NULL){
             CAST_LIST(code)->idx=0;
