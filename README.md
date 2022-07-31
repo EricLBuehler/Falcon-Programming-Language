@@ -115,10 +115,10 @@ Help
 
 ### Links ###
 Below are useful references.
-- <a href='https://github.com/dannyvankooten/pepper-lang'>Pepper Lang</a>
-- <a href='https://github.com/davidcallanan/py-myopl-code'>py-myopl-code</a>
-- <a href='https://github.com/faheel/BigInt'>BigInt</a> (I used this library)
-- <a href='https://github.com/python/cpython'>CPython</a>
+- <a href='https://github.com/dannyvankooten/pepper-lang' target="_blank">Pepper Lang</a>
+- <a href='https://github.com/davidcallanan/py-myopl-code' target="_blank">py-myopl-code</a>
+- <a href='https://github.com/faheel/BigInt' target="_blank">BigInt</a> (I used this library)
+- <a href='https://github.com/python/cpython' target="_blank">CPython</a>
 
 ### Licenses ###
 - [MIT License](LICENSE)
