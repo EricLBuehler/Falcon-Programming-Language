@@ -5,11 +5,8 @@ object* newtp_init(object* self, object* args, object* kwargs){
         vm->exception=NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         //args->type->slot_append(args, self); //do not need to
         object* val=object_call(n, args, kwargs);
-        pop_callframe(vm->callstack);
         return val;
     }
     return new_none();
@@ -28,11 +25,8 @@ object* newtp_new(object* self, object* args, object* kwargs){
         vm->exception=NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         args->type->slot_append(args, o);
         object* val=object_call(n, args, kwargs);
-        pop_callframe(vm->callstack);
         return val;
     }
     return o;
@@ -43,12 +37,9 @@ void newtp_del(object* self){
         vm->exception=NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
     }
 }
 object* newtp_next(object* self){
@@ -64,12 +55,9 @@ object* newtp_len(object* self){
         return NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 }
@@ -85,12 +73,9 @@ object* newtp_repr(object* self){
         vm->exception=NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 
@@ -110,12 +95,9 @@ object* newtp_str(object* self){
         vm->exception=NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 
@@ -145,24 +127,8 @@ object* newtp_call(object* self, object* args, object* kwargs){
             return NULL;
         }
         
-        if (object_istype(function->type, &FuncType)){
-            if (CAST_FUNC(function)->argc-CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()>posargc \
-            || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
-            || CAST_FUNC(function)->argc<argc){
-                if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
-                    vm_add_err(&ValueError, vm, "expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
-                    return NULL;
-                }
-                vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
-                return NULL;
-            }
-        }
-
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(function)->code)->co_file)), INCREF(CAST_FUNC(function)->code));
-        vm->callstack->head->locals=new_dict();
         args->type->slot_append(args, self);
         object* val=object_call(function, args, kwargs);
-        pop_callframe(vm->callstack);
         return val;
     }
     return new_none();
@@ -178,12 +144,9 @@ object* newtp_add(object* self, object* other){
         return NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 }
@@ -194,12 +157,9 @@ object* newtp_sub(object* self, object* other){
         return NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 }
@@ -210,12 +170,9 @@ object* newtp_mul(object* self, object* other){
         return NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self); //do not need to
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 }
@@ -226,12 +183,9 @@ object* newtp_div(object* self, object* other){
         return NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 }
@@ -243,12 +197,9 @@ object* newtp_neg(object* self){
         return NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 }
@@ -260,12 +211,9 @@ object* newtp_bool(object* self){
         return NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 }
@@ -278,12 +226,9 @@ object* newtp_subscr(object* self, object* other){
         return NULL;
     }
     else{
-        add_callframe(vm->callstack, INCREF(new_int_fromint(0)), new string(object_cstr(CAST_CODE(CAST_FUNC(n)->code)->co_file)), INCREF(CAST_FUNC(n)->code));
-        vm->callstack->head->locals=new_dict();
         object* args=new_tuple();
         args->type->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
-        pop_callframe(vm->callstack);
         return val;
     }
 }
