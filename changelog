@@ -1,3 +1,6 @@
+7/31/22 9 45 AM
+Added STORE_SUBSCR and object_set functionality
+
 7/31/22 9 15 AM
 Removed slot_subscr in favor of slot_get
 
