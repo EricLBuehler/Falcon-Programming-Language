@@ -43,12 +43,27 @@ object* new_builtin(builtinfunc function, object* name, object* args, object* kw
 }
 
 object* builtin_call(object* self, object* args, object* kwargs){
+    uint32_t argc=CAST_INT(args->type->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_len(kwargs))->val->to_int();
+    uint32_t posargc=CAST_INT(args->type->slot_len(args))->val->to_int();
+    uint32_t kwargc=argc-posargc;
+
+    if (CAST_BUILTIN(self)->argc-CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()>posargc \
+    || CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()<kwargc \
+    || CAST_BUILTIN(self)->argc<argc){
+        if (CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()==0 || \
+       CAST_INT(CAST_BUILTIN(self)->args->type->slot_len(CAST_BUILTIN(self)->args))->val->to_int()-CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()==CAST_BUILTIN(self)->argc){
+            vm_add_err(&ValueError, vm, "expected %d argument(s).",CAST_INT(CAST_BUILTIN(self)->args->type->slot_len(CAST_BUILTIN(self)->args))->val->to_int());
+            return NULL;
+        }
+        vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_BUILTIN(self)->args->type->slot_len(CAST_BUILTIN(self)->args))->val->to_int()-CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int(), CAST_BUILTIN(self)->argc, argc);
+        return NULL;
+    }
+
     object* builtinargs=new_dict();
     return CAST_BUILTIN(self)->function(self, setup_args(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs));
 }
 
 object* builtin_repr(object* self){
-    cout<<"BREPR";
     return str_new_fromstr(new string("<builtin function or method "+object_cstr(CAST_BUILTIN(self)->name)+">" ));
 }
 
