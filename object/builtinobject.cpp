@@ -30,6 +30,11 @@ void setup_builtins(){
     builtins[13]=(object*)&NameError;
     builtins[14]=(object*)&IndexError;
     builtins[15]=(object*)&ExceptionType;
+
+    object* idargs=new_tuple();
+    idargs->type->slot_append(idargs, str_new_fromstr(new string("object")));
+    object* idkwargs=new_tuple();
+    builtins[16]=new_builtin((builtinfunc)builtin_id, str_new_fromstr(new string("id")), idargs, idkwargs, 1);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){
