@@ -531,8 +531,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         if (obj==CALL_ERR){
             CAST_LIST(code)->idx=0;
-            return NULL;
-            //goto exceptioncase;
+            if (vm->callstack->size>1){
+                return NULL;
+            }
+            goto exceptioncase;
         }
         if (obj!=NULL){
             CAST_LIST(code)->idx=0;
