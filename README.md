@@ -84,6 +84,10 @@ else{
 When run with ```./fpl.exe program.fpl```
 
 ```
+__new__ called
+<Peregrine object @ 0xf17b78>
+__new__ called
+<Peregrine object @ 0xf1c110>
 5
 Value
 Function f says: A
@@ -91,7 +95,7 @@ True
 Done
 4
 2
-In file 'program.fpl', line 52, in <module>
+In file 'program.fpl', line 59, in <module>
     raise ValueError("500 is not the same object as 200, but is the same as 500")
 ValueError: 500 is not the same object as 200, but is the same as 500
 ```
