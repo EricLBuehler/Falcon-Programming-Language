@@ -416,6 +416,14 @@ object* object_get(object* base, object* idx){
     return obj;
 }
 
+void object_set(object* base, object* idx, object* val){
+    if (base->type->slot_set==NULL){
+        vm_add_err(&TypeError, vm, "Type '%s' does not support item assignment",base->type->name->c_str());
+        return;
+    }
+    base->type->slot_set(base, idx, val);
+}
+
 bool object_issubclass(object* obj, TypeObject* t){
     if ((void*)obj->type==(void*)t){
         return true;
