@@ -15,11 +15,14 @@ object* builtin___build_class__(object* self, object* args){
         return NULL;
     }
 
-    add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(object_repr(function))->val, CAST_FUNC(function)->code);
+    add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(CAST_FUNC(function)->name)->val, CAST_FUNC(function)->code);
 
     vm->callstack->head->locals=new_dict();
     dict=INCREF(vm->callstack->head->locals);
     object* ret=function->type->slot_call(function, new_tuple(), new_dict());
+    if (ret==NULL){
+        return NULL;
+    }
     pop_callframe(vm->callstack);
     
     object* t=new_type(CAST_STRING(object_str(CAST_FUNC(function)->name))->val, new_list(), dict);
