@@ -20,7 +20,9 @@ object* newtp_new(object* self, object* args, object* kwargs){
     object_setattr(o, str_new_fromstr(new string("__class__")), self);
 
     //Try to call __new__
+    cout<<"A";
     object* n=object_getattr(o, str_new_fromstr(new string("__new__")));
+    cout<<"B";
     if (n==NULL){
         vm->exception=NULL;
     }

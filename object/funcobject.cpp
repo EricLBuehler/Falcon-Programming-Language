@@ -55,6 +55,29 @@ object* func_call(object* self, object* args, object* kwargs){
     return ret;
 }
 
+object* func_call_nostack(object* self, object* args, object* kwargs){
+    uint32_t argc=CAST_INT(args->type->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_len(kwargs))->val->to_int();
+    uint32_t posargc=CAST_INT(args->type->slot_len(args))->val->to_int();
+    uint32_t kwargc=argc-posargc;
+
+    if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
+    || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
+    || CAST_FUNC(self)->argc<argc){
+        if (CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()==0){
+            vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_len(CAST_FUNC(self)->args))->val->to_int(), argc);
+            return NULL;
+        }
+        vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_len(CAST_FUNC(self)->args))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int(), CAST_FUNC(self)->argc, argc);
+        return NULL;
+    }
+
+    setup_args(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs);
+    uint32_t ip=0;
+
+    object* ret=run_vm(CAST_FUNC(self)->code, &ip);
+    return ret;
+}
+
 object* func_repr(object* self){
     string s="";
     s+="<function ";

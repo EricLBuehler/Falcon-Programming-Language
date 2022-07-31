@@ -503,6 +503,7 @@ object* func_repr(object* self);
 object* func_cmp(object* self, object* other, uint8_t type);
 object* func_call(object* self, object* args, object* callfunc);
 object* func_bool(object* self);
+object* func_call_nostack(object* self, object* args, object* kwargs);
 
 
 typedef struct FuncObject{
