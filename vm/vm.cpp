@@ -315,32 +315,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case CALL_METHOD: {
             object* function=pop_dataframe(vm->objstack);
             object* head=pop_dataframe(vm->objstack);
-
-            if (function->type->slot_call==NULL){
-                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                return NULL;
-            }
-
+            
             uint32_t argc=CAST_INT(arg)->val->to_int()+1;
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int()+1;
-            uint32_t kwargc=argc-posargc;     
+            uint32_t kwargc=argc-posargc;
 
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
                 return NULL;
-            }
-            
-            if (object_istype(function->type, &FuncType)){
-                if (CAST_FUNC(function)->argc-CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()>posargc \
-                || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
-                || CAST_FUNC(function)->argc<argc){
-                    if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
-                        vm_add_err(&ValueError, vm, "expected %d argument(s), got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
-                        return NULL;
-                    }
-                    vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d including self.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
-                    return NULL;
-                }
             }
                 
 
@@ -363,12 +345,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             //
 
             //Call
-            if (object_istype(function->type, &FuncType)){
-                add_callframe(vm->callstack, INCREF(new_int_fromint(0)), CAST_STRING(CAST_FUNC(function)->name)->val, INCREF(CAST_FUNC(function)->code));
-                vm->callstack->head->locals=new_dict();
-            }
             object* ret=object_call(function, args, kwargs);
-            pop_callframe(vm->callstack);
             if (ret==NULL){
                 return CALL_ERR;
             }
@@ -386,33 +363,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
                 return NULL;
-            }
-            
-            if (object_istype(function->type, &FuncType)){
-                if (CAST_FUNC(function)->argc-CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()>posargc \
-                || CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()<kwargc \
-                || CAST_FUNC(function)->argc<argc){
-                    if (CAST_INT(CAST_FUNC(function)->kwargs->type->slot_len(CAST_FUNC(function)->kwargs))->val->to_int()==0){
-                        vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), argc);
-                        return NULL;
-                    }
-                    vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(function)->args->type->slot_len(CAST_FUNC(function)->args))->val->to_int(), CAST_FUNC(function)->argc, argc);
-                    return NULL;
-                }
-            }
-
-            if (object_istype(function->type, &BuiltinType)){
-                if (CAST_BUILTIN(function)->argc-CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()>posargc \
-                || CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()<kwargc \
-                || CAST_BUILTIN(function)->argc<argc){
-                    if (CAST_INT(CAST_BUILTIN(function)->kwargs->type->slot_len(CAST_BUILTIN(function)->kwargs))->val->to_int()==0 || \
-                    CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int()==CAST_BUILTIN(function)->argc){
-                        vm_add_err(&ValueError, vm, "expected %d argument(s).",CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int());
-                        return NULL;
-                    }
-                    vm_add_err(&ValueError, vm, "expected %d to %d arguments.",CAST_INT(CAST_BUILTIN(function)->args->type->slot_len(CAST_BUILTIN(function)->args))->val->to_int(), CAST_FUNC(function)->argc);
-                    return NULL;
-                }
             }
                 
 
@@ -435,14 +385,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             //
 
             //Call
-            if (object_istype(function->type, &FuncType)){
-                add_callframe(vm->callstack, INCREF(new_int_fromint(0)),  CAST_STRING(CAST_FUNC(function)->name)->val, INCREF(CAST_FUNC(function)->code));
-                vm->callstack->head->locals=new_dict();
-            }
             object* ret=object_call(function, args, kwargs);
-            if (object_istype(function->type, &FuncType)){
-                pop_callframe(vm->callstack);
-            }
             if (ret==NULL){
                 return CALL_ERR;
             }
@@ -572,13 +515,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         if (obj==CALL_ERR){
             CAST_LIST(code)->idx=0;
-            return CALL_ERR;
+            goto exceptioncase;
         }
         if (obj!=NULL){
             CAST_LIST(code)->idx=0;
             return obj;
         }
         if (vm->exception!=NULL){
+            exceptioncase:
             struct callframe* callframe=vm->callstack->head;
             while (callframe){    
                 if (callframe->name==NULL){
