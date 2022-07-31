@@ -35,6 +35,11 @@ void setup_builtins(){
     idargs->type->slot_append(idargs, str_new_fromstr(new string("object")));
     object* idkwargs=new_tuple();
     builtins[16]=new_builtin((builtinfunc)builtin_id, str_new_fromstr(new string("id")), idargs, idkwargs, 1);
+
+    object* inputargs=new_tuple();
+    inputargs->type->slot_append(inputargs, str_new_fromstr(new string("object")));
+    object* inputkwargs=new_tuple();
+    builtins[17]=new_builtin((builtinfunc)builtin_input, str_new_fromstr(new string("input")), inputargs, inputkwargs, 1);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

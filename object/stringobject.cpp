@@ -28,12 +28,6 @@ object* str_new(object* type, object* args, object* kwargs){
     object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
     DECREF(args);
     DECREF(kwargs);
-    if (!object_istype(val->type, &IntType) && !object_istype(val->type, &StrType)){
-        DECREF(val);
-        vm_add_err(&ValueError, vm, "Expected argument to be int or str, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
-        return NULL;
-    }
-
     string s=object_cstr(val);
 
     object_var* obj=new_object_var(&StrType, s.size());
