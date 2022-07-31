@@ -120,6 +120,7 @@ void object_del(object* object);
 bool object_find_bool_dict_keys(object* dict, object* needle);
 object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
+bool object_issubclass(object* obj, TypeObject* t);
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
