@@ -19,6 +19,13 @@ m="Placeholder value"
 
 class Peregrine{
     var=m
+    func __new__(self){
+        print("__new__ called")
+        return self
+    }
+    func __init__(self){
+        print(self)
+    }
     func f(self){
         print(self.var)
     }
