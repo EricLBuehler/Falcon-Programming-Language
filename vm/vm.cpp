@@ -487,6 +487,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case STORE_SUBSCR: {
+            object* val=pop_dataframe(vm->objstack);
+            object* idx=pop_dataframe(vm->objstack);
+            object* base=pop_dataframe(vm->objstack);
+            object_set(base, idx, val);
+            add_dataframe(vm, vm->objstack, base);
+            break;
+        }
+
         default:
             return NULL;
             
