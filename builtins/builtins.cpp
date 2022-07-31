@@ -27,3 +27,10 @@ object* builtin___build_class__(object* self, object* args){
     object* t=new_type(CAST_STRING(object_str(CAST_FUNC(function)->name))->val, new_list(), dict);
     return t;
 }
+
+object* builtin_id(object* self, object* args){
+    object* obj=object_get(args, str_new_fromstr(new string("object")));
+    char buf[32];
+    sprintf(buf, "%d", obj);
+    return new_int_fromstr(new string(buf));
+}
