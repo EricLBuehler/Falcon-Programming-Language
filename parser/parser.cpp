@@ -663,6 +663,24 @@ class Parser{
             return node;
         }
 
+        Node* make_store_subscr(parse_ret* ret, Node* left){
+            this->advance();
+            Node* expr=this->expr(ret, LOWEST);
+            
+            Node* node=make_node(N_STORE_SUBSCR);
+            node->start=left->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            StoreSubscript* s=(StoreSubscript*)malloc(sizeof(StoreSubscript));
+            s->left=left;
+            s->expr=expr;
+            
+            node->node=s;
+            
+            this->advance();
+            return node;
+        }
+
         Node* make_subscr(parse_ret* ret, Node* left){
             this->advance();
             Node* expr=this->expr(ret, LOWEST);
@@ -683,6 +701,9 @@ class Parser{
             s->expr=expr;
             
             node->node=s;
+            if (this->current_tok_is(T_EQ)){
+                return this->make_store_subscr(ret, node);
+            }
             return node;
         }
 

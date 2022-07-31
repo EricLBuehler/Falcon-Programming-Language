@@ -24,6 +24,7 @@ enum nodetype{
     N_ELSE,
     N_SUBSCR,
     N_RAISE,
+    N_STORE_SUBSCR,
 };
 
 enum precedence {
@@ -184,6 +185,11 @@ struct Subscript{
 };
 
 struct Raise{
+    Node* expr;
+};
+
+struct StoreSubscript{
+    Node* left;
     Node* expr;
 };
 
