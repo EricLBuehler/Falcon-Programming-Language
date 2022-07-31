@@ -144,9 +144,11 @@ void vm_del(struct vm* vm){
 }
 
 void vm_add_var_locals(struct vm* vm, object* name, object* value){
-    if (vm->globals->type->slot_get(vm->globals, name)!=NULL){
-        ((object_var*)vm->globals->type->slot_get(vm->globals, name))->gc_ref--;
+    object* o=vm->callstack->head->locals->type->slot_get(vm->callstack->head->locals, name);
+    if (o!=NULL && o!=(object*)0x1){
+        ((object_var*)vm->callstack->head->locals->type->slot_get(vm->callstack->head->locals, name))->gc_ref--;
     }
+    vm->exception=NULL;
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
@@ -157,11 +159,12 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
     struct callframe* frame=vm->callstack->head;
     while(frame){
         object* o=frame->locals->type->slot_get(frame->locals, name);
-        if (o!=NULL){
-            return o;
+        if (o!=NULL && vm->exception==NULL){
+        return o;
         }
         frame=frame->next;        
     }
+    vm->exception=NULL;
     for (size_t i=0; i<nbuiltins; i++){
         if (object_istype(builtins[i]->type, &BuiltinType)){
             if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
@@ -184,9 +187,11 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
 }
 
 void vm_add_var_globals(struct vm* vm, object* name, object* value){
-    if (vm->globals->type->slot_get(vm->globals, name)!=NULL){
+    object* o=vm->globals->type->slot_get(vm->globals, name);
+    if (o!=NULL && o!=(object*)0x1){
         ((object_var*)vm->globals->type->slot_get(vm->globals, name))->gc_ref--;
     }
+    vm->exception=NULL;
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
@@ -195,9 +200,10 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
 
 struct object* vm_get_var_globals(struct vm* vm, object* name){
     object* o=vm->globals->type->slot_get(vm->globals, name);
-    if (o!=NULL){
+    if (o!=NULL && o!=(object*)0x1 && vm->exception==NULL){
         return o;
     }
+    vm->exception=NULL;
     for (size_t i=0; i<nbuiltins; i++){
         if (object_istype(builtins[i]->type, &BuiltinType)){
             if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
@@ -468,7 +474,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case BINOP_SUBSCR: {
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
-            add_dataframe(vm, vm->objstack, object_subscript(base, idx));
+            add_dataframe(vm, vm->objstack, object_get(base, idx));
             break;
         }
 
