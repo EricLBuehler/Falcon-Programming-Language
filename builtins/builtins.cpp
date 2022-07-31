@@ -34,3 +34,11 @@ object* builtin_id(object* self, object* args){
     sprintf(buf, "%d", obj);
     return new_int_fromstr(new string(buf));
 }
+
+object* builtin_input(object* self, object* args){
+    object* obj=object_get(args, str_new_fromstr(new string("object")));
+    cout<<object_cstr(obj);
+    string* s=new string("");
+    cin>>*s;
+    return str_new_fromstr(s);
+}
