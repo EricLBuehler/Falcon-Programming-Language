@@ -53,7 +53,6 @@ TypeObject IntType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
 
     (reprfunc)int_repr, //slot_repr
     (reprfunc)int_repr, //slot_str
@@ -120,7 +119,6 @@ TypeObject StrType={
     (lenfunc)str_len, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
 
     (reprfunc)str_repr, //slot_repr
     (reprfunc)str_str, //slot_str
@@ -149,7 +147,6 @@ object* list_repr(object* self);
 object* list_next(object* self);
 object* list_cmp(object* self, object* other, uint8_t type);
 object* list_bool(object* self);
-object* list_subscr(object* self, object* other);
 
 
 typedef struct ListObject{
@@ -195,7 +192,6 @@ TypeObject ListType={
     (lenfunc)list_len, //slot_len
     (setfunc)list_set, //slot_set
     (appendfunc)list_append, //slot_append
-    (binopfunc)list_subscr, //slot_subscr
 
     (reprfunc)list_repr, //slot_repr
     (reprfunc)list_repr, //slot_str
@@ -220,7 +216,6 @@ void dict_set(object* self, object* key, object* val);
 object* dict_repr(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
 object* dict_bool(object* self);
-object* dict_subscr(object* self, object* other);
 
 
 typedef struct DictObject{
@@ -263,7 +258,6 @@ static TypeObject DictType={
     (lenfunc)dict_len, //slot_len
     (setfunc)dict_set, //slot_set
     0, //slot_appends
-    (binopfunc)dict_subscr, //slot_subscr
 
     (reprfunc)dict_repr, //slot_repr
     (reprfunc)dict_repr, //slot_str
@@ -331,7 +325,6 @@ TypeObject CodeType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
 
     (reprfunc)code_repr, //slot_repr
     (reprfunc)code_repr, //slot_str
@@ -410,8 +403,7 @@ TypeObject BoolType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
-
+    
     (reprfunc)bool_repr, //slot_repr
     (reprfunc)bool_repr, //slot_str
     0, //slot_call
@@ -436,7 +428,6 @@ object* tuple_repr(object* self);
 object* tuple_next(object* self);
 object* tuple_cmp(object* self, object* other, uint8_t type);
 object* tuple_bool(object* self);
-object* tuple_subscr(object* self, object* other);
 
 typedef struct TupleObject{
     OBJHEAD_VAR
@@ -481,7 +472,6 @@ TypeObject TupleType={
     (lenfunc)tuple_len, //slot_len
     0, //slot_set
     (appendfunc)tuple_append, //slot_append
-    (binopfunc)tuple_subscr, //slot_append
 
     (reprfunc)tuple_repr, //slot_repr
     (reprfunc)tuple_repr, //slot_str
@@ -551,7 +541,6 @@ TypeObject FuncType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
 
     (reprfunc)func_repr, //slot_repr
     (reprfunc)func_repr, //slot_str
@@ -613,7 +602,6 @@ TypeObject NoneType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
 
     (reprfunc)none_repr, //slot_repr
     (reprfunc)none_repr, //slot_str
@@ -680,7 +668,6 @@ TypeObject BuiltinType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
 
     (reprfunc)builtin_repr, //slot_repr
     (reprfunc)builtin_repr, //slot_str
@@ -741,7 +728,6 @@ TypeObject ObjectType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
 
     (reprfunc)object_repr_, //slot_repr
     (reprfunc)object_repr_, //slot_str
@@ -804,7 +790,6 @@ TypeObject ExceptionType={
     0, //slot_len
     0, //slot_set
     0, //slot_append
-    0, //slot_subscr
 
     (reprfunc)exception_repr, //slot_repr
     (reprfunc)exception_str, //slot_str
@@ -841,7 +826,6 @@ object* new_type_exception(string* name, object* bases, object* dict){
         0, //slot_len
         0, //slot_set
         0, //slot_append
-        0, //slot_subscr
 
         0, //slot_repr
         0, //slot_str
@@ -999,7 +983,6 @@ void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp, NumberMethods* m){
     SETSLOT(tp_tp, base_tp, slot_str);
     SETSLOT(tp_tp, base_tp, slot_call);
     SETSLOT(tp_tp, base_tp, slot_cmp);
-    SETSLOT(tp_tp, base_tp, slot_subscr);
 
     //Inheritance of number methods could be updated to be special
     _inherit_number_slots(m, base_tp);

@@ -217,18 +217,3 @@ object* newtp_bool(object* self){
         return val;
     }
 }
-
-
-object* newtp_subscr(object* self, object* other){
-    object* n=object_getattr(self, str_new_fromstr(new string("__subscr__")));
-    if (n==NULL){
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
-}

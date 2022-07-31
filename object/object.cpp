@@ -407,12 +407,12 @@ object* object_istruthy(object* obj){
     return obj->type->slot_number->slot_bool(obj);
 }
 
-object* object_subscript(object* base, object* idx){
-    if (base->type->slot_subscr==NULL){
+object* object_get(object* base, object* idx){
+    if (base->type->slot_get==NULL){
         vm_add_err(&TypeError, vm, "Type '%s' is not subscriptable",base->type->name->c_str());
         return NULL;
     }
-    object* obj=base->type->slot_subscr(base, idx);
+    object* obj=base->type->slot_get(base, idx);
     return obj;
 }
 

@@ -35,31 +35,19 @@ object* dict_bool(object* self){
     return new_bool_true();
 }
 
-object* dict_subscr(object* self, object* other){
-    for (auto k: (*CAST_DICT(self)->val)){
-        if (istrue(object_cmp(other, k.first, CMP_EQ))){
-            return  (*CAST_DICT(self)->val)[k.first];
-        }
-    }
-    vm_add_err(&KeyError, vm, "%s is not a key", object_crepr(other));
-    return (object*)0x1;
-}
 
 object* dict_len(object* self){
     return new_int_fromint(((DictObject*)self)->val->size());
 }
 
 object* dict_get(object* self, object* key){
-    if (CAST_DICT(self)->val->find(key)==CAST_DICT(self)->val->end()){
-        //Check non-immutable key
-        object* o=object_find_dict_keys(self,key);
-        if (o!=NULL){
-            return CAST_DICT(self)->val->at(o);
+    for (auto k: (*CAST_DICT(self)->val)){
+        if (istrue(object_cmp(key, k.first, CMP_EQ))){
+            return  (*CAST_DICT(self)->val)[k.first];
         }
-        //Error!
-        return NULL;
     }
-    return CAST_DICT(self)->val->at(key);
+    vm_add_err(&KeyError, vm, "%s is not a key", object_crepr(key).c_str());
+    return (object*)0x1;
 }
 
 void dict_set(object* self, object* key, object* val){
