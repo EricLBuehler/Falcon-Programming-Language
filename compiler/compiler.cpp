@@ -778,6 +778,14 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_STORE_SUBSCR: {
+            compile_expr(compiler, SUBSCR(STSUBSCR(expr->node)->left->node)->left);
+            compile_expr(compiler, SUBSCR(STSUBSCR(expr->node)->left->node)->expr);
+            compile_expr(compiler, STSUBSCR(expr->node)->expr);
+            add_instruction(compiler->instructions,STORE_SUBSCR, 0, expr->start, expr->end);
+            break;
+        }
+    
     }
 
     return 0;

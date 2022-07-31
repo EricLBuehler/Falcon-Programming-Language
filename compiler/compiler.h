@@ -27,6 +27,7 @@ enum opcode{
     JUMP_DELTA,
     BINOP_SUBSCR,
     RAISE_EXC,
+    STORE_SUBSCR,
 };
 
 enum scope{
@@ -75,6 +76,7 @@ struct compiler{
 #define CONTROL(node) ((Control*)(node))
 #define SUBSCR(node) ((Subscript*)(node))
 #define RAISE(node) ((Raise*)(node))
+#define STSUBSCR(node) ((StoreSubscript*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
 
