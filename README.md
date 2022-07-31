@@ -11,6 +11,29 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - GCC compiler installed
 - Only tested on Windows
 
+### Builtins ###
+- ```print```
+- ```__build_class__```
+- ```id```
+- ```input```
+
+- Exceptions
+    - ```Exception```
+    - ```TypeError```
+    - ```ValueError```
+    - ```AttributeError```
+    - ```KeyError```
+    - ```NameError```
+    - ```IndexError```
+- Types
+    - ```str```
+    - ```int```
+    - ```list```
+    - ```dict```
+    - ```tuple```
+    - ```object```
+    
+
 ### Sample Program ###
 
 #### Program ####
