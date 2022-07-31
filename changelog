@@ -1,3 +1,6 @@
+7/31/22 9 15 AM
+Removed slot_subscr in favor of slot_get
+
 7/31/22 5 45 AM
 Reduced rulebreaking in VM call
 
