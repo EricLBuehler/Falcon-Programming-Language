@@ -76,7 +76,6 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     sprintf(format, "%s", _format);
     
     vm->exception=exception->type->slot_call((object*)exception, new_tuple(), new_dict()); //Create new exception object
-
     char *msg = (char*)malloc(sizeof(char)*length);
 
     va_start(args, _format);
@@ -85,6 +84,7 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     
     DECREF(CAST_EXCEPTION(vm->exception)->err);
     CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(new string(msg));
+    free(msg);
 }
 
 object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {    
@@ -157,13 +157,18 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
 
 struct object* vm_get_var_locals(struct vm* vm, object* name){
     struct callframe* frame=vm->callstack->head;
+    
+    uint32_t i=0;
     while(frame){
         object* o=frame->locals->type->slot_get(frame->locals, name);
-        if (o!=NULL && o!=(object*)0x1 && vm->exception==NULL){
+        if (o!=NULL && vm->exception==NULL){
             return o;
         }
+        
+        DECREF(vm->exception);
         vm->exception=NULL;
-        frame=frame->next;        
+        frame=frame->next; 
+        i++;
     }
     vm->exception=NULL;
     for (size_t i=0; i<nbuiltins; i++){
@@ -322,6 +327,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case CALL_METHOD: {
             object* function=pop_dataframe(vm->objstack);
             object* head=pop_dataframe(vm->objstack);
+            if (object_istype(head->type, &TypeType)){
+                vm_add_err(&TypeError, vm, "Cannot call method on type object");
+                return NULL; 
+            }
             
             uint32_t argc=CAST_INT(arg)->val->to_int()+1;
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int()+1;
@@ -392,6 +401,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             //
 
             //Call
+            if (vm->callstack->size-2==MAX_RECURSION){
+                vm_add_err(&RecursionError, vm, "Maximum stack depth exceeded.");
+                return CALL_ERR;
+            }
             object* ret=object_call(function, args, kwargs);
             if (ret==NULL){
                 return CALL_ERR;
@@ -509,39 +522,64 @@ object* run_vm(object* codeobj, uint32_t* ip){
     object* lines=CAST_CODE(codeobj)->co_lines;
     
     uint32_t linetup_cntr=0;
-    object* instruction=code->type->slot_next(code);
+    object* instruction=code->type->slot_get(code, new_int_fromint((*ip)));
+    uint32_t instructions=CAST_INT(code->type->slot_len(code))->val->to_int();
     object* linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
     object* idx0=new_int_fromint(0);
     object* idx1=new_int_fromint(1);
     object* idx2=new_int_fromint(2);
-    while (instruction){
-        (*ip)++;
-        if ((*ip)>(*CAST_INT(linetup->type->slot_get(linetup, idx1))->val).to_int()){
+    while ((*ip)<instructions){
+        instruction=code->type->slot_get(code, new_int_fromint((*ip)++));
+        if (((*ip)-1)/2>(*CAST_INT(linetup->type->slot_get(linetup, idx1))->val).to_int()){
             linetup_cntr++;
             linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
         }
         vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
-
-        uint32_t ip_=(*ip);
-        object* obj=_vm_step(instruction, code->type->slot_next(code), vm, ip);
-        if ((*ip)!=ip_){
-            for (uint32_t i=0; i<((*ip)-ip_)*2; i++){
-                code->type->slot_next(code);
-            }
-        }
+        
+        object* obj=_vm_step(instruction, code->type->slot_get(code, new_int_fromint((*ip)++)), vm, ip);
         if (obj==CALL_ERR){
             CAST_LIST(code)->idx=0;
             if (vm->callstack->size>1){
+                struct callframe* callframe=vm->callstack->head;
+
+                cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
+                
+                int line=0;
+                int target=CAST_INT(callframe->line)->val->to_int();
+                int startidx=0;
+                int endidx=0;
+                int idx=0;
+                bool entered=false;
+                while (true){
+                    if (line==target && !entered){
+                        startidx=idx;
+                        entered=true;
+                    }
+                    if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
+                        endidx=idx;
+                        break;
+                    }
+                    else if ((*vm->filedata)[idx]=='\n'){
+                        line++;
+                    }
+                    idx++;
+                }
+
+                string snippet="";
+                for (int i=startidx; i<endidx; i++){
+                    snippet+=(*vm->filedata)[i];
+                }
+
+                cout<<snippet<<endl;
                 return NULL;
             }
-            goto exceptioncase;
+            return NULL;
         }
         if (obj!=NULL){
             CAST_LIST(code)->idx=0;
             return obj;
         }
         if (vm->exception!=NULL){
-            exceptioncase:
             struct callframe* callframe=vm->callstack->head;
             while (callframe){    
                 if (callframe->name==NULL){
@@ -584,7 +622,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             CAST_LIST(code)->idx=0;
             return NULL;
         }
-        instruction=code->type->slot_next(code);
     }
 
     CAST_LIST(code)->idx=0;
