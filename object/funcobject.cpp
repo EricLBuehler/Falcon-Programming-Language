@@ -32,7 +32,7 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t posargc=CAST_INT(args->type->slot_len(args))->val->to_int();
     uint32_t kwargc=argc-posargc;
 
-    add_callframe(vm->callstack, INCREF(new_int_fromint(0)),  CAST_STRING(CAST_FUNC(self)->name)->val, INCREF(CAST_FUNC(self)->code));
+    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(INCREF(CAST_FUNC(self)->name))->val, INCREF(CAST_FUNC(self)->code));
     vm->callstack->head->locals=new_dict();
 
     if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
@@ -48,7 +48,7 @@ object* func_call(object* self, object* args, object* kwargs){
 
     setup_args(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs);
     uint32_t ip=0;
-
+    
     object* ret=run_vm(CAST_FUNC(self)->code, &ip);
     
     pop_callframe(vm->callstack);

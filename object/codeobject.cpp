@@ -36,6 +36,7 @@ object* code_new(object* type, object* args, object* kwargs){
     CAST_CODE(obj)->co_lines=INCREF(args->type->slot_get(args, new_int_fromint(4)));
     
     DECREF(args);
+    DECREF(kwargs);
     return obj;
 }
 

@@ -40,6 +40,8 @@ void setup_builtins(){
     inputargs->type->slot_append(inputargs, str_new_fromstr(new string("object")));
     object* inputkwargs=new_tuple();
     builtins[17]=new_builtin((builtinfunc)builtin_input, str_new_fromstr(new string("input")), inputargs, inputkwargs, 1);
+    
+    builtins[18]=(object*)&StringStreamType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

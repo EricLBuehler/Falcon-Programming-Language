@@ -29,6 +29,8 @@ static NumberMethods int_num_methods{
     (unaryfunc)int_bool, //slot_bool
 };
 
+Method int_methods[]={{NULL,NULL}};
+
 TypeObject IntType={
     0, //refcnt
     0, //ob_prev
@@ -59,6 +61,7 @@ TypeObject IntType={
     0, //slot_call
 
     &int_num_methods, //slot_number
+    int_methods, //slot_methods
 
     (compfunc)int_cmp, //slot_cmp
 };
@@ -95,6 +98,8 @@ static NumberMethods str_num_methods{
     (unaryfunc)str_bool, //slot_bool
 };
 
+Method str_methods[]={{NULL,NULL}};
+
 TypeObject StrType={
     0, //refcnt
     0, //ob_prev
@@ -125,6 +130,7 @@ TypeObject StrType={
     0, //slot_call
 
     &str_num_methods, //slot_number
+    str_methods, //slot_methods
 
     (compfunc)str_cmp, //slot_cmp
 };
@@ -147,6 +153,7 @@ object* list_repr(object* self);
 object* list_next(object* self);
 object* list_cmp(object* self, object* other, uint8_t type);
 object* list_bool(object* self);
+object* list_append_meth(object* args, object* kwargs);
 
 
 typedef struct ListObject{
@@ -156,6 +163,8 @@ typedef struct ListObject{
     size_t size;
     size_t idx;
 }ListObject;
+
+Method list_methods[]={{"append", (cwrapperfunc)list_append_meth}, {NULL,NULL}};
 
 static NumberMethods list_num_methods{
     0, //slot_add
@@ -180,8 +189,8 @@ TypeObject ListType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
-    0, //slot_getattr
-    0, //slot_setattr
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
 
     0, //slot_init
     (newfunc)list_new, //slot_new
@@ -198,6 +207,7 @@ TypeObject ListType={
     0, //slot_call
 
     &list_num_methods, //slot_number
+    list_methods, //slot_methods
 
     (compfunc)list_cmp, //slot_cmp
 };
@@ -234,6 +244,8 @@ static NumberMethods dict_num_methods{
     (unaryfunc)dict_bool, //slot_bool
 };
 
+Method dict_methods[]={{NULL,NULL}};
+
 static TypeObject DictType={
     0, //refcnt
     0, //ob_prev
@@ -264,6 +276,7 @@ static TypeObject DictType={
     0, //slot_call
 
     &dict_num_methods, //slot_number
+    dict_methods, //slot_methods
 
     (compfunc)dict_cmp, //slot_cmp
 };
@@ -301,6 +314,8 @@ static NumberMethods code_num_methods{
     (unaryfunc)code_bool, //slot_bool
 };
 
+Method code_methods[]={{NULL,NULL}};
+
 TypeObject CodeType={
     0, //refcnt
     0, //ob_prev
@@ -309,7 +324,7 @@ TypeObject CodeType={
     &TypeType, //type
     new string("code"), //name
     sizeof(CodeObject), //size
-    true, //gc_trackable
+    false, //gc_trackable
     NULL, //bases
     0, //dict_offset
     NULL, //dict
@@ -331,6 +346,7 @@ TypeObject CodeType={
     0, //slot_call
 
     &code_num_methods, //slot_number
+    code_methods, //slot_methods
 
     (compfunc)code_cmp, //slot_cmp
 };
@@ -379,6 +395,8 @@ static NumberMethods bool_num_methods{
     (unaryfunc)bool_bool, //slot_bool
 };
 
+Method bool_methods[]={{NULL,NULL}};
+
 TypeObject BoolType={
     0, //refcnt
     0, //ob_prev
@@ -409,6 +427,7 @@ TypeObject BoolType={
     0, //slot_call
 
     &bool_num_methods, //slot_number
+    bool_methods, //slot_methods
 
     (compfunc)bool_cmp, //slot_cmp
 };
@@ -448,6 +467,8 @@ static NumberMethods tuple_num_methods{
     (unaryfunc)tuple_bool, //slot_bool
 };
 
+Method tuple_methods[]={{NULL,NULL}};
+
 TypeObject TupleType={
     0, //refcnt
     0, //ob_prev
@@ -478,6 +499,7 @@ TypeObject TupleType={
     0, //slot_call
 
     &tuple_num_methods, //slot_number
+    tuple_methods, //slot_methods
 
     (compfunc)tuple_cmp, //slot_cmp
 };
@@ -517,6 +539,8 @@ static NumberMethods func_num_methods{
     (unaryfunc)func_bool, //slot_bool
 };
 
+Method func_methods[]={{NULL,NULL}};
+
 TypeObject FuncType={
     0, //refcnt
     0, //ob_prev
@@ -525,7 +549,7 @@ TypeObject FuncType={
     &TypeType, //type
     new string("function"), //name
     sizeof(FuncObject), //size
-    true, //gc_trackable
+    false, //gc_trackable
     NULL, //bases
     offsetof(FuncObject, dict), //dict_offset
     NULL, //dict
@@ -547,6 +571,7 @@ TypeObject FuncType={
     (callfunc)func_call, //slot_call
 
     &func_num_methods, //slot_number
+    func_methods, //slot_methods
 
     (compfunc)func_cmp, //slot_cmp
 };
@@ -578,6 +603,8 @@ static NumberMethods none_num_methods{
     (unaryfunc)none_bool, //slot_bool
 };
 
+Method none_methods[]={{NULL,NULL}};
+
 TypeObject NoneType={
     0, //refcnt
     0, //ob_prev
@@ -608,6 +635,7 @@ TypeObject NoneType={
     0, //slot_call
 
     &none_num_methods, //slot_number
+    none_methods, //slot_methods
 
     (compfunc)none_cmp, //slot_cmp
 };
@@ -644,6 +672,8 @@ static NumberMethods builtin_num_methods{
     (unaryfunc)builtin_bool, //slot_bool
 };
 
+Method builtin_methods[]={{NULL,NULL}};
+
 TypeObject BuiltinType={
     0, //refcnt
     0, //ob_prev
@@ -674,6 +704,7 @@ TypeObject BuiltinType={
     (callfunc)builtin_call, //slot_call
 
     &builtin_num_methods, //slot_number
+    builtin_methods, //slot_methods
 
     (compfunc)builtin_cmp, //slot_cmp
 };
@@ -705,6 +736,8 @@ static NumberMethods object_num_methods{
     (unaryfunc)object_bool, //slot_bool
 };
 
+Method object_methods[]={{NULL,NULL}};
+
 TypeObject ObjectType={
     0, //refcnt
     0, //ob_prev
@@ -713,7 +746,7 @@ TypeObject ObjectType={
     &TypeType, //type
     new string("object"), //name
     sizeof(ObjectObject), //size
-    true, //gc_trackable
+    false, //gc_trackable
     NULL, //bases
     0, //dict_offset
     NULL, //dict
@@ -721,7 +754,7 @@ TypeObject ObjectType={
     0, //slot_setattr
     (initfunc)object_init, //slot_init
     (newfunc)object_new, //slot_new
-    (delfunc)object_del, //slot_del
+    0, //slot_del
 
     0, //slot_next
     0, //slot_get
@@ -734,6 +767,7 @@ TypeObject ObjectType={
     0, //slot_call
 
     &object_num_methods, //slot_number
+    object_methods, //slot_methods
 
     (compfunc)object_cmp_, //slot_cmp
 };
@@ -748,7 +782,6 @@ void exception_del(object* self);
 object* exception_repr(object* self);
 object* exception_str(object* self);
 object* exception_cmp(object* self, object* other, uint8_t type);
-object* exception_call(object* type, object* args, object* kwargs);
 
 typedef struct ExceptionObject{
     OBJHEAD_EXTRA
@@ -765,6 +798,8 @@ static NumberMethods exception_num_methods{
 
     0, //slot_bool
 };
+
+Method exception_methods[]={{NULL,NULL}};
 
 TypeObject ExceptionType={
     0, //refcnt
@@ -796,6 +831,7 @@ TypeObject ExceptionType={
     0, //slot_call
 
     &exception_num_methods, //slot_number
+    exception_methods, //slot_methods
 
     (compfunc)exception_cmp, //slot_cmp
 };
@@ -847,8 +883,118 @@ void setup_exception_type(){
     IndexError=(*(TypeObject*)new_type_exception(new string("IndexError"), new_tuple(), new_dict()));
     KeyError=(*(TypeObject*)new_type_exception(new string("KeyError"), new_tuple(), new_dict()));
     NameError=(*(TypeObject*)new_type_exception(new string("NameError"), new_tuple(), new_dict()));
+    MemoryError=(*(TypeObject*)new_type_exception(new string("MemoryError"), new_tuple(), new_dict()));
+    object* recursionerr_bases=new_tuple();
+    recursionerr_bases->type->slot_append(recursionerr_bases, (object*)&MemoryError);
+    RecursionError=(*(TypeObject*)new_type_exception(new string("RecursionError"), recursionerr_bases, new_dict()));
 }
 
+
+typedef struct StringStreamObject{
+    OBJHEAD_EXTRA
+    object* file;
+    object* mode;
+    object* data;
+}StringStreamObject;
+
+static NumberMethods stringstream_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    0, //slot_bool
+};
+
+Method stringstream_methods[]={{NULL,NULL}};
+
+TypeObject StringStreamType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("StringStream"), //name
+    sizeof(StringStreamObject), //size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_get
+    0, //slot_len
+    0, //slot_set
+    0, //slot_append
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &stringstream_num_methods, //slot_number
+    stringstream_methods, //slot_methods
+
+    0, //slot_cmp
+};
+
+void setup_stringstream_type(){
+    StringStreamType=(*(TypeObject*)finalize_type(&StringStreamType));
+}
+
+object* cwrapper_call(object* self, object* args, object* kwargs);
+object* cwrapper_new_fromfunc(cwrapperfunc func);
+
+typedef struct CWrapperObject{
+    OBJHEAD_EXTRA
+    cwrapperfunc function;
+}CWrapperObject;
+
+TypeObject CWrapperType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("CWrapperType"), //name
+    sizeof(NoneObject), //size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_get
+    0, //slot_len
+    0, //slot_set
+    0, //slot_append
+
+    0, //slot_repr
+    0, //slot_str
+    (callfunc)cwrapper_call, //slot_call
+
+    0, //slot_number
+    0, //slot_methods
+
+    0, //slot_cmp
+};
+
+void setup_cwrapper_type(){
+    CWrapperType=(*(TypeObject*)finalize_type(&CWrapperType));
+}
 
 
 
@@ -1015,17 +1161,54 @@ object* finalize_type(TypeObject* newtype){
         TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
         //Dirty inheritance here... go over each
         _inherit_slots(tp_tp, base_tp, m);
-        //
+        //      
     }
     //Hack to ensure retention of original slots
     _inherit_slots(tp_tp, newtype, m);
-    
+
 
     tp_tp->slot_number=m;
 
     tp_tp->refcnt=1;
 
     return tp;
+}
+
+object* inherit_type_methods(TypeObject* tp){
+    TypeObject* tp_tp=CAST_TYPE(tp);
+
+    //tp is the what we'll copy to...
+
+    //Clean out bases
+    uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
+
+    //This is a slower method than could theoritically be done.
+    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
+    //also breaks fewer rules...
+
+    //Setup type dict
+    if (tp_tp->dict==NULL){
+        tp_tp->dict=new_dict();
+    }
+    
+    for (uint32_t i=total_bases; i>0; i--){
+        TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
+        //Inherit methods
+        uint32_t idx=0;
+        while (base_tp->slot_methods[idx].name!=NULL){
+            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(base_tp->slot_methods[idx].name)), cwrapper_new_fromfunc((cwrapperfunc)base_tp->slot_methods[idx].function));
+            idx++;
+        }        
+    }
+
+    //Inherit methods
+    uint32_t idx=0;
+    while (tp_tp->slot_methods[idx].name!=NULL){
+        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(tp_tp->slot_methods[idx].name)), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function));
+        idx++;
+    }
+
+    return (object*)tp;
 }
 
 object* type_bool(object* self){

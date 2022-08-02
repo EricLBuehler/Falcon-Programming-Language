@@ -17,6 +17,9 @@ typedef object* (*getattrfunc)(object*, object*);
 typedef void (*setattrfunc)(object*, object*, object*);
 
 
+typedef object* (*cwrapperfunc)(object*, object*);
+
+
 typedef struct{    
     //binops
     binopfunc slot_add;
@@ -30,6 +33,11 @@ typedef struct{
     //other
     unaryfunc slot_bool;
 }NumberMethods;
+
+typedef struct{
+    const char* name;
+    cwrapperfunc function;
+}Method;
 
 typedef struct object_type{
     size_t refcnt;
@@ -64,6 +72,7 @@ typedef struct object_type{
     
     //number methods
     NumberMethods* slot_number;
+    Method* slot_methods;
 
     compfunc slot_cmp;
 }TypeObject;
@@ -86,7 +95,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=18;
+const size_t nbuiltins=19;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -95,6 +104,8 @@ TypeObject AttributeError;
 TypeObject IndexError;
 TypeObject KeyError;
 TypeObject NameError;
+TypeObject MemoryError;
+TypeObject RecursionError;
 
 Parser parser;
 
@@ -115,7 +126,6 @@ object* object_getattr(object* obj, object* attr);
 void object_setattr(object* obj, object* attr, object* val);
 object* object_genericgetattr(object* obj, object* attr);
 void object_genericsetattr(object* obj, object* attr, object* val);
-void object_del(object* object);
 bool object_find_bool_dict_keys(object* dict, object* needle);
 object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
@@ -210,6 +220,8 @@ struct vm{
 #define CAST_BOBJ(obj) ((ClassObject*)obj)
 #define CAST_TYPE(obj) ((TypeObject*)obj)
 #define CAST_EXCEPTION(obj) ((ExceptionObject*)obj)
+#define CAST_FILE(obj) ((FileObject*)obj)
+#define CAST_CWRAPPER(obj) ((CWrapperObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
@@ -248,6 +260,8 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "builtinobject.cpp"
 #include "objectobject.cpp"
 #include "exceptionobject.cpp"
+#include "stringstreamobject.cpp"
+#include "cwrapperobject.cpp"
 
 void setup_types_consts(){
     setup_object_type(); 
@@ -268,8 +282,10 @@ void setup_types_consts(){
     setup_none_type();
     setup_builtin_type();
     setup_exception_type();
-
-    
+    setup_stringstream_type();  
+    setup_cwrapper_type();  
 
     setup_builtins();
+    
+    inherit_type_methods(&ListType);
 }

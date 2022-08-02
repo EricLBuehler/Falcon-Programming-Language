@@ -6,7 +6,8 @@ object* object_repr_(object* self){
     sprintf(buf, "0x%x", self);
 
     string s="<";
-    s+="object @ ";
+    s+=self->type->name->c_str();
+    s+=" @ ";
     s+=buf;
     s+=">";
     return str_new_fromstr(new string(s));

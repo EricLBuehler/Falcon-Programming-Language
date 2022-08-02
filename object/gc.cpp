@@ -7,9 +7,20 @@ void new_gc(){
     gc.gen1_n=0;
     gc.gen2_n=0;
 
-    gc.gen0_thresh=700;
+    gc.gen0_thresh=10;
     gc.gen1_thresh=100;
     gc.gen2_thresh=10;
+}
+
+bool no_outside_refs(object* obj){ //Must only be called with obj->type->gc_trackable true
+    if ( ((object_var*)obj)->gc_ref - ((object*)obj)->refcnt<0){
+        return true;
+    }
+    if (((object*)obj)->refcnt==0){
+        return true;
+    }
+    
+    return false; 
 }
 
 void gc_collect(int gen){
@@ -25,8 +36,12 @@ void gc_collect(int gen){
         obj=gc.gen0;
     }
     while (obj){
-        if (obj->type->gc_trackable && ((struct object_var*)obj)->refcnt-((struct object_var*)obj)->gc_ref >= 0 \
-        && ((struct object*)obj)->refcnt == 0 ){ //No outside references, so we can free
+        if (obj->type->gc_trackable && no_outside_refs(obj) ){ //No outside references, so we can free
+            if (((object_var*)obj)->gc_ref - ((object*)obj)->refcnt<0){
+                if (obj->type->slot_del!=NULL){
+                    obj->type->slot_del(obj);
+                }
+            }
             if (obj->gen!=2){                
                 if (obj->gen==1){
                     if (obj->ob_prev!=NULL){
@@ -35,7 +50,9 @@ void gc_collect(int gen){
                     else{
                         gc.gen1=obj->ob_next;
                     }                    
-                    obj->ob_next->ob_prev=obj->ob_prev;
+                    if (obj->ob_next!=NULL){
+                        obj->ob_next->ob_prev=obj->ob_prev;
+                    }
                     gc.gen1_n--;
                 }
                 else{
@@ -44,8 +61,10 @@ void gc_collect(int gen){
                     }
                     else{
                         gc.gen0=obj->ob_next;
-                    }                    
-                    obj->ob_next->ob_prev=obj->ob_prev;
+                    }   
+                    if (obj->ob_next!=NULL){
+                        obj->ob_next->ob_prev=obj->ob_prev;
+                    }
                     gc.gen0_n--;
                 }
 

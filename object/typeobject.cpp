@@ -18,6 +18,8 @@ static NumberMethods type_num_methods{
     (unaryfunc)type_bool, //slot_bool
 };
 
+Method type_methods[]={{NULL,NULL}};
+
 TypeObject TypeType={
     0, //refcnt
     0, //ob_prev
@@ -48,6 +50,7 @@ TypeObject TypeType={
     (callfunc)type_call, //slot_call
 
     &type_num_methods, //slot_number
+    type_methods, //slot_methods
 
     0, //slot_cmp
 };
@@ -126,7 +129,8 @@ object* new_type(string* name, object* bases, object* dict){
         newtp_call, //slot_call
 
         &newtp_number, //slot_number
-
+        0, //slot_methods,
+        
         newtp_cmp, //slot_cmp
     };
         

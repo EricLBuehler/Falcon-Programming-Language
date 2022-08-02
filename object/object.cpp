@@ -2,55 +2,29 @@
 
 bool DECREF(struct object* object){
     object->refcnt--;
-    if(object->refcnt==0){
-        object->type->slot_del(object);
+    if (object->refcnt==0){
+        if (object->type->slot_del!=NULL){
+            object->type->slot_del(object);
+        }
         //GC collect it later.... or...
         if (!object->type->gc_trackable){
             if (object->ob_next!=NULL){
-                object->ob_next->ob_prev=NULL;
+                object->ob_next->ob_prev=object->ob_prev;
             }
-            immutable_objs=object->ob_next;
+            if (object->ob_prev!=NULL){
+                object->ob_prev->ob_next=object->ob_next;
+            }
+            else{
+                immutable_objs=object->ob_next;
+            }
             free(object);
             immutable_size--;
-        }
-        else{
-            if (object->gen!=2){                
-                if (object->gen==1){
-                    gc.gen1=object->ob_next;
-                    gc.gen1_n--;
-                }
-                else{
-                    if (object->ob_prev!=NULL){
-                        object->ob_prev->ob_next=object->ob_next;
-                    }
-                    else{
-                        gc.gen0=object->ob_next;
-                    }
-                    object->ob_next->ob_prev=object->ob_prev;
-                    gc.gen0_n--;
-                }
-                free(object);
-            }
         }
         return true;
     }
     return false;
 } 
 
-void object_del(object* object){
-    object->type->slot_del(object);
-    //GC collect it later.... or...
-    if (!object->type->gc_trackable){
-        if (object->refcnt==0){
-            if (object->ob_next!=NULL){
-                object->ob_next->ob_prev=NULL;
-            }
-            immutable_objs=object->ob_next;
-            free(object);
-            immutable_size--;
-        }
-    }
-}
 
 
 object* INCREF(struct object* object){

@@ -46,8 +46,9 @@ object* dict_get(object* self, object* key){
             return  (*CAST_DICT(self)->val)[k.first];
         }
     }
+    
     vm_add_err(&KeyError, vm, "%s is not a key", object_crepr(key).c_str());
-    return (object*)0x1;
+    return NULL;
 }
 
 void dict_set(object* self, object* key, object* val){

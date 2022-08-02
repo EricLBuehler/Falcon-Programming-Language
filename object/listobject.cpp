@@ -151,3 +151,15 @@ object* list_cmp(object* self, object* other, uint8_t type){
     }
     return new_bool_false();
 }
+
+object* list_append_meth(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_len(args))->val->to_long();
+    if (len!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    list_append(self, args->type->slot_get(args, new_int_fromint(1)));
+    return new_none();
+}
