@@ -475,6 +475,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case POP_JMP_TOS_FALSE: {
             if (!istrue(object_istruthy(peek_dataframe(vm->objstack)))){
                 pop_dataframe(vm->objstack);
+                (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
             }
             break;
         }
