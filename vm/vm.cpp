@@ -475,7 +475,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case POP_JMP_TOS_FALSE: {
             if (!istrue(object_istruthy(peek_dataframe(vm->objstack)))){
                 pop_dataframe(vm->objstack);
-                (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
             }
             break;
         }
@@ -535,7 +534,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
         }
         vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
-        
         object* obj=_vm_step(instruction, code->type->slot_get(code, new_int_fromint((*ip)++)), vm, ip);
         if (obj==CALL_ERR){
             CAST_LIST(code)->idx=0;
