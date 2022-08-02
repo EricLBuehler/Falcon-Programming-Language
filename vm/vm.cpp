@@ -537,45 +537,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
         vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
         object* obj=_vm_step(instruction, code->type->slot_get(code, new_int_fromint((*ip)++)), vm, ip);
         if (obj==CALL_ERR){
-            CAST_LIST(code)->idx=0;
-            if (vm->callstack->size>1){
-                struct callframe* callframe=vm->callstack->head;
-
-                cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
-                
-                int line=0;
-                int target=CAST_INT(callframe->line)->val->to_int();
-                int startidx=0;
-                int endidx=0;
-                int idx=0;
-                bool entered=false;
-                while (true){
-                    if (line==target && !entered){
-                        startidx=idx;
-                        entered=true;
-                    }
-                    if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
-                        endidx=idx;
-                        break;
-                    }
-                    else if ((*vm->filedata)[idx]=='\n'){
-                        line++;
-                    }
-                    idx++;
-                }
-
-                string snippet="";
-                for (int i=startidx; i<endidx; i++){
-                    snippet+=(*vm->filedata)[i];
-                }
-
-                cout<<snippet<<endl;
-                return NULL;
-            }
             return NULL;
         }
         if (obj!=NULL){
-            CAST_LIST(code)->idx=0;
             return obj;
         }
         if (vm->exception!=NULL){
@@ -622,8 +586,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             return NULL;
         }
     }
-
-    CAST_LIST(code)->idx=0;
 
     return new_none();
 }
