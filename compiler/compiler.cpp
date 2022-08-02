@@ -661,7 +661,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_IF: {
             compile_expr(compiler, IF(expr->node)->expr);
 
-            add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(expr->node)->code), expr->start, expr->end); 
+            add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(expr->node)->code)*2, expr->start, expr->end); 
 
             //Code
             for (Node* n: (*IF(expr->node)->code)){
@@ -680,6 +680,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     compiler->lines->type->slot_append(compiler->lines, tuple);
                 }
             }
+            
             break;
         }
 
@@ -709,17 +710,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_CONTROL : {
-            uint32_t target=num_instructions(CONTROL(expr->node)->bases);
+            uint32_t target=num_instructions(CONTROL(expr->node)->bases)*2;
             uint32_t instrs=0;
             for (Node* n: (*CONTROL(expr->node)->bases)){
                 if (n->type==N_IF){
-                    instrs+=num_instructions(IF(n->node)->code);
-                    instrs+=num_instructions(IF(n->node)->expr);
-                    instrs+=1;
+                    instrs+=num_instructions(IF(n->node)->code)*2;
+                    instrs+=num_instructions(IF(n->node)->expr)*2;
+                    instrs+=2;
                     
                     compile_expr(compiler, IF(n->node)->expr);
                     
-                    add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(n->node)->code)+1, n->start, n->end);
+                    add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(n->node)->code)*2+2, n->start, n->end);
 
                     //Code
                     for (Node* n: (*IF(n->node)->code)){
@@ -738,11 +739,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             compiler->lines->type->slot_append(compiler->lines, tuple);
                         }
                     }
-
                     add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, n->start, n->end);
                 }
                 if (n->type==N_ELSE){
-                    instrs+=num_instructions(ELSE(n->node)->code);
+                    instrs+=num_instructions(ELSE(n->node)->code)*2;
                     //Code
                     for (Node* n: (*ELSE(n->node)->code)){
                         uint32_t start=compiler->instructions->count;
