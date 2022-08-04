@@ -837,7 +837,10 @@ class Parser{
             }   
             if (this->current_tok.data=="raise"){
                 return make_raise(ret);
-            }                   
+            }
+            if (this->current_tok.data=="try"){
+                return make_try(ret);
+            }               
             this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
             this->advance();
             return NULL;
@@ -1287,6 +1290,172 @@ class Parser{
             r->expr=expr;
 
             n->node=r;
+            return n;
+        }
+
+        Node* make_try(parse_ret* ret){
+            vector<Node*>* bases=new vector<Node*>;
+            Token t=this->current_tok;
+            this->advance();
+
+            Node* n=make_node(N_TRY_EXCEPT_FINALLY);
+            n->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            n->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            TryExceptFinally* f=(TryExceptFinally*)malloc(sizeof(TryExceptFinally));
+            
+            //Parse try code
+            if (!this->current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                free(n);
+                free(f);
+                return NULL;
+            }
+            this->advance();
+            skip_newline;
+            parse_ret try_code;
+            if (!this->current_tok_is(T_RCURLY)){
+                try_code=this->statements();
+            }
+            else{
+                try_code.nodes.clear();
+            }
+            if (!this->current_tok_is(T_RCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                free(n);
+                free(f);
+                return NULL;
+            }  
+            
+            Node* node=make_node(N_TRY);
+            node->start=n->start;
+            node->end=n->end;
+
+            Try* i=(Try*)malloc(sizeof(Try));
+            i->code=new vector<Node*>;
+            i->code->clear();
+            for (Node* n: try_code.nodes){
+                i->code->push_back(n);
+            }
+
+            node->node=i;
+
+            bases->push_back(node);
+            
+            this->advance();
+            skip_newline;
+            while(this->current_tok_is(T_KWD) && this->current_tok.data=="except"){
+                this->advance();
+                Node* type=NULL;
+                if (this->current_tok_is(T_IDENTIFIER)){
+                    type=this->atom(ret);
+                    this->advance();
+                }
+                Node* name=NULL;
+                if (this->current_tok_is(T_IDENTIFIER)){
+                    name=this->atom(ret);
+                    this->advance();
+                }
+
+
+                //Parse except code
+                if (!this->current_tok_is(T_LCURLY)){
+                    this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                    this->advance();
+                    free(n);
+                    free(f);
+                    return NULL;
+                }
+                this->advance();
+                skip_newline;
+                parse_ret except_code;
+                if (!this->current_tok_is(T_RCURLY)){
+                    except_code=this->statements();
+                }
+                else{
+                    except_code.nodes.clear();
+                }
+                if (!this->current_tok_is(T_RCURLY)){
+                    this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                    this->advance();
+                    free(n);
+                    free(f);
+                    return NULL;
+                }  
+
+
+                node=make_node(N_EXCEPT);
+                node->start=n->start;
+                node->end=n->end;
+
+                Except* i=(Except*)malloc(sizeof(Except));
+                i->code=new vector<Node*>;
+                i->code->clear();
+                for (Node* n: except_code.nodes){
+                    i->code->push_back(n);
+                }
+                i->type=type;
+                i->name=name;
+
+                node->node=i;
+
+                bases->push_back(node);
+
+                this->advance();
+                skip_newline;
+
+            }
+
+            if (this->current_tok_is(T_KWD) && this->current_tok.data=="finally"){
+                this->advance();
+                
+                //Parse except code
+                if (!this->current_tok_is(T_LCURLY)){
+                    this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                    this->advance();
+                    free(n);
+                    free(f);
+                    return NULL;
+                }
+                this->advance();
+                skip_newline;
+                parse_ret finally_code;
+                if (!this->current_tok_is(T_RCURLY)){
+                    finally_code=this->statements();
+                }
+                else{
+                    finally_code.nodes.clear();
+                }
+                if (!this->current_tok_is(T_RCURLY)){
+                    this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                    this->advance();
+                    free(n);
+                    free(f);
+                    return NULL;
+                }  
+
+                node=make_node(N_FINALLY);
+                node->start=n->start;
+                node->end=n->end;
+
+                Finally* i=(Finally*)malloc(sizeof(Finally));
+                i->code=new vector<Node*>;
+                i->code->clear();
+                for (Node* n: finally_code.nodes){
+                    i->code->push_back(n);
+                }
+
+                node->node=i;
+
+                bases->push_back(node);
+            }
+
+            f->bases=bases;
+
+            n->node=f;
+
             return n;
         }
 

@@ -25,6 +25,10 @@ enum nodetype{
     N_SUBSCR,
     N_RAISE,
     N_STORE_SUBSCR,
+    N_TRY_EXCEPT_FINALLY,
+    N_TRY,
+    N_EXCEPT,
+    N_FINALLY,
 };
 
 enum precedence {
@@ -192,6 +196,26 @@ struct StoreSubscript{
     Node* left;
     Node* expr;
 };
+
+struct TryExceptFinally{
+    vector<Node*>* bases;
+};
+
+struct Try{
+    vector<Node*>* code;
+};
+
+struct Except{
+    Node* type;
+    Node* name;
+    vector<Node*>* code;
+};
+
+struct Finally{
+    vector<Node*>* code;
+};
+
+
 
 
 void destroy_node(struct Node* node){
