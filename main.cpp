@@ -31,6 +31,7 @@ int execute(string data, bool objdump, bool verbose){
     //Prep constants and types
     new_gc();
     setup_types_consts();
+    
 
     vector<string> kwds;
     kwds.push_back("func");
@@ -40,6 +41,10 @@ int execute(string data, bool objdump, bool verbose){
     kwds.push_back("else");
     kwds.push_back("elif");
     kwds.push_back("raise");
+    kwds.push_back("try");
+    kwds.push_back("except");
+    kwds.push_back("finally");
+
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
