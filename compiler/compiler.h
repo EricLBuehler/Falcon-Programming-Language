@@ -28,6 +28,11 @@ enum opcode{
     BINOP_SUBSCR,
     RAISE_EXC,
     STORE_SUBSCR,
+    DUP_TOS,
+    POP_TOS,
+    SETUP_TRY,
+    FINISH_TRY,
+    BINOP_EXC_CMP,
 };
 
 enum scope{
@@ -77,6 +82,10 @@ struct compiler{
 #define SUBSCR(node) ((Subscript*)(node))
 #define RAISE(node) ((Raise*)(node))
 #define STSUBSCR(node) ((StoreSubscript*)(node))
+#define TRYEXCEPTFINALLY(node) ((TryExceptFinally*)(node))
+#define TRY(node) ((Try*)(node))
+#define FINALLY(node) ((Finally*)(node))
+#define EXCEPT(node) ((Except*)(node))
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
 

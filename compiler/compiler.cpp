@@ -785,7 +785,311 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,STORE_SUBSCR, 0, expr->start, expr->end);
             break;
         }
-    
+
+        case N_TRY: {
+            for (Node* n: (*TRY(expr->node)->code)){
+                uint32_t start=compiler->instructions->count;
+                
+                int i=compile_expr(compiler, n);
+                if (i==0x100){
+                    return 0x100;
+                }
+                uint32_t end=compiler->instructions->count;
+                if (compiler->lines!=NULL){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                }
+            }
+            break;
+        }
+
+        case N_FINALLY: {
+            for (Node* n: (*FINALLY(expr->node)->code)){
+                uint32_t start=compiler->instructions->count;
+        
+                int i=compile_expr(compiler, n);
+                if (i==0x100){
+                    return 0x100;
+                }
+                uint32_t end=compiler->instructions->count;
+                if (compiler->lines!=NULL){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                }
+            }
+            break;
+        }
+
+        case N_EXCEPT: {
+            if (EXCEPT(expr->node)->name!=NULL){
+                uint32_t idx;
+                if (!_list_contains(compiler->names, STRLIT(EXCEPT(expr->node)->name->node)->literal)){
+                    //Create object
+                    compiler->names->type->slot_append(compiler->names, str_new_fromstr(STRLIT(EXCEPT(expr->node)->name->node)->literal));
+                    idx = NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(STRLIT(EXCEPT(expr->node)->name->node)->literal));
+                }
+
+                uint32_t start=compiler->instructions->count;
+                
+                switch (compiler->scope){
+                    case SCOPE_GLOBAL:
+                        add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                        break;
+
+                    case SCOPE_LOCAL:
+                        add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                        break;
+                }
+
+                uint32_t end=compiler->instructions->count;
+                if (compiler->lines!=NULL){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_append(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
+                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                }
+            }    
+
+            if (EXCEPT(expr->node)->type!=NULL){
+                    add_instruction(compiler->instructions,DUP_TOS,0, expr->start, expr->end); //For possible pop_jump
+
+                    //Checks here
+                    uint32_t idx;
+                    if (!_list_contains(compiler->names, STRLIT(EXCEPT(expr->node)->type->node)->literal)){
+                        //Create object
+                        compiler->names->type->slot_append(compiler->names, str_new_fromstr(STRLIT(EXCEPT(expr->node)->type->node)->literal));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(STRLIT(EXCEPT(expr->node)->type->node)->literal));
+                    }
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler->instructions,LOAD_GLOBAL, idx, expr->start, expr->end);
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler->instructions,LOAD_NAME, idx, expr->start, expr->end);
+                            break;
+                    }
+
+                    add_instruction(compiler->instructions,BINOP_EE,0, expr->start, expr->end);                
+
+                    add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,0, expr->start, expr->end);
+
+                    add_instruction(compiler->instructions,POP_TOS,0, expr->start, expr->end);
+                }
+
+            for (Node* n: (*EXCEPT(expr->node)->code)){
+                uint32_t start=compiler->instructions->count;
+        
+                int i=compile_expr(compiler, n);
+                if (i==0x100){
+                    return 0x100;
+                }
+                uint32_t end=compiler->instructions->count;
+                if (compiler->lines!=NULL){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                }
+            }
+
+            break;
+        }
+
+        case N_TRY_EXCEPT_FINALLY: {
+            uint32_t val;
+            if (TRYEXCEPTFINALLY(expr->node)->bases->size()>2){
+                val=compiler->instructions->count*2+num_instructions(TRY(TRYEXCEPTFINALLY(expr->node)->bases->at(0)->node)->code)*2;
+            }
+            else{
+                val=1; //Odd, flag
+            }
+            add_instruction(compiler->instructions,SETUP_TRY,val, expr->start, expr->end);       
+                 
+            uint32_t target;
+            if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type==N_FINALLY){
+                target=(num_instructions(TRYEXCEPTFINALLY(expr->node)->bases)*2)-(num_instructions(TRYEXCEPTFINALLY(expr->node)->bases->back())*2);
+            }
+            else{
+                target=num_instructions(TRYEXCEPTFINALLY(expr->node)->bases)*2;
+            }
+
+            uint32_t instrs=0;
+            for (uint32_t i=0; i<TRYEXCEPTFINALLY(expr->node)->bases->size(); i++){
+                if (i==0){ //Add try block
+                    Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(0);
+                    instrs+=num_instructions(TRY(tryn->node)->code)*2;
+                    
+                    for (Node* n: (*TRY(tryn->node)->code)){
+                        uint32_t start=compiler->instructions->count;
+                
+                        int i=compile_expr(compiler, n);
+                        if (i==0x100){
+                            return 0x100;
+                        }
+                        uint32_t end=compiler->instructions->count;
+                        if (compiler->lines!=NULL){
+                            object* tuple=new_tuple();
+                            tuple->type->slot_append(tuple, new_int_fromint(start));
+                            tuple->type->slot_append(tuple, new_int_fromint(end));
+                            tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
+                            compiler->lines->type->slot_append(compiler->lines, tuple);
+                        }
+                    }
+
+                    add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
+                    continue;
+                }
+                else if (i==TRYEXCEPTFINALLY(expr->node)->bases->size()-1 && TRYEXCEPTFINALLY(expr->node)->bases->at(i)->type==N_FINALLY){
+                    Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(i);
+                    instrs+=num_instructions(FINALLY(tryn->node)->code)*2;
+                    
+                    for (Node* n: (*FINALLY(tryn->node)->code)){
+                        uint32_t start=compiler->instructions->count;
+                
+                        int i=compile_expr(compiler, n);
+                        if (i==0x100){
+                            return 0x100;
+                        }
+                        uint32_t end=compiler->instructions->count;
+                        if (compiler->lines!=NULL){
+                            object* tuple=new_tuple();
+                            tuple->type->slot_append(tuple, new_int_fromint(start));
+                            tuple->type->slot_append(tuple, new_int_fromint(end));
+                            tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
+                            compiler->lines->type->slot_append(compiler->lines, tuple);
+                        }
+                    }
+                    continue;
+                }
+
+                Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(i);
+                instrs+=num_instructions(EXCEPT(tryn->node)->code)*2;
+
+                if (EXCEPT(tryn->node)->name!=NULL){
+                    uint32_t idx;
+                    if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->name->node)->literal)){
+                        //Create object
+                        compiler->names->type->slot_append(compiler->names, str_new_fromstr(STRLIT(EXCEPT(tryn->node)->name->node)->literal));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(STRLIT(EXCEPT(tryn->node)->name->node)->literal));
+                    }
+
+                    uint32_t start=compiler->instructions->count;
+                    
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                            break;
+                    }
+                    instrs+=2;
+
+                    uint32_t end=compiler->instructions->count;
+                    if (compiler->lines!=NULL){
+                        object* tuple=new_tuple();
+                        tuple->type->slot_append(tuple, new_int_fromint(start));
+                        tuple->type->slot_append(tuple, new_int_fromint(end));
+                        tuple->type->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->name->start->line));
+                        compiler->lines->type->slot_append(compiler->lines, tuple);
+                    }
+                }    
+
+                if (EXCEPT(tryn->node)->type!=NULL){
+                    add_instruction(compiler->instructions,DUP_TOS,0, expr->start, expr->end); //For possible pop_jump
+                    instrs+=2;
+
+                    //Checks here
+                    uint32_t idx;
+                    if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->type->node)->literal)){
+                        //Create object
+                        compiler->names->type->slot_append(compiler->names, str_new_fromstr(STRLIT(EXCEPT(tryn->node)->type->node)->literal));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(STRLIT(EXCEPT(tryn->node)->type->node)->literal));
+                    }
+
+                    uint32_t start=compiler->instructions->count;
+                    
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler->instructions,LOAD_GLOBAL, idx, expr->start, expr->end);
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler->instructions,LOAD_NAME, idx, expr->start, expr->end);
+                            break;
+                    }
+                    instrs+=2;
+
+                    uint32_t end=compiler->instructions->count;
+                    if (compiler->lines!=NULL){
+                        object* tuple=new_tuple();
+                        tuple->type->slot_append(tuple, new_int_fromint(start));
+                        tuple->type->slot_append(tuple, new_int_fromint(end));
+                        tuple->type->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->type->start->line));
+                        compiler->lines->type->slot_append(compiler->lines, tuple);
+                    }
+
+                    add_instruction(compiler->instructions,BINOP_EXC_CMP,0, expr->start, expr->end);         
+                    instrs+=2;
+
+                    add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(EXCEPT(tryn->node)->code)*2+4, expr->start, expr->end);
+                    instrs+=2;
+
+                    add_instruction(compiler->instructions,POP_TOS,0, expr->start, expr->end);
+                    instrs+=2;
+                }
+
+
+                for (Node* n: (*EXCEPT(tryn->node)->code)){
+                    uint32_t start=compiler->instructions->count;
+            
+                    int i=compile_expr(compiler, n);
+                    if (i==0x100){
+                        return 0x100;
+                    }
+                    uint32_t end=compiler->instructions->count;
+                    if (compiler->lines!=NULL){
+                        object* tuple=new_tuple();
+                        tuple->type->slot_append(tuple, new_int_fromint(start));
+                        tuple->type->slot_append(tuple, new_int_fromint(end));
+                        tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
+                        compiler->lines->type->slot_append(compiler->lines, tuple);
+                    }
+                }
+                
+
+                add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
+                cout<<"B";
+
+            }
+            
+            add_instruction(compiler->instructions,FINISH_TRY,0, expr->start, expr->end);      
+            
+            break;
+        }
+
     }
 
     return 0;

@@ -59,3 +59,13 @@ BINOP_SUBSCR - Implements TOS=TOS[TOS-1]
 RAISE_EXC - Attempts to raise TOS as exception
 
 STORE_SUBSCR - TOS-2[TOS-1]=TOS
+
+POP_TOS - Pops TOS
+
+DUP_TOS - Duplicates and pushes TOS
+
+SETUP_TRY - Adds try block with handler at IP+TOS
+
+FINISH_TRY - Pops try block
+
+BINOP_EXC_CMP - If TOS exceptin type (TOS is type object) is the same exception as TOS-1 (instance), push True onto stack, otherwise False
