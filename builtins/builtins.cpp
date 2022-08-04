@@ -6,6 +6,10 @@ object* builtin_print(object* self, object* args){
     return new_none();
 }
 
+object* builtin_repr(object* self, object* args){
+    return object_repr(args->type->slot_get(args, str_new_fromstr(new string("object"))));
+}
+
 object* builtin___build_class__(object* self, object* args){
     object* function=args->type->slot_get(args, str_new_fromstr(new string("func")));
     object* dict;
