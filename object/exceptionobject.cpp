@@ -30,5 +30,13 @@ object* exception_bool(object* self){
 }
 
 object* exception_cmp(object* self, object* other, uint8_t type){
-    return new_bool_true();
+    if (!object_istype(self->type, other->type)){
+        return new_bool_false();
+    }
+
+    if (istrue(object_cmp(CAST_EXCEPTION(self)->err, CAST_EXCEPTION(other)->err, CMP_EQ))){
+        return new_bool_true();
+    }
+
+    return new_bool_false();
 }

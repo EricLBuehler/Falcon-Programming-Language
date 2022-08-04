@@ -405,9 +405,12 @@ bool object_issubclass(object* obj, TypeObject* t){
     object* base=obj->type->bases->type->slot_next(obj->type->bases);
     while (base){
         if ((void*)base==(void*)t){
+            CAST_LIST(obj->type->bases)->idx=0;
             return true;
         }
         base=obj->type->bases->type->slot_next(obj->type->bases);
     }
+    
+    CAST_LIST(obj->type->bases)->idx=0;
     return false;
 }

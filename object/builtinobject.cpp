@@ -42,6 +42,12 @@ void setup_builtins(){
     builtins[17]=new_builtin((builtinfunc)builtin_input, str_new_fromstr(new string("input")), inputargs, inputkwargs, 1);
     
     builtins[18]=(object*)&StringStreamType;
+
+    object* reprargs=new_tuple();
+    reprargs->type->slot_append(reprargs, str_new_fromstr(new string("object")));
+    object* reprkwargs=new_tuple();
+    reprkwargs->type->slot_append(reprkwargs, str_new_fromstr(new string("")));
+    builtins[19]=new_builtin((builtinfunc)builtin_repr, str_new_fromstr(new string("repr")), reprargs, reprkwargs, CAST_INT(reprargs->type->slot_len(reprargs))->val->to_int());
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

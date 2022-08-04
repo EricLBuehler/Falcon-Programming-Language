@@ -95,7 +95,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=19;
+const size_t nbuiltins=20;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -153,7 +153,7 @@ object* new_int_fromint(int i);
 struct vm* vm=NULL;
 
 enum blocktype{
-    IF_BLOCK,
+    TRY_BLOCK,
 };
 
 struct dataframe{
@@ -170,10 +170,13 @@ struct callframe{
 };
 
 struct blockframe{
-    Position* start;
-    Position* end;
     enum blocktype type;
+    uint32_t arg;
+    object* obj;
+    uint32_t other;
     struct blockframe* next;
+    uint32_t callstack_size;
+    uint32_t start_ip;
 };
 
 struct callstack{
@@ -194,6 +197,7 @@ struct datastack{
 struct vm{
     struct datastack* objstack;
     struct callstack* callstack;
+    struct blockstack* blockstack;
     uint32_t id;
 
     int ret_val;
