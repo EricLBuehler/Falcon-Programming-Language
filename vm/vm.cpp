@@ -12,6 +12,26 @@ struct callstack* new_callstack(){
     return call;
 }
 
+struct blockstack* new_blockstack(){
+    struct blockstack* block=(struct blockstack*)malloc(sizeof(struct blockstack));
+    block->head=NULL;
+    block->size=0;
+    return block;
+}
+
+void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint32_t arg, enum blocktype tp){
+    struct blockframe* frame=(struct blockframe*)malloc(sizeof(struct blockframe));
+    frame->next=stack->head;
+    frame->type=tp;
+    frame->arg=arg;
+    frame->obj=NULL;
+    frame->callstack_size=vm->callstack->size;
+    frame->start_ip=(*ip);
+
+    stack->size++;
+    stack->head=frame;
+}
+
 void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
     struct dataframe* frame=(struct dataframe*)malloc(sizeof(struct dataframe));
     frame->next=stack->head;
@@ -28,6 +48,25 @@ struct object* pop_dataframe(struct datastack* stack){
     stack->size--;
     
     return frame->obj;
+}
+
+void pop_blockframe(struct blockstack* stack){
+    struct blockframe* frame=stack->head;
+
+    stack->head=frame->next;
+    stack->size--;
+}
+
+struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type){
+    struct blockframe* frame=stack->head;
+
+    while (frame){
+        if (frame->type==type){
+            return frame;
+        }
+        frame=frame->next;
+    }
+    return NULL;
 }
 
 struct object* peek_dataframe(struct datastack* stack){
@@ -114,6 +153,7 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->ip=0;
     vm->objstack=new_datastack();
     vm->callstack=new_callstack();
+    vm->blockstack=new_blockstack();
     
     vm->exception=NULL;
 
@@ -187,7 +227,7 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
             }
         }
     }
-
+    
     vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
     return NULL;
 }
@@ -226,7 +266,6 @@ struct object* vm_get_var_globals(struct vm* vm, object* name){
             }
         }
     }
-    
     vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
     return NULL;
 }
@@ -510,6 +549,37 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case DUP_TOS: {
+            add_dataframe(vm, vm->objstack, peek_dataframe(vm->objstack));
+            break;
+        }
+
+        case POP_TOS: {
+            pop_dataframe(vm->objstack);
+            break;
+        }
+
+        case SETUP_TRY: {
+            add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), TRY_BLOCK);
+            break;
+        }
+
+        case FINISH_TRY: {
+            pop_blockframe(vm->blockstack);
+            break;
+        }
+
+        case BINOP_EXC_CMP: {
+            object* self=pop_dataframe(vm->objstack);
+            object* other=pop_dataframe(vm->objstack);
+            if (object_istype(CAST_TYPE(self), other->type) || object_issubclass(other, CAST_TYPE(self))){
+                add_dataframe(vm, vm->objstack, new_bool_true());
+                break;
+            }
+            add_dataframe(vm, vm->objstack, new_bool_false());
+            break;
+        }
+
         default:
             return NULL;
             
@@ -535,6 +605,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
         }
         vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
+        
         object* obj=_vm_step(instruction, code->type->slot_get(code, new_int_fromint((*ip)++)), vm, ip);
         if (obj==CALL_ERR){
             return NULL;
@@ -543,6 +614,61 @@ object* run_vm(object* codeobj, uint32_t* ip){
             return obj;
         }
         if (vm->exception!=NULL){
+            struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
+            if (frame!=NULL && frame->arg%2==0 && frame->callstack_size==vm->callstack->size){
+                add_dataframe(vm, vm->objstack, vm->exception);
+                frame->obj=INCREF(vm->exception);
+                vm->exception=NULL;
+                frame->other=linetup_cntr;
+                
+                (*ip)+=frame->arg-(*ip)+frame->start_ip+2;//skip jump
+                frame->arg=1;
+                continue;
+            }
+            else if (frame!=NULL && frame->obj!=NULL  && frame->callstack_size==vm->callstack->size){
+                struct callframe* callframe=vm->callstack->head;
+                while (callframe){    
+                    if (callframe->name==NULL){
+                        callframe=callframe->next;
+                    }
+                    cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
+                    
+                    int line=0;
+                    object* line_=lines->type->slot_get(lines, new_int_fromint(frame->other));
+                    int target=CAST_INT(line_->type->slot_get(line_, idx2))->val->to_int();
+                    int startidx=0;
+                    int endidx=0;
+                    int idx=0;
+                    bool entered=false;
+                    while (true){
+                        if (line==target && !entered){
+                            startidx=idx;
+                            entered=true;
+                        }
+                        if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
+                            endidx=idx;
+                            break;
+                        }
+                        else if ((*vm->filedata)[idx]=='\n'){
+                            line++;
+                        }
+                        idx++;
+                    }
+
+                    string snippet="";
+                    for (int i=startidx; i<endidx; i++){
+                        snippet+=(*vm->filedata)[i];
+                    }
+
+                    cout<<snippet<<endl;
+                    
+                    callframe=callframe->next;
+                }
+
+                cout<<frame->obj->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(frame->obj)->err)<<endl;
+                cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
+            }
+            
             struct callframe* callframe=vm->callstack->head;
             while (callframe){    
                 if (callframe->name==NULL){
@@ -582,6 +708,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
 
             cout<<vm->exception->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err)<<endl;
+            
             CAST_LIST(code)->idx=0;
             return NULL;
         }
