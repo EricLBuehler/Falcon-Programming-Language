@@ -103,14 +103,20 @@ print("Done")
 print(l[3])
 print(dictionary[[123]])
 
-if 500 is 200{
-    print("500 is not the same object as 200")
+
+try{
+    if 500 is 200{
+        raise Exception("500 is not the same object as 200")
+    }
+    elif 500 is 500{
+        raise TypeError("500 is not the same object as 200, but is the same as 500")
+    }
+    else{
+        raise NameError("Else condition reached")
+    }
 }
-elif 500 is 500{
-    print("500 is not the same object as 200, but is the same as 500")
-}
-else{
-    print("Else condition reached")
+except Exception e{
+    print(e)
 }
 
 i=0
@@ -124,7 +130,13 @@ func x(){
     }
     x()
 }
-x()
+
+try{
+    x()
+}
+except Exception e{
+    print(e)
+}
 ```
 
 #### Output ####
