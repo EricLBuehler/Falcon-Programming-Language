@@ -911,13 +911,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_TRY_EXCEPT_FINALLY: {
-            uint32_t val;
-            if (TRYEXCEPTFINALLY(expr->node)->bases->size()>2){
-                val=compiler->instructions->count*2+num_instructions(TRY(TRYEXCEPTFINALLY(expr->node)->bases->at(0)->node)->code)*2;
-            }
-            else{
-                val=1; //Odd, flag
-            }
+            uint32_t val=compiler->instructions->count*2+num_instructions(TRY(TRYEXCEPTFINALLY(expr->node)->bases->at(0)->node)->code)*2;
             add_instruction(compiler->instructions,SETUP_TRY,val, expr->start, expr->end);       
                  
             uint32_t target;
@@ -1081,7 +1075,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
 
                 add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
-                cout<<"B";
 
             }
             
