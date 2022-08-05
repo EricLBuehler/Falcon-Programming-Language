@@ -132,9 +132,9 @@ When run with ```./fpl.exe program.fpl```
 
 ```
 __new__ called
-<Peregrine object @ 0xf17b78>
+<Peregrine object @ 0x2719c00>
 __new__ called
-<Peregrine object @ 0xf1c110>
+<Peregrine object @ 0x271a260>
 5
 Value
 Function f says: A
@@ -142,9 +142,11 @@ True
 Done
 4
 2
-In file 'program.fpl', line 59, in <module>
-    raise ValueError("500 is not the same object as 200, but is the same as 500")
-ValueError: 500 is not the same object as 200, but is the same as 500
+500 is not the same object as 200, but is the same as 500
+1
+2
+3
+I is 50!
 ```
 
 ### Usage ###
