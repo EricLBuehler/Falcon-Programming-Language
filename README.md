@@ -16,6 +16,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```__build_class__```
 - ```id```
 - ```input```
+- ```repr```
 
 <details>
 <summary>Exceptions</summary>
