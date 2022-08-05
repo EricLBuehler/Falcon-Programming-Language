@@ -1,10 +1,90 @@
-try{
-    print("trying")
-    print(1+"A")
+m="Placeholder value"
+
+class Peregrine{
+    var=m
+    func __new__(self){
+        print("__new__ called")
+        return self
+    }
+    func __init__(self){
+        print(self)
+    }
+    func f(self){
+        print(self.var)
+    }
 }
-except NameError{
-    print("NameError")
+
+x=Peregrine()
+
+y=Peregrine()
+
+a=Peregrine.var
+x.var=5
+y.var="Value"
+b=x.var
+
+x.f()
+y.f()
+
+func f(x,c="A"){
+    print("Function f says: ","")
+    print(c)
+}
+
+f(1)
+
+
+
+dictionary={1:[1,2,3], 2:{1:"A"}, "Hello":"World", [123]:2}
+
+l=list(1,2,3,4,5)
+
+x=object()
+y=object()
+
+
+true = x == y
+maybe = x is y
+same = x is x
+print(500==500)
+
+
+print("Done")
+
+print(l[3])
+print(dictionary[[123]])
+
+
+try{
+    if 500 is 200{
+        raise Exception("500 is not the same object as 200")
+    }
+    elif 500 is 500{
+        raise TypeError("500 is not the same object as 200, but is the same as 500")
+    }
+    else{
+        raise NameError("Else condition reached")
+    }
 }
 except Exception e{
-    print(repr(e))
+    print(e)
+}
+
+i=0
+
+func x(){
+    i=i+1
+
+    print(i)
+    if (i==3){
+        raise ValueError("I is 50!")
+    }
+    x()
+}
+
+try{
+    x()
+}
+except Exception e{
+    print(e)
 }
