@@ -1164,7 +1164,6 @@ class Parser{
 
             node->node=ei;
             
-            this->advance();
             return node;
         }
 
@@ -1321,6 +1320,7 @@ class Parser{
             else{
                 try_code.nodes.clear();
             }
+            
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
