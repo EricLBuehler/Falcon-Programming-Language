@@ -608,6 +608,20 @@ object* run_vm(object* codeobj, uint32_t* ip){
         
         object* obj=_vm_step(instruction, code->type->slot_get(code, new_int_fromint((*ip)++)), vm, ip);
         if (obj==CALL_ERR){
+            struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
+            if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){// && frame->callstack_size==vm->callstack->size){
+                if (vm->callstack->size-frame->callstack_size!=0){
+                    return NULL;
+                }
+                add_dataframe(vm, vm->objstack, vm->exception);
+                frame->obj=INCREF(vm->exception);
+                vm->exception=NULL;
+                frame->other=linetup_cntr;
+                
+                (*ip)=frame->arg+4; //skip jump
+                frame->arg=1;
+                continue;
+            }
             return NULL;
         }
         if (obj!=NULL){
@@ -615,17 +629,20 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         if (vm->exception!=NULL){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
-            if (frame!=NULL && frame->arg%2==0 && frame->callstack_size==vm->callstack->size){
+            if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
+                if (vm->callstack->size-frame->callstack_size!=0){
+                    return NULL;
+                }
                 add_dataframe(vm, vm->objstack, vm->exception);
                 frame->obj=INCREF(vm->exception);
                 vm->exception=NULL;
                 frame->other=linetup_cntr;
                 
-                (*ip)+=frame->arg-(*ip)+frame->start_ip+2;//skip jump
+                (*ip)=frame->arg+4; //skip jump
                 frame->arg=1;
                 continue;
             }
-            else if (frame!=NULL && frame->obj!=NULL  && frame->callstack_size==vm->callstack->size){
+            else if (frame!=NULL && frame->obj!=NULL && frame->arg!=3){
                 struct callframe* callframe=vm->callstack->head;
                 while (callframe){    
                     if (callframe->name==NULL){
