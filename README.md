@@ -138,6 +138,9 @@ try{
 except Exception e{
     print(e)
 }
+
+val=2
+print(val.__mul__(5))
 ```
 
 #### Output ####
