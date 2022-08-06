@@ -961,6 +961,7 @@ void setup_stringstream_type(){
 
 object* cwrapper_call(object* self, object* args, object* kwargs);
 object* cwrapper_new_fromfunc(cwrapperfunc func, string name);
+object* cwrapper_repr(object* self);
 
 typedef struct CWrapperObject{
     OBJHEAD_EXTRA
@@ -993,7 +994,7 @@ TypeObject CWrapperType={
     0, //slot_set
     0, //slot_append
 
-    0, //slot_repr
+    (reprfunc)cwrapper_repr, //slot_repr
     0, //slot_str
     (callfunc)cwrapper_call, //slot_call
 

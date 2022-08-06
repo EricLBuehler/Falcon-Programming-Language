@@ -8,3 +8,17 @@ object* cwrapper_new_fromfunc(cwrapperfunc func, string name){
     CAST_CWRAPPER(o)->name=new string(name);
     return o;
 }
+
+object* cwrapper_repr(object* self){
+    char buf[32];
+    sprintf(buf, "0x%x", self);
+
+    string s="<";
+    s+=self->type->name->c_str();
+    s+=" '";
+    s+=CAST_CWRAPPER(self)->name->c_str();
+    s+="' @ ";
+    s+=buf;
+    s+=">";
+    return str_new_fromstr(new string(s));
+}
