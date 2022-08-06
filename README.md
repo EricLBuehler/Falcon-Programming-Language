@@ -145,9 +145,9 @@ When run with ```./fpl.exe program.fpl```
 
 ```
 __new__ called
-<Peregrine object @ 0x2719c00>
+<Peregrine object @ 0x220b0f0>
 __new__ called
-<Peregrine object @ 0x271a260>
+<Peregrine object @ 0x220b550>
 5
 Value
 Function f says: A
@@ -160,6 +160,7 @@ Done
 2
 3
 I is 50!
+10
 ```
 
 ### Usage ###
