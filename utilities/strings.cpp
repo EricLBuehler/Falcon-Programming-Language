@@ -17,9 +17,13 @@ string replace_newlines(string str){
 }
 
 string remove_spaces(string word) {
-    string newWord;
+    string newWord="";
+    bool hitalpha=false;
     for (int i = 0; i < word.length(); i++) {
-        if (word[i] != ' ') {
+        if (word[i]!=' ' && hitalpha==false){
+            hitalpha=true;
+        }
+        if (hitalpha){
             newWord += word[i];
         }
     }
