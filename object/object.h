@@ -117,6 +117,7 @@ object* new_object(TypeObject* type);
 object_var* new_object_var(TypeObject* type, size_t size);
 bool object_istype(TypeObject* self, TypeObject* other);
 void gc_collect(struct vm* vm);
+void type_set_cwrapper(TypeObject* tp, cwrapperfunc func, string name);
 
 object* object_str(object* obj);
 object* object_repr(object* obj);
@@ -291,5 +292,27 @@ void setup_types_consts(){
 
     setup_builtins();
     
+    inherit_type_dict(&ObjectType);
+
+    inherit_type_dict(&TypeType);
+
+    inherit_type_dict(&IntType);
+    setup_int_dir();
+
+    inherit_type_dict(&StrType);
+
+    inherit_type_dict(&ListType);
     inherit_type_methods(&ListType);
+
+    inherit_type_dict(&DictType);
+    inherit_type_dict(&CodeType);
+    inherit_type_dict(&BoolType);
+    inherit_type_dict(&TupleType);
+    inherit_type_dict(&FuncType);
+    inherit_type_dict(&NoneType);
+    inherit_type_dict(&BuiltinType);
+    inherit_type_dict(&ExceptionType);
+    inherit_type_dict(&StringStreamType);
+    inherit_type_dict(&CWrapperType);
+    
 }

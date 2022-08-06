@@ -276,7 +276,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     for (auto k: (*CAST_DICT(kwargs)->val)){
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){
-            //Error
+            vm_add_err(&NameError, vm, "Got unexcpected keyword argument %s", object_cstr(k.first).c_str());
             return NULL;
         }
         //

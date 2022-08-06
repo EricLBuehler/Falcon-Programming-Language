@@ -46,8 +46,6 @@ object* int_new(object* type, object* args, object* kwargs){
         return o;
     }
     object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
-    DECREF(args);
-    DECREF(kwargs);
     if (!object_istype(val->type, &IntType) && !object_istype(val->type, &StrType)){
         DECREF(obj);
         vm_add_err(&ValueError, vm, "Expected argument to be int or str, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
@@ -126,4 +124,100 @@ object* int_bool(object* self){
 
 void int_del(object* obj){
     delete ((IntObject*)obj)->val;
+}
+
+
+
+
+object* int_wrapper_add(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_number->slot_add(self, args->type->slot_get(args, new_int_fromint(1)));
+}
+
+object* int_wrapper_sub(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_number->slot_sub(self, args->type->slot_get(args, new_int_fromint(1)));
+}
+
+object* int_wrapper_mul(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_number->slot_mul(self, args->type->slot_get(args, new_int_fromint(1)));
+}
+
+object* int_wrapper_div(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_number->slot_div(self, args->type->slot_get(args, new_int_fromint(1)));
+}
+
+object* int_wrapper_neg(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_number->slot_neg(self);
+}
+
+object* int_wrapper_repr(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_repr(self);
+}
+
+object* int_wrapper_bool(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_number->slot_bool(self);
+}
+
+object* int_wrapper_new(object* args, object* kwargs){
+    //!! Copied
+
+    int len=CAST_INT(args->type->slot_len(args))->val->to_int();
+    object* obj=new_object(&IntType);
+    if (len==0){
+        ((IntObject*)obj)->val=new BigInt(0);
+
+        object* o = in_immutables((struct object*)obj);
+        if (o==NULL){
+            return (object*)obj;
+        }
+        DECREF((struct object*)obj);
+        return o;
+    }
+    object* val=INCREF(args->type->slot_get(args, new_int_fromint(1)));
+    if (!object_istype(val->type, &IntType) && !object_istype(val->type, &StrType)){
+        DECREF(obj);
+        vm_add_err(&ValueError, vm, "Expected argument to be int or str, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        return NULL;
+    }
+    
+    if (object_istype(val->type, &IntType)){
+        ((IntObject*)obj)->val=((IntObject*)val)->val;
+    }
+    if (object_istype(val->type, &StrType)){
+        ((IntObject*)obj)->val=new BigInt((*((StrObject*)val)->val));
+    }
+
+    object* o = in_immutables((struct object*)obj);
+    if (o==NULL){
+        return (object*)obj;
+    }
+    DECREF((struct object*)obj);
+    return o;
 }

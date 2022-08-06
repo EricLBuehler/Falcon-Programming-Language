@@ -9,6 +9,15 @@ object* int_repr(object* self);
 object* int_cmp(object* self, object* other, uint8_t type);
 object* int_bool(object* self);
 
+object* int_wrapper_add(object* args, object* kwargs);
+object* int_wrapper_sub(object* args, object* kwargs);
+object* int_wrapper_mul(object* args, object* kwargs);
+object* int_wrapper_div(object* args, object* kwargs);
+object* int_wrapper_neg(object* args, object* kwargs);
+object* int_wrapper_repr(object* args, object* kwargs);
+object* int_wrapper_bool(object* args, object* kwargs);
+object* int_wrapper_new(object* args, object* kwargs);
+
 object* new_int_fromint(int v);
 object* new_int_fromstr(string* v);
 object* new_int_frombigint(BigInt* v);
@@ -69,6 +78,7 @@ TypeObject IntType={
 void setup_int_type(){
     IntType=(*(TypeObject*)finalize_type(&IntType));
 }
+
 
 
 
@@ -750,8 +760,8 @@ TypeObject ObjectType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
-    0, //slot_getattr
-    0, //slot_setattr
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
     (initfunc)object_init, //slot_init
     (newfunc)object_new, //slot_new
     0, //slot_del
@@ -950,11 +960,12 @@ void setup_stringstream_type(){
 }
 
 object* cwrapper_call(object* self, object* args, object* kwargs);
-object* cwrapper_new_fromfunc(cwrapperfunc func);
+object* cwrapper_new_fromfunc(cwrapperfunc func, string name);
 
 typedef struct CWrapperObject{
     OBJHEAD_EXTRA
     cwrapperfunc function;
+    string* name;
 }CWrapperObject;
 
 TypeObject CWrapperType={
@@ -1083,7 +1094,6 @@ object* type_get(object* self, object* attr){
         }
     }
 
-
     vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",self->type->name->c_str(), object_cstr(attr).c_str());
     return NULL;
 }
@@ -1146,6 +1156,7 @@ object* finalize_type(TypeObject* newtype){
     if (tp_tp->bases==NULL){
         tp_tp->bases=new_list();
     }
+
     tp_tp->bases->type->slot_append(tp_tp->bases, INCREF((object*)&ObjectType));
     uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
 
@@ -1174,6 +1185,29 @@ object* finalize_type(TypeObject* newtype){
     return tp;
 }
 
+void inherit_type_dict(TypeObject* tp){
+    TypeObject* tp_tp=CAST_TYPE(tp);
+
+    uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
+
+    
+    //Setup type dict
+    tp_tp->dict=new_dict();
+
+    //This is a slower method than could theoritically be done.
+    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
+    //also breaks fewer rules...
+    
+    for (uint32_t i=total_bases; i>0; i--){
+        TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
+        object* dict=base_tp->dict;
+
+        for (auto k: (*CAST_DICT(dict)->val)){
+            tp_tp->dict->type->slot_set(tp_tp->dict, k.first, k.second);
+        }  
+    }
+}
+
 object* inherit_type_methods(TypeObject* tp){
     TypeObject* tp_tp=CAST_TYPE(tp);
 
@@ -1185,18 +1219,13 @@ object* inherit_type_methods(TypeObject* tp){
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
     //also breaks fewer rules...
-
-    //Setup type dict
-    if (tp_tp->dict==NULL){
-        tp_tp->dict=new_dict();
-    }
     
     for (uint32_t i=total_bases; i>0; i--){
         TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_methods[idx].name!=NULL){
-            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(base_tp->slot_methods[idx].name)), cwrapper_new_fromfunc((cwrapperfunc)base_tp->slot_methods[idx].function));
+            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(base_tp->slot_methods[idx].name)), cwrapper_new_fromfunc((cwrapperfunc)base_tp->slot_methods[idx].function, base_tp->slot_methods[idx].name));
             idx++;
         }        
     }
@@ -1204,16 +1233,24 @@ object* inherit_type_methods(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_methods[idx].name!=NULL){
-        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(tp_tp->slot_methods[idx].name)), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function));
+        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(tp_tp->slot_methods[idx].name)), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name));
         idx++;
     }
 
     return (object*)tp;
 }
 
+void type_set_cwrapper(TypeObject* tp, cwrapperfunc func, string name){
+    object* f=cwrapper_new_fromfunc(func, name);
+    tp->dict->type->slot_set(tp->dict, str_new_fromstr(CAST_CWRAPPER(f)->name), f);
+}
+
+
 object* type_bool(object* self){
     return new_bool_true();
 }
 
 
+
 #include "typeobject_newtp.cpp"
+#include "object_dicts.cpp"

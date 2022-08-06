@@ -68,8 +68,7 @@ object* builtin_call(object* self, object* args, object* kwargs){
     if (CAST_BUILTIN(self)->argc-CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()>posargc \
     || CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()<kwargc \
     || CAST_BUILTIN(self)->argc<argc){
-        if (CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()==0 || \
-       CAST_INT(CAST_BUILTIN(self)->args->type->slot_len(CAST_BUILTIN(self)->args))->val->to_int()-CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()==CAST_BUILTIN(self)->argc){
+        if (CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()==0){
             vm_add_err(&ValueError, vm, "expected %d argument(s).",CAST_INT(CAST_BUILTIN(self)->args->type->slot_len(CAST_BUILTIN(self)->args))->val->to_int());
             return NULL;
         }

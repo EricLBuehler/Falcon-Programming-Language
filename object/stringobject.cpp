@@ -26,8 +26,6 @@ object* str_new(object* type, object* args, object* kwargs){
         return o;
     }
     object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
-    DECREF(args);
-    DECREF(kwargs);
     string s=object_cstr(val);
 
     object_var* obj=new_object_var(&StrType, s.size());
