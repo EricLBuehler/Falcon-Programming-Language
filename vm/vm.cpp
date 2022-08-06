@@ -622,6 +622,53 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 frame->arg=1;
                 continue;
             }
+
+            if (vm->exception==NULL){
+                return NULL;
+            }
+            
+            struct callframe* callframe=vm->callstack->head;
+            while (callframe){    
+                if (callframe->name==NULL){
+                    callframe=callframe->next;
+                }
+                cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
+                
+                int line=0;
+                int target=CAST_INT(callframe->line)->val->to_int();
+                int startidx=0;
+                int endidx=0;
+                int idx=0;
+                bool entered=false;
+                while (true){
+                    if (line==target && !entered){
+                        startidx=idx;
+                        entered=true;
+                    }
+                    if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
+                        endidx=idx;
+                        break;
+                    }
+                    else if ((*vm->filedata)[idx]=='\n'){
+                        line++;
+                    }
+                    idx++;
+                }
+
+                string snippet="";
+                for (int i=startidx; i<endidx; i++){
+                    snippet+=(*vm->filedata)[i];
+                }
+
+                cout<<"    "<<remove_spaces(snippet)<<endl;
+                
+                callframe=callframe->next;
+            }
+
+            cout<<vm->exception->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err)<<endl;
+           
+            
+            vm->exception=NULL;
             return NULL;
         }
         if (obj!=NULL){
@@ -677,15 +724,20 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         snippet+=(*vm->filedata)[i];
                     }
 
-                    cout<<snippet<<endl;
+                    cout<<"    "<<remove_spaces(snippet)<<endl;
                     
                     callframe=callframe->next;
                 }
 
                 cout<<frame->obj->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(frame->obj)->err)<<endl;
+                if ((void*)frame->obj==(void*)vm->exception){ //Reraised
+                    return NULL;
+                }
                 cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
             }
             
+
+            show_exception:
             struct callframe* callframe=vm->callstack->head;
             while (callframe){    
                 if (callframe->name==NULL){
@@ -719,14 +771,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     snippet+=(*vm->filedata)[i];
                 }
 
-                cout<<snippet<<endl;
+                cout<<"    "<<remove_spaces(snippet)<<endl;
                 
                 callframe=callframe->next;
             }
 
             cout<<vm->exception->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err)<<endl;
-            
-            CAST_LIST(code)->idx=0;
+            vm->exception=NULL;
             return NULL;
         }
     }
