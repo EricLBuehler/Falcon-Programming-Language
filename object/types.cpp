@@ -1057,6 +1057,7 @@ void setup_cwrapper_type(){
 object* slotwrapper_call(object* self, object* args, object* kwargs);
 object* slotwrapper_new_fromfunc(getsetfunc func, getfunc get, setfunc set, lenfunc len,string name, TypeObject* type);
 object* slotwrapper_repr(object* self);
+object* slotwrapper_str(object* self);
 object* slotwrapper_get(object* self, object* key);
 void slotwrapper_set(object* self, object* key, object* val);
 object* slotwrapper_len(object* self);
@@ -1097,7 +1098,7 @@ TypeObject SlotWrapperType={
     0, //slot_append
 
     (reprfunc)slotwrapper_repr, //slot_repr
-    (reprfunc)slotwrapper_repr, //slot_str
+    (reprfunc)slotwrapper_str, //slot_str
     (callfunc)slotwrapper_call, //slot_call
 
     0, //slot_number

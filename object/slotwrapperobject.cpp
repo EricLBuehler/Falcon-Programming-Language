@@ -38,3 +38,19 @@ object* slotwrapper_repr(object* self){
     s+=">";
     return str_new_fromstr(new string(s));
 }
+
+object* slotwrapper_str(object* self){
+    char buf[32];
+    sprintf(buf, "0x%x", self);
+
+    string s="<";
+    s+=self->type->name->c_str();
+    s+=" '";
+    s+=CAST_SLOTWRAPPER(self)->name->c_str();
+    s+="' @ ";
+    s+=buf;
+    s+=":\n";
+    s+=object_crepr(CAST_SLOTWRAPPER(self)->function(self));
+    s+=">";
+    return str_new_fromstr(new string(s));
+}
