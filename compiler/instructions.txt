@@ -69,3 +69,11 @@ SETUP_TRY - Adds try block with handler at IP+TOS
 FINISH_TRY - Pops try block
 
 BINOP_EXC_CMP - If TOS exceptin type (TOS is type object) is the same exception as TOS-1 (instance), push True onto stack, otherwise False
+
+BINOP_GT - IF TOS-1 > TOS, push True, or push False
+
+BINOP_GTE - IF TOS-1 >= TOS, push True, or push False
+
+BINOP_LT - IF TOS-1 < TOS, push True, or push False
+
+BINOP_LTE - IF TOS-1 <= TOS, push True, or push False

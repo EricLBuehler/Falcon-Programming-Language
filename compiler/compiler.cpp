@@ -84,6 +84,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_BINOP: {
             compile_expr(compiler, BINOP(expr->node)->left); //Push data
             compile_expr(compiler, BINOP(expr->node)->right); //Push data
+            
             switch (BINOP(expr->node)->opr){
                 case T_PLUS:
                     add_instruction(compiler->instructions,BINOP_ADD,0, expr->start, expr->end);
@@ -102,6 +103,18 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     break;
                 case T_EE:
                     add_instruction(compiler->instructions,BINOP_EE,0, expr->start, expr->end);
+                    break;
+                case T_GT:
+                    add_instruction(compiler->instructions,BINOP_GT,0, expr->start, expr->end);
+                    break;
+                case T_GTE:
+                    add_instruction(compiler->instructions,BINOP_GTE,0, expr->start, expr->end);
+                    break;
+                case T_LT:
+                    add_instruction(compiler->instructions,BINOP_LT,0, expr->start, expr->end);
+                    break;
+                case T_LTE:
+                    add_instruction(compiler->instructions,BINOP_LTE,0, expr->start, expr->end);
                     break;
             }
             break;
@@ -948,7 +961,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
                     continue;
                 }
-                else if (i==TRYEXCEPTFINALLY(expr->node)->bases->size()-1 && TRYEXCEPTFINALLY(expr->node)->bases->at(i)->type==N_FINALLY){
+                else if (i==TRYEXCEPTFINALLY(expr->node)->bases->size()-1 && TRYEXCEPTFINALLY(expr->node)->bases->at(i)->type==N_FINALLY){                    
+                    add_instruction(compiler->instructions,RAISE_EXC,0, expr->start, expr->end); 
+                    instrs+=2;
+                    
                     Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(i);
                     instrs+=num_instructions(FINALLY(tryn->node)->code)*2;
                     
@@ -1074,10 +1090,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 
 
-                add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
+                add_instruction(compiler->instructions,JUMP_DELTA,target-instrs+4, tryn->start, tryn->end);
 
             }
-            
+            if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
+                add_instruction(compiler->instructions,RAISE_EXC,0, expr->start, expr->end); 
+            }
             add_instruction(compiler->instructions,FINISH_TRY,0, expr->start, expr->end);      
             
             break;

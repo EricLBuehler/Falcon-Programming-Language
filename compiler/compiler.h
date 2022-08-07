@@ -33,6 +33,10 @@ enum opcode{
     SETUP_TRY,
     FINISH_TRY,
     BINOP_EXC_CMP,
+    BINOP_GT,
+    BINOP_GTE,
+    BINOP_LT,
+    BINOP_LTE,
 };
 
 enum scope{
