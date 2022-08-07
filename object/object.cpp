@@ -414,3 +414,31 @@ bool object_issubclass(object* obj, TypeObject* t){
     CAST_LIST(obj->type->bases)->idx=0;
     return false;
 }
+
+object* object_gt(object* left, object* right){
+    if (left->type->slot_cmp==NULL || right->type->slot_cmp==NULL){
+        return NULL;
+    }
+    return object_cmp(left, right, CMP_GT);
+}
+
+object* object_gte(object* left, object* right){
+    if (left->type->slot_cmp==NULL || right->type->slot_cmp==NULL){
+        return NULL;
+    }
+    return object_cmp(left, right, CMP_GTE);
+}
+
+object* object_lt(object* left, object* right){
+    if (left->type->slot_cmp==NULL || right->type->slot_cmp==NULL){
+        return NULL;
+    }
+    return object_cmp(left, right, CMP_LT);
+}
+
+object* object_lte(object* left, object* right){
+    if (left->type->slot_cmp==NULL || right->type->slot_cmp==NULL){
+        return NULL;
+    }
+    return object_cmp(left, right, CMP_LTE);
+}

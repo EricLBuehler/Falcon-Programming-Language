@@ -18,6 +18,7 @@ typedef void (*setattrfunc)(object*, object*, object*);
 
 
 typedef object* (*cwrapperfunc)(object*, object*);
+typedef object* (*getsetfunc)(object*);
 
 
 typedef struct{    
@@ -38,6 +39,14 @@ typedef struct{
     const char* name;
     cwrapperfunc function;
 }Method;
+
+typedef struct{
+    const char* name;
+    getsetfunc function;
+    getfunc get;
+    setfunc set;
+    lenfunc len;
+}GetSets;
 
 typedef struct object_type{
     size_t refcnt;
@@ -73,6 +82,7 @@ typedef struct object_type{
     //number methods
     NumberMethods* slot_number;
     Method* slot_methods;
+    GetSets* slot_getsets;
 
     compfunc slot_cmp;
 }TypeObject;
@@ -227,10 +237,15 @@ struct vm{
 #define CAST_EXCEPTION(obj) ((ExceptionObject*)obj)
 #define CAST_FILE(obj) ((FileObject*)obj)
 #define CAST_CWRAPPER(obj) ((CWrapperObject*)obj)
+#define CAST_SLOTWRAPPER(obj) ((SlotWrapperObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
 #define CMP_EQ 0
+#define CMP_GT 1
+#define CMP_GTE 2
+#define CMP_LT 3
+#define CMP_LTE 4
 
 #define SETSLOT(tp, base, slot) if (base_tp->slot!=NULL){tp->slot=base->slot;}
 object* finalize_type(TypeObject* newtype);
@@ -267,6 +282,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "exceptionobject.cpp"
 #include "stringstreamobject.cpp"
 #include "cwrapperobject.cpp"
+#include "slotwrapperobject.cpp"
 
 void setup_types_consts(){
     setup_object_type(); 
@@ -289,17 +305,20 @@ void setup_types_consts(){
     setup_exception_type();
     setup_stringstream_type();  
     setup_cwrapper_type();  
+    setup_slotwrapper_type();
 
     setup_builtins();
     
     inherit_type_dict(&ObjectType);
 
     inherit_type_dict(&TypeType);
+    inherit_type_getsets(&TypeType);
 
     inherit_type_dict(&IntType);
     setup_int_dir();
 
     inherit_type_dict(&StrType);
+    setup_str_dir();
 
     inherit_type_dict(&ListType);
     inherit_type_methods(&ListType);

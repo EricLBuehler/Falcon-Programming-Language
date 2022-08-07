@@ -74,3 +74,104 @@ object* str_cmp(object* self, object* other, uint8_t type){
 void str_del(object* obj){
     delete ((StrObject*)obj)->val;
 }
+
+object* str_wrapper_new(object* args, object* kwargs){
+    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+        object_var* obj=new_object_var(&StrType, 0);
+        ((StrObject*)obj)->val=new string("");
+
+        object* o = in_immutables((struct object*)obj);
+        if (o==NULL){
+            return (object*)obj;
+        }
+        DECREF((struct object*)obj);
+        return o;
+    }
+    object* val=INCREF(args->type->slot_get(args, new_int_fromint(1)));
+    string s=object_cstr(val);
+
+    object_var* obj=new_object_var(&StrType, s.size());
+    ((StrObject*)obj)->val=new string(s);
+    ((StrObject*)obj)->var_size=s.size()+sizeof(StrObject);
+
+    object* o = in_immutables((struct object*)obj);
+    if (o==NULL){
+        return (object*)obj;
+    }
+    DECREF((struct object*)obj);
+    return o;
+}
+
+object* str_wrapper_len(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        return NULL;
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_len(self);
+}
+
+object* str_wrapper_repr(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        return NULL;
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_repr(self);
+}
+
+object* str_wrapper_str(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        return NULL;
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_str(self);
+}
+
+object* str_wrapper_bool(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        return NULL;
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    return self->type->slot_number->slot_bool(self);
+}
+
+object* str_wrapper_ne(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    object* other=args->type->slot_get(args, new_int_fromint(1));
+
+    if (self->type!=other->type){
+        return new_bool_true();
+    }
+    if (CAST_STRING(self)->val->size()!=CAST_STRING(other)->val->size()){
+        return new_bool_true();
+    }
+    if ((*CAST_STRING(self)->val)==(*CAST_STRING(other)->val)){
+        return new_bool_false();
+    }
+    return new_bool_true();
+}
+
+object* str_wrapper_eq(object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_len(args))->val!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+    }
+    object* self=args->type->slot_get(args, new_int_fromint(0));
+    object* other=args->type->slot_get(args, new_int_fromint(1));
+
+    if (self->type!=other->type){
+        return new_bool_false();
+    }
+    if (CAST_STRING(self)->val->size()!=CAST_STRING(other)->val->size()){
+        return new_bool_false();
+    }
+    if ((*CAST_STRING(self)->val)==(*CAST_STRING(other)->val)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}

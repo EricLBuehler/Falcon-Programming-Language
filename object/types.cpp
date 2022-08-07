@@ -17,6 +17,12 @@ object* int_wrapper_neg(object* args, object* kwargs);
 object* int_wrapper_repr(object* args, object* kwargs);
 object* int_wrapper_bool(object* args, object* kwargs);
 object* int_wrapper_new(object* args, object* kwargs);
+object* int_wrapper_eq(object* args, object* kwargs);
+object* int_wrapper_ne(object* args, object* kwargs);
+object* int_wrapper_gt(object* args, object* kwargs);
+object* int_wrapper_gte(object* args, object* kwargs);
+object* int_wrapper_lt(object* args, object* kwargs);
+object* int_wrapper_lte(object* args, object* kwargs);
 
 object* new_int_fromint(int v);
 object* new_int_fromstr(string* v);
@@ -39,6 +45,7 @@ static NumberMethods int_num_methods{
 };
 
 Method int_methods[]={{NULL,NULL}};
+GetSets int_getsets[]={{NULL,NULL}};
 
 TypeObject IntType={
     0, //refcnt
@@ -71,6 +78,7 @@ TypeObject IntType={
 
     &int_num_methods, //slot_number
     int_methods, //slot_methods
+    int_getsets, //slot_getsets
 
     (compfunc)int_cmp, //slot_cmp
 };
@@ -89,6 +97,14 @@ object* str_repr(object* self);
 object* str_str(object* self);
 object* str_cmp(object* self, object* other, uint8_t type);
 object* str_bool(object* self);
+
+object* str_wrapper_new(object* args, object* kwargs);
+object* str_wrapper_len(object* args, object* kwargs);
+object* str_wrapper_repr(object* args, object* kwargs);
+object* str_wrapper_str(object* args, object* kwargs);
+object* str_wrapper_bool(object* args, object* kwargs);
+object* str_wrapper_ne(object* args, object* kwargs);
+object* str_wrapper_eq(object* args, object* kwargs);
 
 object* str_new_fromstr(string* val);
 
@@ -109,6 +125,7 @@ static NumberMethods str_num_methods{
 };
 
 Method str_methods[]={{NULL,NULL}};
+GetSets str_getsets[]={{NULL,NULL}};
 
 TypeObject StrType={
     0, //refcnt
@@ -141,6 +158,7 @@ TypeObject StrType={
 
     &str_num_methods, //slot_number
     str_methods, //slot_methods
+    str_getsets, //slot_getsets
 
     (compfunc)str_cmp, //slot_cmp
 };
@@ -175,6 +193,7 @@ typedef struct ListObject{
 }ListObject;
 
 Method list_methods[]={{"append", (cwrapperfunc)list_append_meth}, {NULL,NULL}};
+GetSets list_getsets[]={{NULL,NULL}};
 
 static NumberMethods list_num_methods{
     0, //slot_add
@@ -218,6 +237,7 @@ TypeObject ListType={
 
     &list_num_methods, //slot_number
     list_methods, //slot_methods
+    list_getsets, //slot_getsets
 
     (compfunc)list_cmp, //slot_cmp
 };
@@ -255,6 +275,7 @@ static NumberMethods dict_num_methods{
 };
 
 Method dict_methods[]={{NULL,NULL}};
+GetSets dict_getsets[]={{NULL,NULL}};
 
 static TypeObject DictType={
     0, //refcnt
@@ -287,6 +308,7 @@ static TypeObject DictType={
 
     &dict_num_methods, //slot_number
     dict_methods, //slot_methods
+    dict_getsets, //slot_getsets
 
     (compfunc)dict_cmp, //slot_cmp
 };
@@ -325,6 +347,7 @@ static NumberMethods code_num_methods{
 };
 
 Method code_methods[]={{NULL,NULL}};
+GetSets code_getsets[]={{NULL,NULL}};
 
 TypeObject CodeType={
     0, //refcnt
@@ -357,6 +380,7 @@ TypeObject CodeType={
 
     &code_num_methods, //slot_number
     code_methods, //slot_methods
+    code_getsets, //slot_getsets
 
     (compfunc)code_cmp, //slot_cmp
 };
@@ -406,6 +430,7 @@ static NumberMethods bool_num_methods{
 };
 
 Method bool_methods[]={{NULL,NULL}};
+GetSets bool_getsets[]={{NULL,NULL}};
 
 TypeObject BoolType={
     0, //refcnt
@@ -438,6 +463,7 @@ TypeObject BoolType={
 
     &bool_num_methods, //slot_number
     bool_methods, //slot_methods
+    bool_getsets, //slot_getsets
 
     (compfunc)bool_cmp, //slot_cmp
 };
@@ -478,6 +504,7 @@ static NumberMethods tuple_num_methods{
 };
 
 Method tuple_methods[]={{NULL,NULL}};
+GetSets tuple_getsets[]={{NULL,NULL}};
 
 TypeObject TupleType={
     0, //refcnt
@@ -510,6 +537,7 @@ TypeObject TupleType={
 
     &tuple_num_methods, //slot_number
     tuple_methods, //slot_methods
+    tuple_getsets, //slot_getsets
 
     (compfunc)tuple_cmp, //slot_cmp
 };
@@ -550,6 +578,7 @@ static NumberMethods func_num_methods{
 };
 
 Method func_methods[]={{NULL,NULL}};
+GetSets func_getsets[]={{NULL,NULL}};
 
 TypeObject FuncType={
     0, //refcnt
@@ -582,6 +611,7 @@ TypeObject FuncType={
 
     &func_num_methods, //slot_number
     func_methods, //slot_methods
+    func_getsets, //slot_getsets
 
     (compfunc)func_cmp, //slot_cmp
 };
@@ -614,6 +644,7 @@ static NumberMethods none_num_methods{
 };
 
 Method none_methods[]={{NULL,NULL}};
+GetSets none_getsets[]={{NULL,NULL}};
 
 TypeObject NoneType={
     0, //refcnt
@@ -646,6 +677,7 @@ TypeObject NoneType={
 
     &none_num_methods, //slot_number
     none_methods, //slot_methods
+    none_getsets, //slot_getsets
 
     (compfunc)none_cmp, //slot_cmp
 };
@@ -683,6 +715,7 @@ static NumberMethods builtin_num_methods{
 };
 
 Method builtin_methods[]={{NULL,NULL}};
+GetSets builtin_getsets[]={{NULL,NULL}};
 
 TypeObject BuiltinType={
     0, //refcnt
@@ -715,6 +748,7 @@ TypeObject BuiltinType={
 
     &builtin_num_methods, //slot_number
     builtin_methods, //slot_methods
+    builtin_getsets, //slot_getsets
 
     (compfunc)builtin_cmp, //slot_cmp
 };
@@ -747,6 +781,7 @@ static NumberMethods object_num_methods{
 };
 
 Method object_methods[]={{NULL,NULL}};
+GetSets object_getsets[]={{NULL,NULL}};
 
 TypeObject ObjectType={
     0, //refcnt
@@ -778,6 +813,7 @@ TypeObject ObjectType={
 
     &object_num_methods, //slot_number
     object_methods, //slot_methods
+    object_getsets, //slot_getsets
 
     (compfunc)object_cmp_, //slot_cmp
 };
@@ -810,6 +846,7 @@ static NumberMethods exception_num_methods{
 };
 
 Method exception_methods[]={{NULL,NULL}};
+GetSets exception_getsets[]={{NULL,NULL}};
 
 TypeObject ExceptionType={
     0, //refcnt
@@ -842,6 +879,7 @@ TypeObject ExceptionType={
 
     &exception_num_methods, //slot_number
     exception_methods, //slot_methods
+    exception_getsets, //slot_getsets
 
     (compfunc)exception_cmp, //slot_cmp
 };
@@ -878,6 +916,8 @@ object* new_type_exception(string* name, object* bases, object* dict){
         0, //slot_call
 
         0, //slot_number
+        0, //slot_methods
+        0, //slot_getsets
 
         0, //slot_cmp
     };
@@ -919,6 +959,7 @@ static NumberMethods stringstream_num_methods{
 };
 
 Method stringstream_methods[]={{NULL,NULL}};
+GetSets stringstream_getsets[]={{NULL,NULL}};
 
 TypeObject StringStreamType={
     0, //refcnt
@@ -951,6 +992,7 @@ TypeObject StringStreamType={
 
     &stringstream_num_methods, //slot_number
     stringstream_methods, //slot_methods
+    stringstream_getsets, //slot_getsets
 
     0, //slot_cmp
 };
@@ -969,6 +1011,9 @@ typedef struct CWrapperObject{
     string* name;
 }CWrapperObject;
 
+Method cwrapper_methods[]={{NULL,NULL}};
+GetSets cwrapper_getsets[]={{NULL,NULL}};
+
 TypeObject CWrapperType={
     0, //refcnt
     0, //ob_prev
@@ -976,7 +1021,7 @@ TypeObject CWrapperType={
     0, //gen
     &TypeType, //type
     new string("CWrapperType"), //name
-    sizeof(NoneObject), //size
+    sizeof(CWrapperObject), //size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -995,11 +1040,12 @@ TypeObject CWrapperType={
     0, //slot_append
 
     (reprfunc)cwrapper_repr, //slot_repr
-    0, //slot_str
+    (reprfunc)cwrapper_repr, //slot_str
     (callfunc)cwrapper_call, //slot_call
 
     0, //slot_number
-    0, //slot_methods
+    cwrapper_methods, //slot_methods
+    cwrapper_getsets, //slot_getsets
 
     0, //slot_cmp
 };
@@ -1008,6 +1054,66 @@ void setup_cwrapper_type(){
     CWrapperType=(*(TypeObject*)finalize_type(&CWrapperType));
 }
 
+object* slotwrapper_call(object* self, object* args, object* kwargs);
+object* slotwrapper_new_fromfunc(getsetfunc func, getfunc get, setfunc set, lenfunc len,string name, TypeObject* type);
+object* slotwrapper_repr(object* self);
+object* slotwrapper_get(object* self, object* key);
+void slotwrapper_set(object* self, object* key, object* val);
+object* slotwrapper_len(object* self);
+
+typedef struct SlotWrapperObject{
+    OBJHEAD_EXTRA
+    getsetfunc function;
+    getfunc get;
+    setfunc set;
+    lenfunc len;
+    string* name;
+    TypeObject* basetype;
+}SlotWrapperObject;
+
+TypeObject SlotWrapperType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("SlotWrapperType"), //name
+    sizeof(SlotWrapperObject), //size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    (getfunc)slotwrapper_get, //slot_get
+    (lenfunc)slotwrapper_set, //slot_len
+    (setfunc)slotwrapper_len, //slot_set
+    0, //slot_append
+
+    (reprfunc)slotwrapper_repr, //slot_repr
+    (reprfunc)slotwrapper_repr, //slot_str
+    (callfunc)slotwrapper_call, //slot_call
+
+    0, //slot_number
+    0, //slot_methods
+    0, //slot_getsets
+
+    0, //slot_cmp
+};
+
+void setup_slotwrapper_type(){
+    SlotWrapperType.bases=new_list();
+    SlotWrapperType.bases->type->slot_append(SlotWrapperType.bases, INCREF((object*)&CWrapperType));
+    SlotWrapperType.bases->type->slot_append(SlotWrapperType.bases, INCREF((object*)&ObjectType));
+
+    SlotWrapperType=(*(TypeObject*)finalize_type(&SlotWrapperType));
+}
 
 
 object* new_type(string* name, object* bases, object* dict);
@@ -1156,9 +1262,9 @@ object* finalize_type(TypeObject* newtype){
     //Clean out bases
     if (tp_tp->bases==NULL){
         tp_tp->bases=new_list();
+        tp_tp->bases->type->slot_append(tp_tp->bases, INCREF((object*)&ObjectType));
     }
 
-    tp_tp->bases->type->slot_append(tp_tp->bases, INCREF((object*)&ObjectType));
     uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
 
     //This is a slower method than could theoritically be done.
@@ -1241,14 +1347,59 @@ object* inherit_type_methods(TypeObject* tp){
     return (object*)tp;
 }
 
+object* inherit_type_getsets(TypeObject* tp){
+    TypeObject* tp_tp=CAST_TYPE(tp);
+
+    //tp is the what we'll copy to...
+
+    //Clean out bases
+    uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
+
+    //This is a slower method than could theoritically be done.
+    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
+    //also breaks fewer rules...
+    
+    for (uint32_t i=total_bases; i>0; i--){
+        TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
+        //Inherit methods
+        uint32_t idx=0;
+        while (base_tp->slot_getsets[idx].name!=NULL){
+            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(base_tp->slot_getsets[idx].name)), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, (getfunc)base_tp->slot_getsets[idx].get, (setfunc)base_tp->slot_getsets[idx].set, (lenfunc)base_tp->slot_getsets[idx].len, base_tp->slot_getsets[idx].name, base_tp));
+            idx++;
+        }        
+    }
+
+    //Inherit methods
+    uint32_t idx=0;
+    while (tp_tp->slot_getsets[idx].name!=NULL){
+        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(tp_tp->slot_getsets[idx].name)), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, (getfunc)tp_tp->slot_getsets[idx].get, (setfunc)tp_tp->slot_getsets[idx].set, (lenfunc)tp_tp->slot_getsets[idx].len, tp_tp->slot_getsets[idx].name, tp_tp));
+        idx++;
+    }
+
+    return (object*)tp;
+}
+
 void type_set_cwrapper(TypeObject* tp, cwrapperfunc func, string name){
     object* f=cwrapper_new_fromfunc(func, name);
     tp->dict->type->slot_set(tp->dict, str_new_fromstr(CAST_CWRAPPER(f)->name), f);
 }
 
-
 object* type_bool(object* self){
     return new_bool_true();
+}
+
+object* type_dict(object* type){
+    return CAST_SLOTWRAPPER(type)->basetype->dict;
+}
+
+object* type_dictget(object* type, object* key){
+    return CAST_SLOTWRAPPER(type)->basetype->dict->type->slot_get(CAST_SLOTWRAPPER(type)->basetype->dict, key);
+}
+void type_dictset(object* type, object* key, object* val){
+    CAST_SLOTWRAPPER(type)->basetype->dict->type->slot_set(CAST_SLOTWRAPPER(type)->basetype->dict, key, val);
+}
+object* type_dictlen(object* type){
+    return CAST_SLOTWRAPPER(type)->basetype->dict->type->slot_len(CAST_SLOTWRAPPER(type)->basetype->dict);
 }
 
 

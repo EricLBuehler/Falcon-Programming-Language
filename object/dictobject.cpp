@@ -93,7 +93,7 @@ object* dict_repr(object* self){
         s+=": ";
         s+=object_crepr(k.second);
         if (i!=CAST_DICT(self)->val->size()-1){
-            s+=", ";
+            s+=",\n";
         }
         i++;
     }

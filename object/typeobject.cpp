@@ -18,7 +18,13 @@ static NumberMethods type_num_methods{
     (unaryfunc)type_bool, //slot_bool
 };
 
+object* type_dict(object* type);
+void type_dictset(object* type, object* key, object* val);
+object* type_dictget(object* type, object* key);
+object* type_dictlen(object* type);
+
 Method type_methods[]={{NULL,NULL}};
+GetSets type_getsets[]={{"__dict__", (getsetfunc)type_dict, (getfunc)type_dictget, (setfunc)type_dictset, (lenfunc)type_dictlen},{NULL,NULL,NULL,NULL,NULL}};
 
 TypeObject TypeType={
     0, //refcnt
@@ -51,6 +57,7 @@ TypeObject TypeType={
 
     &type_num_methods, //slot_number
     type_methods, //slot_methods
+    type_getsets, //slot_getsets
 
     0, //slot_cmp
 };
@@ -129,7 +136,8 @@ object* new_type(string* name, object* bases, object* dict){
         newtp_call, //slot_call
 
         &newtp_number, //slot_number
-        0, //slot_methods,
+        0, //slot_methods
+        0, //slot_getsets
         
         newtp_cmp, //slot_cmp
     };
