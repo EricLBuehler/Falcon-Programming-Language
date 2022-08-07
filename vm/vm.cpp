@@ -580,6 +580,34 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case BINOP_GT: {
+            object* right=pop_dataframe(vm->objstack);
+            object* left=pop_dataframe(vm->objstack);
+            binop_gt(vm, left, right);
+            break;
+        }
+
+        case BINOP_GTE: {
+            object* right=pop_dataframe(vm->objstack);
+            object* left=pop_dataframe(vm->objstack);
+            binop_gte(vm, left, right);
+            break;
+        }
+
+        case BINOP_LT: {
+            object* right=pop_dataframe(vm->objstack);
+            object* left=pop_dataframe(vm->objstack);
+            binop_lt(vm, left, right);
+            break;
+        }
+
+        case BINOP_LTE: {
+            object* right=pop_dataframe(vm->objstack);
+            object* left=pop_dataframe(vm->objstack);
+            binop_lte(vm, left, right);
+            break;
+        }
+
         default:
             return NULL;
             
