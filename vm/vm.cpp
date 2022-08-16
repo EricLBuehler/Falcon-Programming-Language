@@ -36,9 +36,6 @@ void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
     struct dataframe* frame=(struct dataframe*)malloc(sizeof(struct dataframe));
     frame->next=stack->head;
     frame->obj=obj;
-    if (obj!=NULL){
-        INCREF(frame->obj);
-    }
 
     stack->size++;
     stack->head=frame;
@@ -49,9 +46,6 @@ struct object* pop_dataframe(struct datastack* stack){
 
     stack->head=frame->next;
     stack->size--;
-    if (frame->obj!=NULL){
-        DECREF(frame->obj);
-    }
     
     object* o=frame->obj;
     free(frame);
@@ -471,6 +465,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             if (ret==NULL){ 
                 return CALL_ERR;
             }
+            
             add_dataframe(vm, vm->objstack, ret);
             
             break;            
@@ -663,10 +658,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         //cout<<instruction<<","<<arg<<"  ";
         object* obj=_vm_step(instruction, arg, vm, ip);
 
-        if (obj!=NULL){
-            return obj;
-        }
-        else if (obj==CALL_ERR){
+        if (obj==CALL_ERR){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
             if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){// && frame->callstack_size==vm->callstack->size){
                 if (vm->callstack->size-frame->callstack_size!=0){
@@ -735,6 +727,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             vm->exception=NULL;
             return NULL;
         }  
+
+        if (obj!=NULL){
+            return obj;
+        }
         else if (vm->exception!=NULL){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
             if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
@@ -745,8 +741,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 frame->obj=INCREF(vm->exception);
                 if (vm->exception!=NULL){
                     DECREF(vm->exception);
+                    vm->exception=NULL;
                 }
-                vm->exception=NULL;
                 frame->other=linetup_cntr;
                 
                 (*ip)=frame->arg+4; //skip jump
