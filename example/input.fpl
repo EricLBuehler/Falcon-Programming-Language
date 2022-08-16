@@ -1,6 +1,6 @@
 a=input("What is your name? ")
 if a=="Bob"{
-    raise NameError("You are a fool!!!!")
+    raise NameError("Nice to see you, Bob!")
 }
 else{
     print("Good.")
