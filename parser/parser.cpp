@@ -212,6 +212,7 @@ class Parser{
             StringLiteral* s=(StringLiteral*)malloc(sizeof(StringLiteral));
             s->literal=new string(this->current_tok.data);
             node->node=s;
+            
             return node;
         }
 
