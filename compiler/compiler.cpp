@@ -485,7 +485,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,READ_REGISTER_PUSH, 0, expr->start, expr->end);
             
             add_instruction(compiler->instructions,CALL_FUNCTION, 3, expr->start, expr->end);
-            add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
 
             //Store class
             uint32_t nameidxstore;
@@ -585,6 +584,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             vector<Node*>* names=DOT(DOTCALL(expr->node)->dot->node)->names;
             
             for (size_t i=0; i<names->size(); i++){
+                if (names->at(i)->type!=N_IDENT){
+                    compile_expr(compiler, names->at(i));
+                    continue;
+                }
+
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
@@ -594,7 +598,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 else{
                     idx=object_find(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                 }
-
+                
                 if (i==0){
                     switch (compiler->scope){
                         case SCOPE_GLOBAL:
@@ -609,7 +613,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }            
                 if (i==names->size()-1){
                     add_instruction(compiler->instructions,LOAD_REGISTER_POP, 0, expr->start, expr->end);
-
                     bool ret=compiler->keep_return;
                     compiler->keep_return=true;
                     //Args (iterate backwards)
@@ -835,7 +838,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_RAISE: {
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
             compile_expr(compiler, RAISE(expr->node)->expr);
+            if (!ret){
+                compiler->keep_return=false;
+            }
+            compiler->keep_return=ret;
             add_instruction(compiler->instructions, RAISE_EXC, 0, expr->start, expr->end);
             break;
         }
@@ -850,6 +859,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (!ret){
                 compiler->keep_return=false;
             }
+            compiler->keep_return=ret;
             add_instruction(compiler->instructions,STORE_SUBSCR, 0, expr->start, expr->end);
 
             
@@ -1251,8 +1261,6 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
     CAST_LIST(list)->type->slot_append(list, instructions);
     CAST_LIST(list)->type->slot_append(list, object_repr(str_new_fromstr(program)));
     CAST_LIST(list)->type->slot_append(list, lines);
-
-    cout<<instructions<<endl;
 
     object* code=code_new_fromargs(list);
     CAST_CODE(code)->co_instructions=CAST_INT(instructions->type->slot_len(instructions))->val->to_int();
