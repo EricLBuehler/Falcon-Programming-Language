@@ -1,4 +1,4 @@
 cls
-g++ main.cpp -o fpl.exe
+g++ main.cpp -o fpl
 
 fpl program.fpl -v

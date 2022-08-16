@@ -1,5 +1,11 @@
+8/6/22 6 PM
+Added >, >=, <, <= operators
+
+8/6/22 2 PM
+Added str dunder __dict__ functions
+
 8/6/22 9 30 AM
-Added framework for object __dict__ s
+Added framework for object dunder functions
 
 7/31/22 2 PM
 Added repr builtins

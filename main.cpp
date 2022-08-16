@@ -13,6 +13,22 @@
 #include <float.h>
 #include <stdlib.h>
 
+#define _POSIX_C_SOURCE 199309L
+#define SEC_TO_NS(sec) ((sec)*1000000000)
+#include <time.h>
+
+uint64_t  time_nanoseconds() {
+    /// Convert seconds to nanoseconds
+
+    struct timespec ts;
+    int return_code = clock_gettime(CLOCK_REALTIME, &ts);
+    // `ts` now contains your timestamp in seconds and nanoseconds! To 
+    // convert the whole struct to nanoseconds, do this:
+    uint64_t nanoseconds = SEC_TO_NS((uint64_t)ts.tv_sec) + (uint64_t)ts.tv_nsec;
+    return nanoseconds;
+}
+
+
 using namespace std;
 
 #define DEBUG
@@ -81,7 +97,6 @@ int execute(string data, bool objdump, bool verbose){
         cout<<"Parsed.\n";
     }
 
-
     struct compiler* compiler = new_compiler();
 
 
@@ -108,7 +123,9 @@ int execute(string data, bool objdump, bool verbose){
         cout<<"Code: "<<object_cstr(CAST_CODE(code)->co_code)<<"\n";
         cout<<"--------\n";
     }
+    uint64_t a=time_nanoseconds();
     object* returned=run_vm(code, &vm->ip);
+    uint64_t b=time_nanoseconds();
     if (verbose){
         cout<<"--------";
     }
@@ -212,7 +229,6 @@ int main(int argc, char** argv) {
     program="main.fpl";
     bool verbose=false;
     bool objdump=false;
-
     if (argc==2){
         if ((string)argv[1]==(string)"-h"){
             cout<<"FPL V1\n";
@@ -245,8 +261,7 @@ int main(int argc, char** argv) {
         if ((string)argv[2]==(string)"-o" || (string)argv[3]==(string)"-o"){
             objdump=true;
         }
-    }
-    
+    }    
     
     execute(loadFile(program), objdump, verbose);
     return 0;
