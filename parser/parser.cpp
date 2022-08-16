@@ -224,29 +224,6 @@ class Parser{
             i->name=new string(this->current_tok.data);
             node->node=i;
             
-            if (this->next_tok_is(T_DOTIDENT)){
-                Node* newnode=make_node(N_DOT);
-                newnode->start=node->start;
-                newnode->end=node->end;
-                Dot* d=(Dot*)malloc(sizeof(Dot));
-                d->names=new vector<Node*>;
-                d->names->clear();
-                d->names->push_back(node);
-                while (this->next_tok_is(T_DOTIDENT)){
-                    this->advance();
-                    Node* n=make_node(N_IDENT);
-                    n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-                    n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
-                    Identifier* i=(Identifier*)malloc(sizeof(Identifier));
-                    i->name=new string(this->current_tok.data);
-                    n->node=i;
-
-                    d->names->push_back(n);
-                }
-                
-                newnode->node=d;
-                return newnode;
-            }
             return node;
         }
 
@@ -780,8 +757,8 @@ class Parser{
 
             
             this->advance();
-
-            while (!(this->current_tok_is(T_EOF)) && prec<get_precedence(this->current_tok)){
+            
+            while (!(this->current_tok_is(T_EOF)) && prec<get_precedence(this->current_tok) || this->current_tok_is(T_DOTIDENT)){
                 switch (this->current_tok.type){
                     case T_EQ:
                         left=make_assignment(ret, left);
@@ -809,6 +786,32 @@ class Parser{
                     case T_LSQUARE:
                         left=make_subscr(ret, left);
                         break;
+
+                    case T_DOTIDENT: {
+                        Node* newnode=make_node(N_DOT);
+                        newnode->start=left->start;
+                        newnode->end=left->end;
+                        Dot* d=(Dot*)malloc(sizeof(Dot));
+                        d->names=new vector<Node*>;
+                        d->names->clear();
+                        d->names->push_back(left);
+                        while (this->next_tok_is(T_DOTIDENT)){
+                            this->advance();
+                            Node* n=make_node(N_IDENT);
+                            n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                            n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+                            Identifier* i=(Identifier*)malloc(sizeof(Identifier));
+                            i->name=new string(this->current_tok.data);
+                            n->node=i;
+
+                            d->names->push_back(n);
+                        }
+                        
+                        newnode->node=d;
+                        left=newnode;
+                        this->advance();
+                        break;
+                    }
 
                     default:
                         return left;
