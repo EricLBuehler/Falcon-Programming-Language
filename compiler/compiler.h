@@ -63,6 +63,7 @@ struct compiler{
     struct instructions* instructions;
     enum scope scope;
     object* lines;
+    bool keep_return;
 };
 
 #define INTLIT(node) ((IntLiteral*)(node))
@@ -96,7 +97,7 @@ struct compiler{
 parse_ret parseretglbl;
 
 struct object* compile(struct compiler* compiler, parse_ret ast);
-uint32_t num_instructions(vector<Node*>* nodes);
-uint32_t num_instructions(Node* node);
+uint32_t num_instructions(vector<Node*>* nodes, scope s);
+uint32_t num_instructions(Node* node, scope s);
 
 #include "compiler.cpp"
