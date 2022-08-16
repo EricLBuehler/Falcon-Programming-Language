@@ -17,12 +17,11 @@ object* exception_repr(object* self){
     s+=self->type->name->c_str();
     s+="(";
     s+=object_crepr(CAST_EXCEPTION(self)->err)+")";
-    object* o=str_new_fromstr(s);
-    return o;
+    return str_new_fromstr(s);
 }
 
 object* exception_str(object* self){
-    return object_repr(CAST_EXCEPTION(self)->err);
+    return object_str(CAST_EXCEPTION(self)->err);
 }
 object* exception_bool(object* self){
     return new_bool_true();
