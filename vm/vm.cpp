@@ -36,6 +36,9 @@ void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
     struct dataframe* frame=(struct dataframe*)malloc(sizeof(struct dataframe));
     frame->next=stack->head;
     frame->obj=obj;
+    if (obj!=NULL){
+        INCREF(frame->obj);
+    }
 
     stack->size++;
     stack->head=frame;
@@ -46,8 +49,13 @@ struct object* pop_dataframe(struct datastack* stack){
 
     stack->head=frame->next;
     stack->size--;
+    if (frame->obj!=NULL){
+        DECREF(frame->obj);
+    }
     
-    return frame->obj;
+    object* o=frame->obj;
+    free(frame);
+    return o;
 }
 
 void pop_blockframe(struct blockstack* stack){
@@ -55,6 +63,8 @@ void pop_blockframe(struct blockstack* stack){
 
     stack->head=frame->next;
     stack->size--;
+
+    free(frame);
 }
 
 struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type){
@@ -69,39 +79,33 @@ struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type){
     return NULL;
 }
 
-struct object* peek_dataframe(struct datastack* stack){
-    struct dataframe* frame=stack->head;
-    
-    return frame->obj;
+struct object* peek_dataframe(struct datastack* stack){    
+    return stack->head->obj;
 }
 
 void add_callframe(struct callstack* stack, object* line, string* name, object* code){
     struct callframe* frame=(struct callframe*)malloc(sizeof(struct callframe));
     frame->name=name;
     frame->next=stack->head;
-    frame->line=INCREF(line);
+    frame->line=line;
     frame->code=code;
-    if (code!=NULL){
-        INCREF(frame->code);
-    }
+    frame->locals=NULL;
 
     stack->size++;
     stack->head=frame;
+    
+    if (stack->size-2==MAX_RECURSION){
+        vm_add_err(&RecursionError, vm, "Maximum stack depth exceeded.");
+    }
 }
 
-struct callframe* pop_callframe(struct callstack* stack){
+void pop_callframe(struct callstack* stack){
     struct callframe* frame=stack->head;
-
-    
-    DECREF(frame->line);
-    if (frame->code!=NULL){
-        DECREF(frame->code);
-    }
-    DECREF(frame->locals);
 
     stack->head=frame->next;
     stack->size--;
-    return frame;
+    
+    free(frame);
 }
 
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {
@@ -114,25 +118,34 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     char format[length];
     sprintf(format, "%s", _format);
     
-    vm->exception=exception->type->slot_call((object*)exception, new_tuple(), new_dict()); //Create new exception object
-    char *msg = (char*)malloc(sizeof(char)*length);
+    object* eargs=new_tuple();
+    object* kwargs=new_dict();
+    vm->exception=exception->type->slot_call((object*)exception, eargs, kwargs); //Create new exception object
+    DECREF(eargs);
+    DECREF(kwargs);
+    
+    char* msg = (char*)malloc(sizeof(char)*length);
 
     va_start(args, _format);
     vsnprintf(msg, length, format, args);
     va_end(args);
     
     DECREF(CAST_EXCEPTION(vm->exception)->err);
-    CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(new string(msg));
+    CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(msg);
     free(msg);
 }
 
-object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {    
+object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {  
     va_list args;
     const int length=256;
     char format[length];
     sprintf(format, "%s", _format);
     
-    object* exc=exception->type->slot_call((object*)exception, new_tuple(), new_dict()); //Create new exception object  
+    object* eargs=new_tuple();
+    object* kwargs=new_dict();
+    object* exc=exception->type->slot_call((object*)exception, eargs, kwargs); //Create new exception object
+    DECREF(eargs);
+    DECREF(kwargs);
 
     char *msg = (char*)malloc(sizeof(char)*length);
 
@@ -141,8 +154,7 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
     va_end(args);
     
     DECREF(CAST_EXCEPTION(exc)->err);
-    CAST_EXCEPTION(exc)->err=str_new_fromstr(new string(msg));
-
+    CAST_EXCEPTION(exc)->err=str_new_fromstr(msg);
     return exc;
 }
 
@@ -160,6 +172,10 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->filedata=filedata;
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code);
+
+    idx0=new_int_fromint(0);
+    idx1=new_int_fromint(1);
+    idx2=new_int_fromint(2);
     
     return vm;
 }
@@ -184,33 +200,37 @@ void vm_del(struct vm* vm){
 }
 
 void vm_add_var_locals(struct vm* vm, object* name, object* value){
+    object* exc=vm->exception;
     object* o=vm->callstack->head->locals->type->slot_get(vm->callstack->head->locals, name);
     if (o!=NULL && o!=(object*)0x1){
-        ((object_var*)vm->callstack->head->locals->type->slot_get(vm->callstack->head->locals, name))->gc_ref--;
+        ((object_var*)o)->gc_ref--;
     }
-    vm->exception=NULL;
+    
+    if (vm->exception!=NULL && exc==NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+    }
+    
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
+
     vm->callstack->head->locals->type->slot_set(vm->callstack->head->locals, name, value); //If globals is same obj as locals then this will still update both
 }
 
 struct object* vm_get_var_locals(struct vm* vm, object* name){
     struct callframe* frame=vm->callstack->head;
     
-    uint32_t i=0;
     while(frame){
-        object* o=frame->locals->type->slot_get(frame->locals, name);
-        if (o!=NULL && vm->exception==NULL){
-            return o;
+        for (auto k: (*CAST_DICT(frame->locals)->val)){
+            if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                return  CAST_DICT(frame->locals)->val->at(k.first);
+            }
         }
-        
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        frame=frame->next; 
-        i++;
+
+        frame=frame->next;
     }
-    vm->exception=NULL;
+    
     for (size_t i=0; i<nbuiltins; i++){
         if (object_istype(builtins[i]->type, &BuiltinType)){
             if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
@@ -233,11 +253,15 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
 }
 
 void vm_add_var_globals(struct vm* vm, object* name, object* value){
+    object* exc=vm->exception;
     object* o=vm->globals->type->slot_get(vm->globals, name);
     if (o!=NULL && o!=(object*)0x1){
-        ((object_var*)vm->globals->type->slot_get(vm->globals, name))->gc_ref--;
+        ((object_var*)o)->gc_ref--;
     }
-    vm->exception=NULL;
+    if (vm->exception!=NULL && exc==NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+    }
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
@@ -245,11 +269,15 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
 }
 
 struct object* vm_get_var_globals(struct vm* vm, object* name){
+    object* exc=vm->exception;
     object* o=vm->globals->type->slot_get(vm->globals, name);
     if (o!=NULL && o!=(object*)0x1 && vm->exception==NULL){
         return o;
     }
-    vm->exception=NULL;
+    if (vm->exception!=NULL && exc==NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+    }
     for (size_t i=0; i<nbuiltins; i++){
         if (object_istype(builtins[i]->type, &BuiltinType)){
             if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
@@ -353,7 +381,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* args=pop_dataframe(vm->objstack); //<- Args
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
-
+            
             object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name);
             add_dataframe(vm, vm->objstack, func);
             break;
@@ -436,16 +464,11 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 args->type->slot_append(args, pop_dataframe(vm->objstack));
             }
             
-            
             //
 
             //Call
-            if (vm->callstack->size-2==MAX_RECURSION){
-                vm_add_err(&RecursionError, vm, "Maximum stack depth exceeded.");
-                return CALL_ERR;
-            }
             object* ret=object_call(function, args, kwargs);
-            if (ret==NULL){
+            if (ret==NULL){ 
                 return CALL_ERR;
             }
             add_dataframe(vm, vm->objstack, ret);
@@ -512,10 +535,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         }
 
         case POP_JMP_TOS_FALSE: {
-            if (!istrue(object_istruthy(peek_dataframe(vm->objstack)))){
-                pop_dataframe(vm->objstack);
+            object* o=pop_dataframe(vm->objstack);
+            object* val=object_istruthy(o);
+            if (!istrue(val)){
+                DECREF(val);
                 (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
+                break;
             }
+            DECREF(val);
             break;
         }
 
@@ -535,6 +562,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             if (!object_issubclass(peek_dataframe(vm->objstack), &ExceptionType)){
                 vm_add_err(&TypeError, vm, "Exceptions must be subclass of Exception");
                 break;
+            }
+            if (vm->exception!=NULL){
+                DECREF(vm->exception);
             }
             vm->exception=pop_dataframe(vm->objstack);
             break;
@@ -620,22 +650,23 @@ object* run_vm(object* codeobj, uint32_t* ip){
     object* lines=CAST_CODE(codeobj)->co_lines;
     
     uint32_t linetup_cntr=0;
-    object* instruction=code->type->slot_get(code, new_int_fromint((*ip)));
-    uint32_t instructions=CAST_INT(code->type->slot_len(code))->val->to_int();
-    object* linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
-    object* idx0=new_int_fromint(0);
-    object* idx1=new_int_fromint(1);
-    object* idx2=new_int_fromint(2);
+    object* instruction;
+    uint32_t instructions=CAST_CODE(codeobj)->co_instructions;
+    object* linetup=list_index_int(lines, linetup_cntr);
     while ((*ip)<instructions){
-        instruction=code->type->slot_get(code, new_int_fromint((*ip)++));
-        if (((*ip)-1)/2>(*CAST_INT(linetup->type->slot_get(linetup, idx1))->val).to_int()){
-            linetup_cntr++;
-            linetup=lines->type->slot_get(lines, new_int_fromint(linetup_cntr));
+        instruction=list_index_int(code, (*ip)++);
+        if (((*ip)-1)/2>(*CAST_INT(list_index_int(linetup, 1))->val)){
+            linetup=list_index_int(lines, linetup_cntr++);
+            vm->callstack->head->line=list_index_int(linetup, 2);
         }
-        vm->callstack->head->line=linetup->type->slot_get(linetup, idx2);
-        
-        object* obj=_vm_step(instruction, code->type->slot_get(code, new_int_fromint((*ip)++)), vm, ip);
-        if (obj==CALL_ERR){
+        object* arg=list_index_int(code, (*ip)++);
+        //cout<<instruction<<","<<arg<<"  ";
+        object* obj=_vm_step(instruction, arg, vm, ip);
+
+        if (obj!=NULL){
+            return obj;
+        }
+        else if (obj==CALL_ERR){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
             if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){// && frame->callstack_size==vm->callstack->size){
                 if (vm->callstack->size-frame->callstack_size!=0){
@@ -643,6 +674,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 }
                 add_dataframe(vm, vm->objstack, vm->exception);
                 frame->obj=INCREF(vm->exception);
+                if (vm->exception!=NULL){
+                    DECREF(vm->exception);
+                }
                 vm->exception=NULL;
                 frame->other=linetup_cntr;
                 
@@ -695,14 +729,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             cout<<vm->exception->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err)<<endl;
            
-            
+            if (vm->exception!=NULL){
+                DECREF(vm->exception);
+            }
             vm->exception=NULL;
             return NULL;
-        }
-        if (obj!=NULL){
-            return obj;
-        }
-        if (vm->exception!=NULL){
+        }  
+        else if (vm->exception!=NULL){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
             if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
                 if (vm->callstack->size-frame->callstack_size!=0){
@@ -710,6 +743,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 }
                 add_dataframe(vm, vm->objstack, vm->exception);
                 frame->obj=INCREF(vm->exception);
+                if (vm->exception!=NULL){
+                    DECREF(vm->exception);
+                }
                 vm->exception=NULL;
                 frame->other=linetup_cntr;
                 
@@ -761,6 +797,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 if ((void*)frame->obj==(void*)vm->exception){ //Reraised
                     return NULL;
                 }
+                
+                if (vm->exception!=NULL){
+                    DECREF(vm->exception);
+                }
                 cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
             }
             
@@ -805,6 +845,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
 
             cout<<vm->exception->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err)<<endl;
+            
+            if (vm->exception!=NULL){
+                DECREF(vm->exception);
+            }
             vm->exception=NULL;
             return NULL;
         }
