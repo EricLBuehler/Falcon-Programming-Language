@@ -20,10 +20,9 @@ object* func_new(object* type, object* args, object* kwargs){
     CAST_FUNC(obj)->args=INCREF(args->type->slot_get(args, new_int_fromint(1)));
     CAST_FUNC(obj)->kwargs=INCREF(args->type->slot_get(args, new_int_fromint(2)));
     CAST_FUNC(obj)->argc=CAST_INT(args->type->slot_get(args, new_int_fromint(3)))->val->to_int();
-    CAST_FUNC(obj)->name=args->type->slot_get(args, new_int_fromint(4));
+    CAST_FUNC(obj)->name=INCREF(args->type->slot_get(args, new_int_fromint(4)));
     CAST_FUNC(obj)->dict=new_dict();
     
-    DECREF(args);
     return obj;
 }
 
@@ -31,8 +30,8 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t argc=CAST_INT(args->type->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_len(kwargs))->val->to_int();
     uint32_t posargc=CAST_INT(args->type->slot_len(args))->val->to_int();
     uint32_t kwargc=argc-posargc;
-
-    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(INCREF(CAST_FUNC(self)->name))->val, INCREF(CAST_FUNC(self)->code));
+    
+    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code);
     vm->callstack->head->locals=new_dict();
 
     if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
@@ -44,13 +43,13 @@ object* func_call(object* self, object* args, object* kwargs){
         }
         vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_len(CAST_FUNC(self)->args))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int(), CAST_FUNC(self)->argc, argc);
         return NULL;
-    }
+    }    
 
     setup_args(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs);
     uint32_t ip=0;
     
     object* ret=run_vm(CAST_FUNC(self)->code, &ip);
-    
+
     pop_callframe(vm->callstack);
     return ret;
 }
@@ -83,7 +82,7 @@ object* func_repr(object* self){
     s+="<function ";
     s+=object_cstr(CAST_FUNC(self)->name);
     s+=">";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 
 object* func_cmp(object* self, object* other, uint8_t type){

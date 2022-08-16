@@ -14,7 +14,7 @@ object* slotwrapper_len(object* self){
     return CAST_SLOTWRAPPER(self)->len(self);
 }
 
-object* slotwrapper_new_fromfunc(getsetfunc func, getfunc get, setfunc set, lenfunc len,string name, TypeObject* type){
+object* slotwrapper_new_fromfunc(getsetfunc func, getfunc get, setfunc set, lenfunc len, string name, TypeObject* type){
     object* o=new_object(&SlotWrapperType);
     CAST_SLOTWRAPPER(o)->function=func;
     CAST_SLOTWRAPPER(o)->get=get;
@@ -32,11 +32,11 @@ object* slotwrapper_repr(object* self){
     string s="<";
     s+=self->type->name->c_str();
     s+=" '";
-    s+=CAST_SLOTWRAPPER(self)->name->c_str();
+    s+=(*CAST_SLOTWRAPPER(self)->name);
     s+="' @ ";
     s+=buf;
     s+=">";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 
 object* slotwrapper_str(object* self){
@@ -46,11 +46,11 @@ object* slotwrapper_str(object* self){
     string s="<";
     s+=self->type->name->c_str();
     s+=" '";
-    s+=CAST_SLOTWRAPPER(self)->name->c_str();
+    s+=(*CAST_SLOTWRAPPER(self)->name);
     s+="' @ ";
     s+=buf;
     s+=":\n";
     s+=object_crepr(CAST_SLOTWRAPPER(self)->function(self));
     s+=">";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }

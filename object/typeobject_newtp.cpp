@@ -1,6 +1,6 @@
 object* newtp_init(object* self, object* args, object* kwargs){
     //Try to call __new__
-    object* n=object_getattr(self, str_new_fromstr(new string("__init__")));
+    object* n=object_getattr(self, str_new_fromstr("__init__"));
     if (n==NULL){
         vm->exception=NULL;
     }
@@ -17,10 +17,10 @@ object* newtp_new(object* self, object* args, object* kwargs){
     o->type->dict_offset=offsetof(NewTypeObject, dict);
 
     //Setup dunder attributes
-    object_setattr(o, str_new_fromstr(new string("__class__")), self);
+    object_setattr(o, str_new_fromstr("__class__"), self);
 
     //Try to call __new__
-    object* n=object_getattr(o, str_new_fromstr(new string("__new__")));
+    object* n=object_getattr(o, str_new_fromstr("__new__"));
     if (n==NULL){
         vm->exception=NULL;
     }
@@ -32,7 +32,7 @@ object* newtp_new(object* self, object* args, object* kwargs){
     return o;
 }
 void newtp_del(object* self){
-    object* n=object_getattr(self, str_new_fromstr(new string("__del__")));
+    object* n=object_getattr(self, str_new_fromstr("__del__"));
     if (n==NULL){
         vm->exception=NULL;
     }
@@ -49,7 +49,7 @@ object* newtp_get(object* self, object* idx){
     return new_none();
 }
 object* newtp_len(object* self){
-    object* n=object_getattr(self, str_new_fromstr(new string("__len__")));
+    object* n=object_getattr(self, str_new_fromstr("__len__"));
     if (n==NULL){
         vm->exception=NULL;
         return NULL;
@@ -68,7 +68,7 @@ void newtp_append(object* self, object* val){
     return;
 }
 object* newtp_repr(object* self){
-    object* n=object_getattr(self, str_new_fromstr(new string("__repr__")));
+    object* n=object_getattr(self, str_new_fromstr("__repr__"));
     if (n==NULL){
         vm->exception=NULL;
     }
@@ -87,10 +87,10 @@ object* newtp_repr(object* self){
     s+=" object @ ";
     s+=buf;
     s+=">";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 object* newtp_str(object* self){
-    object* n=object_getattr(self, str_new_fromstr(new string("__str__")));
+    object* n=object_getattr(self, str_new_fromstr("__str__"));
     if (n==NULL){
         vm->exception=NULL;
     }
@@ -109,11 +109,11 @@ object* newtp_str(object* self){
     s+=" object @ ";
     s+=buf;
     s+=">";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 object* newtp_call(object* self, object* args, object* kwargs){
     //Try to call __call__
-    object* function=object_getattr(self, str_new_fromstr(new string("__call__")));
+    object* function=object_getattr(self, str_new_fromstr("__call__"));
     if (function==NULL){
         vm->exception=NULL;
     }
@@ -138,7 +138,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
 }
 
 object* newtp_add(object* self, object* other){
-    object* n=object_getattr(self, str_new_fromstr(new string("__add__")));
+    object* n=object_getattr(self, str_new_fromstr("__add__"));
     if (n==NULL){
         vm->exception=NULL;
         return NULL;
@@ -151,7 +151,7 @@ object* newtp_add(object* self, object* other){
     }
 }
 object* newtp_sub(object* self, object* other){
-    object* n=object_getattr(self, str_new_fromstr(new string("__sub__")));
+    object* n=object_getattr(self, str_new_fromstr("__sub__"));
     if (n==NULL){
         vm->exception=NULL;
         return NULL;
@@ -164,7 +164,7 @@ object* newtp_sub(object* self, object* other){
     }
 }
 object* newtp_mul(object* self, object* other){
-    object* n=object_getattr(self, str_new_fromstr(new string("__mul__")));
+    object* n=object_getattr(self, str_new_fromstr("__mul__"));
     if (n==NULL){
         vm->exception=NULL;
         return NULL;
@@ -177,7 +177,7 @@ object* newtp_mul(object* self, object* other){
     }
 }
 object* newtp_div(object* self, object* other){
-    object* n=object_getattr(self, str_new_fromstr(new string("__div__")));
+    object* n=object_getattr(self, str_new_fromstr("__div__"));
     if (n==NULL){
         vm->exception=NULL;
         return NULL;
@@ -191,7 +191,7 @@ object* newtp_div(object* self, object* other){
 }
 
 object* newtp_neg(object* self){
-    object* n=object_getattr(self, str_new_fromstr(new string("__neg__")));
+    object* n=object_getattr(self, str_new_fromstr("__neg__"));
     if (n==NULL){
         vm->exception=NULL;
         return NULL;
@@ -205,7 +205,7 @@ object* newtp_neg(object* self){
 }
 
 object* newtp_bool(object* self){
-    object* n=object_getattr(self, str_new_fromstr(new string("__bool__")));
+    object* n=object_getattr(self, str_new_fromstr("__bool__"));
     if (n==NULL){
         vm->exception=NULL;
         return NULL;

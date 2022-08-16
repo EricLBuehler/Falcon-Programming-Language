@@ -16,9 +16,9 @@ object* cwrapper_repr(object* self){
     string s="<";
     s+=self->type->name->c_str();
     s+=" '";
-    s+=CAST_CWRAPPER(self)->name->c_str();
+    s+=(*CAST_CWRAPPER(self)->name);
     s+="' @ ";
     s+=buf;
     s+=">";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }

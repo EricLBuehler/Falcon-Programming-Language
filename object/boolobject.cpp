@@ -58,9 +58,9 @@ object* bool_neg(object* self){
 
 object* bool_repr(object* self){
     if (CAST_BOOL(self)->val==1){
-        return str_new_fromstr(new string("True"));
+        return str_new_fromstr("True");
     }
-    return str_new_fromstr(new string("False"));
+    return str_new_fromstr("False");
 }
 
 object* bool_cmp(object* self, object* other, uint8_t type){

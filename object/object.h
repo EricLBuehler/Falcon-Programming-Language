@@ -57,6 +57,7 @@ typedef struct object_type{
 
     string* name;
     size_t size;
+    size_t var_base_size;
     bool gc_trackable;
     object* bases;
     size_t dict_offset; //If 0, no dict
@@ -141,6 +142,7 @@ bool object_find_bool_dict_keys(object* dict, object* needle);
 object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
 bool object_issubclass(object* obj, TypeObject* t);
+object* list_index_int(object* self, uint32_t i);
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
@@ -149,7 +151,7 @@ void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
 struct object* pop_dataframe(struct datastack* stack);
 void append_to_list(struct gc* gc, struct object* object);
 void add_callframe(struct callstack* stack, object* line, string* name, object* code);
-struct callframe* pop_callframe(struct callstack* stack);
+void pop_callframe(struct callstack* stack);
 
 object* new_list();
 object* new_none();
@@ -158,7 +160,7 @@ object* new_tuple();
 object* new_code_fromargs(object* args);
 object* new_bool_true();
 object* new_bool_false();
-object* str_new_fromstr(string* val);
+object* str_new_fromstr(string val);
 object* new_int_fromint(int i);
 
 struct vm* vm=NULL;

@@ -34,6 +34,7 @@ TypeObject TypeType={
     &TypeType, //type
     new string("type"), //name
     sizeof(TypeObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     offsetof(TypeObject, dict), //dict_offset
@@ -114,6 +115,7 @@ object* new_type(string* name, object* bases, object* dict){
         &TypeType, //type
         name, //name
         sizeof(NewTypeObject), //size
+        0, //var_base_size
         true, //gc_trackable
         bases, //bases
         0, //dict_offset

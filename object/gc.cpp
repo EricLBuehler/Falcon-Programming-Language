@@ -7,7 +7,7 @@ void new_gc(){
     gc.gen1_n=0;
     gc.gen2_n=0;
 
-    gc.gen0_thresh=10;
+    gc.gen0_thresh=700;
     gc.gen1_thresh=100;
     gc.gen2_thresh=10;
 }

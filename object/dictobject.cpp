@@ -41,9 +41,14 @@ object* dict_len(object* self){
 }
 
 object* dict_get(object* self, object* key){
+    //Fast path for immutables
+    if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        return CAST_DICT(self)->val->at(key);
+    }
+    
     for (auto k: (*CAST_DICT(self)->val)){
         if (istrue(object_cmp(key, k.first, CMP_EQ))){
-            return  (*CAST_DICT(self)->val)[k.first];
+            return  CAST_DICT(self)->val->at(k.first);
         }
     }
     
@@ -73,7 +78,6 @@ void dict_set(object* self, object* key, object* val){
             if (key->type->size==0){
                 ((object_var*)key)->gc_ref++;
             }
-            DECREF(key);
             (*CAST_DICT(self)->val)[key]=INCREF(val);
             CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
             return;
@@ -93,12 +97,29 @@ object* dict_repr(object* self){
         s+=": ";
         s+=object_crepr(k.second);
         if (i!=CAST_DICT(self)->val->size()-1){
+            s+=", ";
+        }
+        i++;
+    }
+    s+="}";
+    return str_new_fromstr(s);
+}
+
+object* dict_str(object* self){
+    string s="";
+    s+="{";
+    int i=0;
+    for (auto k: (*CAST_DICT(self)->val)){
+        s+=object_crepr(k.first);
+        s+=": ";
+        s+=object_crepr(k.second);
+        if (i!=CAST_DICT(self)->val->size()-1){
             s+=",\n";
         }
         i++;
     }
     s+="}";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 
 object* dict_cmp(object* self, object* other, uint8_t type){
@@ -129,5 +150,9 @@ object* dict_cmp(object* self, object* other, uint8_t type){
 }
 
 void dict_del(object* obj){
+    for (auto k: (*CAST_DICT(obj)->val)){
+        DECREF(k.first);
+        DECREF(k.second);
+    }
     delete CAST_DICT(obj)->val;
 }

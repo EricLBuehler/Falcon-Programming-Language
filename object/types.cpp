@@ -55,6 +55,7 @@ TypeObject IntType={
     &TypeType, //type
     new string("int"), //name
     sizeof(IntObject)+sizeof(BigInt), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -106,10 +107,10 @@ object* str_wrapper_bool(object* args, object* kwargs);
 object* str_wrapper_ne(object* args, object* kwargs);
 object* str_wrapper_eq(object* args, object* kwargs);
 
-object* str_new_fromstr(string* val);
+object* str_new_fromstr(string val);
 
 typedef struct StrObject{
-    OBJHEAD_VAR
+    OBJHEAD_EXTRA
     string* val;
 }StrObject;
 
@@ -134,7 +135,8 @@ TypeObject StrType={
     0, //gen
     &TypeType, //type
     new string("str"), //name
-    0, //size
+    sizeof(StrObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -214,6 +216,7 @@ TypeObject ListType={
     &TypeType, //type
     new string("list"), //name
     0, //size
+    sizeof(ListObject), //var_base_size
     true, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -254,6 +257,7 @@ object* dict_len(object* self);
 object* dict_get(object* self, object* idx);
 void dict_set(object* self, object* key, object* val);
 object* dict_repr(object* self);
+object* dict_str(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
 object* dict_bool(object* self);
 
@@ -285,6 +289,7 @@ static TypeObject DictType={
     &TypeType, //type
     new string("dict"), //name
     0, //size
+    sizeof(DictObject), //var_base_size
     true, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -303,7 +308,7 @@ static TypeObject DictType={
     0, //slot_appends
 
     (reprfunc)dict_repr, //slot_repr
-    (reprfunc)dict_repr, //slot_str
+    (reprfunc)dict_str, //slot_str
     0, //slot_call
 
     &dict_num_methods, //slot_number
@@ -333,6 +338,7 @@ typedef struct CodeObject{
     object* co_code;
     object* co_file;
     object* co_lines;
+    uint32_t co_instructions;
 }CodeObject;
 
 static NumberMethods code_num_methods{
@@ -357,6 +363,7 @@ TypeObject CodeType={
     &TypeType, //type
     new string("code"), //name
     sizeof(CodeObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -440,6 +447,7 @@ TypeObject BoolType={
     &TypeType, //type
     new string("bool"), //name
     sizeof(BoolObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -514,6 +522,7 @@ TypeObject TupleType={
     &TypeType, //type
     new string("tuple"), //name
     0, //size
+    sizeof(TupleObject), //var_base_size
     true, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -588,6 +597,7 @@ TypeObject FuncType={
     &TypeType, //type
     new string("function"), //name
     sizeof(FuncObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     offsetof(FuncObject, dict), //dict_offset
@@ -654,6 +664,7 @@ TypeObject NoneType={
     &TypeType, //type
     new string("NoneType"), //name
     sizeof(NoneObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -688,7 +699,7 @@ void setup_none_type(){
 
 
 void builtin_del(object* self);
-object* builtin_repr(object* self);
+object* builtin_repr_slot(object* self);
 object* builtin_cmp(object* self, object* other, uint8_t type);
 object* builtin_call(object* self, object* args, object* kwargs);
 object* builtin_bool(object* self);
@@ -723,8 +734,9 @@ TypeObject BuiltinType={
     0, //ob_next
     0, //gen
     &TypeType, //type
-    new string("builtin_function_or_method"), //name
+    new string("builtin"), //name
     sizeof(BuiltinObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset    
@@ -742,8 +754,8 @@ TypeObject BuiltinType={
     0, //slot_set
     0, //slot_append
 
-    (reprfunc)builtin_repr, //slot_repr
-    (reprfunc)builtin_repr, //slot_str
+    (reprfunc)builtin_repr_slot, //slot_repr
+    (reprfunc)builtin_repr_slot, //slot_str
     (callfunc)builtin_call, //slot_call
 
     &builtin_num_methods, //slot_number
@@ -791,6 +803,7 @@ TypeObject ObjectType={
     &TypeType, //type
     new string("object"), //name
     sizeof(ObjectObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -856,6 +869,7 @@ TypeObject ExceptionType={
     &TypeType, //type
     new string("Exception"), //name
     sizeof(ExceptionObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -894,6 +908,7 @@ object* new_type_exception(string* name, object* bases, object* dict){
         &TypeType, //type
         name, //name
         sizeof(ExceptionObject), //size
+        0, //var_base_size
         true, //gc_trackable
         bases, //bases
         0, //dict_offset
@@ -969,6 +984,7 @@ TypeObject StringStreamType={
     &TypeType, //type
     new string("StringStream"), //name
     sizeof(StringStreamObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -1022,6 +1038,7 @@ TypeObject CWrapperType={
     &TypeType, //type
     new string("CWrapperType"), //name
     sizeof(CWrapperObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -1080,6 +1097,7 @@ TypeObject SlotWrapperType={
     &TypeType, //type
     new string("SlotWrapperType"), //name
     sizeof(SlotWrapperObject), //size
+    0, //var_base_size
     false, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -1150,7 +1168,7 @@ void type_del(object* self){}
 
 object* type_repr(object* self){
     string s="<class '"+(*CAST_TYPE(self)->name)+"'>";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 
 object* type_call(object* self, object* args, object* kwargs){
@@ -1333,7 +1351,7 @@ object* inherit_type_methods(TypeObject* tp){
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_methods[idx].name!=NULL){
-            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(base_tp->slot_methods[idx].name)), cwrapper_new_fromfunc((cwrapperfunc)base_tp->slot_methods[idx].function, base_tp->slot_methods[idx].name));
+            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(base_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)base_tp->slot_methods[idx].function, base_tp->slot_methods[idx].name));
             idx++;
         }        
     }
@@ -1341,7 +1359,7 @@ object* inherit_type_methods(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_methods[idx].name!=NULL){
-        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(tp_tp->slot_methods[idx].name)), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name));
+        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name));
         idx++;
     }
 
@@ -1365,7 +1383,7 @@ object* inherit_type_getsets(TypeObject* tp){
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_getsets[idx].name!=NULL){
-            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(base_tp->slot_getsets[idx].name)), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, (getfunc)base_tp->slot_getsets[idx].get, (setfunc)base_tp->slot_getsets[idx].set, (lenfunc)base_tp->slot_getsets[idx].len, base_tp->slot_getsets[idx].name, base_tp));
+            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, (getfunc)base_tp->slot_getsets[idx].get, (setfunc)base_tp->slot_getsets[idx].set, (lenfunc)base_tp->slot_getsets[idx].len, base_tp->slot_getsets[idx].name, base_tp));
             idx++;
         }        
     }
@@ -1373,7 +1391,7 @@ object* inherit_type_getsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_getsets[idx].name!=NULL){
-        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(new string(tp_tp->slot_getsets[idx].name)), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, (getfunc)tp_tp->slot_getsets[idx].get, (setfunc)tp_tp->slot_getsets[idx].set, (lenfunc)tp_tp->slot_getsets[idx].len, tp_tp->slot_getsets[idx].name, tp_tp));
+        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, (getfunc)tp_tp->slot_getsets[idx].get, (setfunc)tp_tp->slot_getsets[idx].set, (lenfunc)tp_tp->slot_getsets[idx].len, tp_tp->slot_getsets[idx].name, tp_tp));
         idx++;
     }
 
@@ -1382,7 +1400,7 @@ object* inherit_type_getsets(TypeObject* tp){
 
 void type_set_cwrapper(TypeObject* tp, cwrapperfunc func, string name){
     object* f=cwrapper_new_fromfunc(func, name);
-    tp->dict->type->slot_set(tp->dict, str_new_fromstr(CAST_CWRAPPER(f)->name), f);
+    tp->dict->type->slot_set(tp->dict, str_new_fromstr(*CAST_CWRAPPER(f)->name), f);
 }
 
 object* type_bool(object* self){

@@ -40,7 +40,8 @@ object* list_new(object* type, object* args, object* kwargs){
     CAST_LIST(obj)->idx=0;
     CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
 
-    for (size_t i=0; i<CAST_INT(args->type->slot_len(args))->val->to_int(); i++){
+    size_t len=(size_t)CAST_INT(args->type->slot_len(args))->val->to_int();
+    for (size_t i=0; i<len; i++){
         list_append((object*)obj, INCREF(args->type->slot_get(args, new_int_fromint(i))));
     }
     
@@ -64,23 +65,22 @@ object* list_get(object* self, object* idx){
         vm_add_err(&IndexError, vm, "List index out of range");
         return (object*)0x1;
     }
-
+    
     return CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()];
 }
 
 void list_set(object* self, object* idx, object* val){
     if (!object_istype(idx->type, &IntType)){
+        vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
         //Error
         return;
     }
     if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long()){
+        vm_add_err(&IndexError, vm, "List index out of range");
         //Error
         return;
     }
-
-    if (CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]->type->size==0){
-        ((object_var*)CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()])->gc_ref++;
-    } 
+    
     DECREF(CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]);
 
     CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]=INCREF(val);
@@ -122,7 +122,7 @@ object* list_repr(object* self){
         }
     }
     s+="]";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 
 object* list_next(object* self){
@@ -162,4 +162,8 @@ object* list_append_meth(object* args, object* kwargs){
     object* self=args->type->slot_get(args, new_int_fromint(0));
     list_append(self, args->type->slot_get(args, new_int_fromint(1)));
     return new_none();
+}
+
+object* list_index_int(object* self, uint32_t i){
+    return CAST_LIST(self)->array[i];
 }

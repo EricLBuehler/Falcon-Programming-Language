@@ -1,6 +1,4 @@
 object* code_init(object* self, object* args, object* kwargs){
-    DECREF(args);
-    DECREF(kwargs);
     return self;
 }
 
@@ -16,7 +14,6 @@ object* code_new_fromargs(object* args){
     CAST_CODE(obj)->co_file=INCREF(args->type->slot_get(args, new_int_fromint(3)));
     CAST_CODE(obj)->co_lines=INCREF(args->type->slot_get(args, new_int_fromint(4)));
     
-    DECREF(args);
     return obj;
 }
 
@@ -34,9 +31,6 @@ object* code_new(object* type, object* args, object* kwargs){
     CAST_CODE(obj)->co_code=INCREF(args->type->slot_get(args, new_int_fromint(2)));
     CAST_CODE(obj)->co_file=INCREF(args->type->slot_get(args, new_int_fromint(3)));
     CAST_CODE(obj)->co_lines=INCREF(args->type->slot_get(args, new_int_fromint(4)));
-    
-    DECREF(args);
-    DECREF(kwargs);
     return obj;
 }
 
@@ -44,6 +38,8 @@ void code_del(object* obj){
     DECREF(CAST_CODE(obj)->co_names);
     DECREF(CAST_CODE(obj)->co_consts);
     DECREF(CAST_CODE(obj)->co_code);
+    DECREF(CAST_CODE(obj)->co_lines);
+    DECREF(CAST_CODE(obj)->co_file);
 }
 
 object* code_repr(object* self){
@@ -59,7 +55,7 @@ object* code_repr(object* self){
     object* first=CAST_CODE(self)->co_lines->type->slot_get(CAST_CODE(self)->co_lines, new_int_fromint(0));
     s+=CAST_INT(first->type->slot_get(first, new_int_fromint(2)))->val->operator+(1).to_string();
     s+=">";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 
 object* code_cmp(object* self, object* other, uint8_t type){

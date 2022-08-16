@@ -3,18 +3,18 @@ object* new_builtin(builtinfunc function, object* name, object* args, object* kw
 
 void setup_builtins(){
     object* printargs=new_tuple();
-    printargs->type->slot_append(printargs, str_new_fromstr(new string("object")));
-    printargs->type->slot_append(printargs, str_new_fromstr(new string("end")));
+    printargs->type->slot_append(printargs, str_new_fromstr("object"));
+    printargs->type->slot_append(printargs, str_new_fromstr("end"));
     object* printkwargs=new_tuple();
-    printkwargs->type->slot_append(printkwargs, str_new_fromstr(new string("\n")));
-    builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr(new string("print")), printargs, printkwargs, CAST_INT(printargs->type->slot_len(printargs))->val->to_int());
+    printkwargs->type->slot_append(printkwargs, str_new_fromstr("\n"));
+    builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr("print"), printargs, printkwargs, CAST_INT(printargs->type->slot_len(printargs))->val->to_int());
 
     object* buildclassargs=new_tuple();
-    buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("bases")));
-    buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("name")));
-    buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(new string("func")));
+    buildclassargs->type->slot_append(buildclassargs, str_new_fromstr("bases"));
+    buildclassargs->type->slot_append(buildclassargs, str_new_fromstr("name"));
+    buildclassargs->type->slot_append(buildclassargs, str_new_fromstr(("func")));
     object* buildclasskwargs=new_tuple();
-    builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr(new string("__build_class__")), buildclassargs, buildclasskwargs, CAST_INT(buildclassargs->type->slot_len(buildclassargs))->val->to_int());
+    builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr("__build_class__"s), buildclassargs, buildclasskwargs, CAST_INT(buildclassargs->type->slot_len(buildclassargs))->val->to_int());
 
     builtins[2]=(object*)&TypeType;
     builtins[3]=(object*)&IntType;
@@ -32,22 +32,22 @@ void setup_builtins(){
     builtins[15]=(object*)&ExceptionType;
 
     object* idargs=new_tuple();
-    idargs->type->slot_append(idargs, str_new_fromstr(new string("object")));
+    idargs->type->slot_append(idargs, str_new_fromstr("object"));
     object* idkwargs=new_tuple();
-    builtins[16]=new_builtin((builtinfunc)builtin_id, str_new_fromstr(new string("id")), idargs, idkwargs, 1);
+    builtins[16]=new_builtin((builtinfunc)builtin_id, str_new_fromstr("id"), idargs, idkwargs, 1);
 
     object* inputargs=new_tuple();
-    inputargs->type->slot_append(inputargs, str_new_fromstr(new string("object")));
+    inputargs->type->slot_append(inputargs, str_new_fromstr("object"));
     object* inputkwargs=new_tuple();
-    builtins[17]=new_builtin((builtinfunc)builtin_input, str_new_fromstr(new string("input")), inputargs, inputkwargs, 1);
+    builtins[17]=new_builtin((builtinfunc)builtin_input, str_new_fromstr("input"), inputargs, inputkwargs, 1);
     
     builtins[18]=(object*)&StringStreamType;
 
     object* reprargs=new_tuple();
-    reprargs->type->slot_append(reprargs, str_new_fromstr(new string("object")));
+    reprargs->type->slot_append(reprargs, str_new_fromstr("object"));
     object* reprkwargs=new_tuple();
-    reprkwargs->type->slot_append(reprkwargs, str_new_fromstr(new string("")));
-    builtins[19]=new_builtin((builtinfunc)builtin_repr, str_new_fromstr(new string("repr")), reprargs, reprkwargs, CAST_INT(reprargs->type->slot_len(reprargs))->val->to_int());
+    reprkwargs->type->slot_append(reprkwargs, str_new_fromstr(""));
+    builtins[19]=new_builtin((builtinfunc)builtin_repr, str_new_fromstr("repr"), reprargs, reprkwargs, CAST_INT(reprargs->type->slot_len(reprargs))->val->to_int());
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){
@@ -80,8 +80,8 @@ object* builtin_call(object* self, object* args, object* kwargs){
     return CAST_BUILTIN(self)->function(self, setup_args(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs));
 }
 
-object* builtin_repr(object* self){
-    return str_new_fromstr(new string("<builtin function or method "+object_cstr(CAST_BUILTIN(self)->name)+">" ));
+object* builtin_repr_slot(object* self){
+    return str_new_fromstr("<builtin "+object_cstr(CAST_BUILTIN(self)->name)+">");
 }
 
 object* builtin_cmp(object* self, object* other, uint8_t type){

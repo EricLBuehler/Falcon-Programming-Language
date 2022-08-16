@@ -6,6 +6,7 @@ bool DECREF(struct object* object){
         if (object->type->slot_del!=NULL){
             object->type->slot_del(object);
         }
+        
         //GC collect it later.... or...
         if (!object->type->gc_trackable){
             if (object->ob_next!=NULL){
@@ -19,6 +20,45 @@ bool DECREF(struct object* object){
             }
             free(object);
             immutable_size--;
+        }
+
+
+
+        //Delete now
+        if (object->type->gc_trackable && no_outside_refs(object) ){ //No outside references, so we can free
+            if (((object_var*)object)->gc_ref - ((struct object*)object)->refcnt<0){
+                if (object->type->slot_del!=NULL){
+                    object->type->slot_del(object);
+                }
+            }
+            if (object->gen!=2){                
+                if (object->gen==1){
+                    if (object->ob_prev!=NULL){
+                        object->ob_prev->ob_next=object->ob_next;
+                    }
+                    else{
+                        gc.gen1=object->ob_next;
+                    }                    
+                    if (object->ob_next!=NULL){
+                        object->ob_next->ob_prev=object->ob_prev;
+                    }
+                    gc.gen1_n--;
+                }
+                else{
+                    if (object->ob_prev!=NULL){
+                        object->ob_prev->ob_next=object->ob_next;
+                    }
+                    else{
+                        gc.gen0=object->ob_next;
+                    }   
+                    if (object->ob_next!=NULL){
+                        object->ob_next->ob_prev=object->ob_prev;
+                    }
+                    gc.gen0_n--;
+                }
+
+                free(object);
+            }        
         }
         return true;
     }
@@ -45,20 +85,18 @@ object* in_immutables(object* obj){
         if ((*o->type->name)==(*obj->type->name)){
             if (o->type->name==StrType.name){
                 if ((*CAST_STRING(o)->val)==(*CAST_STRING(obj)->val)){
-                    INCREF(o);
-                    break;
+                    return INCREF(o);
                 }
             }
             if (o->type->name==IntType.name){
                 if ((*CAST_INT(o)->val)==(*CAST_INT(obj)->val)){
-                    INCREF(o);
-                    break;
+                    return INCREF(o);
                 }
             }
         }
         o=o->ob_next;
     }
-    return o;
+    return NULL;
 }
 
 object* new_object(TypeObject* type){
@@ -99,7 +137,7 @@ object* new_object(TypeObject* type){
 }
 
 object_var* new_object_var(TypeObject* type, size_t size){
-    object_var* object = (object_var*) malloc(sizeof(object_var)+size+1);
+    object_var* object = (object_var*) malloc(sizeof(struct object_var)+type->var_base_size+size);
     object->refcnt=1;
     object->gc_ref=0;
     object->type=type;
@@ -266,8 +304,9 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     key=selfkwargs->type->slot_next(selfkwargs);
     uint32_t argn_tmp=argsnum;
     while (key){
-        if (!object_find_bool(names, selfargs->type->slot_get(selfargs, new_int_fromint(argn_tmp)))){
-            dict->type->slot_set(dict, selfargs->type->slot_get(selfargs, new_int_fromint(argn_tmp)), key);
+        object* o=selfargs->type->slot_get(selfargs, new_int_fromint(argn_tmp));
+        if (!object_find_bool(names, o)){
+            dict->type->slot_set(dict, o, key);
         }
         argn_tmp++;
         key=selfkwargs->type->slot_next(selfkwargs);
@@ -277,6 +316,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){
             vm_add_err(&NameError, vm, "Got unexcpected keyword argument %s", object_cstr(k.first).c_str());
+            DECREF(names);
             return NULL;
         }
         //
@@ -284,6 +324,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         dict->type->slot_set(dict, k.first, k.second);
         argn++;
     }
+    DECREF(names);
     
     return dict;
 }

@@ -10,7 +10,7 @@ object* object_repr_(object* self){
     s+=" @ ";
     s+=buf;
     s+=">";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 object* object_init(object* self, object* args, object* kwargs){
     return self;

@@ -5,8 +5,6 @@ object* exception_new(object* type, object* args, object* kwargs){
         DECREF(tp);
         return vm_setup_err((TypeObject*)type, vm, object_cstr(args->type->slot_get(args, new_int_fromint(0)) ).c_str() );
     }
-
-    //CAST_EXCEPTION(tp)->err=new_none();
     return tp;
 }
 
@@ -19,11 +17,12 @@ object* exception_repr(object* self){
     s+=self->type->name->c_str();
     s+="(";
     s+=object_crepr(CAST_EXCEPTION(self)->err)+")";
-    return str_new_fromstr(new string(s));
+    object* o=str_new_fromstr(s);
+    return o;
 }
 
 object* exception_str(object* self){
-    return CAST_EXCEPTION(self)->err;
+    return object_repr(CAST_EXCEPTION(self)->err);
 }
 object* exception_bool(object* self){
     return new_bool_true();

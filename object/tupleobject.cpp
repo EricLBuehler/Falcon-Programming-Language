@@ -97,7 +97,7 @@ object* tuple_repr(object* self){
         }
     }
     s+=")";
-    return str_new_fromstr(new string(s));
+    return str_new_fromstr(s);
 }
 
 object* tuple_next(object* self){

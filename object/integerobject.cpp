@@ -33,6 +33,17 @@ object* new_int_frombigint(BigInt* v){
 }
 
 object* int_new(object* type, object* args, object* kwargs){
+    object* val=list_index_int(args, 0);
+    if (!object_istype(val->type, &IntType) && !object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected argument to be int or str, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        return NULL;
+    }
+    
+    if (object_istype(val->type, &IntType)){
+        return INCREF(val);
+    }
+
+
     int len=CAST_INT(args->type->slot_len(args))->val->to_int();
     object* obj=new_object(&IntType);
     if (len==0){
@@ -45,16 +56,7 @@ object* int_new(object* type, object* args, object* kwargs){
         DECREF((struct object*)obj);
         return o;
     }
-    object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
-    if (!object_istype(val->type, &IntType) && !object_istype(val->type, &StrType)){
-        DECREF(obj);
-        vm_add_err(&ValueError, vm, "Expected argument to be int or str, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
-        return NULL;
-    }
     
-    if (object_istype(val->type, &IntType)){
-        ((IntObject*)obj)->val=((IntObject*)val)->val;
-    }
     if (object_istype(val->type, &StrType)){
         ((IntObject*)obj)->val=new BigInt((*((StrObject*)val)->val));
     }
@@ -100,7 +102,7 @@ object* int_neg(object* self){
 }
 
 object* int_repr(object* self){
-    return str_new_fromstr(new string(CAST_INT(self)->val->to_string()));
+    return str_new_fromstr(CAST_INT(self)->val->to_string());
 }
 
 object* int_cmp(object* self, object* other, uint8_t type){

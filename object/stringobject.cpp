@@ -1,9 +1,7 @@
-
-object* str_new_fromstr(string* val){
-    object_var* obj=new_object_var(&StrType, val->size());
-
-    ((StrObject*)obj)->val=new string((*val));
-    ((StrObject*)obj)->var_size=val->size()+sizeof(StrObject);
+object* str_new_fromstr(string val){
+    object* obj=new_object(&StrType);
+    
+    ((StrObject*)obj)->val=new string(val);
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){
         return (object*)obj;
@@ -13,9 +11,10 @@ object* str_new_fromstr(string* val){
     return o;
 }
 
+
 object* str_new(object* type, object* args, object* kwargs){
     if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
-        object_var* obj=new_object_var(&StrType, 0);
+        object* obj=new_object(&StrType);
         ((StrObject*)obj)->val=new string("");
 
         object* o = in_immutables((struct object*)obj);
@@ -28,9 +27,8 @@ object* str_new(object* type, object* args, object* kwargs){
     object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
     string s=object_cstr(val);
 
-    object_var* obj=new_object_var(&StrType, s.size());
+    object* obj=new_object(&StrType);
     ((StrObject*)obj)->val=new string(s);
-    ((StrObject*)obj)->var_size=s.size()+sizeof(StrObject);
 
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){
@@ -45,11 +43,11 @@ object* str_len(object* self){
 }
 
 object* str_repr(object* self){
-    return str_new_fromstr(new string("'"+replace_newlines((*CAST_STRING(self)->val))+"'"));
+    return str_new_fromstr("'"+replace_newlines((*CAST_STRING(self)->val))+"'");
 }
 
 object* str_str(object* self){
-    return str_new_fromstr(CAST_STRING(self)->val);
+    return self; //str_new_fromstr(new string((*CAST_STRING(self)->val)));
 }
 
 object* str_bool(object* self){
@@ -77,7 +75,7 @@ void str_del(object* obj){
 
 object* str_wrapper_new(object* args, object* kwargs){
     if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
-        object_var* obj=new_object_var(&StrType, 0);
+        object* obj=new_object(&StrType);
         ((StrObject*)obj)->val=new string("");
 
         object* o = in_immutables((struct object*)obj);
@@ -90,9 +88,8 @@ object* str_wrapper_new(object* args, object* kwargs){
     object* val=INCREF(args->type->slot_get(args, new_int_fromint(1)));
     string s=object_cstr(val);
 
-    object_var* obj=new_object_var(&StrType, s.size());
+    object* obj=new_object(&StrType);
     ((StrObject*)obj)->val=new string(s);
-    ((StrObject*)obj)->var_size=s.size()+sizeof(StrObject);
 
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){

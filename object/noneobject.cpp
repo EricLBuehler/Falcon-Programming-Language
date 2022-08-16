@@ -13,7 +13,7 @@ object* new_none(){
 }
 
 object* none_repr(object* self){
-    return str_new_fromstr(new string("None"));
+    return str_new_fromstr("None");
 }
 
 object* none_bool(object* self){
