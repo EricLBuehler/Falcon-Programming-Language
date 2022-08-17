@@ -1,6 +1,4 @@
-
-
-bool DECREF(struct object* object){
+inline bool DECREF(struct object* object){
     object->refcnt--;
     if (object->refcnt==0){
         if (object->type->slot_del!=NULL){
@@ -67,7 +65,7 @@ bool DECREF(struct object* object){
 
 
 
-object* INCREF(struct object* object){
+inline object* INCREF(struct object* object){
     object->refcnt++;
     return object;
 }

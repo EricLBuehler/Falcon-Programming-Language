@@ -121,8 +121,8 @@ TypeObject RecursionError;
 Parser parser;
 
 
-bool DECREF(struct object* object);
-struct object* INCREF(struct object* object);
+inline bool DECREF(struct object* object);
+inline object* INCREF(struct object* object);
 object* in_immutables(object* obj);
 object* new_object(TypeObject* type);
 object_var* new_object_var(TypeObject* type, size_t size);
@@ -142,16 +142,18 @@ bool object_find_bool_dict_keys(object* dict, object* needle);
 object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
 bool object_issubclass(object* obj, TypeObject* t);
-object* list_index_int(object* self, uint32_t i);
+
+
+#define list_index_int(self, i) CAST_LIST(self)->array[i]
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
 object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
-void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
-struct object* pop_dataframe(struct datastack* stack);
-void append_to_list(struct gc* gc, struct object* object);
-void add_callframe(struct callstack* stack, object* line, string* name, object* code);
-void pop_callframe(struct callstack* stack);
+
+inline void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
+inline object* pop_dataframe(struct datastack* stack);
+inline void add_callframe(struct callstack* stack, object* line, string* name, object* code);
+inline void pop_callframe(struct callstack* stack);
 
 object* new_list();
 object* new_none();

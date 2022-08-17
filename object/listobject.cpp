@@ -163,7 +163,3 @@ object* list_append_meth(object* args, object* kwargs){
     list_append(self, args->type->slot_get(args, new_int_fromint(1)));
     return new_none();
 }
-
-object* list_index_int(object* self, uint32_t i){
-    return CAST_LIST(self)->array[i];
-}
