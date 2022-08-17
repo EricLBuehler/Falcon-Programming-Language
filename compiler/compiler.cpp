@@ -533,7 +533,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             break;
                     }
                     continue;
-                }                
+                }      
                 add_instruction(compiler->instructions,LOAD_ATTR, idx, expr->start, expr->end);
             }
             break;
