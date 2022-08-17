@@ -535,7 +535,7 @@ class Parser{
             args->clear();
             vector<Node*>* kwargs=new vector<Node*>;
             kwargs->clear();
-
+            
             if (this->current_tok_is(T_RPAREN)){
                 Node* node;
                 if (left->type==N_DOT){
@@ -549,6 +549,7 @@ class Parser{
                     c->dot=left;
                     
                     node->node=c;
+                    cout<<"AAA";
                 }
                 else{
                     node=make_node(N_CALL);
@@ -811,7 +812,6 @@ class Parser{
                         
                         newnode->node=d;
                         left=newnode;
-                        this->advance();
                         break;
                     }
 
