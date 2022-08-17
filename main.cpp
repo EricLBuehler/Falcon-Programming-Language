@@ -130,7 +130,7 @@ int execute(string data, bool objdump, bool verbose){
         cout<<"--------";
     }
     
-    cout<<"\n"<<b-a<<" ns";
+    //cout<<"\n"<<b-a<<" ns";
     if (returned==CALL_ERR || returned==NULL){
         return -1;
     }
