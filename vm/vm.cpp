@@ -388,10 +388,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case CALL_METHOD: {
             object* function=pop_dataframe(vm->objstack);
             object* head=pop_dataframe(vm->objstack);
-            if (object_istype(head->type, &TypeType)){
-                vm_add_err(&TypeError, vm, "Cannot call method on type object");
-                return NULL; 
-            }
             
             uint32_t argc=CAST_INT(arg)->val->to_int()+1;
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int()+1;
