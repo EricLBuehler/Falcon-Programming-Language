@@ -166,10 +166,6 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->filedata=filedata;
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code);
-
-    idx0=new_int_fromint(0);
-    idx1=new_int_fromint(1);
-    idx2=new_int_fromint(2);
     
     return vm;
 }
@@ -325,48 +321,87 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case BINOP_ADD:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            binop_add(vm, left, right);
+            
+            object* ret=object_add(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand type for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
         case BINOP_SUB:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            binop_sub(vm, left, right);
+            
+            object* ret=object_sub(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand type for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
         case BINOP_MUL:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            binop_mul(vm, left, right);
+            
+            object* ret=object_mul(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand type for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;  
         }
 
         case BINOP_DIV:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            binop_div(vm, left, right);
+            
+            object* ret=object_div(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand type for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
         case BINOP_IS:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            binop_is(vm, left, right);
+            
+            object* ret=left==right ? new_bool_true() : new_bool_false();
+            add_dataframe(vm, vm->objstack, ret);
             break;
         }
 
         case BINOP_EE:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            binop_ee(vm, left, right);
+            
+            object* ret=object_cmp(left, right, CMP_EQ);
+            add_dataframe(vm, vm->objstack, ret);
             break;
         }
 
         case UNARY_NEG:{
             struct object* right=pop_dataframe(vm->objstack);
-            unary_neg(vm, right);
+            
+            object* ret=object_neg(right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid unary operand -: '%s'.", right->type->name->c_str());
+            }
             break;
         }
 
@@ -604,28 +639,56 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case BINOP_GT: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
-            binop_gt(vm, left, right);
+            
+            object* ret=object_gt(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand type for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
         case BINOP_GTE: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
-            binop_gte(vm, left, right);
+            
+            object* ret=object_gte(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand type for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
         case BINOP_LT: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
-            binop_lt(vm, left, right);
+            
+            object* ret=object_lt(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand type for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
         case BINOP_LTE: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
-            binop_lte(vm, left, right);
+            
+            object* ret=object_lte(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand type for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
@@ -754,7 +817,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     
                     int line=0;
                     object* line_=lines->type->slot_get(lines, new_int_fromint(frame->other));
-                    int target=CAST_INT(line_->type->slot_get(line_, idx2))->val->to_int();
+                    int target=CAST_INT(list_index_int(line_,2))->val->to_int();
                     int startidx=0;
                     int endidx=0;
                     int idx=0;
