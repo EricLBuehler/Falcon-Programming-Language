@@ -101,6 +101,13 @@ object* str_wrapper_new(object* args, object* kwargs){
 
 object* str_wrapper_len(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        if (*CAST_INT(args->type->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+            if (!object_istype(tp, &StrType)){
+                vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
+                return NULL;
+            }
+        }
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
         return NULL;
     }
@@ -110,6 +117,13 @@ object* str_wrapper_len(object* args, object* kwargs){
 
 object* str_wrapper_repr(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        if (*CAST_INT(args->type->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+            if (!object_istype(tp, &StrType)){
+                vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
+                return NULL;
+            }
+        }
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
         return NULL;
     }
@@ -119,6 +133,13 @@ object* str_wrapper_repr(object* args, object* kwargs){
 
 object* str_wrapper_str(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        if (*CAST_INT(args->type->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+            if (!object_istype(tp, &StrType)){
+                vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
+                return NULL;
+            }
+        }
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
         return NULL;
     }
@@ -128,6 +149,13 @@ object* str_wrapper_str(object* args, object* kwargs){
 
 object* str_wrapper_bool(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_len(args))->val!=1){
+        if (*CAST_INT(args->type->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+            if (!object_istype(tp, &StrType)){
+                vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
+                return NULL;
+            }
+        }
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
         return NULL;
     }
@@ -137,6 +165,13 @@ object* str_wrapper_bool(object* args, object* kwargs){
 
 object* str_wrapper_ne(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_len(args))->val!=2){
+        if (*CAST_INT(args->type->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+            if (!object_istype(tp, &StrType)){
+                vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
+                return NULL;
+            }
+        }
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
     }
     object* self=args->type->slot_get(args, new_int_fromint(0));
@@ -156,6 +191,13 @@ object* str_wrapper_ne(object* args, object* kwargs){
 
 object* str_wrapper_eq(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_len(args))->val!=2){
+        if (*CAST_INT(args->type->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+            if (!object_istype(tp, &StrType)){
+                vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
+                return NULL;
+            }
+        }
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
     }
     object* self=args->type->slot_get(args, new_int_fromint(0));
