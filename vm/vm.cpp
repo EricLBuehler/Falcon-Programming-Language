@@ -32,7 +32,7 @@ void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint3
     stack->head=frame;
 }
 
-void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
+inline void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
     struct dataframe* frame=(struct dataframe*)malloc(sizeof(struct dataframe));
     frame->next=stack->head;
     frame->obj=obj;
@@ -41,7 +41,7 @@ void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
     stack->head=frame;
 }
 
-struct object* pop_dataframe(struct datastack* stack){
+inline struct object* pop_dataframe(struct datastack* stack){
     struct dataframe* frame=stack->head;
 
     stack->head=frame->next;
@@ -77,7 +77,7 @@ struct object* peek_dataframe(struct datastack* stack){
     return stack->head->obj;
 }
 
-void add_callframe(struct callstack* stack, object* line, string* name, object* code){
+inline void add_callframe(struct callstack* stack, object* line, string* name, object* code){
     struct callframe* frame=(struct callframe*)malloc(sizeof(struct callframe));
     frame->name=name;
     frame->next=stack->head;
@@ -93,7 +93,7 @@ void add_callframe(struct callstack* stack, object* line, string* name, object* 
     }
 }
 
-void pop_callframe(struct callstack* stack){
+inline void pop_callframe(struct callstack* stack){
     struct callframe* frame=stack->head;
 
     stack->head=frame->next;
@@ -650,9 +650,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
         }
-        object* arg=list_index_int(code, (*ip)++);
         //cout<<instruction<<","<<arg<<"  ";
-        object* obj=_vm_step(instruction, arg, vm, ip);
+        object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip);
 
         if (obj==CALL_ERR){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
