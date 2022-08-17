@@ -1264,5 +1264,6 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
 
     object* code=code_new_fromargs(list);
     CAST_CODE(code)->co_instructions=CAST_INT(instructions->type->slot_len(instructions))->val->to_int();
+    
     return code;
 }
