@@ -171,27 +171,27 @@ object* int_cmp(object* self, object* other, uint8_t type){
     else{
         //Other type is int
         if (type==CMP_EQ){
-            if (*CAST_FLOAT(self)->val==BigFloat(CAST_INT(other)->val->to_string())){
+            if (*CAST_INT(self)->val==*CAST_INT(other)->val){
                 return new_bool_true();
             }
         }
         else if (type==CMP_GT){
-            if (*CAST_FLOAT(self)->val>BigFloat(CAST_INT(other)->val->to_string())){
+            if (*CAST_INT(self)->val>*CAST_INT(other)->val){
                 return new_bool_true();
             }
         }
         else if (type==CMP_GTE){
-            if (*CAST_FLOAT(self)->val>=BigFloat(CAST_INT(other)->val->to_string())){
+            if (*CAST_INT(self)->val>=*CAST_INT(other)->val){
                 return new_bool_true();
             }
         }
         else if (type==CMP_LT){
-            if (*CAST_FLOAT(self)->val<BigFloat(CAST_INT(other)->val->to_string())){
+            if (*CAST_INT(self)->val<*CAST_INT(other)->val){
                 return new_bool_true();
             }
         }
         else if (type==CMP_LTE){
-            if (*CAST_FLOAT(self)->val<=BigFloat(CAST_INT(other)->val->to_string())){
+            if (*CAST_INT(self)->val<=*CAST_INT(other)->val){
                 return new_bool_true();
             }
         }
