@@ -190,15 +190,10 @@ void vm_del(struct vm* vm){
 }
 
 void vm_add_var_locals(struct vm* vm, object* name, object* value){
-    object* exc=vm->exception;
-    object* o=vm->callstack->head->locals->type->slot_get(vm->callstack->head->locals, name);
-    if (o!=NULL && o!=(object*)0x1){
-        ((object_var*)o)->gc_ref--;
-    }
-    
-    if (vm->exception!=NULL && exc==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
+    for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
+        if (istrue(object_cmp(name, k.first, CMP_EQ))){
+            ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
+        }
     }
     
     if (value->type->size==0){
@@ -243,14 +238,10 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
 }
 
 void vm_add_var_globals(struct vm* vm, object* name, object* value){
-    object* exc=vm->exception;
-    object* o=vm->globals->type->slot_get(vm->globals, name);
-    if (o!=NULL && o!=(object*)0x1){
-        ((object_var*)o)->gc_ref--;
-    }
-    if (vm->exception!=NULL && exc==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
+    for (auto k: (*CAST_DICT(vm->globals)->val)){
+        if (istrue(object_cmp(name, k.first, CMP_EQ))){
+            ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
+        }
     }
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
@@ -259,14 +250,10 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
 }
 
 struct object* vm_get_var_globals(struct vm* vm, object* name){
-    object* exc=vm->exception;
-    object* o=vm->globals->type->slot_get(vm->globals, name);
-    if (o!=NULL && o!=(object*)0x1 && vm->exception==NULL){
-        return o;
-    }
-    if (vm->exception!=NULL && exc==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
+    for (auto k: (*CAST_DICT(vm->globals)->val)){
+        if (istrue(object_cmp(name, k.first, CMP_EQ))){
+            return  CAST_DICT(vm->globals)->val->at(k.first);
+        }
     }
     for (size_t i=0; i<nbuiltins; i++){
         if (object_istype(builtins[i]->type, &BuiltinType)){
@@ -453,7 +440,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             //
 
             //Call
-            object* ret=object_call(function, args, kwargs);
+            object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL){
                 return CALL_ERR;
             }
@@ -490,9 +477,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             }
             
             //
-
+            
             //Call
-            object* ret=object_call(function, args, kwargs);
+            object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL){ 
                 return CALL_ERR;
             }
@@ -713,7 +700,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
         }
-        //cout<<instruction<<","<<arg<<"  ";
+        //cout<<instruction<<","<<list_index_int(code, *ip)<<"  ";
         object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip);
 
         if (obj==CALL_ERR){
