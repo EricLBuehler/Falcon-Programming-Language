@@ -249,7 +249,7 @@ struct vm{
 
 #define object_istype(this, other) (this==other)
 
-#define OP_FALLBACK_PREC 128
+#define OP_FALLBACK_PREC 24
 
 #define CMP_EQ 0
 #define CMP_GT 1

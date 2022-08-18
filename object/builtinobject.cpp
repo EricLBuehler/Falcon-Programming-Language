@@ -6,6 +6,7 @@ void setup_builtins(){
     printargs->type->slot_append(printargs, str_new_fromstr("object"));
     printargs->type->slot_append(printargs, str_new_fromstr("end"));
     object* printkwargs=new_tuple();
+    printkwargs->type->slot_append(printkwargs, str_new_fromstr(""));
     printkwargs->type->slot_append(printkwargs, str_new_fromstr("\n"));
     builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr("print"), printargs, printkwargs, CAST_INT(printargs->type->slot_len(printargs))->val->to_int());
 
