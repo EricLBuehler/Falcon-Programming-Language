@@ -204,7 +204,8 @@ Help
 Below are useful references.
 - <a href='https://github.com/dannyvankooten/pepper-lang'>Pepper Lang</a>
 - <a href='https://github.com/davidcallanan/py-myopl-code'>py-myopl-code</a>
-- <a href='https://github.com/faheel/BigInt'>BigInt</a> (I used this library)
+- <a href='https://github.com/faheel/BigInt'>BigInt</a> (Used this library)
+- <a href='https://github.com/Mariotti94/BigFloat/'>BigFloat</a> (Used this library)
 - <a href='https://github.com/python/cpython'>CPython</a>
 
 ### Licenses ###
