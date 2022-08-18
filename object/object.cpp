@@ -294,9 +294,10 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     object* names=new_list();
     
     while (key){
-        dict->type->slot_set(dict, selfargs->type->slot_get(selfargs, new_int_fromint(argn)), key);
+        object* o=selfargs->type->slot_get(selfargs, new_int_fromint(argn));
+        dict->type->slot_set(dict, o, key);
+        names->type->slot_append(names, o);
         argn++;
-        names->type->slot_append(names, selfargs->type->slot_get(selfargs, new_int_fromint(argn-1)));
         key=args->type->slot_next(args);
     }
     //
@@ -314,11 +315,11 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         argn_tmp++;
         key=selfkwargs->type->slot_next(selfkwargs);
     }
-    
+    //Setup user kwargs
     for (auto k: (*CAST_DICT(kwargs)->val)){
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){
-            vm_add_err(&NameError, vm, "Got unexcpected keyword argument %s", object_cstr(k.first).c_str());
+            vm_add_err(&NameError, vm, "Got unexpected keyword argument %s", object_cstr(k.first).c_str());
             DECREF(names);
             return NULL;
         }
