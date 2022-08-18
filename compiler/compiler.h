@@ -67,6 +67,7 @@ struct compiler{
 };
 
 #define INTLIT(node) ((IntLiteral*)(node))
+#define FLOATLIT(node) ((IntLiteral*)(node))
 #define STRLIT(node) ((StringLiteral*)(node))
 #define IDENTI(node) ((Identifier*)(node))
 #define ASSIGN(node) ((Assign*)(node))

@@ -166,6 +166,21 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_FLOAT: {
+            uint32_t idx;
+            if (!_list_contains(compiler->consts, FLOATLIT(expr->node)->literal)){
+                //Create object
+                compiler->consts->type->slot_append(compiler->consts, new_float_fromstr(FLOATLIT(expr->node)->literal));
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, new_float_fromstr(FLOATLIT(expr->node)->literal));
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+            break;
+        }
+
         case N_STR: {
             uint32_t idx;
             if (!_list_contains(compiler->consts, STRLIT(expr->node)->literal)){
