@@ -199,11 +199,12 @@ class Parser{
             Node* node=make_node(N_FLOAT);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
-            FloatLiteral* i=(FloatLiteral*)malloc(sizeof(FloatLiteral));
-            i->literal=new string(this->current_tok.data);
-            node->node=i;
+            FloatLiteral* f=(FloatLiteral*)malloc(sizeof(FloatLiteral));
+            f->literal=new string(this->current_tok.data);
+            node->node=f;
             return node;
         }
+        
 
         Node* make_string_literal(){
             Node* node=make_node(N_STR);
@@ -549,7 +550,6 @@ class Parser{
                     c->dot=left;
                     
                     node->node=c;
-                    cout<<"AAA";
                 }
                 else{
                     node=make_node(N_CALL);
