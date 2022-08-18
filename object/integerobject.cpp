@@ -76,28 +76,48 @@ object* int_new(object* type, object* args, object* kwargs){
 }
 
 object* int_add(object* self, object* other){
-    if (other->type==&IntType){
+    if (other->type==&FloatType){
+        BigFloat f(CAST_INT(self)->val->to_string());
+        f.SetPrecision(OP_FALLBACK_PREC);
+        return new_float_frombigfloat(f+*CAST_FLOAT(other)->val);
+    }
+    else if (other->type==&IntType){
         return new_int_frombigint(new BigInt((*CAST_INT(self)->val)+(*CAST_INT(other)->val)));
     }
     return NULL;
 }
 
 object* int_sub(object* self, object* other){
-    if (other->type==&IntType){
+    if (other->type==&FloatType){
+        BigFloat f(CAST_INT(self)->val->to_string());
+        f.SetPrecision(OP_FALLBACK_PREC);
+        return new_float_frombigfloat(f-*CAST_FLOAT(other)->val);
+    }
+    else if (other->type==&IntType){
         return new_int_frombigint(new BigInt((*CAST_INT(self)->val)-(*CAST_INT(other)->val)));
     }
     return NULL;
 }
 
 object* int_mul(object* self, object* other){
-    if (other->type==&IntType){
+    if (other->type==&FloatType){
+        BigFloat f(CAST_INT(self)->val->to_string());
+        f.SetPrecision(OP_FALLBACK_PREC);
+        return new_float_frombigfloat(f* (*CAST_FLOAT(other)->val));
+    }
+    else if (other->type==&IntType){
         return new_int_frombigint(new BigInt((*CAST_INT(self)->val)*(*CAST_INT(other)->val)));
     }
     return NULL;
 }
 
 object* int_div(object* self, object* other){
-    if (other->type==&IntType){
+    if (other->type==&FloatType){
+        BigFloat f(CAST_INT(self)->val->to_string());
+        f.SetPrecision(OP_FALLBACK_PREC);
+        return new_float_frombigfloat(f/ (*CAST_FLOAT(other)->val));
+    }
+    else if (other->type==&IntType){
         return new_int_frombigint(new BigInt((*CAST_INT(self)->val)/(*CAST_INT(other)->val)));
     }
     return NULL;
@@ -112,34 +132,65 @@ object* int_repr(object* self){
 }
 
 object* int_cmp(object* self, object* other, uint8_t type){
-    if (self->type!=other->type){
+    if (!(object_istype(other->type, &IntType) || object_istype(other->type, &FloatType)) ){
         return new_bool_false();
     }
-    if (type==CMP_EQ){
-        if ((*CAST_INT(self)->val)==(*CAST_INT(other)->val)){
-            return new_bool_true();
+    if (object_istype(other->type, &FloatType)){
+        if (type==CMP_EQ){
+            if (BigFloat(CAST_INT(self)->val->to_string())==*CAST_FLOAT(other)->val){
+                return new_bool_true();
+            }
+        }
+        else if (type==CMP_GT){
+            if (BigFloat(CAST_INT(self)->val->to_string())>*CAST_FLOAT(other)->val){
+                return new_bool_true();
+            }
+        }
+        else if (type==CMP_GTE){
+            if (BigFloat(CAST_INT(self)->val->to_string())>=*CAST_FLOAT(other)->val){
+                return new_bool_true();
+            }
+        }
+        else if (type==CMP_LT){
+            if (BigFloat(CAST_INT(self)->val->to_string())<*CAST_FLOAT(other)->val){
+                return new_bool_true();
+            }
+        }
+        else if (type==CMP_LTE){
+            if (BigFloat(CAST_INT(self)->val->to_string())<=*CAST_FLOAT(other)->val){
+                return new_bool_true();
+            }
         }
     }
-    else if (type==CMP_GT){
-        if ((*CAST_INT(self)->val)>(*CAST_INT(other)->val)){
-            return new_bool_true();
+    else{
+        //Other type is int
+        if (type==CMP_EQ){
+            if (*CAST_FLOAT(self)->val==BigFloat(CAST_INT(other)->val->to_string())){
+                return new_bool_true();
+            }
+        }
+        else if (type==CMP_GT){
+            if (*CAST_FLOAT(self)->val>BigFloat(CAST_INT(other)->val->to_string())){
+                return new_bool_true();
+            }
+        }
+        else if (type==CMP_GTE){
+            if (*CAST_FLOAT(self)->val>=BigFloat(CAST_INT(other)->val->to_string())){
+                return new_bool_true();
+            }
+        }
+        else if (type==CMP_LT){
+            if (*CAST_FLOAT(self)->val<BigFloat(CAST_INT(other)->val->to_string())){
+                return new_bool_true();
+            }
+        }
+        else if (type==CMP_LTE){
+            if (*CAST_FLOAT(self)->val<=BigFloat(CAST_INT(other)->val->to_string())){
+                return new_bool_true();
+            }
         }
     }
-    else if (type==CMP_GTE){
-        if ((*CAST_INT(self)->val)>=(*CAST_INT(other)->val)){
-            return new_bool_true();
-        }
-    }
-    else if (type==CMP_LT){
-        if ((*CAST_INT(self)->val)<(*CAST_INT(other)->val)){
-            return new_bool_true();
-        }
-    }
-    else if (type==CMP_LTE){
-        if ((*CAST_INT(self)->val)<=(*CAST_INT(other)->val)){
-            return new_bool_true();
-        }
-    }
+
     return new_bool_false();
 }
 
