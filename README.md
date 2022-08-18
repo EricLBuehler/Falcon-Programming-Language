@@ -152,6 +152,12 @@ func fib(n){
 }
 
 print(fib(10))
+
+pi=238649.2131693410000000
+x=pi*100
+print(str(pi))
+print(int("1234"))
+print(float("10.222"))
 ```
 
 #### Output ####
@@ -159,9 +165,9 @@ When run with ```./fpl.exe program.fpl```
 
 ```
 __new__ called
-<Peregrine object @ 0x269c040>
+<Peregrine object @ 0x274e7a8>
 __new__ called
-<Peregrine object @ 0x269c0a0>
+<Peregrine object @ 0x274ef48>
 5
 Value
 Function f says: A
@@ -176,6 +182,9 @@ Done
 I is 50!
 10
 55
+238649.213169341
+1234
+10.222
 ```
 
 ### Usage ###
