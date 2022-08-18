@@ -12,20 +12,10 @@
 #include <sstream>
 #include <float.h>
 #include <stdlib.h>
+#include <chrono>
 
-#define _POSIX_C_SOURCE 199309L
-#define SEC_TO_NS(sec) ((sec)*1000000000)
-#include <time.h>
-
-uint64_t  time_nanoseconds() {
-    /// Convert seconds to nanoseconds
-
-    struct timespec ts;
-    int return_code = clock_gettime(CLOCK_REALTIME, &ts);
-    // `ts` now contains your timestamp in seconds and nanoseconds! To 
-    // convert the whole struct to nanoseconds, do this:
-    uint64_t nanoseconds = SEC_TO_NS((uint64_t)ts.tv_sec) + (uint64_t)ts.tv_nsec;
-    return nanoseconds;
+auto time_nanoseconds() {
+    return std::chrono::steady_clock::now();//std::chrono::high_resolution_clock::now();
 }
 
 
@@ -147,14 +137,13 @@ int execute(string data, bool objdump, bool verbose){
         cout<<"Code: "<<object_cstr(CAST_CODE(code)->co_code)<<"\n";
         cout<<"--------\n";
     }
-    uint64_t a=time_nanoseconds();
+    auto a=time_nanoseconds();
     object* returned=run_vm(code, &vm->ip);
-    uint64_t b=time_nanoseconds();
+    auto b=time_nanoseconds();
+
     if (verbose){
         cout<<"--------";
     }
-    
-    //cout<<"\n"<<b-a<<" ns";
     if (returned==CALL_ERR || returned==NULL){
         return -1;
     }
@@ -247,7 +236,7 @@ int execute(string data, bool objdump, bool verbose){
             cout<<"\nTotal "<<total;
         }
     }
-    return 0;
+    return (uint64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(b-a).count();
 }
 
 int main(int argc, char** argv) {
@@ -294,7 +283,7 @@ int main(int argc, char** argv) {
         if ((string)argv[2]==(string)"-o" || (string)argv[3]==(string)"-o"){
             objdump=true;
         }
-    }    
+    } 
     
     execute(loadFile(program), objdump, verbose);
     return 0;
