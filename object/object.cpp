@@ -91,6 +91,11 @@ object* in_immutables(object* obj){
                     return INCREF(o);
                 }
             }
+            if (o->type->name==FloatType.name){
+                if (CAST_FLOAT(o)->val==CAST_FLOAT(obj)->val){
+                    return INCREF(o);
+                }
+            }
         }
         o=o->ob_next;
     }
@@ -480,4 +485,18 @@ object* object_lte(object* left, object* right){
         return NULL;
     }
     return object_cmp(left, right, CMP_LTE);
+}
+
+object* object_int(object* left){
+    if (left->type->slot_number==NULL || left->type->slot_number->slot_int==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_int(left);
+}
+
+object* object_float(object* left){
+    if (left->type->slot_number==NULL || left->type->slot_number->slot_float==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_float(left);
 }

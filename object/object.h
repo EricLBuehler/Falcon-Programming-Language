@@ -1,4 +1,5 @@
 #include "BigInt.hpp"
+#include "BigFloat.cpp"
 
 typedef struct object*(*initfunc)(struct object*, struct object*, struct object* );
 typedef struct object*(*iternextfunc)(struct object*);
@@ -33,6 +34,8 @@ typedef struct{
 
     //other
     unaryfunc slot_bool;
+    unaryfunc slot_int;
+    unaryfunc slot_float;
 }NumberMethods;
 
 typedef struct{
@@ -106,7 +109,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=20;
+const size_t nbuiltins=21;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -242,6 +245,7 @@ struct vm{
 #define CAST_FILE(obj) ((FileObject*)obj)
 #define CAST_CWRAPPER(obj) ((CWrapperObject*)obj)
 #define CAST_SLOTWRAPPER(obj) ((SlotWrapperObject*)obj)
+#define CAST_FLOAT(obj) ((FloatObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
@@ -287,6 +291,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "stringstreamobject.cpp"
 #include "cwrapperobject.cpp"
 #include "slotwrapperobject.cpp"
+#include "floatobject.cpp"
 
 void setup_types_consts(){
     setup_object_type(); 
@@ -310,6 +315,7 @@ void setup_types_consts(){
     setup_stringstream_type();  
     setup_cwrapper_type();  
     setup_slotwrapper_type();
+    setup_float_type();
 
     setup_builtins();
     
@@ -338,4 +344,5 @@ void setup_types_consts(){
     inherit_type_dict(&StringStreamType);
     inherit_type_dict(&CWrapperType);
     
+    inherit_type_dict(&FloatType);    
 }

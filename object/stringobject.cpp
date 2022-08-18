@@ -12,6 +12,31 @@ object* str_new_fromstr(string val){
 }
 
 
+object* str_int(object* self){
+    BigInt* b;
+    try{
+        b=new BigInt(CAST_STRING(self)->val->c_str());
+    }
+    catch (std::invalid_argument){
+        vm_add_err(&ValueError, vm, "Invalid literal %s", CAST_STRING(self)->val->c_str());
+        return NULL;
+    }
+    return new_int_frombigint(b);
+}
+
+object* str_float(object* self){
+    double d;
+    try{
+        d=stod(CAST_STRING(self)->val->c_str());
+    }
+    catch (std::invalid_argument){
+        vm_add_err(&ValueError, vm, "Invalid literal %s", CAST_STRING(self)->val->c_str());
+        return NULL;
+    }
+    return new_float_fromdouble(d);
+}
+
+
 object* str_new(object* type, object* args, object* kwargs){
     if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
         object* obj=new_object(&StrType);

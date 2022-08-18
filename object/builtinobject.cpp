@@ -48,6 +48,8 @@ void setup_builtins(){
     object* reprkwargs=new_tuple();
     reprkwargs->type->slot_append(reprkwargs, str_new_fromstr(""));
     builtins[19]=new_builtin((builtinfunc)builtin_repr, str_new_fromstr("repr"), reprargs, reprkwargs, CAST_INT(reprargs->type->slot_len(reprargs))->val->to_int());
+
+    builtins[20]=(object*)&FloatType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

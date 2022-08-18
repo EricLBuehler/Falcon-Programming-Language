@@ -8,6 +8,8 @@ object* int_neg(object* self);
 object* int_repr(object* self);
 object* int_cmp(object* self, object* other, uint8_t type);
 object* int_bool(object* self);
+object* int_int(object* self);
+object* int_float(object* self);
 
 object* int_wrapper_add(object* args, object* kwargs);
 object* int_wrapper_sub(object* args, object* kwargs);
@@ -42,6 +44,8 @@ static NumberMethods int_num_methods{
     (unaryfunc)int_neg, //slot_neg
 
     (unaryfunc)int_bool, //slot_bool
+    (unaryfunc)int_int, //slot_int
+    (unaryfunc)int_float, //slot_float
 };
 
 Method int_methods[]={{NULL,NULL}};
@@ -98,6 +102,8 @@ object* str_repr(object* self);
 object* str_str(object* self);
 object* str_cmp(object* self, object* other, uint8_t type);
 object* str_bool(object* self);
+object* str_int(object* self);
+object* str_float(object* self);
 
 object* str_wrapper_new(object* args, object* kwargs);
 object* str_wrapper_len(object* args, object* kwargs);
@@ -123,6 +129,8 @@ static NumberMethods str_num_methods{
     0, //slot_neg
 
     (unaryfunc)str_bool, //slot_bool
+    (unaryfunc)str_int, //slot_int
+    (unaryfunc)str_float, //slot_float
 };
 
 Method str_methods[]={{NULL,NULL}};
@@ -408,6 +416,8 @@ object* bool_neg(object* self);
 object* bool_repr(object* self);
 object* bool_cmp(object* self, object* other, uint8_t type);
 object* bool_bool(object* self);
+object* bool_int(object* self);
+object* bool_float(object* self);
 
 object* new_bool_true();
 object* new_bool_false();
@@ -434,6 +444,8 @@ static NumberMethods bool_num_methods{
     (unaryfunc)bool_neg, //slot_neg
 
     (unaryfunc)bool_bool, //slot_bool
+    (unaryfunc)bool_int, //slot_int
+    (unaryfunc)bool_float, //slot_float
 };
 
 Method bool_methods[]={{NULL,NULL}};
@@ -1135,6 +1147,104 @@ void setup_slotwrapper_type(){
 }
 
 
+object* float_new(object* type, object* args, object* kwargs);
+void float_del(object* self);
+object* float_add(object* self, object* other);
+object* float_sub(object* self, object* other);
+object* float_mul(object* self, object* other);
+object* float_div(object* self, object* other);
+object* float_neg(object* self);
+object* float_repr(object* self);
+object* float_cmp(object* self, object* other, uint8_t type);
+object* float_bool(object* self);
+object* float_int(object* self);
+object* float_float(object* self);
+
+object* float_wrapper_add(object* args, object* kwargs);
+object* float_wrapper_sub(object* args, object* kwargs);
+object* float_wrapper_mul(object* args, object* kwargs);
+object* float_wrapper_div(object* args, object* kwargs);
+object* float_wrapper_neg(object* args, object* kwargs);
+object* float_wrapper_repr(object* args, object* kwargs);
+object* float_wrapper_bool(object* args, object* kwargs);
+object* float_wrapper_new(object* args, object* kwargs);
+object* float_wrapper_eq(object* args, object* kwargs);
+object* float_wrapper_ne(object* args, object* kwargs);
+object* float_wrapper_gt(object* args, object* kwargs);
+object* float_wrapper_gte(object* args, object* kwargs);
+object* float_wrapper_lt(object* args, object* kwargs);
+object* float_wrapper_lte(object* args, object* kwargs);
+
+object* new_float_fromdouble(double v);
+object* new_float_fromstr(string* v);
+
+typedef struct FloatObject{
+    OBJHEAD_EXTRA
+    BigFloat* val;
+}FloatObject;
+
+static NumberMethods float_num_methods{
+    (binopfunc)float_add, //slot_add
+    (binopfunc)float_sub, //slot_sub
+    (binopfunc)float_mul, //slot_mul
+    (binopfunc)float_div, //slot_div
+
+    (unaryfunc)float_neg, //slot_neg
+
+    (unaryfunc)float_bool, //slot_bool
+    (unaryfunc)float_int, //slot_int
+    (unaryfunc)float_float, //slot_float
+};
+
+Method float_methods[]={{NULL,NULL}};
+GetSets float_getsets[]={{NULL,NULL}};
+
+TypeObject FloatType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("float"), //name
+    sizeof(FloatObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    (newfunc)float_new, //slot_new
+    (delfunc)float_del, //slot_del
+
+    0, //slot_next
+    0, //slot_get
+    0, //slot_len
+    0, //slot_set
+    0, //slot_append
+
+    (reprfunc)float_repr, //slot_repr
+    (reprfunc)float_repr, //slot_str
+    0, //slot_call
+
+    &float_num_methods, //slot_number
+    float_methods, //slot_methods
+    float_getsets, //slot_getsets
+
+    (compfunc)float_cmp, //slot_cmp
+};
+
+void setup_float_type(){
+    FloatType=(*(TypeObject*)finalize_type(&FloatType));
+}
+
+
+
+
+
+
 object* new_type(string* name, object* bases, object* dict);
 
 object* type_new(object* type, object* args, object* kwargs){
@@ -1248,6 +1358,8 @@ void _inherit_number_slots(NumberMethods* m, TypeObject* base_tp){
     m->slot_neg=base_tp->slot_number->slot_neg;
 
     m->slot_bool=base_tp->slot_number->slot_bool;
+    m->slot_int=base_tp->slot_number->slot_int;
+    m->slot_float=base_tp->slot_number->slot_float;
 }
 
 void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp, NumberMethods* m){

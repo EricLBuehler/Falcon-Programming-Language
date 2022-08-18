@@ -63,6 +63,20 @@ object* bool_repr(object* self){
     return str_new_fromstr("False");
 }
 
+object* bool_int(object* self){
+    if (CAST_BOOL(self)->val==1){
+        return new_float_fromdouble(1);
+    }
+    return new_float_fromdouble(0);
+}
+
+object* bool_float(object* self){
+    if (CAST_BOOL(self)->val==1){
+        return new_float_fromdouble(1);
+    }
+    return new_float_fromdouble(0);    
+}
+
 object* bool_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
         return new_bool_false();
