@@ -287,19 +287,20 @@ object* object_find_dict_keys(object* dict, object* needle){
 
 object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
     uint32_t argn=0;
-    uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_len(selfkwargs))->val->to_int();
+    uint32_t argsnum=argc-CAST_INT(selfargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
 
     //Positional
     object* key=args->type->slot_next(args);
     object* names=new_list();
     
     while (key){
-        object* o=selfargs->type->slot_get(selfargs, new_int_fromint(argn));
-        dict->type->slot_set(dict, o, key);
-        names->type->slot_append(names, o);
+        object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn));
+        dict->type->slot_mappings->slot_set(dict, o, key);
+        names->type->slot_mappings->slot_append(names, o);
         argn++;
         key=args->type->slot_next(args);
     }
+    
     //
 
     
@@ -308,9 +309,10 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     key=selfkwargs->type->slot_next(selfkwargs);
     uint32_t argn_tmp=argsnum;
     while (key){
-        object* o=selfargs->type->slot_get(selfargs, new_int_fromint(argn_tmp));
+        object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn_tmp));
+        
         if (!object_find_bool(names, o)){
-            dict->type->slot_set(dict, o, key);
+            dict->type->slot_mappings->slot_set(dict, o, key);
         }
         argn_tmp++;
         key=selfkwargs->type->slot_next(selfkwargs);
@@ -325,7 +327,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         }
         //
 
-        dict->type->slot_set(dict, k.first, k.second);
+        dict->type->slot_mappings->slot_set(dict, k.first, k.second);
         argn++;
     }
     DECREF(names);
@@ -338,25 +340,25 @@ object* object_genericgetattr(object* obj, object* attr){
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
         if (object_find_bool_dict_keys(dict, attr)){
-            return dict->type->slot_get(dict, attr);
+            return dict_get(dict, attr);
         }
     }
     //Check type dict
     if (obj->type->dict!=0){
         object* dict = obj->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
-            return dict->type->slot_get(dict, attr);
+            return dict_get(dict, attr);
         }
     }
     //Check bases
-    uint32_t total_bases = CAST_INT(obj->type->bases->type->slot_len(obj->type->bases))->val->to_long_long();
+    uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
     for (uint32_t i=0; i<total_bases; i++){
-        TypeObject* base_tp=CAST_TYPE(obj->type->bases->type->slot_get(obj->type->bases, new_int_fromint(i)));
+        TypeObject* base_tp=CAST_TYPE(list_get(obj->type->bases, new_int_fromint(i)));
         //Check type dict
         if (base_tp->dict!=0){
             object* dict = base_tp->dict;
             if (object_find_bool_dict_keys(dict, attr)){
-                return dict->type->slot_get(dict, attr);
+                return dict_get(dict, attr);
             }
         }
     }
@@ -376,27 +378,27 @@ void object_genericsetattr(object* obj, object* attr, object* val){
      //Try instance dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
-        dict->type->slot_set(dict, attr, val);
+        dict_set(dict, attr, val);
         return;
     }
     //Check type dict 
     if (obj->type->dict!=0){
         object* dict = obj->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
-            dict->type->slot_set(dict, attr, val);
+            dict_set(dict, attr, val);
             return;
         }
     }
     //Check bases
-    uint32_t total_bases = CAST_INT(obj->type->bases->type->slot_len(obj->type->bases))->val->to_long_long();
+    uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
     for (uint32_t i=0; i<total_bases; i++){
-        TypeObject* base_tp=CAST_TYPE(obj->type->bases->type->slot_get(obj->type->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_get(obj->type->bases, new_int_fromint(i-1)));
 
         //Check type dict
         if (base_tp->dict!=0){
             object* dict = base_tp->dict;
             if (object_find_bool_dict_keys(dict, attr)){
-                dict->type->slot_set(dict, attr, val);
+                dict_set(dict, attr, val);
                 return;
             }
         }
@@ -427,20 +429,20 @@ object* object_istruthy(object* obj){
 }
 
 object* object_get(object* base, object* idx){
-    if (base->type->slot_get==NULL){
+    if (base->type->slot_mappings==NULL || base->type->slot_mappings->slot_get==NULL){
         vm_add_err(&TypeError, vm, "Type '%s' is not subscriptable",base->type->name->c_str());
         return NULL;
     }
-    object* obj=base->type->slot_get(base, idx);
+    object* obj=base->type->slot_mappings->slot_get(base, idx);
     return obj;
 }
 
 void object_set(object* base, object* idx, object* val){
-    if (base->type->slot_set==NULL){
+    if (base->type->slot_mappings==NULL || base->type->slot_mappings->slot_set==NULL){
         vm_add_err(&TypeError, vm, "Type '%s' does not support item assignment",base->type->name->c_str());
         return;
     }
-    base->type->slot_set(base, idx, val);
+    base->type->slot_mappings->slot_set(base, idx, val);
 }
 
 bool object_issubclass(object* obj, TypeObject* t){

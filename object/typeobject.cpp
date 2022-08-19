@@ -18,6 +18,12 @@ static NumberMethods type_num_methods{
     (unaryfunc)type_bool, //slot_bool
 };
 
+static Mappings type_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 object* type_dict(object* type);
 void type_dictset(object* type, object* key, object* val);
 object* type_dictget(object* type, object* key);
@@ -47,16 +53,15 @@ TypeObject TypeType={
     (delfunc)type_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)type_repr, //slot_repr
     (reprfunc)type_repr, //slot_str
     (callfunc)type_call, //slot_call
 
     &type_num_methods, //slot_number
+    &type_mappings, //slot_mapping
+
     type_methods, //slot_methods
     type_getsets, //slot_getsets
 
@@ -76,6 +81,7 @@ object* newtp_repr(object* self);
 object* newtp_str(object* self);
 object* newtp_call(object* self, object* args, object* kwargs);
 object* newtp_cmp(object* self, object* other, uint8_t type);
+object* newtp_iter(object* self);
 
 object* newtp_add(object* self, object* other);
 object* newtp_sub(object* self, object* other);
@@ -104,6 +110,12 @@ typedef struct NewTypeObject{
     object* dict;
 }NewTypeObject;
 
+static Mappings newtp_mappings{
+    newtp_get, //slot_get
+    newtp_set, //slot_set
+    newtp_len, //slot_len
+};
+
 #define CAST_NEWTYPE(obj) ((NewTypeObject*)(obj))
 
 object* new_type(string* name, object* bases, object* dict){
@@ -128,16 +140,15 @@ object* new_type(string* name, object* bases, object* dict){
         newtp_del, //slot_del
 
         newtp_next, //slot_next
-        newtp_get, //slot_get
-        newtp_len, //slot_len
-        newtp_set, //slot_set
-        newtp_append, //slot_append
+        newtp_iter, //slot_iter
 
         newtp_repr, //slot_repr
         newtp_str, //slot_str
         newtp_call, //slot_call
 
         &newtp_number, //slot_number
+        &newtp_mappings, //slot_mapping
+
         0, //slot_methods
         0, //slot_getsets
         

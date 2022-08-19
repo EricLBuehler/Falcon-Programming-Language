@@ -21,7 +21,7 @@ object* new_list(){
 }
 
 object* list_new(object* type, object* args, object* kwargs){
-    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
         object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
         CAST_LIST(obj)->capacity=2; //Start with 2
         CAST_LIST(obj)->size=0;
@@ -30,8 +30,8 @@ object* list_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
-    if (object_istype(args->type->slot_get(args, new_int_fromint(0))->type, &ListType)){
-        return INCREF(args->type->slot_get(args, new_int_fromint(0)));
+    if (object_istype(args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type, &ListType)){
+        return INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
     }
     //Append
     object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
@@ -40,9 +40,9 @@ object* list_new(object* type, object* args, object* kwargs){
     CAST_LIST(obj)->idx=0;
     CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
 
-    size_t len=(size_t)CAST_INT(args->type->slot_len(args))->val->to_int();
+    size_t len=(size_t)CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     for (size_t i=0; i<len; i++){
-        list_append((object*)obj, INCREF(args->type->slot_get(args, new_int_fromint(i))));
+        list_append((object*)obj, INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(i))));
     }
     
     return (object*)obj;
@@ -153,13 +153,17 @@ object* list_cmp(object* self, object* other, uint8_t type){
 }
 
 object* list_append_meth(object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_len(args))->val->to_long();
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
     if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
     
-    object* self=args->type->slot_get(args, new_int_fromint(0));
-    list_append(self, args->type->slot_get(args, new_int_fromint(1)));
+    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    list_append(self, args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
     return new_none();
+}
+
+object* list_iter(object* self){
+    return self;
 }

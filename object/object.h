@@ -51,6 +51,13 @@ typedef struct{
     lenfunc len;
 }GetSets;
 
+typedef struct{    
+    getfunc slot_get;
+    setfunc slot_set;
+    lenfunc slot_len;
+    appendfunc slot_append;
+}Mappings;
+
 typedef struct object_type{
     size_t refcnt;
     object* ob_prev;
@@ -74,10 +81,7 @@ typedef struct object_type{
     
     //Iterators
     iternextfunc slot_next;
-    getfunc slot_get;
-    lenfunc slot_len;
-    setfunc slot_set;
-    appendfunc slot_append;
+    unaryfunc slot_iter;
 
     reprfunc slot_repr;
     reprfunc slot_str;
@@ -85,6 +89,7 @@ typedef struct object_type{
     
     //number methods
     NumberMethods* slot_number;
+    Mappings* slot_mappings;
     Method* slot_methods;
     GetSets* slot_getsets;
 

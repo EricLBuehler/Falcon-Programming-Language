@@ -8,11 +8,11 @@ object* code_new_fromargs(object* args){
         //Error
         return NULL;
     }
-    CAST_CODE(obj)->co_names=INCREF(args->type->slot_get(args, new_int_fromint(0)));
-    CAST_CODE(obj)->co_consts=INCREF(args->type->slot_get(args, new_int_fromint(1)));
-    CAST_CODE(obj)->co_code=INCREF(args->type->slot_get(args, new_int_fromint(2)));
-    CAST_CODE(obj)->co_file=INCREF(args->type->slot_get(args, new_int_fromint(3)));
-    CAST_CODE(obj)->co_lines=INCREF(args->type->slot_get(args, new_int_fromint(4)));
+    CAST_CODE(obj)->co_names=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
+    CAST_CODE(obj)->co_consts=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    CAST_CODE(obj)->co_code=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(2)));
+    CAST_CODE(obj)->co_file=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(3)));
+    CAST_CODE(obj)->co_lines=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(4)));
     
     return obj;
 }
@@ -26,11 +26,11 @@ object* code_new(object* type, object* args, object* kwargs){
         //Error
         return NULL;
     }
-    CAST_CODE(obj)->co_names=INCREF(args->type->slot_get(args, new_int_fromint(0)));
-    CAST_CODE(obj)->co_consts=INCREF(args->type->slot_get(args, new_int_fromint(1)));
-    CAST_CODE(obj)->co_code=INCREF(args->type->slot_get(args, new_int_fromint(2)));
-    CAST_CODE(obj)->co_file=INCREF(args->type->slot_get(args, new_int_fromint(3)));
-    CAST_CODE(obj)->co_lines=INCREF(args->type->slot_get(args, new_int_fromint(4)));
+    CAST_CODE(obj)->co_names=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
+    CAST_CODE(obj)->co_consts=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    CAST_CODE(obj)->co_code=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(2)));
+    CAST_CODE(obj)->co_file=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(3)));
+    CAST_CODE(obj)->co_lines=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(4)));
     return obj;
 }
 
@@ -52,8 +52,8 @@ object* code_repr(object* self){
     s+=", file ";
     s+=object_cstr(CAST_CODE(self)->co_file);
     s+=", line ";
-    object* first=CAST_CODE(self)->co_lines->type->slot_get(CAST_CODE(self)->co_lines, new_int_fromint(0));
-    s+=CAST_INT(first->type->slot_get(first, new_int_fromint(2)))->val->operator+(1).to_string();
+    object* first=CAST_CODE(self)->co_lines->type->slot_mappings->slot_get(CAST_CODE(self)->co_lines, new_int_fromint(0));
+    s+=CAST_INT(first->type->slot_mappings->slot_get(first, new_int_fromint(2)))->val->operator+(1).to_string();
     s+=">";
     return str_new_fromstr(s);
 }

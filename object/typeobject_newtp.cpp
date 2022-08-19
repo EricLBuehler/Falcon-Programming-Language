@@ -5,7 +5,7 @@ object* newtp_init(object* self, object* args, object* kwargs){
         vm->exception=NULL;
     }
     else{
-        //args->type->slot_append(args, self); //do not need to
+        //args->type->slot_mappings->slot_append(args, self); //do not need to
         object* val=object_call(n, args, kwargs);
         return val;
     }
@@ -25,7 +25,7 @@ object* newtp_new(object* self, object* args, object* kwargs){
         vm->exception=NULL;
     }
     else{
-        args->type->slot_append(args, o);
+        args->type->slot_mappings->slot_append(args, o);
         object* val=object_call(n, args, kwargs);
         return val;
     }
@@ -38,7 +38,7 @@ void newtp_del(object* self){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object_call(n, args, new_dict());
     }
 }
@@ -56,7 +56,7 @@ object* newtp_len(object* self){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }
@@ -74,7 +74,7 @@ object* newtp_repr(object* self){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }
@@ -96,7 +96,7 @@ object* newtp_str(object* self){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }
@@ -118,8 +118,8 @@ object* newtp_call(object* self, object* args, object* kwargs){
         vm->exception=NULL;
     }
     else{
-        uint32_t argc=CAST_INT(args->type->slot_len(args))->val->operator+((*CAST_INT(kwargs->type->slot_len(kwargs))->val)).to_int()+1;
-        uint32_t posargc=CAST_INT(args->type->slot_len(args))->val->to_int()+1;
+        uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->operator+((*CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val)).to_int()+1;
+        uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+1;
         uint32_t kwargc=argc-posargc;     
 
         if (function->type->slot_call==NULL){
@@ -127,7 +127,7 @@ object* newtp_call(object* self, object* args, object* kwargs){
             return NULL;
         }
         
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(function, args, kwargs);
         return val;
     }
@@ -145,7 +145,7 @@ object* newtp_add(object* self, object* other){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }
@@ -158,7 +158,7 @@ object* newtp_sub(object* self, object* other){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }
@@ -171,7 +171,7 @@ object* newtp_mul(object* self, object* other){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self); //do not need to
+        args->type->slot_mappings->slot_append(args, self); //do not need to
         object* val=object_call(n, args, new_dict());
         return val;
     }
@@ -184,7 +184,7 @@ object* newtp_div(object* self, object* other){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }
@@ -198,7 +198,7 @@ object* newtp_neg(object* self){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }
@@ -212,7 +212,21 @@ object* newtp_bool(object* self){
     }
     else{
         object* args=new_tuple();
-        args->type->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, self);
+        object* val=object_call(n, args, new_dict());
+        return val;
+    }
+}
+
+object* newtp_iter(object* self){
+    object* n=object_getattr(self, str_new_fromstr("__iter__"));
+    if (n==NULL){
+        vm->exception=NULL;
+        return NULL;
+    }
+    else{
+        object* args=new_tuple();
+        args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }

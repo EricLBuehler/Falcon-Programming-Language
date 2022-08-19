@@ -38,7 +38,7 @@ object* str_float(object* self){
 
 
 object* str_new(object* type, object* args, object* kwargs){
-    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
         object* obj=new_object(&StrType);
         ((StrObject*)obj)->val=new string("");
 
@@ -49,7 +49,7 @@ object* str_new(object* type, object* args, object* kwargs){
         DECREF((struct object*)obj);
         return o;
     }
-    object* val=INCREF(args->type->slot_get(args, new_int_fromint(0)));
+    object* val=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
     string s=object_cstr(val);
 
     object* obj=new_object(&StrType);
@@ -99,7 +99,7 @@ void str_del(object* obj){
 }
 
 object* str_wrapper_new(object* args, object* kwargs){
-    if (CAST_INT(args->type->slot_len(args))->val->to_int()==0){
+    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
         object* obj=new_object(&StrType);
         ((StrObject*)obj)->val=new string("");
 
@@ -110,7 +110,7 @@ object* str_wrapper_new(object* args, object* kwargs){
         DECREF((struct object*)obj);
         return o;
     }
-    object* val=INCREF(args->type->slot_get(args, new_int_fromint(1)));
+    object* val=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
     string s=object_cstr(val);
 
     object* obj=new_object(&StrType);
@@ -125,82 +125,82 @@ object* str_wrapper_new(object* args, object* kwargs){
 }
 
 object* str_wrapper_len(object* args, object* kwargs){
-    if (*CAST_INT(args->type->slot_len(args))->val!=1){
-        if (*CAST_INT(args->type->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1){
+        if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
             if (!object_istype(tp, &StrType)){
                 vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
                 return NULL;
             }
         }
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_get(args, new_int_fromint(0));
-    return self->type->slot_len(self);
+    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    return self->type->slot_mappings->slot_len(self);
 }
 
 object* str_wrapper_repr(object* args, object* kwargs){
-    if (*CAST_INT(args->type->slot_len(args))->val!=1){
-        if (*CAST_INT(args->type->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1){
+        if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
             if (!object_istype(tp, &StrType)){
                 vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
                 return NULL;
             }
         }
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_get(args, new_int_fromint(0));
+    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
     return self->type->slot_repr(self);
 }
 
 object* str_wrapper_str(object* args, object* kwargs){
-    if (*CAST_INT(args->type->slot_len(args))->val!=1){
-        if (*CAST_INT(args->type->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1){
+        if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
             if (!object_istype(tp, &StrType)){
                 vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
                 return NULL;
             }
         }
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_get(args, new_int_fromint(0));
+    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
     return self->type->slot_str(self);
 }
 
 object* str_wrapper_bool(object* args, object* kwargs){
-    if (*CAST_INT(args->type->slot_len(args))->val!=1){
-        if (*CAST_INT(args->type->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1){
+        if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
             if (!object_istype(tp, &StrType)){
                 vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
                 return NULL;
             }
         }
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_get(args, new_int_fromint(0));
+    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
     return self->type->slot_number->slot_bool(self);
 }
 
 object* str_wrapper_ne(object* args, object* kwargs){
-    if (*CAST_INT(args->type->slot_len(args))->val!=2){
-        if (*CAST_INT(args->type->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
+        if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
             if (!object_istype(tp, &StrType)){
                 vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
                 return NULL;
             }
         }
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
     }
-    object* self=args->type->slot_get(args, new_int_fromint(0));
-    object* other=args->type->slot_get(args, new_int_fromint(1));
+    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
 
     if (self->type!=other->type){
         return new_bool_true();
@@ -215,18 +215,18 @@ object* str_wrapper_ne(object* args, object* kwargs){
 }
 
 object* str_wrapper_eq(object* args, object* kwargs){
-    if (*CAST_INT(args->type->slot_len(args))->val!=2){
-        if (*CAST_INT(args->type->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_get(args, new_int_fromint(0))->type;
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
+        if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
+            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
             if (!object_istype(tp, &StrType)){
                 vm_add_err(&TypeError, vm, "Expected 'str' object, got '%s' object",tp->name->c_str());
                 return NULL;
             }
         }
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_int());
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
     }
-    object* self=args->type->slot_get(args, new_int_fromint(0));
-    object* other=args->type->slot_get(args, new_int_fromint(1));
+    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
 
     if (self->type!=other->type){
         return new_bool_false();

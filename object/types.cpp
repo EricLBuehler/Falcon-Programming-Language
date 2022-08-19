@@ -48,6 +48,12 @@ static NumberMethods int_num_methods{
     (unaryfunc)int_float, //slot_float
 };
 
+static Mappings int_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 Method int_methods[]={{NULL,NULL}};
 GetSets int_getsets[]={{NULL,NULL}};
 
@@ -72,16 +78,15 @@ TypeObject IntType={
     (delfunc)int_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)int_repr, //slot_repr
     (reprfunc)int_repr, //slot_str
     0, //slot_call
 
     &int_num_methods, //slot_number
+    &int_mappings, //slot_mapping
+
     int_methods, //slot_methods
     int_getsets, //slot_getsets
 
@@ -133,6 +138,12 @@ static NumberMethods str_num_methods{
     (unaryfunc)str_float, //slot_float
 };
 
+static Mappings str_mappings{
+    0, //slot_get
+    0, //slot_set
+    str_len, //slot_len
+};
+
 Method str_methods[]={{NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 
@@ -157,16 +168,15 @@ TypeObject StrType={
     (delfunc)str_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    (lenfunc)str_len, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)str_repr, //slot_repr
     (reprfunc)str_str, //slot_str
     0, //slot_call
 
     &str_num_methods, //slot_number
+    &str_mappings, //slot_mapping
+
     str_methods, //slot_methods
     str_getsets, //slot_getsets
 
@@ -192,7 +202,7 @@ object* list_next(object* self);
 object* list_cmp(object* self, object* other, uint8_t type);
 object* list_bool(object* self);
 object* list_append_meth(object* args, object* kwargs);
-
+object* list_iter(object* self);
 
 typedef struct ListObject{
     OBJHEAD_VAR
@@ -216,6 +226,13 @@ static NumberMethods list_num_methods{
     (unaryfunc)list_bool, //slot_bool
 };
 
+static Mappings list_mappings{
+    list_get, //slot_get
+    list_set, //slot_set
+    list_len, //slot_len
+    list_append, //slot_append
+};
+
 TypeObject ListType={
     0, //refcnt
     0, //ob_prev
@@ -237,16 +254,15 @@ TypeObject ListType={
     (delfunc)list_del, //slot_del
 
     (iternextfunc)list_next, //slot_next
-    (getfunc)list_get, //slot_get
-    (lenfunc)list_len, //slot_len
-    (setfunc)list_set, //slot_set
-    (appendfunc)list_append, //slot_append
+    (unaryfunc)list_iter, //slot_iter
 
     (reprfunc)list_repr, //slot_repr
     (reprfunc)list_repr, //slot_str
     0, //slot_call
 
     &list_num_methods, //slot_number
+    &list_mappings, //slot_mapping
+
     list_methods, //slot_methods
     list_getsets, //slot_getsets
 
@@ -286,6 +302,12 @@ static NumberMethods dict_num_methods{
     (unaryfunc)dict_bool, //slot_bool
 };
 
+static Mappings dict_mappings{
+    dict_get, //slot_get
+    dict_set, //slot_set
+    dict_len, //slot_len
+};
+
 Method dict_methods[]={{NULL,NULL}};
 GetSets dict_getsets[]={{NULL,NULL}};
 
@@ -310,16 +332,15 @@ static TypeObject DictType={
     (delfunc)dict_del, //slot_del
 
     0, //slot_next
-    (getfunc)dict_get, //slot_get
-    (lenfunc)dict_len, //slot_len
-    (setfunc)dict_set, //slot_set
-    0, //slot_appends
+    0, //slot_iter
 
     (reprfunc)dict_repr, //slot_repr
     (reprfunc)dict_str, //slot_str
     0, //slot_call
 
     &dict_num_methods, //slot_number
+    &dict_mappings, //slot_mapping
+
     dict_methods, //slot_methods
     dict_getsets, //slot_getsets
 
@@ -360,6 +381,12 @@ static NumberMethods code_num_methods{
     (unaryfunc)code_bool, //slot_bool
 };
 
+static Mappings code_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 Method code_methods[]={{NULL,NULL}};
 GetSets code_getsets[]={{NULL,NULL}};
 
@@ -384,16 +411,15 @@ TypeObject CodeType={
     (delfunc)code_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)code_repr, //slot_repr
     (reprfunc)code_repr, //slot_str
     0, //slot_call
 
     &code_num_methods, //slot_number
+    &code_mappings, //slot_mapping
+
     code_methods, //slot_methods
     code_getsets, //slot_getsets
 
@@ -448,6 +474,12 @@ static NumberMethods bool_num_methods{
     (unaryfunc)bool_float, //slot_float
 };
 
+static Mappings bool_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 Method bool_methods[]={{NULL,NULL}};
 GetSets bool_getsets[]={{NULL,NULL}};
 
@@ -472,16 +504,15 @@ TypeObject BoolType={
     (delfunc)bool_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
     
     (reprfunc)bool_repr, //slot_repr
     (reprfunc)bool_repr, //slot_str
     0, //slot_call
 
     &bool_num_methods, //slot_number
+    &bool_mappings, //slot_mapping
+
     bool_methods, //slot_methods
     bool_getsets, //slot_getsets
 
@@ -503,6 +534,7 @@ object* tuple_repr(object* self);
 object* tuple_next(object* self);
 object* tuple_cmp(object* self, object* other, uint8_t type);
 object* tuple_bool(object* self);
+object* tuple_iter(object* self);
 
 typedef struct TupleObject{
     OBJHEAD_VAR
@@ -521,6 +553,14 @@ static NumberMethods tuple_num_methods{
     0, //slot_neg
 
     (unaryfunc)tuple_bool, //slot_bool
+};
+
+
+static Mappings tuple_mappings{
+    tuple_get, //slot_get
+    0, //slot_set
+    tuple_len, //slot_len
+    list_append, //slot_append
 };
 
 Method tuple_methods[]={{NULL,NULL}};
@@ -544,19 +584,18 @@ TypeObject TupleType={
 
     0, //slot_init
     (newfunc)tuple_new, //slot_new
-    (delfunc)list_del, //slot_del
+    (delfunc)tuple_del, //slot_del
 
     (iternextfunc)tuple_next, //slot_next
-    (getfunc)tuple_get, //slot_get
-    (lenfunc)tuple_len, //slot_len
-    0, //slot_set
-    (appendfunc)tuple_append, //slot_append
+    (unaryfunc)tuple_iter, //slot_iter
 
     (reprfunc)tuple_repr, //slot_repr
     (reprfunc)tuple_repr, //slot_str
     0, //slot_call
 
     &tuple_num_methods, //slot_number
+    &tuple_mappings, //slot_mapping
+
     tuple_methods, //slot_methods
     tuple_getsets, //slot_getsets
 
@@ -598,6 +637,12 @@ static NumberMethods func_num_methods{
     (unaryfunc)func_bool, //slot_bool
 };
 
+static Mappings func_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 Method func_methods[]={{NULL,NULL}};
 GetSets func_getsets[]={{NULL,NULL}};
 
@@ -622,16 +667,15 @@ TypeObject FuncType={
     (delfunc)func_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)func_repr, //slot_repr
     (reprfunc)func_repr, //slot_str
     (callfunc)func_call, //slot_call
 
     &func_num_methods, //slot_number
+    &func_mappings, //slot_mapping
+
     func_methods, //slot_methods
     func_getsets, //slot_getsets
 
@@ -665,6 +709,12 @@ static NumberMethods none_num_methods{
     (unaryfunc)none_bool, //slot_bool
 };
 
+static Mappings none_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 Method none_methods[]={{NULL,NULL}};
 GetSets none_getsets[]={{NULL,NULL}};
 
@@ -689,16 +739,15 @@ TypeObject NoneType={
     (delfunc)none_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)none_repr, //slot_repr
     (reprfunc)none_repr, //slot_str
     0, //slot_call
 
     &none_num_methods, //slot_number
+    &none_mappings, //slot_mapping
+
     none_methods, //slot_methods
     none_getsets, //slot_getsets
 
@@ -737,6 +786,12 @@ static NumberMethods builtin_num_methods{
     (unaryfunc)builtin_bool, //slot_bool
 };
 
+static Mappings builtin_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 Method builtin_methods[]={{NULL,NULL}};
 GetSets builtin_getsets[]={{NULL,NULL}};
 
@@ -761,16 +816,15 @@ TypeObject BuiltinType={
     (delfunc)builtin_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)builtin_repr_slot, //slot_repr
     (reprfunc)builtin_repr_slot, //slot_str
     (callfunc)builtin_call, //slot_call
 
     &builtin_num_methods, //slot_number
+    &builtin_mappings, //slot_mapping
+
     builtin_methods, //slot_methods
     builtin_getsets, //slot_getsets
 
@@ -807,6 +861,12 @@ static NumberMethods object_num_methods{
 Method object_methods[]={{NULL,NULL}};
 GetSets object_getsets[]={{NULL,NULL}};
 
+static Mappings object_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 TypeObject ObjectType={
     0, //refcnt
     0, //ob_prev
@@ -827,16 +887,15 @@ TypeObject ObjectType={
     0, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)object_repr_, //slot_repr
     (reprfunc)object_repr_, //slot_str
     0, //slot_call
 
     &object_num_methods, //slot_number
+    &object_mappings, //slot_mapping
+
     object_methods, //slot_methods
     object_getsets, //slot_getsets
 
@@ -869,6 +928,11 @@ static NumberMethods exception_num_methods{
 
     0, //slot_bool
 };
+static Mappings exception_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
 
 Method exception_methods[]={{NULL,NULL}};
 GetSets exception_getsets[]={{NULL,NULL}};
@@ -894,16 +958,15 @@ TypeObject ExceptionType={
     (delfunc)exception_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)exception_repr, //slot_repr
     (reprfunc)exception_str, //slot_str
     0, //slot_call
 
     &exception_num_methods, //slot_number
+    &exception_mappings, //slot_mapping
+
     exception_methods, //slot_methods
     exception_getsets, //slot_getsets
 
@@ -911,7 +974,7 @@ TypeObject ExceptionType={
 };
 
 object* new_type_exception(string* name, object* bases, object* dict){
-    bases->type->slot_append(bases, (object*)&ExceptionType);
+    list_append(bases, (object*)&ExceptionType);
     TypeObject newtype={
         0, //refcnt
         0, //ob_prev
@@ -933,16 +996,15 @@ object* new_type_exception(string* name, object* bases, object* dict){
         0, //slot_del
 
         0, //slot_next
-        0, //slot_get
-        0, //slot_len
-        0, //slot_set
-        0, //slot_append
+        0, //slot_iter
 
         0, //slot_repr
         0, //slot_str
         0, //slot_call
 
         0, //slot_number
+        0, //slot_mappings
+        
         0, //slot_methods
         0, //slot_getsets
 
@@ -962,7 +1024,7 @@ void setup_exception_type(){
     NameError=(*(TypeObject*)new_type_exception(new string("NameError"), new_tuple(), new_dict()));
     MemoryError=(*(TypeObject*)new_type_exception(new string("MemoryError"), new_tuple(), new_dict()));
     object* recursionerr_bases=new_tuple();
-    recursionerr_bases->type->slot_append(recursionerr_bases, (object*)&MemoryError);
+    tuple_append(recursionerr_bases, (object*)&MemoryError);
     RecursionError=(*(TypeObject*)new_type_exception(new string("RecursionError"), recursionerr_bases, new_dict()));
 }
 
@@ -983,6 +1045,11 @@ static NumberMethods stringstream_num_methods{
     0, //slot_neg
 
     0, //slot_bool
+};
+static Mappings stringstream_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
 };
 
 Method stringstream_methods[]={{NULL,NULL}};
@@ -1009,16 +1076,15 @@ TypeObject StringStreamType={
     0, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     0, //slot_repr
     0, //slot_str
     0, //slot_call
 
     &stringstream_num_methods, //slot_number
+    &stringstream_mappings, //slot_mapping
+
     stringstream_methods, //slot_methods
     stringstream_getsets, //slot_getsets
 
@@ -1063,16 +1129,15 @@ TypeObject CWrapperType={
     0, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)cwrapper_repr, //slot_repr
     (reprfunc)cwrapper_repr, //slot_str
     (callfunc)cwrapper_call, //slot_call
 
     0, //slot_number
+    0, //slot_mapping
+
     cwrapper_methods, //slot_methods
     cwrapper_getsets, //slot_getsets
 
@@ -1101,6 +1166,7 @@ typedef struct SlotWrapperObject{
     TypeObject* basetype;
 }SlotWrapperObject;
 
+
 TypeObject SlotWrapperType={
     0, //refcnt
     0, //ob_prev
@@ -1122,16 +1188,15 @@ TypeObject SlotWrapperType={
     0, //slot_del
 
     0, //slot_next
-    (getfunc)slotwrapper_get, //slot_get
-    (lenfunc)slotwrapper_set, //slot_len
-    (setfunc)slotwrapper_len, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)slotwrapper_repr, //slot_repr
     (reprfunc)slotwrapper_str, //slot_str
     (callfunc)slotwrapper_call, //slot_call
 
     0, //slot_number
+    0, //slot_mapping
+
     0, //slot_methods
     0, //slot_getsets
 
@@ -1140,8 +1205,8 @@ TypeObject SlotWrapperType={
 
 void setup_slotwrapper_type(){
     SlotWrapperType.bases=new_list();
-    SlotWrapperType.bases->type->slot_append(SlotWrapperType.bases, INCREF((object*)&CWrapperType));
-    SlotWrapperType.bases->type->slot_append(SlotWrapperType.bases, INCREF((object*)&ObjectType));
+    list_append(SlotWrapperType.bases, INCREF((object*)&CWrapperType));
+    list_append(SlotWrapperType.bases, INCREF((object*)&ObjectType));
 
     SlotWrapperType=(*(TypeObject*)finalize_type(&SlotWrapperType));
 }
@@ -1197,6 +1262,12 @@ static NumberMethods float_num_methods{
     (unaryfunc)float_float, //slot_float
 };
 
+static Mappings float_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
 Method float_methods[]={{NULL,NULL}};
 GetSets float_getsets[]={{NULL,NULL}};
 
@@ -1221,16 +1292,15 @@ TypeObject FloatType={
     (delfunc)float_del, //slot_del
 
     0, //slot_next
-    0, //slot_get
-    0, //slot_len
-    0, //slot_set
-    0, //slot_append
+    0, //slot_iter
 
     (reprfunc)float_repr, //slot_repr
     (reprfunc)float_repr, //slot_str
     0, //slot_call
 
     &float_num_methods, //slot_number
+    &float_mappings, //slot_mapping
+
     float_methods, //slot_methods
     float_getsets, //slot_getsets
 
@@ -1250,28 +1320,28 @@ object* new_type(string* name, object* bases, object* dict);
 
 object* type_new(object* type, object* args, object* kwargs){
     //Argument size checking
-    if (CAST_INT(args->type->slot_len(args))->val->to_long()!=3){
-        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d",CAST_INT(args->type->slot_len(args))->val->to_long());
+    if (CAST_INT(list_len(args))->val->to_long()!=3){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d",CAST_INT(list_len(args))->val->to_long());
         return NULL;
     }
     //
-    if (!object_istype(args->type->slot_get(args, new_int_fromint(0))->type, &StrType)){
-        vm_add_err(&ValueError, vm, "Expected first argument to be string, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+    if (!object_istype(list_get(args, new_int_fromint(0))->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected first argument to be string, got type '%s'",list_get(args, new_int_fromint(0))->type->name->c_str());
         return NULL;
     }
-    if (!object_istype(args->type->slot_get(args, new_int_fromint(1))->type, &ListType) || \
-    !object_istype(args->type->slot_get(args, new_int_fromint(1))->type, &TupleType)){
-        vm_add_err(&ValueError, vm, "Expected first argument to be list or tuple, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+    if (!object_istype(list_get(args, new_int_fromint(1))->type, &ListType) || \
+    !object_istype(list_get(args, new_int_fromint(1))->type, &TupleType)){
+        vm_add_err(&ValueError, vm, "Expected first argument to be list or tuple, got type '%s'",list_get(args, new_int_fromint(0))->type->name->c_str());
         return NULL;
     }
-    if (!object_istype(args->type->slot_get(args, new_int_fromint(2))->type, &DictType)){
-        vm_add_err(&ValueError, vm, "Expected first argument to be dict, got type '%s'",args->type->slot_get(args, new_int_fromint(0))->type->name->c_str());
+    if (!object_istype(list_get(args, new_int_fromint(2))->type, &DictType)){
+        vm_add_err(&ValueError, vm, "Expected first argument to be dict, got type '%s'",list_get(args, new_int_fromint(0))->type->name->c_str());
         return NULL;
     }
     //
-    string* name=CAST_STRING(args->type->slot_get(args, new_int_fromint(0)))->val;
-    object* bases=args->type->slot_get(args, new_int_fromint(1));
-    object* dict=args->type->slot_get(args, new_int_fromint(2));
+    string* name=CAST_STRING(list_get(args, new_int_fromint(0)))->val;
+    object* bases=list_get(args, new_int_fromint(1));
+    object* dict=list_get(args, new_int_fromint(2));
     return new_type(name, bases, dict);
 }
 
@@ -1285,8 +1355,8 @@ object* type_repr(object* self){
 object* type_call(object* self, object* args, object* kwargs){
     //Special case
     if (object_istype(CAST_TYPE(self), &TypeType)){
-        if (CAST_INT(args->type->slot_len(args))->val->to_long()==1){
-            return (object*)(args->type->slot_get(args, new_int_fromint(0))->type);
+        if (CAST_INT(list_len(args))->val->to_long()==1){
+            return (object*)(list_get(args, new_int_fromint(0))->type);
         }
     }
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
@@ -1307,26 +1377,26 @@ object* type_get(object* self, object* attr){
     if ( self->type->dict_offset!=0){
         object* dict= (*(object**)((char*)self + self->type->dict_offset));
         if (object_find_bool_dict_keys(dict, attr)){
-            return dict->type->slot_get(dict, attr);
+            return dict_get(dict, attr);
         }
     }
     //Check type dict
     if (self->type->dict!=0){
         object* dict = self->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
-            return dict->type->slot_get(dict, attr);
+            return dict_get(dict, attr);
         }
     }
 
-    uint32_t total_bases = CAST_INT(self->type->bases->type->slot_len(self->type->bases))->val->to_long_long();
+    uint32_t total_bases = CAST_INT(list_len(self->type->bases))->val->to_long_long();
     for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(self->type->bases->type->slot_get(self->type->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_get(self->type->bases, new_int_fromint(i-1)));
 
         //Check type dict
         if (base_tp->dict!=0){
             object* dict = base_tp->dict;
             if (object_find_bool_dict_keys(dict, attr)){
-                return dict->type->slot_get(dict, attr);
+                return dict_get(dict, attr);
             }
         }
     }
@@ -1339,7 +1409,7 @@ void type_set(object* obj, object* attr, object* val){
     //Check dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
-        dict->type->slot_set(dict, attr, val);
+        dict_set(dict, attr, val);
         return;
     }
     vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
@@ -1363,24 +1433,32 @@ void _inherit_number_slots(NumberMethods* m, TypeObject* base_tp){
     m->slot_float=base_tp->slot_number->slot_float;
 }
 
-void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp, NumberMethods* m){
+void _inherit_mapping_slots(Mappings* m, TypeObject* base_tp){
+    if (base_tp->slot_mappings==NULL){
+        return;
+    }
+    
+    m->slot_get=base_tp->slot_mappings->slot_get;
+    m->slot_set=base_tp->slot_mappings->slot_set;
+    m->slot_len=base_tp->slot_mappings->slot_len;
+    m->slot_append=base_tp->slot_mappings->slot_append;
+}
+
+void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp, NumberMethods* m, Mappings* ma){
     SETSLOT(tp_tp, base_tp, slot_getattr);
     SETSLOT(tp_tp, base_tp, slot_setattr);
     SETSLOT(tp_tp, base_tp, slot_init);
     SETSLOT(tp_tp, base_tp, slot_new);
     SETSLOT(tp_tp, base_tp, slot_del);    
     SETSLOT(tp_tp, base_tp, slot_next);
-    SETSLOT(tp_tp, base_tp, slot_get);
-    SETSLOT(tp_tp, base_tp, slot_len);
-    SETSLOT(tp_tp, base_tp, slot_set);
-    SETSLOT(tp_tp, base_tp, slot_append);
+    SETSLOT(tp_tp, base_tp, slot_iter);
     SETSLOT(tp_tp, base_tp, slot_repr);
     SETSLOT(tp_tp, base_tp, slot_str);
     SETSLOT(tp_tp, base_tp, slot_call);
     SETSLOT(tp_tp, base_tp, slot_cmp);
-
-    //Inheritance of number methods could be updated to be special
+    
     _inherit_number_slots(m, base_tp);
+    _inherit_mapping_slots(ma, base_tp);
 }
 
 object* finalize_type(TypeObject* newtype){
@@ -1394,10 +1472,10 @@ object* finalize_type(TypeObject* newtype){
     //Clean out bases
     if (tp_tp->bases==NULL){
         tp_tp->bases=new_list();
-        tp_tp->bases->type->slot_append(tp_tp->bases, INCREF((object*)&ObjectType));
+        list_append(tp_tp->bases, INCREF((object*)&ObjectType));
     }
 
-    uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
+    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
 
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
@@ -1407,17 +1485,22 @@ object* finalize_type(TypeObject* newtype){
 
     NumberMethods* m=(NumberMethods*)malloc(sizeof(NumberMethods));
     memset(m, 0, sizeof(NumberMethods));
+
+    Mappings* ma=(Mappings*)malloc(sizeof(Mappings));
+    memset(ma, 0, sizeof(Mappings));
+
     for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
         //Dirty inheritance here... go over each
-        _inherit_slots(tp_tp, base_tp, m);
+        _inherit_slots(tp_tp, base_tp, m, ma);
         //      
     }
     //Hack to ensure retention of original slots
-    _inherit_slots(tp_tp, newtype, m);
+    _inherit_slots(tp_tp, newtype, m, ma);
 
 
     tp_tp->slot_number=m;
+    tp_tp->slot_mappings=ma;
 
     tp_tp->refcnt=1;
 
@@ -1427,7 +1510,7 @@ object* finalize_type(TypeObject* newtype){
 void inherit_type_dict(TypeObject* tp){
     TypeObject* tp_tp=CAST_TYPE(tp);
 
-    uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
+    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
 
     
     //Setup type dict
@@ -1438,11 +1521,11 @@ void inherit_type_dict(TypeObject* tp){
     //also breaks fewer rules...
     
     for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
         object* dict=base_tp->dict;
 
         for (auto k: (*CAST_DICT(dict)->val)){
-            tp_tp->dict->type->slot_set(tp_tp->dict, k.first, k.second);
+            dict_set(tp_tp->dict, k.first, k.second);
         }  
     }
 }
@@ -1453,18 +1536,18 @@ object* inherit_type_methods(TypeObject* tp){
     //tp is the what we'll copy to...
 
     //Clean out bases
-    uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
+    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
 
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
     //also breaks fewer rules...
     
     for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_methods[idx].name!=NULL){
-            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(base_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)base_tp->slot_methods[idx].function, base_tp->slot_methods[idx].name));
+            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)base_tp->slot_methods[idx].function, base_tp->slot_methods[idx].name));
             idx++;
         }        
     }
@@ -1472,7 +1555,7 @@ object* inherit_type_methods(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_methods[idx].name!=NULL){
-        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name));
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name));
         idx++;
     }
 
@@ -1485,18 +1568,18 @@ object* inherit_type_getsets(TypeObject* tp){
     //tp is the what we'll copy to...
 
     //Clean out bases
-    uint32_t total_bases = CAST_INT(tp_tp->bases->type->slot_len(tp_tp->bases))->val->to_long_long();
+    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
 
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
     //also breaks fewer rules...
     
     for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(tp_tp->bases->type->slot_get(tp_tp->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_getsets[idx].name!=NULL){
-            tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, (getfunc)base_tp->slot_getsets[idx].get, (setfunc)base_tp->slot_getsets[idx].set, (lenfunc)base_tp->slot_getsets[idx].len, base_tp->slot_getsets[idx].name, base_tp));
+            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, (getfunc)base_tp->slot_getsets[idx].get, (setfunc)base_tp->slot_getsets[idx].set, (lenfunc)base_tp->slot_getsets[idx].len, base_tp->slot_getsets[idx].name, base_tp));
             idx++;
         }        
     }
@@ -1504,7 +1587,7 @@ object* inherit_type_getsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_getsets[idx].name!=NULL){
-        tp_tp->dict->type->slot_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, (getfunc)tp_tp->slot_getsets[idx].get, (setfunc)tp_tp->slot_getsets[idx].set, (lenfunc)tp_tp->slot_getsets[idx].len, tp_tp->slot_getsets[idx].name, tp_tp));
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, (getfunc)tp_tp->slot_getsets[idx].get, (setfunc)tp_tp->slot_getsets[idx].set, (lenfunc)tp_tp->slot_getsets[idx].len, tp_tp->slot_getsets[idx].name, tp_tp));
         idx++;
     }
 
@@ -1513,7 +1596,7 @@ object* inherit_type_getsets(TypeObject* tp){
 
 void type_set_cwrapper(TypeObject* tp, cwrapperfunc func, string name){
     object* f=cwrapper_new_fromfunc(func, name);
-    tp->dict->type->slot_set(tp->dict, str_new_fromstr(*CAST_CWRAPPER(f)->name), f);
+    dict_set(tp->dict, str_new_fromstr(*CAST_CWRAPPER(f)->name), f);
 }
 
 object* type_bool(object* self){
@@ -1525,13 +1608,13 @@ object* type_dict(object* type){
 }
 
 object* type_dictget(object* type, object* key){
-    return CAST_SLOTWRAPPER(type)->basetype->dict->type->slot_get(CAST_SLOTWRAPPER(type)->basetype->dict, key);
+    return dict_get(CAST_SLOTWRAPPER(type)->basetype->dict, key);
 }
 void type_dictset(object* type, object* key, object* val){
-    CAST_SLOTWRAPPER(type)->basetype->dict->type->slot_set(CAST_SLOTWRAPPER(type)->basetype->dict, key, val);
+    dict_set(CAST_SLOTWRAPPER(type)->basetype->dict, key, val);
 }
 object* type_dictlen(object* type){
-    return CAST_SLOTWRAPPER(type)->basetype->dict->type->slot_len(CAST_SLOTWRAPPER(type)->basetype->dict);
+    return dict_len(CAST_SLOTWRAPPER(type)->basetype->dict);
 }
 
 

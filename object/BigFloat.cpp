@@ -545,6 +545,7 @@ BigFloat operator+ ( const BigFloat& left_, const BigFloat& right_ )
 		tmp.error=0;
 		return tmp;
 	}
+	return left;
 };
 
 BigFloat operator+(const BigFloat& left, const int& int_right)
@@ -659,6 +660,7 @@ BigFloat operator- ( const BigFloat& left_, const BigFloat& right_ )
 			return tmp;
 		}
 	}
+	return left;
 };
 
 BigFloat operator-(const BigFloat& left, const int& int_right)
@@ -1169,6 +1171,7 @@ bool BigFloat::operator> (const BigFloat& right) const
 		return false;
 	if( ((sign=='+')&& (right.sign=='-')) )
 		return true;
+	return false;
 };
 
 bool BigFloat::operator> (const int& int_right) const
@@ -1225,6 +1228,8 @@ bool BigFloat::operator< (const BigFloat& right) const
 		return true;
 	if( ((sign=='+')&& (right.sign=='-')) )
 		return false;
+	
+	return false;
 };
 
 bool BigFloat::operator< (const int& int_right) const

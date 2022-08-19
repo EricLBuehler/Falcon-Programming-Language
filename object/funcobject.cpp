@@ -16,32 +16,32 @@ object* func_new(object* type, object* args, object* kwargs){
         //Error
         return NULL;
     }
-    CAST_FUNC(obj)->code=INCREF(args->type->slot_get(args, new_int_fromint(0)));
-    CAST_FUNC(obj)->args=INCREF(args->type->slot_get(args, new_int_fromint(1)));
-    CAST_FUNC(obj)->kwargs=INCREF(args->type->slot_get(args, new_int_fromint(2)));
-    CAST_FUNC(obj)->argc=CAST_INT(args->type->slot_get(args, new_int_fromint(3)))->val->to_int();
-    CAST_FUNC(obj)->name=INCREF(args->type->slot_get(args, new_int_fromint(4)));
+    CAST_FUNC(obj)->code=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
+    CAST_FUNC(obj)->args=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    CAST_FUNC(obj)->kwargs=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(2)));
+    CAST_FUNC(obj)->argc=CAST_INT(args->type->slot_mappings->slot_get(args, new_int_fromint(3)))->val->to_int();
+    CAST_FUNC(obj)->name=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(4)));
     CAST_FUNC(obj)->dict=new_dict();
     
     return obj;
 }
 
 object* func_call(object* self, object* args, object* kwargs){
-    uint32_t argc=CAST_INT(args->type->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_len(kwargs))->val->to_int();
-    uint32_t posargc=CAST_INT(args->type->slot_len(args))->val->to_int();
+    uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
+    uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     uint32_t kwargc=argc-posargc;
     
     add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code);
     vm->callstack->head->locals=new_dict();
 
-    if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
-    || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
+    if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
+    || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
     || CAST_FUNC(self)->argc<argc){
-        if (CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()==0){
-            vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_len(CAST_FUNC(self)->args))->val->to_int(), argc);
+        if (CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()==0){
+            vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_mappings->slot_len(CAST_FUNC(self)->args))->val->to_int(), argc);
             return NULL;
         }
-        vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_len(CAST_FUNC(self)->args))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int(), CAST_FUNC(self)->argc, argc);
+        vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_mappings->slot_len(CAST_FUNC(self)->args))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int(), CAST_FUNC(self)->argc, argc);
         return NULL;
     }    
 
@@ -55,18 +55,18 @@ object* func_call(object* self, object* args, object* kwargs){
 }
 
 object* func_call_nostack(object* self, object* args, object* kwargs){
-    uint32_t argc=CAST_INT(args->type->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_len(kwargs))->val->to_int();
-    uint32_t posargc=CAST_INT(args->type->slot_len(args))->val->to_int();
+    uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
+    uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     uint32_t kwargc=argc-posargc;
 
-    if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
-    || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
+    if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
+    || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
     || CAST_FUNC(self)->argc<argc){
-        if (CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()==0){
-            vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_len(CAST_FUNC(self)->args))->val->to_int(), argc);
+        if (CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()==0){
+            vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_mappings->slot_len(CAST_FUNC(self)->args))->val->to_int(), argc);
             return NULL;
         }
-        vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_len(CAST_FUNC(self)->args))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_len(CAST_FUNC(self)->kwargs))->val->to_int(), CAST_FUNC(self)->argc, argc);
+        vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_mappings->slot_len(CAST_FUNC(self)->args))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int(), CAST_FUNC(self)->argc, argc);
         return NULL;
     }
 

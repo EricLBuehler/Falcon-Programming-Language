@@ -1,9 +1,9 @@
 object* exception_new(object* type, object* args, object* kwargs){
     object* tp = new_object((TypeObject*)type);
     CAST_EXCEPTION(tp)->err=new_none();
-    if (CAST_INT(args->type->slot_len(args))->val->to_long()==1){
+    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()==1){
         DECREF(tp);
-        return vm_setup_err((TypeObject*)type, vm, object_cstr(args->type->slot_get(args, new_int_fromint(0)) ).c_str() );
+        return vm_setup_err((TypeObject*)type, vm, object_cstr(args->type->slot_mappings->slot_get(args, new_int_fromint(0)) ).c_str() );
     }
     return tp;
 }
