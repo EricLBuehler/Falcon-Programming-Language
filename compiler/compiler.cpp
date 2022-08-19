@@ -62,7 +62,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(ASSIGN(expr->node)->name->node)->name)){
                 //Create object
-                compiler->names->type->slot_append(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
                 idx=NAMEIDX(compiler->names);
             }
             else{
@@ -155,7 +155,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->consts, INTLIT(expr->node)->literal)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, new_int_fromstr(INTLIT(expr->node)->literal));
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_int_fromstr(INTLIT(expr->node)->literal));
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -170,7 +170,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->consts, FLOATLIT(expr->node)->literal)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, new_float_fromstr(FLOATLIT(expr->node)->literal));
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_float_fromstr(FLOATLIT(expr->node)->literal));
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -185,7 +185,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->consts, STRLIT(expr->node)->literal)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -199,7 +199,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(expr->node)->name)){
                 //Create object
-                compiler->names->type->slot_append(compiler->names, str_new_fromstr(*IDENTI(expr->node)->name));
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(expr->node)->name));
                 idx = NAMEIDX(compiler->names);
             }
             else{
@@ -223,7 +223,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->name->node)->name )){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
                 nameidx = NAMEIDX(compiler->consts);
             }
             else{
@@ -242,7 +242,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //Setup args
             for (Node* n: (*FUNCT(expr->node)->args)){
                 argc++;
-                args->type->slot_append(args, str_new_fromstr(*IDENTI(n->node)->name));
+                args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(n->node)->name));
             }
             
             //
@@ -250,7 +250,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //Setup kwargs (code object)
             for (Node* n: (*FUNCT(expr->node)->kwargs)){
                 argc++;
-                args->type->slot_append(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
+                args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
                 compile_expr(compiler, ASSIGN(n->node)->right);
             }
             //
@@ -260,7 +260,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts, args)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, args);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, args);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -287,7 +287,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (!object_find_bool(compiler->consts, code)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, code);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, code);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -302,7 +302,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t nameidxstore;
             if (!_list_contains(compiler->names, IDENTI(FUNCT(expr->node)->name->node)->name )){
                 //Create object
-                compiler->names->type->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
                 nameidxstore = NAMEIDX(compiler->names);
             }
             else{
@@ -332,7 +332,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->consts, IDENTI(ASSIGN((*it)->node)->name->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_append(compiler->consts, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                     idx = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -352,7 +352,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (!object_find_bool(compiler->consts,size)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, size);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, size);
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -375,7 +375,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,trueobj)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, trueobj);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, trueobj);
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -390,7 +390,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,falseobj)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, falseobj);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, falseobj);
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -405,7 +405,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,noneobj)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, noneobj);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -424,7 +424,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t nameidx;
             if (!_list_contains(compiler->consts, IDENTI(CLASS(expr->node)->name->node)->name )){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, str_new_fromstr(*IDENTI(CLASS(expr->node)->name->node)->name));
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(CLASS(expr->node)->name->node)->name));
                 nameidx = NAMEIDX(compiler->consts);
             }
             else{
@@ -437,7 +437,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts, args)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, args);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, args);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -461,7 +461,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (!object_find_bool(compiler->consts, code)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, code);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, code);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -477,7 +477,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             if (!object_find_bool(compiler->consts, bases)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, bases);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, bases);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -489,7 +489,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* i=new_int_fromint(3);
             if (!object_find_bool(compiler->consts, i)){
                 //Create object
-                compiler->consts->type->slot_append(compiler->consts, i);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, i);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -505,7 +505,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t nameidxstore;
             if (!_list_contains(compiler->names, IDENTI(FUNCT(expr->node)->name->node)->name )){
                 //Create object
-                compiler->names->type->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
                 nameidxstore = NAMEIDX(compiler->names);
             }
             else{
@@ -530,7 +530,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
-                    compiler->names->type->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -564,7 +564,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
-                    compiler->names->type->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -607,7 +607,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
-                    compiler->names->type->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -639,7 +639,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t idx;
                         if (!_list_contains(compiler->consts, IDENTI(ASSIGN((*it)->node)->name->node)->name)){
                             //Create object
-                            compiler->consts->type->slot_append(compiler->consts, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                             idx = NAMEIDX(compiler->consts);
                         }
                         else{
@@ -659,7 +659,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                     if (!object_find_bool(compiler->consts,size)){
                         //Create object
-                        compiler->consts->type->slot_append(compiler->consts, size);
+                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, size);
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
@@ -674,7 +674,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     //Object
                     if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                         //Create object
-                        compiler->names->type->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -752,10 +752,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count;
                 if (compiler->lines!=NULL){
                     object* tuple=new_tuple();
-                    tuple->type->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }
 
@@ -780,10 +780,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count;
                 if (compiler->lines!=NULL){
                     object* tuple=new_tuple();
-                    tuple->type->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }   
             break;
@@ -812,10 +812,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t end=compiler->instructions->count;
                         if (compiler->lines!=NULL){
                             object* tuple=new_tuple();
-                            tuple->type->slot_append(tuple, new_int_fromint(start));
-                            tuple->type->slot_append(tuple, new_int_fromint(end));
-                            tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                            compiler->lines->type->slot_append(compiler->lines, tuple);
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                            compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                         }
                     }
                     add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, n->start, n->end);
@@ -834,10 +834,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t end=compiler->instructions->count;
                         if (compiler->lines!=NULL){
                             object* tuple=new_tuple();
-                            tuple->type->slot_append(tuple, new_int_fromint(start));
-                            tuple->type->slot_append(tuple, new_int_fromint(end));
-                            tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                            compiler->lines->type->slot_append(compiler->lines, tuple);
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                            compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                         }
                     }   
                 }
@@ -896,10 +896,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count;
                 if (compiler->lines!=NULL){
                     object* tuple=new_tuple();
-                    tuple->type->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }
             break;
@@ -916,10 +916,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count;
                 if (compiler->lines!=NULL){
                     object* tuple=new_tuple();
-                    tuple->type->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }
             break;
@@ -930,7 +930,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, STRLIT(EXCEPT(expr->node)->name->node)->literal)){
                     //Create object
-                    compiler->names->type->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(expr->node)->name->node)->literal));
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(expr->node)->name->node)->literal));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -952,10 +952,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count;
                 if (compiler->lines!=NULL){
                     object* tuple=new_tuple();
-                    tuple->type->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_append(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
-                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }    
 
@@ -966,7 +966,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, STRLIT(EXCEPT(expr->node)->type->node)->literal)){
                         //Create object
-                        compiler->names->type->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(expr->node)->type->node)->literal));
+                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(expr->node)->type->node)->literal));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -999,10 +999,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count;
                 if (compiler->lines!=NULL){
                     object* tuple=new_tuple();
-                    tuple->type->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                    compiler->lines->type->slot_append(compiler->lines, tuple);
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }
 
@@ -1037,10 +1037,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t end=compiler->instructions->count;
                         if (compiler->lines!=NULL){
                             object* tuple=new_tuple();
-                            tuple->type->slot_append(tuple, new_int_fromint(start));
-                            tuple->type->slot_append(tuple, new_int_fromint(end));
-                            tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                            compiler->lines->type->slot_append(compiler->lines, tuple);
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                            compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                         }
                     }
 
@@ -1064,10 +1064,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t end=compiler->instructions->count;
                         if (compiler->lines!=NULL){
                             object* tuple=new_tuple();
-                            tuple->type->slot_append(tuple, new_int_fromint(start));
-                            tuple->type->slot_append(tuple, new_int_fromint(end));
-                            tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                            compiler->lines->type->slot_append(compiler->lines, tuple);
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                            compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                         }
                     }
                     continue;
@@ -1080,7 +1080,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->name->node)->literal)){
                         //Create object
-                        compiler->names->type->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->name->node)->literal));
+                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->name->node)->literal));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -1103,10 +1103,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t end=compiler->instructions->count;
                     if (compiler->lines!=NULL){
                         object* tuple=new_tuple();
-                        tuple->type->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->name->start->line));
-                        compiler->lines->type->slot_append(compiler->lines, tuple);
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->name->start->line));
+                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                     }
                 }    
 
@@ -1118,7 +1118,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->type->node)->literal)){
                         //Create object
-                        compiler->names->type->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->type->node)->literal));
+                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->type->node)->literal));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -1141,10 +1141,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t end=compiler->instructions->count;
                     if (compiler->lines!=NULL){
                         object* tuple=new_tuple();
-                        tuple->type->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->type->start->line));
-                        compiler->lines->type->slot_append(compiler->lines, tuple);
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->type->start->line));
+                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                     }
 
                     add_instruction(compiler->instructions,BINOP_EXC_CMP,0, expr->start, expr->end);         
@@ -1168,10 +1168,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t end=compiler->instructions->count;
                     if (compiler->lines!=NULL){
                         object* tuple=new_tuple();
-                        tuple->type->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-                        compiler->lines->type->slot_append(compiler->lines, tuple);
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                     }
                 }
                 
@@ -1184,6 +1184,45 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             add_instruction(compiler->instructions,FINISH_TRY,0, expr->start, expr->end);      
             
+            break;
+        }
+
+        case N_FOR: {
+            //Checks here
+            uint32_t idx;
+            if (!_list_contains(compiler->consts, IDENTI(FOR(expr->node)->ident->node)->name)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
+            }
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end); 
+
+            compile_expr(compiler, FOR(expr->node)->expr);
+
+            add_instruction(compiler->instructions,SETUP_FOR,0, expr->start, expr->end); 
+            
+            //Code
+            for (Node* n: (*FOR(expr->node)->code)){
+                uint32_t start=compiler->instructions->count;
+                
+                int i=compile_expr(compiler, n);
+                if (i==0x100){
+                    return 0x100;
+                }
+                uint32_t end=compiler->instructions->count;
+                if (compiler->lines!=NULL){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                }            
+            }
+
+            add_instruction(compiler->instructions,FINISH_FOR,0, expr->start, expr->end); 
             break;
         }
 
@@ -1224,16 +1263,16 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         uint32_t end=compiler->instructions->count;
         
         object* tuple=new_tuple();
-        tuple->type->slot_append(tuple, new_int_fromint(start));
-        tuple->type->slot_append(tuple, new_int_fromint(end));
-        tuple->type->slot_append(tuple, new_int_fromint(n->start->line));
-        lines->type->slot_append(lines, tuple);
+        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+        lines->type->slot_mappings->slot_append(lines, tuple);
     }
 
     uint32_t idx;
     if (!object_find_bool(compiler->consts, noneobj)){
         //Create object
-        compiler->consts->type->slot_append(compiler->consts, new_none());
+        compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_none());
         idx=NAMEIDX(compiler->consts);
     }
     else{
@@ -1245,40 +1284,40 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
 
     if (ast.nodes.size()>0){
         object* tuple=new_tuple();
-        object* lineno=object_sub(lines->type->slot_len(lines), new_int_fromint(1));
-        object* line=lines->type->slot_get(lines, lineno);
-        tuple->type->slot_append(tuple, line->type->slot_get(line, new_int_fromint(0)));
-        tuple->type->slot_append(tuple, object_add(line->type->slot_get(line, new_int_fromint(1)), new_int_fromint(2)));
-        tuple->type->slot_append(tuple, line->type->slot_get(line, new_int_fromint(2)));
+        object* lineno=object_sub(lines->type->slot_mappings->slot_len(lines), new_int_fromint(1));
+        object* line=lines->type->slot_mappings->slot_get(lines, lineno);
+        tuple->type->slot_mappings->slot_append(tuple, line->type->slot_mappings->slot_get(line, new_int_fromint(0)));
+        tuple->type->slot_mappings->slot_append(tuple, object_add(line->type->slot_mappings->slot_get(line, new_int_fromint(1)), new_int_fromint(2)));
+        tuple->type->slot_mappings->slot_append(tuple, line->type->slot_mappings->slot_get(line, new_int_fromint(2)));
         
-        lines->type->slot_set(lines, lineno, tuple);
+        lines->type->slot_mappings->slot_set(lines, lineno, tuple);
     }
     else{
         object* tuple=new_tuple();
-        tuple->type->slot_append(tuple, new_int_fromint(0));
-        tuple->type->slot_append(tuple, new_int_fromint(2));
-        tuple->type->slot_append(tuple, new_int_fromint(0));
-        lines->type->slot_append(lines, tuple);
+        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
+        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(2));
+        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
+        lines->type->slot_mappings->slot_append(lines, tuple);
     }
     
     reverse_instructions(compiler->instructions);
     object* instructions=new_list();
     struct instruction* instruction=compiler->instructions->first;
     while (instruction){
-        CAST_LIST(instructions)->type->slot_append(instructions, new_int_fromint(instruction->opcode));
-        CAST_LIST(instructions)->type->slot_append(instructions, new_int_fromint(instruction->arg));
+        CAST_LIST(instructions)->type->slot_mappings->slot_append(instructions, new_int_fromint(instruction->opcode));
+        CAST_LIST(instructions)->type->slot_mappings->slot_append(instructions, new_int_fromint(instruction->arg));
         instruction=instruction->next;
     }
 
     object* list=new_list();
-    CAST_LIST(list)->type->slot_append(list, compiler->names);
-    CAST_LIST(list)->type->slot_append(list, compiler->consts);
-    CAST_LIST(list)->type->slot_append(list, instructions);
-    CAST_LIST(list)->type->slot_append(list, object_repr(str_new_fromstr(program)));
-    CAST_LIST(list)->type->slot_append(list, lines);
+    CAST_LIST(list)->type->slot_mappings->slot_append(list, compiler->names);
+    CAST_LIST(list)->type->slot_mappings->slot_append(list, compiler->consts);
+    CAST_LIST(list)->type->slot_mappings->slot_append(list, instructions);
+    CAST_LIST(list)->type->slot_mappings->slot_append(list, object_repr(str_new_fromstr(program)));
+    CAST_LIST(list)->type->slot_mappings->slot_append(list, lines);
 
     object* code=code_new_fromargs(list);
-    CAST_CODE(code)->co_instructions=CAST_INT(instructions->type->slot_len(instructions))->val->to_int();
+    CAST_CODE(code)->co_instructions=CAST_INT(instructions->type->slot_mappings->slot_len(instructions))->val->to_int();
     
     return code;
 }

@@ -37,6 +37,8 @@ enum opcode{
     BINOP_GTE,
     BINOP_LT,
     BINOP_LTE,
+    SETUP_FOR,
+    FINISH_FOR,
 };
 
 enum scope{
@@ -92,12 +94,15 @@ struct compiler{
 #define TRY(node) ((Try*)(node))
 #define FINALLY(node) ((Finally*)(node))
 #define EXCEPT(node) ((Except*)(node))
+#define FOR(node) ((For*)node)
 
-#define NAMEIDX(obj) (*CAST_INT(obj->type->slot_len(obj))->val).to_long_long()-1
+#define NAMEIDX(obj) (*CAST_INT(list_len(obj))->val).to_long_long()-1
 
 parse_ret parseretglbl;
 
 struct object* compile(struct compiler* compiler, parse_ret ast);
+uint32_t num_instructions(vector<Node*>* nodes, scope s);
+uint32_t num_instructions(Node* node, scope s);
 uint32_t num_instructions(vector<Node*>* nodes, scope s);
 uint32_t num_instructions(Node* node, scope s);
 
