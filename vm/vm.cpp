@@ -200,7 +200,7 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
         ((object_var*)value)->gc_ref++;
     }
 
-    vm->callstack->head->locals->type->slot_set(vm->callstack->head->locals, name, value); //If globals is same obj as locals then this will still update both
+    dict_set(vm->callstack->head->locals, name, value); //If globals is same obj as locals then this will still update both
 }
 
 struct object* vm_get_var_locals(struct vm* vm, object* name){
@@ -246,7 +246,7 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
-    vm->globals->type->slot_set(vm->globals, name, value); //If globals is same obj as locals then this will still update both
+    dict_set(vm->globals, name, value); //If globals is same obj as locals then this will still update both
 }
 
 struct object* vm_get_var_globals(struct vm* vm, object* name){
@@ -281,27 +281,27 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
     //Run one instruction
     switch (CAST_INT(instruction)->val->to_int()){
         case LOAD_CONST:{
-            add_dataframe(vm, vm->objstack, CAST_CODE(vm->callstack->head->code)->co_consts->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_consts, arg));
+            add_dataframe(vm, vm->objstack, list_get(CAST_CODE(vm->callstack->head->code)->co_consts, arg));
             break;
         }
 
         case STORE_GLOBAL:{
-            vm_add_var_globals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            vm_add_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
             break;
         }
 
         case LOAD_GLOBAL:{
-            add_dataframe(vm, vm->objstack, vm_get_var_globals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            add_dataframe(vm, vm->objstack, vm_get_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
             break;
         }
 
         case STORE_NAME:{
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            vm_add_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
             break;
         }
 
         case LOAD_NAME:{
-            add_dataframe(vm, vm->objstack, vm_get_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            add_dataframe(vm, vm->objstack, vm_get_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
             break;
         }
 
@@ -426,15 +426,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* val;
             for (uint32_t i=0; i<kwargc; i++){
                 val=pop_dataframe(vm->objstack);
-                kwargs->type->slot_set(kwargs, pop_dataframe(vm->objstack), val);
+                dict_set(kwargs, pop_dataframe(vm->objstack), val);
             }
             //
 
             //Setup args
             object* args=new_tuple();
-            args->type->slot_append(args, head);
+            tuple_append(args, head);
             for (uint32_t i=0; i<posargc-1; i++){
-                args->type->slot_append(args, pop_dataframe(vm->objstack));
+                tuple_append(args, pop_dataframe(vm->objstack));
             }
             
             //
@@ -466,14 +466,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* val;
             for (uint32_t i=0; i<kwargc; i++){
                 val=pop_dataframe(vm->objstack);
-                kwargs->type->slot_set(kwargs, pop_dataframe(vm->objstack), val);
+                dict_set(kwargs, pop_dataframe(vm->objstack), val);
             }
             //
 
             //Setup args
             object* args=new_tuple();
             for (uint32_t i=0; i<posargc; i++){
-                args->type->slot_append(args, pop_dataframe(vm->objstack));
+                tuple_append(args, pop_dataframe(vm->objstack));
             }
             
             //
@@ -492,7 +492,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case BUILD_LIST: {
             object* list=new_list();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
-                list->type->slot_append(list, pop_dataframe(vm->objstack));
+                list_append(list, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, list);
             break;
@@ -501,7 +501,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case BUILD_TUPLE: {
             object* tuple=new_tuple();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
-                tuple->type->slot_append(tuple, pop_dataframe(vm->objstack));
+                tuple_append(tuple, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, tuple);
             break;
@@ -511,7 +511,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* dict=new_dict();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 object* name=pop_dataframe(vm->objstack);
-                dict->type->slot_set(dict, name, pop_dataframe(vm->objstack));
+                dict_set(dict, name, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, dict);
             break;
@@ -534,7 +534,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
         case LOAD_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
-            object* attr=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             add_dataframe(vm, vm->objstack, object_getattr(obj, attr));
             break;
         }  
@@ -542,7 +542,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case STORE_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
-            object* attr=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object_setattr(obj, attr, val);
             break;
         }
@@ -694,8 +694,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
     object* instruction;
     uint32_t instructions=CAST_CODE(codeobj)->co_instructions;
     object* linetup=list_index_int(lines, linetup_cntr);
+    
+    vm->callstack->head->line=list_index_int(linetup, 2);
     while ((*ip)<instructions){
         instruction=list_index_int(code, (*ip)++);
+        
         if (((*ip)-1)/2>(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
@@ -803,7 +806,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
                     
                     int line=0;
-                    object* line_=lines->type->slot_get(lines, new_int_fromint(frame->other));
+                    object* line_=list_get(lines, new_int_fromint(frame->other));
                     int target=CAST_INT(list_index_int(line_,2))->val->to_int();
                     int startidx=0;
                     int endidx=0;
