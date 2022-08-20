@@ -75,7 +75,8 @@ int execute(string data, bool objdump, bool verbose){
     kwds.push_back("except");
     kwds.push_back("finally");
     kwds.push_back("for");
-
+    kwds.push_back("break");
+    kwds.push_back("continue");
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
