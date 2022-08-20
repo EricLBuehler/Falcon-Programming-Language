@@ -856,6 +856,9 @@ class Parser{
             if (this->current_tok.data=="continue"){
                 return make_continue(ret);
             }
+            if (this->current_tok.data=="while"){
+                return make_while(ret);
+            }
             this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
             this->advance();
             return NULL;
@@ -1549,6 +1552,54 @@ class Parser{
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             this->advance();
+            return node;
+        }
+
+        Node* make_while(parse_ret* ret){
+            this->advance();
+
+            Token t=this->current_tok;
+
+            Node* expr=this->expr(ret, LOWEST);
+            if (!current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+            
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.nodes.clear();
+            }
+
+            if (!this->current_tok_is(T_RCURLY) && !this->get_prev().type!=T_RCURLY){
+                this->backadvance();
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+
+            this->advance();
+
+            Node* node=make_node(N_WHILE);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            While* w=(While*)malloc(sizeof(While));
+            w->expr=expr;
+            w->code=new vector<Node*>;
+            w->code->clear();
+            for (Node* n: code.nodes){
+                w->code->push_back(n);
+            }
+
+            node->node=w;
+
             return node;
         }
 };

@@ -30,8 +30,9 @@ enum nodetype{
     N_EXCEPT,
     N_FINALLY,
     N_FOR,
-    N_BREAK,
-    N_CONTINUE,
+    N_BREAK, //No data struct
+    N_CONTINUE, //No data struct
+    N_WHILE,
 };
 
 enum precedence {
@@ -221,6 +222,11 @@ struct Finally{
 struct For{
     vector<Node*>* code;
     Node* ident;
+    Node* expr;
+};
+
+struct While{
+    vector<Node*>* code;
     Node* expr;
 };
 
