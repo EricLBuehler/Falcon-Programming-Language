@@ -77,3 +77,13 @@ BINOP_GTE - IF TOS-1 >= TOS, push True, or push False
 BINOP_LT - IF TOS-1 < TOS, push True, or push False
 
 BINOP_LTE - IF TOS-1 <= TOS, push True, or push False
+
+FOR_TOS_ITER(arg) - Next on TOS for for loop or to arg if StopIteration is raised
+
+JUMP_TO - vm->ip = arg
+
+EXTRACT_ITER - Gets iter out of TOS, then push iterator onto stack
+
+BREAK_LOOP - Break out of loop
+
+CONTINUE_LOOP - Break out of loop

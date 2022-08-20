@@ -1190,19 +1190,31 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_FOR: {
             //Checks here
             uint32_t idx;
-            if (!_list_contains(compiler->consts, IDENTI(FOR(expr->node)->ident->node)->name)){
+            if (!_list_contains(compiler->names, IDENTI(FOR(expr->node)->ident->node)->name)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
-                idx=NAMEIDX(compiler->consts);
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
+                idx=NAMEIDX(compiler->names);
             }
             else{
-                idx=object_find(compiler->consts, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
+                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
             }
-            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end); 
 
             compile_expr(compiler, FOR(expr->node)->expr);
+            add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
+            
+            add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+8, expr->start, expr->end); 
+            uint32_t start=compiler->instructions->count*2;
 
-            add_instruction(compiler->instructions,SETUP_FOR,0, expr->start, expr->end); 
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                    break;
+            }
+            add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             
             //Code
             for (Node* n: (*FOR(expr->node)->code)){
@@ -1222,7 +1234,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }            
             }
 
-            add_instruction(compiler->instructions,FINISH_FOR,0, expr->start, expr->end); 
+            add_instruction(compiler->instructions,JUMP_TO,start-2, expr->start, expr->end); 
+            break;
+        }
+
+        case N_BREAK: {
+            add_instruction(compiler->instructions,BREAK_LOOP,0, expr->start, expr->end); 
+            break;
+        }
+
+        case N_CONTINUE: {
+            add_instruction(compiler->instructions,CONTINUE_LOOP,0 , expr->start, expr->end); 
             break;
         }
 
@@ -1268,7 +1290,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
         lines->type->slot_mappings->slot_append(lines, tuple);
     }
-
+    
     uint32_t idx;
     if (!object_find_bool(compiler->consts, noneobj)){
         //Create object
@@ -1281,6 +1303,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
     
     add_instruction(compiler->instructions, LOAD_CONST, idx, new Position, new Position);
     add_instruction(compiler->instructions, RETURN_VAL, 0, new Position, new Position);
+
 
     if (ast.nodes.size()>0){
         object* tuple=new_tuple();

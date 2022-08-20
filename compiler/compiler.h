@@ -37,8 +37,11 @@ enum opcode{
     BINOP_GTE,
     BINOP_LT,
     BINOP_LTE,
-    SETUP_FOR,
-    FINISH_FOR,
+    FOR_TOS_ITER,
+    JUMP_TO,
+    EXTRACT_ITER,
+    BREAK_LOOP,
+    CONTINUE_LOOP,
 };
 
 enum scope{
@@ -96,7 +99,7 @@ struct compiler{
 #define EXCEPT(node) ((Except*)(node))
 #define FOR(node) ((For*)node)
 
-#define NAMEIDX(obj) (*CAST_INT(list_len(obj))->val).to_long_long()-1
+#define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 
 parse_ret parseretglbl;
 
