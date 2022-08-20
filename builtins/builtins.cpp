@@ -2,16 +2,16 @@
 #define BUILTIN_BUILD_CLASS builtins[1]
 
 object* builtin_print(object* self, object* args){
-    printf("%s%s",object_cstr(dict_get(args, str_new_fromstr("object"))).c_str(), object_cstr(dict_get(args, str_new_fromstr("end"))).c_str());
+    printf("%s%s",object_cstr(args->type->slot_mappings->slot_get(args, str_new_fromstr("object"))).c_str(), object_cstr(dict_get(args, str_new_fromstr("end"))).c_str());
     return new_none();
 }
 
 object* builtin_repr(object* self, object* args){
-    return object_repr(dict_get(args, str_new_fromstr("object")));
+    return object_repr(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
 }
 
 object* builtin___build_class__(object* self, object* args){
-    object* function=dict_get(args, str_new_fromstr("func"));
+    object* function=args->type->slot_mappings->slot_get(args, str_new_fromstr("func"));
     object* dict;
 
     if (!object_istype(function->type, &FuncType)){
@@ -39,16 +39,34 @@ object* builtin___build_class__(object* self, object* args){
 }
 
 object* builtin_id(object* self, object* args){
-    object* obj=dict_get(args, str_new_fromstr("object"));
+    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
     char buf[32];
     sprintf(buf, "%d", obj);
     return new_int_fromstr(new string(buf));
 }
 
 object* builtin_input(object* self, object* args){
-    object* obj=dict_get(args, str_new_fromstr("object"));
+    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
     cout<<object_cstr(obj);
     string s="";
     cin>>s;
     return str_new_fromstr(s);
+}
+
+object* builtin_iter(object* self, object* args){
+    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    if (obj->type->slot_iter==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object is not an iterable", obj->type->name->c_str());
+        return NULL;
+    }
+    return obj->type->slot_iter(obj);
+}
+
+object* builtin_next(object* self, object* args){
+    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    if (obj->type->slot_next==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object is not an iterable", obj->type->name->c_str());
+        return NULL;
+    }
+    return obj->type->slot_next(obj);
 }
