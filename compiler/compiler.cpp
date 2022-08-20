@@ -1248,6 +1248,34 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_WHILE: {
+            //Checks here
+            uint32_t start=compiler->instructions->count*2;
+            compile_expr(compiler, WHILE(expr->node)->expr);
+            add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(WHILE(expr->node)->code, compiler->scope)*2+2, expr->start, expr->end); 
+            
+            //Code
+            for (Node* n: (*WHILE(expr->node)->code)){
+                uint32_t start=compiler->instructions->count;
+                
+                int i=compile_expr(compiler, n);
+                if (i==0x100){
+                    return 0x100;
+                }
+                uint32_t end=compiler->instructions->count;
+                if (compiler->lines!=NULL){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                }            
+            }
+
+            add_instruction(compiler->instructions,JUMP_TO,start, expr->start, expr->end); 
+            break;
+        }
+
     }
 
     return 0;
