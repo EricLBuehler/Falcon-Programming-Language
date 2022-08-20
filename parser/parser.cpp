@@ -847,6 +847,15 @@ class Parser{
             if (this->current_tok.data=="try"){
                 return make_try(ret);
             }               
+            if (this->current_tok.data=="for"){
+                return make_for(ret);
+            }
+            if (this->current_tok.data=="break"){
+                return make_break(ret);
+            }
+            if (this->current_tok.data=="continue"){
+                return make_continue(ret);
+            }
             this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
             this->advance();
             return NULL;
@@ -1465,4 +1474,81 @@ class Parser{
             return n;
         }
 
+        Node* make_for(parse_ret* ret){
+            this->advance();
+            
+            if (!current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "SyntaxError: Expected identifier, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            Node* ident=this->atom(ret);
+            this->advance();
+            
+            if (!current_tok_is(T_IN)){
+                this->add_parsing_error(ret, "SyntaxError: Expected 'in', got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+            
+            Node* expr=this->expr(ret, LOWEST);
+            if (!current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+            
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.nodes.clear();
+            }
+
+            if (!this->current_tok_is(T_RCURLY) && !this->get_prev().type!=T_RCURLY){
+                this->backadvance();
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+
+            this->advance();
+
+            Node* node=make_node(N_FOR);
+            node->start=ident->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            For* f=(For*)malloc(sizeof(For));
+            f->ident=ident;
+            f->expr=expr;
+            f->code=new vector<Node*>;
+            f->code->clear();
+            for (Node* n: code.nodes){
+                f->code->push_back(n);
+            }
+
+            node->node=f;
+
+            return node;
+        }
+
+        Node* make_break(parse_ret* ret){
+            Node* node=make_node(N_BREAK);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            this->advance();
+            return node;
+        }
+
+        Node* make_continue(parse_ret* ret){
+            Node* node=make_node(N_CONTINUE);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            this->advance();
+            return node;
+        }
 };

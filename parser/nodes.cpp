@@ -29,6 +29,9 @@ enum nodetype{
     N_TRY,
     N_EXCEPT,
     N_FINALLY,
+    N_FOR,
+    N_BREAK,
+    N_CONTINUE,
 };
 
 enum precedence {
@@ -215,7 +218,11 @@ struct Finally{
     vector<Node*>* code;
 };
 
-
+struct For{
+    vector<Node*>* code;
+    Node* ident;
+    Node* expr;
+};
 
 
 void destroy_node(struct Node* node){
