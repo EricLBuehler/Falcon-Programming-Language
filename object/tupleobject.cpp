@@ -126,6 +126,57 @@ object* tuple_cmp(object* self, object* other, uint8_t type){
     }
     return new_bool_false();
 }
+
+
 object* tuple_iter(object* self){
-    return self;
+    //Make an iterator
+    object* iter=(object*)new_object_var(&ListIterType, sizeof(ListIterObject)+CAST_TUPLE(self)->capacity*sizeof(object*));
+    CAST_TUPLEITER(iter)->capacity=CAST_TUPLE(self)->capacity;
+    CAST_TUPLEITER(iter)->size=CAST_TUPLE(self)->size;
+    CAST_TUPLEITER(iter)->idx=0;
+    CAST_TUPLEITER(iter)->array=(object**)malloc(CAST_TUPLEITER(iter)->capacity * sizeof(struct object*));
+    for (size_t i=0; i<CAST_TUPLE(self)->size; i++){
+        CAST_TUPLEITER(iter)->array[i]=INCREF(CAST_TUPLE(self)->array[i]);
+    }
+    return iter;
+}
+
+void tuple_iter_del(object* self){
+    for (size_t i=0; i<CAST_TUPLEITER(self)->size; i++){
+        DECREF(CAST_TUPLEITER(self)->array[i]);
+    }
+    free(CAST_TUPLEITER(self)->array);
+}
+
+object* tuple_iter_next(object* self){
+    if (CAST_TUPLEITER(self)->idx+1>CAST_TUPLEITER(self)->size){
+        vm_add_err(&StopIteration, vm, "Iterator out of data");
+        return NULL;
+    }
+    return CAST_TUPLEITER(self)->array[CAST_TUPLEITER(self)->idx++];
+}
+
+object* tuple_iter_cmp(object* self, object* other, uint8_t type){
+    if (self->type!=other->type){
+        return new_bool_false();
+    }
+    if (type==CMP_EQ){
+        if (CAST_TUPLEITER(self)->size != CAST_TUPLEITER(other)->size){
+            return new_bool_false();
+        }
+        for (size_t i=0; i<CAST_TUPLEITER(self)->size; i++){
+            if (!istrue(object_cmp(CAST_TUPLEITER(self)->array[i], CAST_TUPLEITER(other)->array[i], type))){
+                return new_bool_false(); 
+            }
+        }
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+
+object* tuple_iter_bool(object* self){
+    if (CAST_TUPLEITER(self)->idx+1>CAST_TUPLEITER(self)->size){
+        return new_bool_false();
+    }
+    return new_bool_true();
 }

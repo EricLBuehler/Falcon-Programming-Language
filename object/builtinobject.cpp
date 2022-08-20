@@ -51,6 +51,20 @@ void setup_builtins(){
     builtins[19]=new_builtin((builtinfunc)builtin_repr, str_new_fromstr("repr"), reprargs, reprkwargs, CAST_INT(reprargs->type->slot_mappings->slot_len(reprargs))->val->to_int());
 
     builtins[20]=(object*)&FloatType;
+
+    builtins[21]=(object*)&StopIteration;
+
+    object* iterargs=new_tuple();
+    iterargs->type->slot_mappings->slot_append(iterargs, str_new_fromstr("object"));
+    object* iterkwargs=new_tuple();
+    iterkwargs->type->slot_mappings->slot_append(iterkwargs, new_none());
+    builtins[22]=new_builtin((builtinfunc)builtin_iter, str_new_fromstr("iter"), iterargs, iterkwargs, CAST_INT(iterargs->type->slot_mappings->slot_len(iterargs))->val->to_int());
+
+    object* nextargs=new_tuple();
+    nextargs->type->slot_mappings->slot_append(nextargs, str_new_fromstr("object"));
+    object* nextkwargs=new_tuple();
+    nextkwargs->type->slot_mappings->slot_append(nextkwargs, new_none());
+    builtins[23]=new_builtin((builtinfunc)builtin_next, str_new_fromstr("next"), nextargs, nextkwargs, CAST_INT(nextargs->type->slot_mappings->slot_len(nextargs))->val->to_int());
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

@@ -189,7 +189,6 @@ void setup_str_type(){
 
 
 
-
 object* list_init(object* self, object* args, object* kwargs);
 void list_del(object* self);
 object* list_len(object* self);
@@ -209,7 +208,6 @@ typedef struct ListObject{
     object** array; //Pointer to array
     size_t capacity;
     size_t size;
-    size_t idx;
 }ListObject;
 
 Method list_methods[]={{"append", (cwrapperfunc)list_append_meth}, {NULL,NULL}};
@@ -253,7 +251,7 @@ TypeObject ListType={
     (newfunc)list_new, //slot_new
     (delfunc)list_del, //slot_del
 
-    (iternextfunc)list_next, //slot_next
+    0, //slot_next
     (unaryfunc)list_iter, //slot_iter
 
     (reprfunc)list_repr, //slot_repr
@@ -586,7 +584,7 @@ TypeObject TupleType={
     (newfunc)tuple_new, //slot_new
     (delfunc)tuple_del, //slot_del
 
-    (iternextfunc)tuple_next, //slot_next
+    0, //slot_next
     (unaryfunc)tuple_iter, //slot_iter
 
     (reprfunc)tuple_repr, //slot_repr
@@ -1016,16 +1014,30 @@ object* new_type_exception(string* name, object* bases, object* dict){
 
 void setup_exception_type(){
     ExceptionType=(*(TypeObject*)finalize_type(&ExceptionType));
+
     TypeError=(*(TypeObject*)new_type_exception(new string("TypeError"), new_tuple(), new_dict()));
+    
     ValueError=(*(TypeObject*)new_type_exception(new string("ValueError"), new_tuple(), new_dict()));
+    
     AttributeError=(*(TypeObject*)new_type_exception(new string("AttributeError"), new_tuple(), new_dict()));
-    IndexError=(*(TypeObject*)new_type_exception(new string("IndexError"), new_tuple(), new_dict()));
+    
+    object* indexerr_bases=new_tuple();
+    indexerr_bases->type->slot_mappings->slot_append(indexerr_bases, (object*)&ValueError);
+    IndexError=(*(TypeObject*)new_type_exception(new string("IndexError"), indexerr_bases, new_dict()));
+    
     KeyError=(*(TypeObject*)new_type_exception(new string("KeyError"), new_tuple(), new_dict()));
+    
     NameError=(*(TypeObject*)new_type_exception(new string("NameError"), new_tuple(), new_dict()));
+    
     MemoryError=(*(TypeObject*)new_type_exception(new string("MemoryError"), new_tuple(), new_dict()));
+    
     object* recursionerr_bases=new_tuple();
-    tuple_append(recursionerr_bases, (object*)&MemoryError);
+    recursionerr_bases->type->slot_mappings->slot_append(recursionerr_bases, (object*)&MemoryError);
     RecursionError=(*(TypeObject*)new_type_exception(new string("RecursionError"), recursionerr_bases, new_dict()));
+
+    object* stopiter_bases=new_tuple();
+    stopiter_bases->type->slot_mappings->slot_append(stopiter_bases, (object*)&ValueError);
+    StopIteration=(*(TypeObject*)new_type_exception(new string("StopIteration"), stopiter_bases, new_dict()));
 }
 
 
@@ -1311,7 +1323,156 @@ void setup_float_type(){
     FloatType=(*(TypeObject*)finalize_type(&FloatType));
 }
 
+void list_iter_del(object* self);
+object* list_iter_repr(object* self);
+object* list_iter_next(object* self);
+object* list_iter_cmp(object* self, object* other, uint8_t type);
+object* list_iter_bool(object* self);
 
+typedef struct ListIterObject{
+    OBJHEAD_VAR
+    object** array; //Pointer to array
+    size_t capacity;
+    size_t size;
+    size_t idx;
+}ListIterObject;
+
+Method list_iter_methods[]={{NULL,NULL}};
+GetSets list_iter_getsets[]={{NULL,NULL}};
+
+static NumberMethods list_iter_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)list_iter_bool, //slot_bool
+};
+
+static Mappings list_iter_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject ListIterType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("list_iter"), //name
+    0, //size
+    sizeof(ListIterObject), //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)list_iter_del, //slot_del
+
+    (iternextfunc)list_iter_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &list_iter_num_methods, //slot_number
+    &list_iter_mappings, //slot_mapping
+
+    list_iter_methods, //slot_methods
+    list_iter_getsets, //slot_getsets
+
+    (compfunc)list_iter_cmp, //slot_cmp
+};
+
+void setup_listiter_type(){
+    ListIterType=(*(TypeObject*)finalize_type(&ListIterType));
+}
+
+
+void tuple_iter_del(object* self);
+object* tuple_iter_repr(object* self);
+object* tuple_iter_next(object* self);
+object* tuple_iter_cmp(object* self, object* other, uint8_t type);
+object* tuple_iter_bool(object* self);
+
+typedef struct TupleIterObject{
+    OBJHEAD_VAR
+    object** array; //Pointer to array
+    size_t capacity;
+    size_t size;
+    size_t idx;
+}TupleIterObject;
+
+Method tuple_iter_methods[]={{NULL,NULL}};
+GetSets tuple_iter_getsets[]={{NULL,NULL}};
+
+static NumberMethods tuple_iter_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)tuple_iter_bool, //slot_bool
+};
+
+static Mappings tuple_iter_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject TupleIterType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("tuple_iter"), //name
+    0, //size
+    sizeof(ListIterObject), //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)tuple_iter_del, //slot_del
+
+    (iternextfunc)tuple_iter_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &tuple_iter_num_methods, //slot_number
+    &tuple_iter_mappings, //slot_mapping
+
+    tuple_iter_methods, //slot_methods
+    tuple_iter_getsets, //slot_getsets
+
+    (compfunc)tuple_iter_cmp, //slot_cmp
+};
+
+void setup_tupleiter_type(){
+    TupleIterType=(*(TypeObject*)finalize_type(&TupleIterType));
+}
 
 
 
@@ -1358,6 +1519,10 @@ object* type_call(object* self, object* args, object* kwargs){
         if (CAST_INT(list_len(args))->val->to_long()==1){
             return (object*)(list_get(args, new_int_fromint(0))->type);
         }
+    }
+    if (CAST_TYPE(self)->slot_new==NULL){
+        vm_add_err(&TypeError, vm, "Cannot create instances of type '%s'", CAST_TYPE(self)->name);
+        return NULL;
     }
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
     if (o != NULL && o->type->slot_init!=NULL){

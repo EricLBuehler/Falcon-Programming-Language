@@ -114,7 +114,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=21;
+const size_t nbuiltins=24;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -125,6 +125,7 @@ TypeObject KeyError;
 TypeObject NameError;
 TypeObject MemoryError;
 TypeObject RecursionError;
+TypeObject StopIteration;
 
 Parser parser;
 
@@ -150,7 +151,7 @@ bool object_find_bool_dict_keys(object* dict, object* needle);
 object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
 bool object_issubclass(object* obj, TypeObject* t);
-
+object* generic_iter_iter(object* self);
 
 #define list_index_int(self, i) CAST_LIST(self)->array[i]
 
@@ -177,6 +178,7 @@ struct vm* vm=NULL;
 
 enum blocktype{
     TRY_BLOCK,
+    FOR_BLOCK,
 };
 
 struct dataframe{
@@ -251,6 +253,9 @@ struct vm{
 #define CAST_CWRAPPER(obj) ((CWrapperObject*)obj)
 #define CAST_SLOTWRAPPER(obj) ((SlotWrapperObject*)obj)
 #define CAST_FLOAT(obj) ((FloatObject*)obj)
+#define CAST_LISTITER(obj) ((ListIterObject*)obj)
+#define CAST_TUPLEITER(obj) ((TupleIterObject*)obj)
+
 
 #define object_istype(this, other) (this==other)
 
@@ -323,6 +328,8 @@ void setup_types_consts(){
     setup_cwrapper_type();  
     setup_slotwrapper_type();
     setup_float_type();
+    setup_listiter_type();
+    setup_tupleiter_type();
 
     setup_builtins();
     
@@ -350,6 +357,8 @@ void setup_types_consts(){
     inherit_type_dict(&ExceptionType);
     inherit_type_dict(&StringStreamType);
     inherit_type_dict(&CWrapperType);
-    
-    inherit_type_dict(&FloatType);    
+    inherit_type_dict(&FloatType); 
+    inherit_type_dict(&ListIterType);     
+    inherit_type_dict(&TupleIterType);    
+
 }

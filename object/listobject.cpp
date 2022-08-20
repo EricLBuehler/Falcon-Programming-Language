@@ -14,7 +14,6 @@ object* new_list(){
     object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
     CAST_LIST(obj)->capacity=2; //Start with 2
     CAST_LIST(obj)->size=0;
-    CAST_LIST(obj)->idx=0;
     CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
     
     return (object*)obj;
@@ -25,7 +24,6 @@ object* list_new(object* type, object* args, object* kwargs){
         object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
         CAST_LIST(obj)->capacity=2; //Start with 2
         CAST_LIST(obj)->size=0;
-        CAST_LIST(obj)->idx=0;
         CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
         
         return (object*)obj;
@@ -37,7 +35,6 @@ object* list_new(object* type, object* args, object* kwargs){
     object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
     CAST_LIST(obj)->capacity=2; //Start with 2
     CAST_LIST(obj)->size=0;
-    CAST_LIST(obj)->idx=0;
     CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
 
     size_t len=(size_t)CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
@@ -125,13 +122,6 @@ object* list_repr(object* self){
     return str_new_fromstr(s);
 }
 
-object* list_next(object* self){
-    if (CAST_LIST(self)->idx+1>CAST_LIST(self)->size){
-        CAST_LIST(self)->idx=0;
-        return NULL;
-    }
-    return CAST_LIST(self)->array[CAST_LIST(self)->idx++];
-}
 
 object* list_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
@@ -165,5 +155,54 @@ object* list_append_meth(object* args, object* kwargs){
 }
 
 object* list_iter(object* self){
-    return self;
+    //Make an iterator
+    object* iter=(object*)new_object_var(&ListIterType, sizeof(ListIterObject)+CAST_LIST(self)->capacity*sizeof(object*));
+    CAST_LISTITER(iter)->capacity=CAST_LIST(self)->capacity;
+    CAST_LISTITER(iter)->size=CAST_LIST(self)->size;
+    CAST_LISTITER(iter)->idx=0;
+    CAST_LISTITER(iter)->array=(object**)malloc(CAST_LISTITER(iter)->capacity * sizeof(struct object*));
+    for (size_t i=0; i<CAST_LIST(self)->size; i++){
+        CAST_LISTITER(iter)->array[i]=INCREF(CAST_LIST(self)->array[i]);
+    }
+    return iter;
+}
+
+void list_iter_del(object* self){
+    for (size_t i=0; i<CAST_LISTITER(self)->size; i++){
+        DECREF(CAST_LISTITER(self)->array[i]);
+    }
+    free(CAST_LISTITER(self)->array);
+}
+
+object* list_iter_next(object* self){
+    if (CAST_LISTITER(self)->idx+1>CAST_LISTITER(self)->size){
+        vm_add_err(&StopIteration, vm, "Iterator out of data");
+        return NULL;
+    }
+    return CAST_LISTITER(self)->array[CAST_LISTITER(self)->idx++];
+}
+
+object* list_iter_cmp(object* self, object* other, uint8_t type){
+    if (self->type!=other->type){
+        return new_bool_false();
+    }
+    if (type==CMP_EQ){
+        if (CAST_LISTITER(self)->size != CAST_LISTITER(other)->size){
+            return new_bool_false();
+        }
+        for (size_t i=0; i<CAST_LISTITER(self)->size; i++){
+            if (!istrue(object_cmp(CAST_LISTITER(self)->array[i], CAST_LISTITER(other)->array[i], type))){
+                return new_bool_false(); 
+            }
+        }
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+
+object* list_iter_bool(object* self){
+    if (CAST_LISTITER(self)->idx+1>CAST_LISTITER(self)->size){
+        return new_bool_false();
+    }
+    return new_bool_true();
 }

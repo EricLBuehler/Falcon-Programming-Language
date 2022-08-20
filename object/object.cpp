@@ -240,29 +240,19 @@ object* object_cmp(object* self, object* other, uint8_t type){
 }
 
 size_t object_find(object* iter, object* needle){
-    object* o=iter->type->slot_next(iter);
-    int i=0;
-    while (o){
-        if (istrue(object_cmp(o,needle, CMP_EQ))){
-            while (o){o=iter->type->slot_next(iter);}
+    for (int i=0; i<CAST_INT(iter->type->slot_mappings->slot_len(iter))->val->to_int(); i++){
+        if (istrue(object_cmp(iter->type->slot_mappings->slot_get(iter, new_int_fromint(i)),needle, CMP_EQ))){
             return i;
         }
-        i++;
-        o=iter->type->slot_next(iter);
     }
     return -1;
 }
 
 bool object_find_bool(object* iter, object* needle){
-    object* o=iter->type->slot_next(iter);
-    int i=0;
-    while (o){
-        if (istrue(object_cmp(o,needle, CMP_EQ))){
-            while (o){o=iter->type->slot_next(iter);}
+    for (int i=0; i<CAST_INT(iter->type->slot_mappings->slot_len(iter))->val->to_int(); i++){
+        if (istrue(object_cmp(iter->type->slot_mappings->slot_get(iter, new_int_fromint(i)),needle, CMP_EQ))){
             return true;
         }
-        i++;
-        o=iter->type->slot_next(iter);
     }
     return false;
 }
@@ -290,32 +280,27 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     uint32_t argsnum=argc-CAST_INT(selfargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
 
     //Positional
-    object* key=args->type->slot_next(args);
     object* names=new_list();
-    
-    while (key){
+    for (int i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
         object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn));
-        dict->type->slot_mappings->slot_set(dict, o, key);
+        dict->type->slot_mappings->slot_set(dict, o, args->type->slot_mappings->slot_get(args, new_int_fromint(i)));
         names->type->slot_mappings->slot_append(names, o);
         argn++;
-        key=args->type->slot_next(args);
     }
     
     //
 
     
     
-    //Keyword    
-    key=selfkwargs->type->slot_next(selfkwargs);
+    //Keyword
     uint32_t argn_tmp=argsnum;
-    while (key){
+    for (int i=0; i<CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int(); i++){
         object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn_tmp));
         
         if (!object_find_bool(names, o)){
-            dict->type->slot_mappings->slot_set(dict, o, key);
+            dict->type->slot_mappings->slot_set(dict, o, selfkwargs->type->slot_mappings->slot_get(selfkwargs, new_int_fromint(i)));
         }
         argn_tmp++;
-        key=selfkwargs->type->slot_next(selfkwargs);
     }
     //Setup user kwargs
     for (auto k: (*CAST_DICT(kwargs)->val)){
@@ -449,16 +434,12 @@ bool object_issubclass(object* obj, TypeObject* t){
     if ((void*)obj->type==(void*)t){
         return true;
     }
-    object* base=obj->type->bases->type->slot_next(obj->type->bases);
-    while (base){
-        if ((void*)base==(void*)t){
-            CAST_LIST(obj->type->bases)->idx=0;
+    for (int i=0; i<CAST_INT(obj->type->bases->type->slot_mappings->slot_len(obj->type->bases))->val->to_int(); i++){
+        if ((void*)obj->type->bases->type->slot_mappings->slot_get(obj->type->bases, new_int_fromint(i))==(void*)t){
             return true;
         }
-        base=obj->type->bases->type->slot_next(obj->type->bases);
     }
     
-    CAST_LIST(obj->type->bases)->idx=0;
     return false;
 }
 
@@ -502,4 +483,8 @@ object* object_float(object* left){
         return NULL;
     }
     return left->type->slot_number->slot_float(left);
+}
+
+object* generic_iter_iter(object* self){
+    return self;
 }
