@@ -679,6 +679,50 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case EXTRACT_ITER: {
+            object* it=pop_dataframe(vm->objstack);
+            add_dataframe(vm, vm->objstack, it->type->slot_iter(it));
+            break;
+        }
+
+        case FOR_TOS_ITER: {
+            if (vm->blockstack->size==0 || vm->blockstack->head->type!=FOR_BLOCK || (vm->blockstack->head->type==FOR_BLOCK && vm->blockstack->head->arg!=CAST_INT(arg)->val->to_int()) ){
+                add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), FOR_BLOCK);
+                vm->blockstack->head->start_ip-=2;
+            }
+            object* it=peek_dataframe(vm->objstack);
+            add_dataframe(vm, vm->objstack, it->type->slot_next(it));
+            if (vm->exception!=NULL){
+                DECREF(vm->exception);
+                vm->exception=NULL;
+                (*ip)=CAST_INT(arg)->val->to_long();
+                pop_blockframe(vm->blockstack);
+            }
+            break;
+        }
+
+        case JUMP_TO: {
+            (*ip)=CAST_INT(arg)->val->to_long();
+            break;
+        }
+
+        case BREAK_LOOP: {
+            if (vm->blockstack->head->type!=FOR_BLOCK){
+                break;
+            }
+            (*ip)=vm->blockstack->head->arg;
+            pop_blockframe(vm->blockstack);
+            break;
+        }
+
+        case CONTINUE_LOOP: {
+            if (vm->blockstack->head->type!=FOR_BLOCK){
+                break;
+            }
+            (*ip)=vm->blockstack->head->start_ip;
+            break;
+        }
+
         default:
             return NULL;
             
