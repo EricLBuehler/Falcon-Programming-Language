@@ -17,6 +17,8 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```id```
 - ```input```
 - ```repr```
+- ```iter```
+- ```next```
 
 <details>
 <summary>Exceptions</summary>
@@ -42,8 +44,6 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```tuple```
 - ```object```
 - ```float```
-- ```iter```
-- ```next```
     
 </details>    
 
