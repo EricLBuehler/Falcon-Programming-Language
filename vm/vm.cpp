@@ -726,6 +726,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case UNPACK_SEQ: {
             object* o=peek_dataframe(vm->objstack);
             uint32_t len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
+            if (len>CAST_INT(arg)->val->to_int()){
+                vm_add_err(&ValueError, vm, "Too many values to unpack, expected %d", len, CAST_INT(arg)->val->to_int());
+                return NULL;
+            }
+            if (len<CAST_INT(arg)->val->to_int()){
+                vm_add_err(&ValueError, vm, "Not enough values to unpack, expected %d", len, CAST_INT(arg)->val->to_int());
+                return NULL;
+            }
             for (uint32_t i=len; i>0; i--){
                 add_dataframe(vm, vm->objstack, o->type->slot_mappings->slot_get(o, new_int_fromint(i-1)));
             }
