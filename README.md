@@ -61,7 +61,15 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 ```js
 m="Placeholder value"
 
-class Peregrine{
+class Falcon{
+    var=m
+    func sound(self){
+        print("Sound!")
+    }
+}
+
+
+class Peregrine(Falcon){
     var=m
     func __new__(self){
         print("__new__ called")
@@ -86,6 +94,10 @@ b=x.var
 
 x.f()
 y.f()
+
+x.sound()
+
+print(x.__bases__)
 
 func f(x,c="A"){
     print("Function f says: ","")
@@ -169,6 +181,10 @@ x=pi*100
 print(str(pi))
 print(int("1234"))
 print(float("10.222"))
+
+for n in [10,20,30]{
+    print(n)
+}
 ```
 
 #### Output ####
@@ -176,11 +192,13 @@ When run with ```./fpl.exe program.fpl```
 
 ```
 __new__ called
-<Peregrine object @ 0x274e7a8>
+<Peregrine object @ 0xef93a8>
 __new__ called
-<Peregrine object @ 0x274ef48>
+<Peregrine object @ 0xef98c8>
 5
 Value
+Sound!
+[<class 'Falcon'>, <class 'object'>]
 Function f says: A
 True
 Done
@@ -196,6 +214,9 @@ I is 50!
 238649.213169341
 1234
 10.222
+10
+20
+30
 ```
 
 ### Usage ###
