@@ -1,6 +1,14 @@
 m="Placeholder value"
 
-class Peregrine{
+class Falcon{
+    var=m
+    func sound(self){
+        print("Sound!")
+    }
+}
+
+
+class Peregrine(Falcon){
     var=m
     func __new__(self){
         print("__new__ called")
@@ -25,6 +33,10 @@ b=x.var
 
 x.f()
 y.f()
+
+x.sound()
+
+print(x.__bases__)
 
 func f(x,c="A"){
     print("Function f says: ","")
