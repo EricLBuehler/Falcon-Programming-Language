@@ -723,6 +723,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case UNPACK_SEQ: {
+            object* o=peek_dataframe(vm->objstack);
+            uint32_t len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
+            for (uint32_t i=len; i>0; i--){
+                add_dataframe(vm, vm->objstack, o->type->slot_mappings->slot_get(o, new_int_fromint(i-1)));
+            }
+            break;
+        }
+
         default:
             return NULL;
             
