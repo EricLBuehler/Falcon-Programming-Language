@@ -1,7 +1,9 @@
 object* new_dict(){
     object_var* obj=new_object_var(&DictType, 0);
     CAST_DICT(obj)->val=new map<object*, object*>;
+    CAST_DICT(obj)->keys=new vector<object*>;
     CAST_DICT(obj)->val->clear();
+    CAST_DICT(obj)->keys->clear();
     obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
     
     return (object*)obj;
@@ -11,7 +13,9 @@ object* dict_new(object* type, object* args, object* kwargs){
     if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0){
         object_var* obj=new_object_var(&DictType, 0);
         CAST_DICT(obj)->val=new map<object*, object*>;
+        CAST_DICT(obj)->keys=new vector<object*>;
         CAST_DICT(obj)->val->clear();
+        CAST_DICT(obj)->keys->clear();
         obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
         return (object*)obj;    
     }
@@ -21,7 +25,9 @@ object* dict_new(object* type, object* args, object* kwargs){
 
     object_var* obj=new_object_var(&DictType, 0);
     CAST_DICT(obj)->val=new map<object*, object*>;
+    CAST_DICT(obj)->keys=new vector<object*>;
     CAST_DICT(obj)->val->clear();
+    CAST_DICT(obj)->keys->clear();
     obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
     
     for (auto k: (*CAST_DICT(kwargs)->val)){
@@ -84,6 +90,8 @@ void dict_set(object* self, object* key, object* val){
         }
     }
 
+    CAST_DICT(self)->keys->push_back(key);
+
     (*CAST_DICT(self)->val)[INCREF(key)]=INCREF(val);
     CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
 }
@@ -92,10 +100,10 @@ object* dict_repr(object* self){
     string s="";
     s+="{";
     int i=0;
-    for (auto k: (*CAST_DICT(self)->val)){
-        s+=object_crepr(k.first);
+    for (object* o: *CAST_DICT(self)->keys ){
+        s+=object_crepr(o);
         s+=": ";
-        s+=object_crepr(k.second);
+        s+=object_crepr(CAST_DICT(self)->val->at(o));
         if (i!=CAST_DICT(self)->val->size()-1){
             s+=", ";
         }
