@@ -267,6 +267,7 @@ struct vm{
 #define CAST_FLOAT(obj) ((FloatObject*)obj)
 #define CAST_LISTITER(obj) ((ListIterObject*)obj)
 #define CAST_TUPLEITER(obj) ((TupleIterObject*)obj)
+#define CAST_DICTITER(obj) ((DictIterObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -342,6 +343,7 @@ void setup_types_consts(){
     setup_float_type();
     setup_listiter_type();
     setup_tupleiter_type();
+    setup_dictiter_type();
 
     setup_builtins();
     

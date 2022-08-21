@@ -288,6 +288,7 @@ object* dict_repr(object* self);
 object* dict_str(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
 object* dict_bool(object* self);
+object* dict_iter(object* self);
 
 
 typedef struct DictObject{
@@ -337,7 +338,7 @@ static TypeObject DictType={
     (delfunc)dict_del, //slot_del
 
     0, //slot_next
-    0, //slot_iter
+    (unaryfunc)dict_iter, //slot_iter
 
     (reprfunc)dict_repr, //slot_repr
     (reprfunc)dict_str, //slot_str
@@ -1474,7 +1475,7 @@ TypeObject TupleIterType={
     &TypeType, //type
     new string("tuple_iter"), //name
     0, //size
-    sizeof(ListIterObject), //var_base_size
+    sizeof(TupleIterObject), //var_base_size
     true, //gc_trackable
     NULL, //bases
     0, //dict_offset
@@ -1505,6 +1506,82 @@ TypeObject TupleIterType={
 
 void setup_tupleiter_type(){
     TupleIterType=(*(TypeObject*)finalize_type(&TupleIterType));
+}
+
+
+void dict_iter_del(object* self);
+object* dict_iter_repr(object* self);
+object* dict_iter_next(object* self);
+object* dict_iter_cmp(object* self, object* other, uint8_t type);
+object* dict_iter_bool(object* self);
+
+typedef struct DictIterObject{
+    OBJHEAD_VAR
+    map<object*, object*>* val;
+    vector<object*>* keys;
+    uint32_t idx;
+}DictIterObject;
+
+Method dict_iter_methods[]={{NULL,NULL}};
+GetSets dict_iter_getsets[]={{NULL,NULL}};
+
+static NumberMethods dict_iter_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)dict_iter_bool, //slot_bool
+};
+
+static Mappings dict_iter_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject DictIterType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("dict_iter"), //name
+    sizeof(DictIterObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)dict_iter_del, //slot_del
+
+    (iternextfunc)dict_iter_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &dict_iter_num_methods, //slot_number
+    &dict_iter_mappings, //slot_mapping
+
+    dict_iter_methods, //slot_methods
+    dict_iter_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)dict_iter_cmp, //slot_cmp
+};
+
+void setup_dictiter_type(){
+    DictIterType=(*(TypeObject*)finalize_type(&DictIterType));
 }
 
 

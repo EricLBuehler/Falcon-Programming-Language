@@ -156,3 +156,71 @@ void dict_del(object* obj){
     }
     delete CAST_DICT(obj)->val;
 }
+
+object* dict_iter(object* self){
+    //Make an iterator
+    object* iter=new_object(&DictIterType);
+    CAST_DICTITER(iter)->val=new map<object*,object*>;
+    CAST_DICTITER(iter)->keys=new vector<object*>;
+    CAST_DICTITER(iter)->val->clear();
+    CAST_DICTITER(iter)->keys->clear();
+    CAST_DICTITER(iter)->idx=0;
+    for (auto k: *CAST_DICT(self)->val){
+        (*CAST_DICTITER(iter)->val)[INCREF(k.first)]=INCREF(k.second);
+        CAST_DICTITER(iter)->keys->push_back(INCREF(k.first));
+    }
+    return iter;
+}
+
+void dict_iter_del(object* self){
+    for (auto k: (*CAST_DICTITER(self)->val)){
+        DECREF(k.first);
+        DECREF(k.second);
+    }
+    delete CAST_DICTITER(self)->val;
+}
+
+object* dict_iter_next(object* self){
+    if (CAST_DICTITER(self)->idx+1>CAST_DICTITER(self)->val->size()){
+        vm_add_err(&StopIteration, vm, "Iterator out of data");
+        return NULL;
+    }
+    object* l=new_list();
+    list_append(l, (*CAST_DICTITER(self)->keys)[CAST_DICTITER(self)->idx++]);
+    list_append(l, CAST_DICTITER(self)->val->at((*CAST_DICTITER(self)->keys)[CAST_DICTITER(self)->idx-1]));
+    return l;
+}
+
+object* dict_iter_cmp(object* self, object* other, uint8_t type){
+    if (self->type!=other->type){
+        return new_bool_false();
+    }
+    if (type==CMP_EQ){
+        if ((*CAST_DICTITER(self)->val) == (*CAST_DICTITER(other)->val)){
+            return new_bool_true();
+        }
+        if (CAST_DICTITER(self)->val->size() != CAST_DICTITER(other)->val->size()){
+            return new_bool_false();
+        }
+        
+        for(auto it_m1 = (*CAST_DICTITER(self)->val).cbegin(), end_m1 = (*CAST_DICTITER(self)->val).cend(), it_m2 = (*CAST_DICTITER(other)->val).cbegin(), end_m2 = (*CAST_DICTITER(other)->val).cend(); it_m1 != end_m1 || it_m2 != end_m2;){
+            if (!istrue(object_cmp(it_m1->first, it_m2->first, type))){
+                return new_bool_false(); 
+            }
+            if (!istrue(object_cmp(it_m1->second, it_m2->second, type))){
+                return new_bool_false(); 
+            }
+            it_m1++;
+            it_m2++;
+        }
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+
+object* dict_iter_bool(object* self){
+    if (CAST_LISTITER(self)->idx+1>CAST_LISTITER(self)->size){
+        return new_bool_false();
+    }
+    return new_bool_true();
+}
