@@ -45,7 +45,15 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```object```
 - ```float```
     
-</details>    
+</details>   
+
+### Control structures ###
+- ```if```, ```else```, and ```elif```
+- ```try```, ```except```, and ```finally```
+
+### Loops ###
+- ```for```
+- ```while```
 
 ### Sample Program ###
 
