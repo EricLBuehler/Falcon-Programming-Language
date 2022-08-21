@@ -45,6 +45,11 @@ typedef struct{
 
 typedef struct{
     const char* name;
+    size_t offset;
+}OffsetMember;
+
+typedef struct{
+    const char* name;
     getsetfunc function;
     getfunc get;
     setfunc set;
@@ -92,6 +97,7 @@ typedef struct object_type{
     Mappings* slot_mappings;
     Method* slot_methods;
     GetSets* slot_getsets;
+    OffsetMember* slot_offsets;
 
     compfunc slot_cmp;
 }TypeObject;
@@ -114,7 +120,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=24;
+const size_t nbuiltins=26;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -173,6 +179,12 @@ object* new_bool_true();
 object* new_bool_false();
 object* str_new_fromstr(string val);
 object* new_int_fromint(int i);
+
+object* finalize_type(TypeObject* newtype);
+void inherit_type_dict(TypeObject* tp);
+object* inherit_type_methods(TypeObject* tp);
+object* inherit_type_getsets(TypeObject* tp);
+object* inherit_type_offsets(TypeObject* tp);
 
 struct vm* vm=NULL;
 
@@ -337,6 +349,7 @@ void setup_types_consts(){
 
     inherit_type_dict(&TypeType);
     inherit_type_getsets(&TypeType);
+    inherit_type_offsets(&TypeType);
 
     inherit_type_dict(&IntType);
     setup_int_dir();

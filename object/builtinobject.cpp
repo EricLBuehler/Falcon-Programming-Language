@@ -65,6 +65,9 @@ void setup_builtins(){
     object* nextkwargs=new_tuple();
     nextkwargs->type->slot_mappings->slot_append(nextkwargs, new_none());
     builtins[23]=new_builtin((builtinfunc)builtin_next, str_new_fromstr("next"), nextargs, nextkwargs, CAST_INT(nextargs->type->slot_mappings->slot_len(nextargs))->val->to_int());
+
+    builtins[24]=(object*)&RecursionError;
+    builtins[25]=(object*)&MemoryError;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

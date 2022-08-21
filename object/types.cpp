@@ -56,6 +56,7 @@ static Mappings int_mappings{
 
 Method int_methods[]={{NULL,NULL}};
 GetSets int_getsets[]={{NULL,NULL}};
+OffsetMember int_offsets[]={{NULL}};
 
 TypeObject IntType={
     0, //refcnt
@@ -89,6 +90,7 @@ TypeObject IntType={
 
     int_methods, //slot_methods
     int_getsets, //slot_getsets
+    int_offsets, //slot_offsests
 
     (compfunc)int_cmp, //slot_cmp
 };
@@ -146,6 +148,7 @@ static Mappings str_mappings{
 
 Method str_methods[]={{NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
+OffsetMember str_offsets[]={{NULL}};
 
 TypeObject StrType={
     0, //refcnt
@@ -179,6 +182,7 @@ TypeObject StrType={
 
     str_methods, //slot_methods
     str_getsets, //slot_getsets
+    str_offsets, //slot_offsests
 
     (compfunc)str_cmp, //slot_cmp
 };
@@ -212,6 +216,7 @@ typedef struct ListObject{
 
 Method list_methods[]={{"append", (cwrapperfunc)list_append_meth}, {NULL,NULL}};
 GetSets list_getsets[]={{NULL,NULL}};
+OffsetMember list_offsets[]={{NULL}};
 
 static NumberMethods list_num_methods{
     0, //slot_add
@@ -263,6 +268,7 @@ TypeObject ListType={
 
     list_methods, //slot_methods
     list_getsets, //slot_getsets
+    list_offsets, //slot_offsests
 
     (compfunc)list_cmp, //slot_cmp
 };
@@ -308,6 +314,7 @@ static Mappings dict_mappings{
 
 Method dict_methods[]={{NULL,NULL}};
 GetSets dict_getsets[]={{NULL,NULL}};
+OffsetMember dict_offsets[]={{NULL}};
 
 static TypeObject DictType={
     0, //refcnt
@@ -341,6 +348,7 @@ static TypeObject DictType={
 
     dict_methods, //slot_methods
     dict_getsets, //slot_getsets
+    dict_offsets, //slot_offsests
 
     (compfunc)dict_cmp, //slot_cmp
 };
@@ -387,6 +395,7 @@ static Mappings code_mappings{
 
 Method code_methods[]={{NULL,NULL}};
 GetSets code_getsets[]={{NULL,NULL}};
+OffsetMember code_offsets[]={{NULL}};
 
 TypeObject CodeType={
     0, //refcnt
@@ -420,6 +429,7 @@ TypeObject CodeType={
 
     code_methods, //slot_methods
     code_getsets, //slot_getsets
+    code_offsets, //slot_offsests
 
     (compfunc)code_cmp, //slot_cmp
 };
@@ -480,6 +490,7 @@ static Mappings bool_mappings{
 
 Method bool_methods[]={{NULL,NULL}};
 GetSets bool_getsets[]={{NULL,NULL}};
+OffsetMember bool_offsets[]={{NULL}};
 
 TypeObject BoolType={
     0, //refcnt
@@ -513,6 +524,7 @@ TypeObject BoolType={
 
     bool_methods, //slot_methods
     bool_getsets, //slot_getsets
+    bool_offsets, //slot_offsests
 
     (compfunc)bool_cmp, //slot_cmp
 };
@@ -563,6 +575,7 @@ static Mappings tuple_mappings{
 
 Method tuple_methods[]={{NULL,NULL}};
 GetSets tuple_getsets[]={{NULL,NULL}};
+OffsetMember tuple_offsets[]={{NULL}};
 
 TypeObject TupleType={
     0, //refcnt
@@ -596,6 +609,7 @@ TypeObject TupleType={
 
     tuple_methods, //slot_methods
     tuple_getsets, //slot_getsets
+    tuple_offsets, //slot_offsests
 
     (compfunc)tuple_cmp, //slot_cmp
 };
@@ -643,6 +657,7 @@ static Mappings func_mappings{
 
 Method func_methods[]={{NULL,NULL}};
 GetSets func_getsets[]={{NULL,NULL}};
+OffsetMember func_offsets[]={{NULL}};
 
 TypeObject FuncType={
     0, //refcnt
@@ -676,6 +691,7 @@ TypeObject FuncType={
 
     func_methods, //slot_methods
     func_getsets, //slot_getsets
+    func_offsets, //slot_offsests
 
     (compfunc)func_cmp, //slot_cmp
 };
@@ -715,6 +731,7 @@ static Mappings none_mappings{
 
 Method none_methods[]={{NULL,NULL}};
 GetSets none_getsets[]={{NULL,NULL}};
+OffsetMember none_offsets[]={{NULL}};
 
 TypeObject NoneType={
     0, //refcnt
@@ -748,6 +765,7 @@ TypeObject NoneType={
 
     none_methods, //slot_methods
     none_getsets, //slot_getsets
+    none_offsets, //slot_offsests
 
     (compfunc)none_cmp, //slot_cmp
 };
@@ -792,6 +810,7 @@ static Mappings builtin_mappings{
 
 Method builtin_methods[]={{NULL,NULL}};
 GetSets builtin_getsets[]={{NULL,NULL}};
+OffsetMember builtin_offsets[]={{NULL}};
 
 TypeObject BuiltinType={
     0, //refcnt
@@ -825,6 +844,7 @@ TypeObject BuiltinType={
 
     builtin_methods, //slot_methods
     builtin_getsets, //slot_getsets
+    builtin_offsets, //slot_offsests
 
     (compfunc)builtin_cmp, //slot_cmp
 };
@@ -858,6 +878,7 @@ static NumberMethods object_num_methods{
 
 Method object_methods[]={{NULL,NULL}};
 GetSets object_getsets[]={{NULL,NULL}};
+OffsetMember object_offsets[]={{NULL}};
 
 static Mappings object_mappings{
     0, //slot_get
@@ -896,6 +917,7 @@ TypeObject ObjectType={
 
     object_methods, //slot_methods
     object_getsets, //slot_getsets
+    object_offsets, //slot_offsests
 
     (compfunc)object_cmp_, //slot_cmp
 };
@@ -934,6 +956,7 @@ static Mappings exception_mappings{
 
 Method exception_methods[]={{NULL,NULL}};
 GetSets exception_getsets[]={{NULL,NULL}};
+OffsetMember exception_offsets[]={{NULL}};
 
 TypeObject ExceptionType={
     0, //refcnt
@@ -967,6 +990,7 @@ TypeObject ExceptionType={
 
     exception_methods, //slot_methods
     exception_getsets, //slot_getsets
+    exception_offsets, //slot_offsests
 
     (compfunc)exception_cmp, //slot_cmp
 };
@@ -1005,6 +1029,7 @@ object* new_type_exception(string* name, object* bases, object* dict){
         
         0, //slot_methods
         0, //slot_getsets
+        0, //slot_offsests
 
         0, //slot_cmp
     };
@@ -1066,6 +1091,7 @@ static Mappings stringstream_mappings{
 
 Method stringstream_methods[]={{NULL,NULL}};
 GetSets stringstream_getsets[]={{NULL,NULL}};
+OffsetMember stringstream_offsets[]={{NULL}};
 
 TypeObject StringStreamType={
     0, //refcnt
@@ -1099,6 +1125,7 @@ TypeObject StringStreamType={
 
     stringstream_methods, //slot_methods
     stringstream_getsets, //slot_getsets
+    stringstream_offsets, //slot_offsests
 
     0, //slot_cmp
 };
@@ -1119,6 +1146,7 @@ typedef struct CWrapperObject{
 
 Method cwrapper_methods[]={{NULL,NULL}};
 GetSets cwrapper_getsets[]={{NULL,NULL}};
+OffsetMember cwrapper_offsets[]={{NULL}};
 
 TypeObject CWrapperType={
     0, //refcnt
@@ -1152,6 +1180,7 @@ TypeObject CWrapperType={
 
     cwrapper_methods, //slot_methods
     cwrapper_getsets, //slot_getsets
+    cwrapper_offsets, //slot_offsests
 
     0, //slot_cmp
 };
@@ -1282,6 +1311,7 @@ static Mappings float_mappings{
 
 Method float_methods[]={{NULL,NULL}};
 GetSets float_getsets[]={{NULL,NULL}};
+OffsetMember float_offsets[]={{NULL}};
 
 TypeObject FloatType={
     0, //refcnt
@@ -1315,6 +1345,7 @@ TypeObject FloatType={
 
     float_methods, //slot_methods
     float_getsets, //slot_getsets
+    float_offsets, //slot_offsests
 
     (compfunc)float_cmp, //slot_cmp
 };
@@ -1390,6 +1421,7 @@ TypeObject ListIterType={
 
     list_iter_methods, //slot_methods
     list_iter_getsets, //slot_getsets
+    0, //slot_offsests
 
     (compfunc)list_iter_cmp, //slot_cmp
 };
@@ -1466,6 +1498,7 @@ TypeObject TupleIterType={
 
     tuple_iter_methods, //slot_methods
     tuple_iter_getsets, //slot_getsets
+    0, //slot_offsets
 
     (compfunc)tuple_iter_cmp, //slot_cmp
 };
@@ -1637,10 +1670,14 @@ object* finalize_type(TypeObject* newtype){
     //Clean out bases
     if (tp_tp->bases==NULL){
         tp_tp->bases=new_list();
-        list_append(tp_tp->bases, INCREF((object*)&ObjectType));
     }
 
     uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
+
+    if (total_bases==0 || list_index_int(tp_tp->bases, total_bases-1)->type!=&ObjectType){
+        list_append(tp_tp->bases, INCREF((object*)&ObjectType));
+        total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
+    }
 
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
@@ -1653,7 +1690,6 @@ object* finalize_type(TypeObject* newtype){
 
     Mappings* ma=(Mappings*)malloc(sizeof(Mappings));
     memset(ma, 0, sizeof(Mappings));
-
     for (uint32_t i=total_bases; i>0; i--){
         TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
         //Dirty inheritance here... go over each
@@ -1679,7 +1715,9 @@ void inherit_type_dict(TypeObject* tp){
 
     
     //Setup type dict
-    tp_tp->dict=new_dict();
+    if (tp_tp->dict==NULL){
+        tp_tp->dict=new_dict();
+    }
 
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
@@ -1693,6 +1731,7 @@ void inherit_type_dict(TypeObject* tp){
             dict_set(tp_tp->dict, k.first, k.second);
         }  
     }
+    
 }
 
 object* inherit_type_methods(TypeObject* tp){
@@ -1753,6 +1792,39 @@ object* inherit_type_getsets(TypeObject* tp){
     uint32_t idx=0;
     while (tp_tp->slot_getsets[idx].name!=NULL){
         dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, (getfunc)tp_tp->slot_getsets[idx].get, (setfunc)tp_tp->slot_getsets[idx].set, (lenfunc)tp_tp->slot_getsets[idx].len, tp_tp->slot_getsets[idx].name, tp_tp));
+        idx++;
+    }
+
+    return (object*)tp;
+}
+
+object* inherit_type_offsets(TypeObject* tp){
+    TypeObject* tp_tp=CAST_TYPE(tp);
+
+    //tp is the what we'll copy to...
+    
+    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
+
+    //This is a slower method than could theoritically be done.
+    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
+    //also breaks fewer rules...
+    
+    for (uint32_t i=total_bases; i>0; i--){
+        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
+        //Inherit methods
+        uint32_t idx=0;
+        while (base_tp->slot_offsets[idx].name!=NULL){
+            object* ob= (*(object**)((char*)tp + base_tp->slot_offsets[idx].offset)); //tp_tp+... on purpose
+            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_offsets[idx].name), ob);
+            idx++;
+        }        
+    }
+
+    //Inherit methods
+    uint32_t idx=0;
+    while (tp_tp->slot_offsets[idx].name!=NULL){
+        object* ob= (*(object**)((char*)tp + tp_tp->slot_offsets[idx].offset));
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_offsets[idx].name), ob);
         idx++;
     }
 

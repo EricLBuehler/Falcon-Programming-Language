@@ -31,6 +31,7 @@ object* type_dictlen(object* type);
 
 Method type_methods[]={{NULL,NULL}};
 GetSets type_getsets[]={{"__dict__", (getsetfunc)type_dict, (getfunc)type_dictget, (setfunc)type_dictset, (lenfunc)type_dictlen},{NULL,NULL,NULL,NULL,NULL}};
+OffsetMember type_offsets[]={{"__bases__",offsetof(TypeObject, bases)}, {NULL}};
 
 TypeObject TypeType={
     0, //refcnt
@@ -64,6 +65,7 @@ TypeObject TypeType={
 
     type_methods, //slot_methods
     type_getsets, //slot_getsets
+    type_offsets, //slot_offsests
 
     0, //slot_cmp
 };
@@ -116,6 +118,10 @@ static Mappings newtp_mappings{
     newtp_len, //slot_len
 };
 
+Method newtp_methods[]={{NULL,NULL}};
+GetSets newtp_getsets[]={{NULL,NULL}};
+OffsetMember newtp_offsets[]={{"__bases__",offsetof(TypeObject, bases)}, {NULL}};
+
 #define CAST_NEWTYPE(obj) ((NewTypeObject*)(obj))
 
 object* new_type(string* name, object* bases, object* dict){
@@ -149,13 +155,19 @@ object* new_type(string* name, object* bases, object* dict){
         &newtp_number, //slot_number
         &newtp_mappings, //slot_mapping
 
-        0, //slot_methods
-        0, //slot_getsets
+        newtp_methods, //slot_methods
+        newtp_getsets, //slot_getsets
+        newtp_offsets, //slot_offsests
         
         newtp_cmp, //slot_cmp
     };
-        
-    return finalize_type(&newtype);
+    
+    object* tp=finalize_type(&newtype);
+    inherit_type_dict((TypeObject*)tp);
+    inherit_type_getsets((TypeObject*)tp);
+    inherit_type_methods((TypeObject*)tp);
+    inherit_type_offsets((TypeObject*)tp);
+    return tp;
 }
 
 object* type_new(object* type, object* args, object* kwargs);
