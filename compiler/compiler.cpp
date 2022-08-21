@@ -473,6 +473,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         
             add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
 
+            /*
             object* bases=new_tuple();
 
             if (!object_find_bool(compiler->consts, bases)){
@@ -483,7 +484,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
             else{
                 idx=object_find(compiler->consts, bases);
             }
-            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);*/
+
+            uint32_t nbases=CLASS(expr->node)->bases->size();
+            for (Node* n: *CLASS(expr->node)->bases){
+                compile_expr(compiler, n);
+            }
+            add_instruction(compiler->instructions,BUILD_LIST, nbases, expr->start, expr->end);
 
 
             object* i=new_int_fromint(3);
