@@ -143,6 +143,7 @@ struct Call{
 struct Class{
     Node* name;
     vector<Node*>* code;
+    vector<Node*>* bases;
 };
 
 struct Dot{

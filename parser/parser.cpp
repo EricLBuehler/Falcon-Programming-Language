@@ -991,6 +991,24 @@ class Parser{
                 return NULL;
             }
             this->advance();
+            vector<Node*>* bases=new vector<Node*>;
+            bases->clear();
+            if (this->current_tok_is(T_LPAREN)){
+                this->advance();
+                Node* expr=this->expr(ret, LOWEST);
+                bases->push_back(expr);
+                while (this->current_tok_is(T_COMMA)){
+                    this->advance();
+                    Node* expr=this->expr(ret, LOWEST);
+                    bases->push_back(expr); 
+                }
+                if (!this->current_tok_is(T_RPAREN)){
+                    this->add_parsing_error(ret, "SyntaxError: Expected ), got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                    this->advance();
+                    return NULL;
+                }
+                this->advance();
+            }
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1022,6 +1040,7 @@ class Parser{
             for (Node* n: code.nodes){
                 c->code->push_back(n);
             }
+            c->bases=bases;
 
             node->node=c;
             
