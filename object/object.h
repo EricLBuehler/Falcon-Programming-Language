@@ -51,9 +51,6 @@ typedef struct{
 typedef struct{
     const char* name;
     getsetfunc function;
-    getfunc get;
-    setfunc set;
-    lenfunc len;
 }GetSets;
 
 typedef struct{    
@@ -268,6 +265,7 @@ struct vm{
 #define CAST_LISTITER(obj) ((ListIterObject*)obj)
 #define CAST_TUPLEITER(obj) ((TupleIterObject*)obj)
 #define CAST_DICTITER(obj) ((DictIterObject*)obj)
+#define CAST_STRITER(obj) ((StrIterObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -344,6 +342,7 @@ void setup_types_consts(){
     setup_listiter_type();
     setup_tupleiter_type();
     setup_dictiter_type();
+    setup_striter_type();
 
     setup_builtins();
     

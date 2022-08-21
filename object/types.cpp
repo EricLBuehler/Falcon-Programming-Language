@@ -1192,20 +1192,14 @@ void setup_cwrapper_type(){
     CWrapperType=(*(TypeObject*)finalize_type(&CWrapperType));
 }
 
-object* slotwrapper_call(object* self, object* args, object* kwargs);
-object* slotwrapper_new_fromfunc(getsetfunc func, getfunc get, setfunc set, lenfunc len,string name, TypeObject* type);
+object* slotwrapper_new_fromfunc(getsetfunc func,string name, TypeObject* basetype);
 object* slotwrapper_repr(object* self);
 object* slotwrapper_str(object* self);
-object* slotwrapper_get(object* self, object* key);
-void slotwrapper_set(object* self, object* key, object* val);
-object* slotwrapper_len(object* self);
+object* slotwrapper_iter(object* self);
 
 typedef struct SlotWrapperObject{
     OBJHEAD_EXTRA
     getsetfunc function;
-    getfunc get;
-    setfunc set;
-    lenfunc len;
     string* name;
     TypeObject* basetype;
 }SlotWrapperObject;
@@ -1232,11 +1226,11 @@ TypeObject SlotWrapperType={
     0, //slot_del
 
     0, //slot_next
-    0, //slot_iter
+    (unaryfunc)slotwrapper_iter, //slot_iter
 
     (reprfunc)slotwrapper_repr, //slot_repr
     (reprfunc)slotwrapper_str, //slot_str
-    (callfunc)slotwrapper_call, //slot_call
+    0, //slot_call
 
     0, //slot_number
     0, //slot_mapping
@@ -1936,7 +1930,7 @@ object* inherit_type_getsets(TypeObject* tp){
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_getsets[idx].name!=NULL){
-            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, (getfunc)base_tp->slot_getsets[idx].get, (setfunc)base_tp->slot_getsets[idx].set, (lenfunc)base_tp->slot_getsets[idx].len, base_tp->slot_getsets[idx].name, base_tp));
+            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, base_tp->slot_getsets[idx].name, base_tp));
             idx++;
         }        
     }
@@ -1944,7 +1938,7 @@ object* inherit_type_getsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_getsets[idx].name!=NULL){
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, (getfunc)tp_tp->slot_getsets[idx].get, (setfunc)tp_tp->slot_getsets[idx].set, (lenfunc)tp_tp->slot_getsets[idx].len, tp_tp->slot_getsets[idx].name, tp_tp));
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, tp_tp->slot_getsets[idx].name, tp_tp));
         idx++;
     }
 
@@ -1996,17 +1990,6 @@ object* type_bool(object* self){
 object* type_dict(object* type){
     return CAST_SLOTWRAPPER(type)->basetype->dict;
 }
-
-object* type_dictget(object* type, object* key){
-    return dict_get(CAST_SLOTWRAPPER(type)->basetype->dict, key);
-}
-void type_dictset(object* type, object* key, object* val){
-    dict_set(CAST_SLOTWRAPPER(type)->basetype->dict, key, val);
-}
-object* type_dictlen(object* type){
-    return dict_len(CAST_SLOTWRAPPER(type)->basetype->dict);
-}
-
 
 
 #include "typeobject_newtp.cpp"
