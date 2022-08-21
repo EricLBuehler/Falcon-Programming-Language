@@ -59,31 +59,68 @@ void compiler_del(struct compiler* compiler){
 int compile_expr(struct compiler* compiler, Node* expr){
     switch (expr->type){
         case N_ASSIGN: {
-            uint32_t idx;
-            if (!_list_contains(compiler->names, IDENTI(ASSIGN(expr->node)->name->node)->name)){
-                //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
-                idx=NAMEIDX(compiler->names);
-            }
-            else{
-                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
-            }
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
             compile_expr(compiler, ASSIGN(expr->node)->right); //Push data
+            if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
+                add_instruction(compiler->instructions,UNPACK_SEQ, 0, expr->start, expr->end);
+            }
             if (!ret){
                 compiler->keep_return=false;
             }
-            switch (compiler->scope){
-                case SCOPE_GLOBAL:
-                    add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
-                    break;
 
-                case SCOPE_LOCAL:
-                    add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
-                    break;
+            uint32_t idx;
+            if (ASSIGN(expr->node)->name->type==N_IDENT){
+                if (!_list_contains(compiler->names, IDENTI(ASSIGN(expr->node)->name->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
+                    idx=NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
+                }
+
+                switch (compiler->scope){
+                    case SCOPE_GLOBAL:
+                        add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                        break;
+
+                    case SCOPE_LOCAL:
+                        add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                        break;
+                }
+                if (!compiler->keep_return){
+                    add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                }
             }
-            if (!compiler->keep_return){
+            else if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
+                compile_expr(compiler, ASSIGN(expr->node)->name);
+            }
+            break;
+        }
+
+        case N_MULTIIDENT: {
+            uint32_t idx;
+            for (string* s: (*MULTIIDENT(expr->node)->name) ){
+                if (!_list_contains(compiler->names, s)){
+                    //Create object
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*s));
+                    idx=NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(*s));
+                }
+
+                switch (compiler->scope){
+                    case SCOPE_GLOBAL:
+                        add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                        break;
+
+                    case SCOPE_LOCAL:
+                        add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                        break;
+                }
+                
                 add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
             break;
@@ -472,19 +509,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,MAKE_FUNCTION, 0, expr->start, expr->end);            
         
             add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
-
-            /*
-            object* bases=new_tuple();
-
-            if (!object_find_bool(compiler->consts, bases)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, bases);
-                idx = NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, bases);
-            }
-            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);*/
+            
 
             uint32_t nbases=CLASS(expr->node)->bases->size();
             for (Node* n: *CLASS(expr->node)->bases){

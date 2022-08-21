@@ -42,6 +42,7 @@ enum opcode{
     EXTRACT_ITER,
     BREAK_LOOP,
     CONTINUE_LOOP,
+    UNPACK_SEQ,
 };
 
 enum scope{
@@ -99,6 +100,7 @@ struct compiler{
 #define EXCEPT(node) ((Except*)(node))
 #define FOR(node) ((For*)node)
 #define WHILE(node) ((While*)node)
+#define MULTIIDENT(node) ((MultiIdentifier*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 

@@ -87,3 +87,5 @@ EXTRACT_ITER - Gets iter out of TOS, then push iterator onto stack
 BREAK_LOOP - Break out of loop
 
 CONTINUE_LOOP - Break out of loop
+
+UNPACK_SEQ - Unpacks sequence so that TOS is last of sequence
