@@ -63,7 +63,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler->keep_return=true;
             compile_expr(compiler, ASSIGN(expr->node)->right); //Push data
             if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
-                add_instruction(compiler->instructions,UNPACK_SEQ, 0, expr->start, expr->end);
+                add_instruction(compiler->instructions,UNPACK_SEQ,  MULTIIDENT(ASSIGN(expr->node)->name->node)->name->size(), expr->start, expr->end);
             }
             if (!ret){
                 compiler->keep_return=false;
@@ -95,6 +95,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             else if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
                 compile_expr(compiler, ASSIGN(expr->node)->name);
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
             break;
         }
@@ -1219,34 +1220,47 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
-        case N_FOR: {
-            //Checks here
-            uint32_t idx;
-            if (!_list_contains(compiler->names, IDENTI(FOR(expr->node)->ident->node)->name)){
-                //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
-                idx=NAMEIDX(compiler->names);
-            }
-            else{
-                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
-            }
-
+        case N_FOR: { 
             compile_expr(compiler, FOR(expr->node)->expr);
             add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
-            
-            add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+8, expr->start, expr->end); 
+
             uint32_t start=compiler->instructions->count*2;
-
-            switch (compiler->scope){
-                case SCOPE_GLOBAL:
-                    add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
-                    break;
-
-                case SCOPE_LOCAL:
-                    add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
-                    break;
+            if (!FOR(expr->node)->ident->type==N_MULTIIDENT){
+                add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+2, expr->start, expr->end); 
             }
-            add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            else{
+                add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+8+num_instructions(FOR(expr->node)->ident, compiler->scope)*2, expr->start, expr->end); 
+            }
+
+            uint32_t idx;
+            if (FOR(expr->node)->ident->type==N_IDENT){
+                if (!_list_contains(compiler->names, IDENTI(FOR(expr->node)->ident->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
+                    idx=NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
+                }
+
+                switch (compiler->scope){
+                    case SCOPE_GLOBAL:
+                        add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                        break;
+
+                    case SCOPE_LOCAL:
+                        add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                        break;
+                }
+                if (!compiler->keep_return){
+                    add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                }
+            }
+            else if (FOR(expr->node)->ident->type==N_MULTIIDENT){
+                add_instruction(compiler->instructions,UNPACK_SEQ, MULTIIDENT(FOR(expr->node)->ident->node)->name->size(), expr->start, expr->end);
+                compile_expr(compiler, FOR(expr->node)->ident);
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            }
             
             //Code
             for (Node* n: (*FOR(expr->node)->code)){
@@ -1266,7 +1280,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }            
             }
 
-            add_instruction(compiler->instructions,JUMP_TO,start-2, expr->start, expr->end); 
+            add_instruction(compiler->instructions,JUMP_TO,start, expr->start, expr->end); 
             break;
         }
 

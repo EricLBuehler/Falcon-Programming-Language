@@ -88,4 +88,4 @@ BREAK_LOOP - Break out of loop
 
 CONTINUE_LOOP - Break out of loop
 
-UNPACK_SEQ - Unpacks sequence so that TOS is last of sequence
+UNPACK_SEQ(n) - Unpacks sequence so that TOS is last of sequence, error if len(TOS)!=n
