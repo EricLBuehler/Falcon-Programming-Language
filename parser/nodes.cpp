@@ -33,6 +33,7 @@ enum nodetype{
     N_BREAK, //No data struct
     N_CONTINUE, //No data struct
     N_WHILE,
+    N_MULTIIDENT,
 };
 
 enum precedence {
@@ -229,6 +230,10 @@ struct For{
 struct While{
     vector<Node*>* code;
     Node* expr;
+};
+
+struct MultiIdentifier{
+    vector<string*>* name;
 };
 
 

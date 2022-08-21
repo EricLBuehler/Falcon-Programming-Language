@@ -131,7 +131,7 @@ class Parser{
         }
         
         bool isname(nodetype type){
-            if (type==N_IDENT || type==N_ASSIGN || type==N_DOT){
+            if (type==N_IDENT || type==N_MULTIIDENT || type==N_ASSIGN || type==N_DOT){
                 return true;
             }
             return false;
@@ -221,6 +221,25 @@ class Parser{
             Node* node=make_node(N_IDENT);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+            
+            if (this->next_tok_is(T_COMMA)){
+                vector<string*>* names=new vector<string*>;
+                names->clear();
+                
+                names->push_back(new string(this->current_tok.data));
+                this->advance();
+                while (this->current_tok_is(T_COMMA)){
+                    this->advance();
+                    names->push_back(new string(this->current_tok.data));
+                }
+                
+                MultiIdentifier* i=(MultiIdentifier*)malloc(sizeof(MultiIdentifier));
+                i->name=names;
+                node->node=i;
+                node->type=N_MULTIIDENT;
+                return node;
+            }
+
             Identifier* i=(Identifier*)malloc(sizeof(Identifier));
             i->name=new string(this->current_tok.data);
             node->node=i;
@@ -754,8 +773,7 @@ class Parser{
                 this->advance();
                 return left;
             }
-
-
+            
             
             this->advance();
             
