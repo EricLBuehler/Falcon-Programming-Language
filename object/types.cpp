@@ -111,6 +111,7 @@ object* str_cmp(object* self, object* other, uint8_t type);
 object* str_bool(object* self);
 object* str_int(object* self);
 object* str_float(object* self);
+object* str_iter(object* self);
 
 object* str_wrapper_new(object* args, object* kwargs);
 object* str_wrapper_len(object* args, object* kwargs);
@@ -171,7 +172,7 @@ TypeObject StrType={
     (delfunc)str_del, //slot_del
 
     0, //slot_next
-    0, //slot_iter
+    (unaryfunc)str_iter, //slot_iter
 
     (reprfunc)str_repr, //slot_repr
     (reprfunc)str_str, //slot_str
@@ -294,6 +295,7 @@ object* dict_iter(object* self);
 typedef struct DictObject{
     OBJHEAD_VAR
     map<object*, object*>* val;
+    vector<object*>* keys;
 }DictObject;
 
 static NumberMethods dict_num_methods{
@@ -1582,6 +1584,80 @@ TypeObject DictIterType={
 
 void setup_dictiter_type(){
     DictIterType=(*(TypeObject*)finalize_type(&DictIterType));
+}
+
+void str_iter_del(object* self);
+object* str_iter_repr(object* self);
+object* str_iter_next(object* self);
+object* str_iter_cmp(object* self, object* other, uint8_t type);
+object* str_iter_bool(object* self);
+
+typedef struct StrIterObject{
+    OBJHEAD_VAR
+    string* val;
+    uint32_t idx;
+}StrIterObject;
+
+Method str_iter_methods[]={{NULL,NULL}};
+GetSets str_iter_getsets[]={{NULL,NULL}};
+
+static NumberMethods str_iter_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    (unaryfunc)str_iter_bool, //slot_bool
+};
+
+static Mappings str_iter_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject StrIterType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("str_iter"), //name
+    sizeof(StrIterObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)str_iter_del, //slot_del
+
+    (iternextfunc)str_iter_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &str_iter_num_methods, //slot_number
+    &str_iter_mappings, //slot_mapping
+
+    str_iter_methods, //slot_methods
+    str_iter_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)str_iter_cmp, //slot_cmp
+};
+
+void setup_striter_type(){
+    StrIterType=(*(TypeObject*)finalize_type(&StrIterType));
 }
 
 

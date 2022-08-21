@@ -239,3 +239,40 @@ object* str_wrapper_eq(object* args, object* kwargs){
     }
     return new_bool_false();
 }
+
+
+object* str_iter(object* self){
+    //Make an iterator
+    object* iter=new_object(&StrIterType);
+    CAST_STRITER(iter)->val=new string(*CAST_STRING(self)->val);
+    CAST_STRITER(iter)->idx=0;
+    return iter;
+}
+
+void str_iter_del(object* self){
+    delete CAST_DICTITER(self)->val;
+}
+
+object* str_iter_next(object* self){
+    if (CAST_STRITER(self)->idx+1>CAST_STRITER(self)->val->size()){
+        vm_add_err(&StopIteration, vm, "Iterator out of data");
+        return NULL;
+    }
+    return str_new_fromstr(string(1,CAST_STRITER(self)->val->at(CAST_STRITER(self)->idx++)));
+}
+
+object* str_iter_cmp(object* self, object* other, uint8_t type){
+    if (self->type!=other->type){
+        return new_bool_false();
+    }
+    if (type==CMP_EQ){
+        if ((*CAST_STRITER(self)->val) == (*CAST_STRITER(other)->val)){
+            return new_bool_true();
+        }
+    }
+    return new_bool_false();
+}
+
+object* str_iter_bool(object* self){
+    return new_bool_true();
+}

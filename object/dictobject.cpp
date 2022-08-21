@@ -227,8 +227,5 @@ object* dict_iter_cmp(object* self, object* other, uint8_t type){
 }
 
 object* dict_iter_bool(object* self){
-    if (CAST_LISTITER(self)->idx+1>CAST_LISTITER(self)->size){
-        return new_bool_false();
-    }
     return new_bool_true();
 }
