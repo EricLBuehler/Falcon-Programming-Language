@@ -1069,14 +1069,15 @@ void setup_exception_type(){
 }
 
 
-typedef struct StringStreamObject{
+typedef struct FileObject{
     OBJHEAD_EXTRA
-    object* file;
-    object* mode;
-    object* data;
-}StringStreamObject;
+    FILE* file;
+    char* mode;
+    bool open;
+    object* name;
+}FileObject;
 
-static NumberMethods stringstream_num_methods{
+static NumberMethods file_num_methods{
     0, //slot_add
     0, //slot_sub
     0, //slot_mul
@@ -1086,24 +1087,32 @@ static NumberMethods stringstream_num_methods{
 
     0, //slot_bool
 };
-static Mappings stringstream_mappings{
+static Mappings file_mappings{
     0, //slot_get
     0, //slot_set
     0, //slot_len
 };
 
-Method stringstream_methods[]={{NULL,NULL}};
-GetSets stringstream_getsets[]={{NULL,NULL}};
-OffsetMember stringstream_offsets[]={{NULL}};
 
-TypeObject StringStreamType={
+object* file_new(object* type, object* args, object* kwargs);
+void file_del(object* self);
+object* file_repr(object* self);
+object* file_new_fromfile(object* name, char* mode);
+object* file_read_meth(object* args, object* kwargs);
+object* file_close_meth(object* args, object* kwargs);
+
+Method file_methods[]={{"read", (cwrapperfunc)file_read_meth}, {"close", (cwrapperfunc)file_close_meth}, {NULL,NULL}};
+GetSets file_getsets[]={{NULL,NULL}};
+OffsetMember file_offsets[]={{NULL}};
+
+TypeObject FileType={
     0, //refcnt
     0, //ob_prev
     0, //ob_next
     0, //gen
     &TypeType, //type
-    new string("StringStream"), //name
-    sizeof(StringStreamObject), //size
+    new string("file"), //name
+    sizeof(FileObject), //size
     0, //var_base_size
     false, //gc_trackable
     NULL, //bases
@@ -1113,28 +1122,28 @@ TypeObject StringStreamType={
     0, //slot_setattr
 
     0, //slot_init
-    0, //slot_new
-    0, //slot_del
+    (newfunc)file_new, //slot_new
+    (delfunc)file_del, //slot_del
 
     0, //slot_next
     0, //slot_iter
 
-    0, //slot_repr
-    0, //slot_str
+    (reprfunc)file_repr, //slot_repr
+    (reprfunc)file_repr, //slot_str
     0, //slot_call
 
-    &stringstream_num_methods, //slot_number
-    &stringstream_mappings, //slot_mapping
+    &file_num_methods, //slot_number
+    &file_mappings, //slot_mapping
 
-    stringstream_methods, //slot_methods
-    stringstream_getsets, //slot_getsets
-    stringstream_offsets, //slot_offsests
+    file_methods, //slot_methods
+    file_getsets, //slot_getsets
+    file_offsets, //slot_offsests
 
     0, //slot_cmp
 };
 
-void setup_stringstream_type(){
-    StringStreamType=(*(TypeObject*)finalize_type(&StringStreamType));
+void setup_file_type(){
+    FileType=(*(TypeObject*)finalize_type(&FileType));
 }
 
 object* cwrapper_call(object* self, object* args, object* kwargs);
@@ -1193,6 +1202,7 @@ void setup_cwrapper_type(){
 }
 
 object* slotwrapper_new_fromfunc(getsetfunc func,string name, TypeObject* basetype);
+object* slotwrapper_new(object* type, object* args, object* kwargs);
 object* slotwrapper_repr(object* self);
 object* slotwrapper_str(object* self);
 object* slotwrapper_iter(object* self);
@@ -1222,7 +1232,7 @@ TypeObject SlotWrapperType={
     0, //slot_setattr
 
     0, //slot_init
-    0, //slot_new
+    (newfunc)slotwrapper_new, //slot_new
     0, //slot_del
 
     0, //slot_next

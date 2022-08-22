@@ -266,6 +266,7 @@ struct vm{
 #define CAST_TUPLEITER(obj) ((TupleIterObject*)obj)
 #define CAST_DICTITER(obj) ((DictIterObject*)obj)
 #define CAST_STRITER(obj) ((StrIterObject*)obj)
+#define CAST_FILE(obj) ((FileObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -311,7 +312,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "builtinobject.cpp"
 #include "objectobject.cpp"
 #include "exceptionobject.cpp"
-#include "stringstreamobject.cpp"
+#include "fileobject.cpp"
 #include "cwrapperobject.cpp"
 #include "slotwrapperobject.cpp"
 #include "floatobject.cpp"
@@ -335,7 +336,7 @@ void setup_types_consts(){
     setup_none_type();
     setup_builtin_type();
     setup_exception_type();
-    setup_stringstream_type();  
+    setup_file_type();  
     setup_cwrapper_type();  
     setup_slotwrapper_type();
     setup_float_type();
@@ -369,7 +370,9 @@ void setup_types_consts(){
     inherit_type_dict(&NoneType);
     inherit_type_dict(&BuiltinType);
     inherit_type_dict(&ExceptionType);
-    inherit_type_dict(&StringStreamType);
+    inherit_type_dict(&FileType);
+    inherit_type_methods(&FileType);
+
     inherit_type_dict(&CWrapperType);
     inherit_type_dict(&FloatType); 
     inherit_type_dict(&ListIterType);     
