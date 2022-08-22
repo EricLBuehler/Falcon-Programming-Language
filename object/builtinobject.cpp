@@ -69,6 +69,7 @@ void setup_builtins(){
     builtins[24]=(object*)&RecursionError;
     builtins[25]=(object*)&MemoryError;
     builtins[26]=(object*)&FileNotFoundError;
+    builtins[27]=(object*)&InvalidOperationError;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

@@ -10,10 +10,30 @@ object* slotwrapper_new_fromfunc(getsetfunc func, string name, TypeObject* baset
     return o;
 }
 
+object* slotwrapper_new(object* type, object* args, object* kwargs){
+    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    if (len>0){
+        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
+        return NULL;
+    }
+    object* o=new_object(&SlotWrapperType);
+    CAST_SLOTWRAPPER(o)->function=NULL;
+    CAST_SLOTWRAPPER(o)->name=NULL;
+    CAST_SLOTWRAPPER(o)->basetype=NULL;
+    return o;
+}
+
 object* slotwrapper_repr(object* self){
     char buf[32];
     sprintf(buf, "0x%x", self);
-
+    if (CAST_SLOTWRAPPER(self)->function==NULL){
+        string s="<";
+        s+=self->type->name->c_str();
+        s+="' @ ";
+        s+=buf;
+        s+=">";
+        return str_new_fromstr(s);
+    }
     string s="<";
     s+=self->type->name->c_str();
     s+=" '";
@@ -27,7 +47,14 @@ object* slotwrapper_repr(object* self){
 object* slotwrapper_str(object* self){
     char buf[32];
     sprintf(buf, "0x%x", self);
-
+    if (CAST_SLOTWRAPPER(self)->function==NULL){
+        string s="<";
+        s+=self->type->name->c_str();
+        s+="' @ ";
+        s+=buf;
+        s+=">";
+        return str_new_fromstr(s);
+    }
     string s="<";
     s+=self->type->name->c_str();
     s+=" '";

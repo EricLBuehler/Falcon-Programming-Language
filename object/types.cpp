@@ -1066,6 +1066,14 @@ void setup_exception_type(){
     object* stopiter_bases=new_tuple();
     stopiter_bases->type->slot_mappings->slot_append(stopiter_bases, (object*)&ValueError);
     StopIteration=(*(TypeObject*)new_type_exception(new string("StopIteration"), stopiter_bases, new_dict()));
+
+    object* filenotfound_bases=new_tuple();
+    filenotfound_bases->type->slot_mappings->slot_append(filenotfound_bases, (object*)&NameError);
+    FileNotFoundError=(*(TypeObject*)new_type_exception(new string("FileNotFoundError"), filenotfound_bases, new_dict()));
+
+    object* invalidopr_bases=new_tuple();
+    invalidopr_bases->type->slot_mappings->slot_append(invalidopr_bases, (object*)&TypeError);
+    InvalidOperationError=(*(TypeObject*)new_type_exception(new string("InvalidOperationError"), invalidopr_bases, new_dict()));
 }
 
 
@@ -1100,8 +1108,11 @@ object* file_repr(object* self);
 object* file_new_fromfile(object* name, char* mode);
 object* file_read_meth(object* args, object* kwargs);
 object* file_close_meth(object* args, object* kwargs);
+object* file_write_meth(object* args, object* kwargs);
+object* file_seek_meth(object* args, object* kwargs);
 
-Method file_methods[]={{"read", (cwrapperfunc)file_read_meth}, {"close", (cwrapperfunc)file_close_meth}, {NULL,NULL}};
+Method file_methods[]={{"read", (cwrapperfunc)file_read_meth}, {"close", (cwrapperfunc)file_close_meth}\
+                    , {"write", (cwrapperfunc)file_write_meth}, {"seek", (cwrapperfunc)file_seek_meth}, {NULL,NULL}};
 GetSets file_getsets[]={{NULL,NULL}};
 OffsetMember file_offsets[]={{NULL}};
 

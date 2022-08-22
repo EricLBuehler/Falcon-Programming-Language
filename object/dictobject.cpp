@@ -27,7 +27,7 @@ object* dict_new(object* type, object* args, object* kwargs){
 
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
-            if (*CAST_INT(o->type->slot_mappings->slot_len(o))->val!=2){
+            if (o->type->slot_mappings->slot_len==NULL || *CAST_INT(o->type->slot_mappings->slot_len(o))->val!=2){
                 DECREF((object*)obj);
                 vm_add_err(&ValueError, vm, "Expected 2 values (key/value) for dictionary update, got '%d'",CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int());
                 return NULL;
