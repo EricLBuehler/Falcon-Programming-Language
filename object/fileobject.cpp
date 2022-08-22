@@ -94,5 +94,6 @@ object* file_close_meth(object* args, object* kwargs){
     }
 
     fclose(CAST_FILE(self)->file);
+    CAST_FILE(self)->open=false;
     return new_none();
 }
