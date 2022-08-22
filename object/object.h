@@ -117,7 +117,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=26;
+const size_t nbuiltins=27;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -129,6 +129,7 @@ TypeObject NameError;
 TypeObject MemoryError;
 TypeObject RecursionError;
 TypeObject StopIteration;
+TypeObject FileNotFoundError;
 
 Parser parser;
 

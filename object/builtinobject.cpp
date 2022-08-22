@@ -42,7 +42,7 @@ void setup_builtins(){
     object* inputkwargs=new_tuple();
     builtins[17]=new_builtin((builtinfunc)builtin_input, str_new_fromstr("input"), inputargs, inputkwargs, 1);
     
-    builtins[18]=(object*)&StringStreamType;
+    builtins[18]=(object*)&FileType;
 
     object* reprargs=new_tuple();
     reprargs->type->slot_mappings->slot_append(reprargs, str_new_fromstr("object"));
@@ -68,6 +68,7 @@ void setup_builtins(){
 
     builtins[24]=(object*)&RecursionError;
     builtins[25]=(object*)&MemoryError;
+    builtins[26]=(object*)&FileNotFoundError;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

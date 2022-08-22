@@ -18,6 +18,10 @@ object* file_new(object* type, object* args, object* kwargs){
     string s=*CAST_STRING(name)->val;
     string mode=*CAST_STRING(mode_)->val;
     FILE* f=fopen(s.c_str(), mode.c_str());
+    if (f==NULL){
+        vm_add_err(&FileNotFoundError, vm, "File '%s' not found", s.c_str());
+        return NULL;
+    }
 
     object* o=new_object(&FileType);
     CAST_FILE(o)->name=name;
