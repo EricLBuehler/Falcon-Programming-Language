@@ -13,6 +13,7 @@ class Parser{
         Token current_tok;
         int tok_idx;
         string filedata;
+        bool multi=true;
 
         Parser(){}
 
@@ -221,14 +222,14 @@ class Parser{
             Node* node=make_node(N_IDENT);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
-            
-            if (this->next_tok_is(T_COMMA)){
+
+            if (this->next_tok_is(T_COMMA) && this->multi){
                 vector<string*>* names=new vector<string*>;
                 names->clear();
                 
                 names->push_back(new string(this->current_tok.data));
-                this->advance();
-                while (this->current_tok_is(T_COMMA)){
+                while (this->next_tok_is(T_COMMA)){
+                    this->advance();
                     this->advance();
                     names->push_back(new string(this->current_tok.data));
                 }
@@ -589,7 +590,11 @@ class Parser{
             }
             
 
+            bool b=this->multi;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->multi=b;
+
             if (ret->errornum>0){
                 return NULL;
             }
@@ -604,7 +609,12 @@ class Parser{
 
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
+
+                bool b=this->multi;
+                this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                this->multi=b;
+
                 if (expr->type==N_ASSIGN){
                     kwargs->push_back(expr);
                 }
@@ -912,7 +922,10 @@ class Parser{
             this->advance();
             while (!this->current_tok_is(T_RPAREN)){
                 if (this->next_tok_is(T_EQ)){
+                    bool b=this->multi;
+                    this->multi=false;
                     Node* expr=this->expr(ret, LOWEST);
+                    this->multi=b;
                     kwargs->push_back(expr);
                     if (this->current_tok_is(T_RPAREN)){
                         break;
@@ -927,7 +940,10 @@ class Parser{
                         delete kwargs;
                         return NULL;
                     }
+                    bool b=this->multi;
+                    this->multi=false;
                     Node* base=this->atom(ret);
+                    this->multi=b;
                     if (base->type!=N_IDENT){
                         this->add_parsing_error(ret, "SyntaxError: Expected identifier");
                         this->advance();
@@ -1013,11 +1029,21 @@ class Parser{
             bases->clear();
             if (this->current_tok_is(T_LPAREN)){
                 this->advance();
+
+                bool b=this->multi;
+                this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                this->multi=b;
+
                 bases->push_back(expr);
                 while (this->current_tok_is(T_COMMA)){
                     this->advance();
+
+                    bool b=this->multi;
+                    this->multi=false;
                     Node* expr=this->expr(ret, LOWEST);
+                    this->multi=b;
+                    
                     bases->push_back(expr); 
                 }
                 if (!this->current_tok_is(T_RPAREN)){
