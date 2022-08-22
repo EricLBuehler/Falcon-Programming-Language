@@ -69,6 +69,10 @@ object* file_read_meth(object* args, object* kwargs){
         vm_add_err(&TypeError, vm, "Expected file type, got type '%s'", self->type->name->c_str());
         return NULL;
     }
+    if (!CAST_FILE(self)->open){
+        vm_add_err(&ValueError, vm, "Attempting to read from a closed file");
+        return NULL;
+    }
 
     fseek(CAST_FILE(self)->file, 0, SEEK_END);
     long fsize = ftell(CAST_FILE(self)->file);
