@@ -1225,8 +1225,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
 
             uint32_t start=compiler->instructions->count*2;
-            if (!FOR(expr->node)->ident->type==N_MULTIIDENT){
-                add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+2, expr->start, expr->end); 
+            if (FOR(expr->node)->ident->type!=N_MULTIIDENT){
+                add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+num_instructions(FOR(expr->node)->ident, compiler->scope)*2+6, expr->start, expr->end); 
             }
             else{
                 add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+8+num_instructions(FOR(expr->node)->ident, compiler->scope)*2, expr->start, expr->end); 
@@ -1252,9 +1252,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
                         break;
                 }
-                if (!compiler->keep_return){
-                    add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
-                }
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
             else if (FOR(expr->node)->ident->type==N_MULTIIDENT){
                 add_instruction(compiler->instructions,UNPACK_SEQ, MULTIIDENT(FOR(expr->node)->ident->node)->name->size(), expr->start, expr->end);
