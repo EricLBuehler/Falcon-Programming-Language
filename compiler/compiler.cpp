@@ -1414,16 +1414,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     else{
                         idx=object_find(compiler->names, str_new_fromstr(*IDENTI(name->node)->name));
                     }
+                }
+                
+                switch (compiler->scope){
+                    case SCOPE_GLOBAL:
+                        add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                        break;
 
-                    switch (compiler->scope){
-                        case SCOPE_GLOBAL:
-                            add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
-                            break;
-
-                        case SCOPE_LOCAL:
-                            add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
-                            break;
-                    }
+                    case SCOPE_LOCAL:
+                        add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                        break;
                 }
             }
             break;
