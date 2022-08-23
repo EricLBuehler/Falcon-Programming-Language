@@ -27,8 +27,8 @@ static Mappings type_mappings{
 object* type_dict(object* type);
 
 Method type_methods[]={{NULL,NULL}};
-GetSets type_getsets[]={{"__dict__", (getsetfunc)type_dict},{NULL,NULL}};
-OffsetMember type_offsets[]={{"__bases__",offsetof(TypeObject, bases)}, {NULL}};
+GetSets type_getsets[]={{NULL,NULL}};
+OffsetMember type_offsets[]={{NULL}};
 
 TypeObject TypeType={
     0, //refcnt

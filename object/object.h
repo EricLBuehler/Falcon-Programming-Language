@@ -204,6 +204,7 @@ struct callframe{
     struct callframe* next;
     struct object* locals;
     object* code;
+    string* filedata;
 };
 
 struct blockframe{
@@ -270,6 +271,7 @@ struct vm{
 #define CAST_DICTITER(obj) ((DictIterObject*)obj)
 #define CAST_STRITER(obj) ((StrIterObject*)obj)
 #define CAST_FILE(obj) ((FileObject*)obj)
+#define CAST_MODULE(obj) ((ModuleObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -319,6 +321,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "cwrapperobject.cpp"
 #include "slotwrapperobject.cpp"
 #include "floatobject.cpp"
+#include "moduleobject.cpp"
 
 void setup_types_consts(){
     setup_object_type(); 
@@ -347,10 +350,12 @@ void setup_types_consts(){
     setup_tupleiter_type();
     setup_dictiter_type();
     setup_striter_type();
+    setup_module_type();
 
     setup_builtins();
     
     inherit_type_dict(&ObjectType);
+    inherit_type_offsets(&ObjectType);
 
     inherit_type_dict(&TypeType);
     inherit_type_getsets(&TypeType);
@@ -358,28 +363,77 @@ void setup_types_consts(){
 
     inherit_type_dict(&IntType);
     setup_int_dir();
+    inherit_type_offsets(&IntType);
+    inherit_type_getsets(&IntType);
 
     inherit_type_dict(&StrType);
     setup_str_dir();
+    inherit_type_offsets(&StrType);
+    inherit_type_getsets(&StrType);
 
     inherit_type_dict(&ListType);
     inherit_type_methods(&ListType);
+    inherit_type_offsets(&ListType);
+    inherit_type_getsets(&ListType);
 
-    inherit_type_dict(&DictType);
+    inherit_type_dict(&DictType);    
+    inherit_type_offsets(&DictType);
+    inherit_type_getsets(&DictType);
+
     inherit_type_dict(&CodeType);
+    inherit_type_offsets(&CodeType);
+    inherit_type_getsets(&CodeType);
+
     inherit_type_dict(&BoolType);
+    inherit_type_offsets(&BoolType);
+    inherit_type_getsets(&BoolType);
+
     inherit_type_dict(&TupleType);
+    inherit_type_offsets(&TupleType);
+    inherit_type_getsets(&TupleType);
+
     inherit_type_dict(&FuncType);
+    inherit_type_offsets(&FuncType);
+    inherit_type_getsets(&FuncType);
+
     inherit_type_dict(&NoneType);
+    inherit_type_offsets(&NoneType);
+    inherit_type_getsets(&NoneType);
+
     inherit_type_dict(&BuiltinType);
+    inherit_type_offsets(&BuiltinType);
+    inherit_type_getsets(&BuiltinType);
 
     inherit_type_dict(&ExceptionType);
+    inherit_type_offsets(&ExceptionType);
+    inherit_type_getsets(&ExceptionType);
 
     inherit_type_dict(&FileType);
+    inherit_type_offsets(&FileType);
     inherit_type_methods(&FileType);
+    inherit_type_getsets(&FileType);
 
     inherit_type_dict(&CWrapperType);
+    inherit_type_offsets(&CWrapperType);
+    inherit_type_getsets(&CWrapperType);
+
     inherit_type_dict(&FloatType); 
-    inherit_type_dict(&ListIterType);     
+    inherit_type_offsets(&FloatType);
+    inherit_type_getsets(&FloatType);
+
+    inherit_type_dict(&ListIterType); 
+    inherit_type_offsets(&ListIterType);
+    inherit_type_getsets(&ListIterType);
+
     inherit_type_dict(&TupleIterType);    
+    inherit_type_offsets(&TupleIterType);
+    inherit_type_getsets(&TupleIterType);
+
+    inherit_type_dict(&StrIterType);    
+    inherit_type_offsets(&StrIterType);
+    inherit_type_getsets(&StrIterType);
+    
+    inherit_type_dict(&ModuleType);
+    inherit_type_offsets(&ModuleType);
+    inherit_type_getsets(&ModuleType);
 }

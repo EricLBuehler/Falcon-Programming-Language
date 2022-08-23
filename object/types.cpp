@@ -379,6 +379,7 @@ typedef struct CodeObject{
     object* co_file;
     object* co_lines;
     uint32_t co_instructions;
+    string* filedata;
 }CodeObject;
 
 static NumberMethods code_num_methods{
@@ -882,7 +883,7 @@ static NumberMethods object_num_methods{
 };
 
 Method object_methods[]={{NULL,NULL}};
-GetSets object_getsets[]={{NULL,NULL}};
+GetSets object_getsets[]={{"__dict__", (getsetfunc)type_dict},{NULL,NULL}};
 OffsetMember object_offsets[]={{"__bases__",offsetof(TypeObject, bases)}, {NULL}};
 
 static Mappings object_mappings{
@@ -1684,6 +1685,79 @@ void setup_striter_type(){
 }
 
 
+void module_del(object* self);
+object* module_repr(object* self);
+object* module_cmp(object* self, object* other, uint8_t type);
+
+typedef struct ModuleObject{
+    OBJHEAD_EXTRA
+    object* dict;
+    object* name;
+}ModuleObject;
+
+static NumberMethods module_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    0, //slot_bool
+};
+
+Method module_methods[]={{NULL,NULL}};
+GetSets module_getsets[]={{NULL,NULL}};
+OffsetMember module_offsets[]={{NULL}};
+
+static Mappings module_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
+TypeObject ModuleType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("module"), //name
+    sizeof(ModuleObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    offsetof(ModuleObject, dict), //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    (reprfunc)module_repr, //slot_repr
+    (reprfunc)module_repr, //slot_str
+    0, //slot_call
+
+    &module_num_methods, //slot_number
+    &module_mappings, //slot_mapping
+
+    module_methods, //slot_methods
+    module_getsets, //slot_getsets
+    module_offsets, //slot_offsests
+
+    (compfunc)module_cmp, //slot_cmp
+};
+
+void setup_module_type(){
+    ModuleType=(*(TypeObject*)finalize_type(&ModuleType));
+    ModuleType.slot_new=NULL;
+}
+
+
 
 
 object* new_type(string* name, object* bases, object* dict);
@@ -1958,7 +2032,7 @@ object* inherit_type_getsets(TypeObject* tp){
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_getsets[idx].name!=NULL){
-            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, base_tp->slot_getsets[idx].name, base_tp));
+            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, base_tp->slot_getsets[idx].name, tp_tp));
             idx++;
         }        
     }
