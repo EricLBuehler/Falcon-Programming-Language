@@ -35,6 +35,7 @@ enum nodetype{
     N_WHILE,
     N_MULTIIDENT,
     N_IMPORT,
+    N_FROM,
 };
 
 enum precedence {
@@ -239,6 +240,11 @@ struct MultiIdentifier{
 
 struct Import{
     vector<Node*>* libnames;
+    vector<Node*>* names;
+};
+
+struct From{
+    Node* name;
     vector<Node*>* names;
 };
 

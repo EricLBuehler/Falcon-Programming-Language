@@ -894,6 +894,9 @@ class Parser{
             if (this->current_tok.data=="import"){
                 return make_import(ret);
             }
+            if (this->current_tok.data=="from"){
+                return make_from(ret);
+            }
             this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
             this->advance();
             return NULL;
@@ -1737,6 +1740,72 @@ class Parser{
             Import* i=(Import*)malloc(sizeof(Import));
             i->libnames=libnames;
             i->names=names;
+
+            node->node=i;
+
+            return node;
+        }
+
+        Node* make_from(parse_ret* ret){
+            this->advance();
+
+            Token t=this->current_tok;
+
+            bool m=this->multi;
+            this->multi=false;
+            if (!this->current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                return NULL;
+            }
+            Node* lib=this->atom(ret);
+            this->multi=m;
+            this->advance();
+
+            if (!(this->current_tok_is(T_KWD) && this->current_tok.data=="import")){
+                this->add_parsing_error(ret, "Expected 'import', got '%s'", token_type_to_str(this->current_tok.type));
+                return NULL;
+            }
+            
+            vector<Node*>* names=new vector<Node*>;
+            names->clear();
+
+            this->advance();
+
+            if (!this->current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                return NULL;
+            }
+            
+            m=this->multi;
+            this->multi=false;
+            Node* name=this->atom(ret);
+            this->multi=m;
+
+            this->advance();
+
+            names->push_back(name);
+
+            while (this->current_tok_is(T_COMMA)){
+                this->advance();
+                bool m=this->multi;
+                this->multi=false;
+                if (!this->current_tok_is(T_IDENTIFIER)){
+                    this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                    return NULL;
+                }
+                Node* name=this->atom(ret);
+                this->multi=m;
+
+                names->push_back(name);
+            }
+            
+            Node* node=make_node(N_FROM);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            From* i=(From*)malloc(sizeof(From));
+            i->names=names;
+            i->name=lib;
 
             node->node=i;
 
