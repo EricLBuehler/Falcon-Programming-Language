@@ -43,6 +43,11 @@ enum opcode{
     BREAK_LOOP,
     CONTINUE_LOOP,
     UNPACK_SEQ,
+    BINOP_IADD,
+    BINOP_ISUB,
+    BINOP_IMUL,
+    BINOP_IDIV,
+    IMPORT_NAME,
 };
 
 enum scope{
@@ -101,10 +106,12 @@ struct compiler{
 #define FOR(node) ((For*)node)
 #define WHILE(node) ((While*)node)
 #define MULTIIDENT(node) ((MultiIdentifier*)node)
+#define IMPORT(node) ((Import*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 
 parse_ret parseretglbl;
+string* glblfildata=NULL;
 
 struct object* compile(struct compiler* compiler, parse_ret ast);
 uint32_t num_instructions(vector<Node*>* nodes, scope s);

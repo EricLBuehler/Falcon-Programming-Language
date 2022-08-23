@@ -12,9 +12,9 @@ BINOP_ADD - Implements TOS+TOS-1
 
 BINOP_SUB - Implements TOS-TOS-1
 
-BINOP_MUL - Implements TOS+TOS-1
+BINOP_MUL - Implements TOS*TOS-1
 
-BINOP_DIV - Implements TOS-TOS-1
+BINOP_DIV - Implements TOS/TOS-1
 
 UNARY_NEG - Implements -1*TOS
 
@@ -89,3 +89,13 @@ BREAK_LOOP - Break out of loop
 CONTINUE_LOOP - Break out of loop
 
 UNPACK_SEQ(n) - Unpacks sequence so that TOS is last of sequence, error if len(TOS)!=n
+
+BINOP_IADD(n) - Implements TOS+TOS-1 and assigns to names[n]
+
+BINOP_ISUB(n) - Implements TOS-TOS-1 and assigns to names[n]
+
+BINOP_IMUL(n) - Implements TOS*TOS-1 and assigns to names[n]
+
+BINOP_IDIV(n) - Implements TOS/TOS-1 and assigns to names[n]
+
+IMPORT_NAME(arg) - Imports library names[arg] and pushes module object onto stack
