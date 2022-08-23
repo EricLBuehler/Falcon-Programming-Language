@@ -810,7 +810,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             struct stat st;
             if( stat(nm.c_str(),&st) == 0 || stat(name_.c_str(),&st) == 0 ){
                 if( st.st_mode & S_IFDIR ){//Directory
-                    cout<<"DIR";
                     //try nm/__main_).fpl
                     //Later try nm as folder
                     FILE* f=fopen((nm+"/__main__.fpl").c_str(), "rb");
