@@ -84,6 +84,7 @@ inline void add_callframe(struct callstack* stack, object* line, string* name, o
     frame->line=line;
     frame->code=code;
     frame->locals=NULL;
+    frame->filedata=vm->filedata;
 
     stack->size++;
     stack->head=frame;
@@ -164,6 +165,10 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->exception=NULL;
 
     vm->filedata=filedata;
+    
+    if (::vm==NULL){
+        ::vm=vm;
+    }
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code);
     
@@ -432,7 +437,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
             //Setup args
             object* args=new_tuple();
-            tuple_append(args, head);
+            if (!object_istype(head->type, &ModuleType)){
+                tuple_append(args, head);
+            }
             for (uint32_t i=0; i<posargc-1; i++){
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
@@ -740,6 +747,145 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case BINOP_IADD:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_add(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid operand type for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                return NULL;
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            break;
+        }
+
+        case BINOP_ISUB:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_sub(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid operand type for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                return NULL;
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            break;
+        }
+
+        case BINOP_IMUL:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_mul(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid operand type for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                return NULL;
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            break;  
+        }
+
+        case BINOP_IDIV:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_div(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid operand type for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                return NULL;
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            break;
+        }
+
+        case IMPORT_NAME: {
+            object* name=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            string nm=*CAST_STRING(name)->val;
+
+            string data="";
+
+            //try nm.fpl
+            //Later try nm as folder
+            string name_=nm+".fpl";
+            FILE* f=fopen(name_.c_str(), "rb");
+            if (f==NULL){
+                vm_add_err(&ImportError, vm, "'%s' not found", nm.c_str());
+                return NULL;
+            }
+
+            fseek(f, 0, SEEK_END);
+            long fsize = ftell(f);
+            fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+
+            char *s = (char*)malloc(fsize + 1);
+            int i=fread(s, fsize, 1, f);
+            if (i==0){
+                vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
+                return NULL;
+            }
+            s[fsize] = 0;
+            string str(s);
+            data=str;
+            
+            
+
+            vector<string> kwds;
+            kwds.push_back("func");
+            kwds.push_back("class");
+            kwds.push_back("return");
+            kwds.push_back("if");
+            kwds.push_back("else");
+            kwds.push_back("elif");
+            kwds.push_back("raise");
+            kwds.push_back("try");
+            kwds.push_back("except");
+            kwds.push_back("finally");
+            kwds.push_back("for");
+            kwds.push_back("break");
+            kwds.push_back("while");
+            kwds.push_back("import");
+
+            Lexer lexer(data,kwds);
+            lexer.pos=Position(program);
+
+            Position end=lexer.tokenize();
+
+            parser=Parser(lexer.tokens, data);
+            parse_ret ast=parser.parse();
+
+            if (ast.errornum>0){
+                cout<<ast.header<<endl;
+                cout<<ast.snippet<<endl;
+                cout<<ast.arrows<<endl;
+                printf("%s\n",ast.error);
+                exit(0);
+            }
+
+            struct compiler* compiler = new_compiler();
+            glblfildata=new string(data);
+            object* code=compile(compiler, ast);
+            if (code==NULL){
+                cout<<parseretglbl.header<<endl;
+                cout<<parseretglbl.snippet<<endl;
+                printf("%s\n",parseretglbl.error);
+                exit(0);
+            }
+            CAST_CODE(code)->co_file=object_repr(name);
+            struct vm* vm_=::vm;
+            ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
+            ::vm->globals=new_dict();
+            ::vm->callstack->head->locals=INCREF(::vm->globals);
+            object* ret=run_vm(code, &::vm->ip);
+            object* dict=::vm->callstack->head->locals;
+            ::vm=vm_;
+
+            object* o=module_new_fromdict(dict, name);
+            add_dataframe(vm, vm->objstack, o);
+
+            break;
+        }
+
         default:
             return NULL;
             
@@ -760,7 +906,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
     while ((*ip)<instructions){
         instruction=list_index_int(code, (*ip)++);
         
-        if (((*ip)-1)/2>(*CAST_INT(list_index_int(linetup, 1))->val)){
+        if (((*ip)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
         }
@@ -808,11 +954,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         startidx=idx;
                         entered=true;
                     }
-                    if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
+                    if (entered && ((*CAST_CODE(callframe->code)->filedata)[idx]=='\n' || (*CAST_CODE(callframe->code)->filedata)[idx]=='\0')){
                         endidx=idx;
                         break;
                     }
-                    else if ((*vm->filedata)[idx]=='\n'){
+                    else if ((*CAST_CODE(callframe->code)->filedata)[idx]=='\n'){
                         line++;
                     }
                     idx++;
@@ -820,7 +966,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
                 string snippet="";
                 for (int i=startidx; i<endidx; i++){
-                    snippet+=(*vm->filedata)[i];
+                    snippet+=(*CAST_CODE(callframe->code)->filedata)[i];
                 }
 
                 cout<<"    "<<remove_spaces(snippet)<<endl;
@@ -878,11 +1024,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
                             startidx=idx;
                             entered=true;
                         }
-                        if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
+                        if (entered && ((*CAST_CODE(callframe->code)->filedata)[idx]=='\n' || (*CAST_CODE(callframe->code)->filedata)[idx]=='\0')){
                             endidx=idx;
                             break;
                         }
-                        else if ((*vm->filedata)[idx]=='\n'){
+                        else if ((*CAST_CODE(callframe->code)->filedata)[idx]=='\n'){
                             line++;
                         }
                         idx++;
@@ -890,7 +1036,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
                     string snippet="";
                     for (int i=startidx; i<endidx; i++){
-                        snippet+=(*vm->filedata)[i];
+                        snippet+=(*CAST_CODE(callframe->code)->filedata)[i];
                     }
 
                     cout<<"    "<<remove_spaces(snippet)<<endl;
@@ -916,6 +1062,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 if (callframe->name==NULL){
                     callframe=callframe->next;
                 }
+                
                 cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
                 
                 int line=0;
@@ -929,11 +1076,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         startidx=idx;
                         entered=true;
                     }
-                    if (entered && ((*vm->filedata)[idx]=='\n' || (*vm->filedata)[idx]=='\0')){
+                    if (entered && ((*CAST_CODE(callframe->code)->filedata)[idx]=='\n' || (*CAST_CODE(callframe->code)->filedata)[idx]=='\0')){
                         endidx=idx;
                         break;
                     }
-                    else if ((*vm->filedata)[idx]=='\n'){
+                    else if ((*CAST_CODE(callframe->code)->filedata)[idx]=='\n'){
                         line++;
                     }
                     idx++;
@@ -941,7 +1088,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
                 string snippet="";
                 for (int i=startidx; i<endidx; i++){
-                    snippet+=(*vm->filedata)[i];
+                    snippet+=(*CAST_CODE(callframe->code)->filedata)[i];
                 }
 
                 cout<<"    "<<remove_spaces(snippet)<<endl;
@@ -958,6 +1105,5 @@ object* run_vm(object* codeobj, uint32_t* ip){
             return NULL;
         }
     }
-
     return new_none();
 }
