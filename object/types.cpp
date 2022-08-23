@@ -704,6 +704,7 @@ TypeObject FuncType={
 
 void setup_func_type(){
     FuncType=(*(TypeObject*)finalize_type(&FuncType));
+    FuncType.slot_new=NULL;
 }
 
 
@@ -857,6 +858,7 @@ TypeObject BuiltinType={
 
 void setup_builtin_type(){
     BuiltinType=(*(TypeObject*)finalize_type(&BuiltinType));
+    BuiltinType.slot_new=NULL;
 }
 
 
@@ -1219,6 +1221,7 @@ TypeObject CWrapperType={
 
 void setup_cwrapper_type(){
     CWrapperType=(*(TypeObject*)finalize_type(&CWrapperType));
+    CWrapperType.slot_new=NULL;
 }
 
 object* slotwrapper_new_fromfunc(getsetfunc func,string name, TypeObject* basetype);
@@ -1277,6 +1280,7 @@ void setup_slotwrapper_type(){
     list_append(SlotWrapperType.bases, INCREF((object*)&ObjectType));
 
     SlotWrapperType=(*(TypeObject*)finalize_type(&SlotWrapperType));
+    SlotWrapperType.slot_new=NULL;
 }
 
 
