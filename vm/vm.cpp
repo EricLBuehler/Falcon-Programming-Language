@@ -812,9 +812,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 if( st.st_mode & S_IFDIR ){//Directory
                     //try nm/__main_).fpl
                     //Later try nm as folder
-                    FILE* f=fopen((nm+"/__main__.fpl").c_str(), "rb");
+                    FILE* f=fopen((nm+"/"+IMPORT_DIR_MAIN+".fpl").c_str(), "rb");
                     if (f==NULL){
-                        vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/__main__.fpl").c_str());
+                        vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+IMPORT_DIR_MAIN+".fpl").c_str());
                         return NULL;
                     }
 
