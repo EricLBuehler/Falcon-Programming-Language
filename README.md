@@ -30,6 +30,12 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```KeyError```
 - ```NameError```
 - ```IndexError```
+- ```MemoryError```
+- ```RecursionError```
+- ```StopIteration```
+- ```FileNotFoundError```
+- ```InvalidOperationError```
+- ```ImportError```
     
 </details>    
 
