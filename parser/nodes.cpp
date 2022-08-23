@@ -34,6 +34,7 @@ enum nodetype{
     N_CONTINUE, //No data struct
     N_WHILE,
     N_MULTIIDENT,
+    N_IMPORT,
 };
 
 enum precedence {
@@ -234,6 +235,11 @@ struct While{
 
 struct MultiIdentifier{
     vector<string*>* name;
+};
+
+struct Import{
+    vector<Node*>* libnames;
+    vector<Node*>* names;
 };
 
 

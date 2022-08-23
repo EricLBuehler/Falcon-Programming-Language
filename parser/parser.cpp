@@ -797,6 +797,10 @@ class Parser{
                     case T_MINUS:
                     case T_MUL:
                     case T_DIV:
+                    case T_IADD:
+                    case T_ISUB:
+                    case T_IMUL:
+                    case T_IDIV:
                     case T_NE:
                     case T_EE:
                     case T_GT:
@@ -886,6 +890,9 @@ class Parser{
             }
             if (this->current_tok.data=="while"){
                 return make_while(ret);
+            }
+            if (this->current_tok.data=="import"){
+                return make_import(ret);
             }
             this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
             this->advance();
@@ -1662,6 +1669,76 @@ class Parser{
             }
 
             node->node=w;
+
+            return node;
+        }
+
+        Node* make_import(parse_ret* ret){
+            this->advance();
+
+            Token t=this->current_tok;
+
+            vector<Node*>* libnames=new vector<Node*>;
+            libnames->clear();
+            vector<Node*>* names=new vector<Node*>;
+            names->clear();
+            
+            bool m=this->multi;
+            this->multi=false;
+            if (!this->current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                return NULL;
+            }
+            Node* libname=this->atom(ret);
+            this->multi=m;
+
+            this->advance();
+            Node* name=NULL;
+            if (this->current_tok_is(T_IDENTIFIER)){
+                bool m=this->multi;
+                this->multi=false;
+                name=this->atom(ret);
+                this->multi=m;
+                this->advance();
+            }
+            
+            libnames->push_back(libname);
+            names->push_back(name);
+
+            while (this->current_tok_is(T_COMMA)){
+                this->advance();
+                bool m=this->multi;
+                this->multi=false;
+                if (!this->current_tok_is(T_IDENTIFIER)){
+                    this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                    return NULL;
+                }
+                Node* libname=this->atom(ret);
+                this->multi=m;
+                
+                this->advance();
+                Node* name=NULL;
+                if (this->current_tok_is(T_IDENTIFIER)){
+                    bool m=this->multi;
+                    this->multi=false;
+                    name=this->atom(ret);
+                    this->multi=m;
+                    this->advance();
+                }
+                
+                libnames->push_back(libname);
+                names->push_back(name);
+            }
+            
+            Node* node=make_node(N_IMPORT);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            Import* i=(Import*)malloc(sizeof(Import));
+            i->libnames=libnames;
+            i->names=names;
+
+            node->node=i;
 
             return node;
         }
