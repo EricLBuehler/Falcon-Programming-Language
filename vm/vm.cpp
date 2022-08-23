@@ -804,29 +804,60 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             string nm=*CAST_STRING(name)->val;
 
             string data="";
-
-            //try nm.fpl
-            //Later try nm as folder
+                    
             string name_=nm+".fpl";
-            FILE* f=fopen(name_.c_str(), "rb");
-            if (f==NULL){
+
+            struct stat st;
+            if( stat(nm.c_str(),&st) == 0 || stat(name_.c_str(),&st) == 0 ){
+                if( st.st_mode & S_IFDIR ){//Directory
+                    cout<<"DIR";
+                    //try nm/__main_).fpl
+                    //Later try nm as folder
+                    FILE* f=fopen((nm+"/__main__.fpl").c_str(), "rb");
+                    if (f==NULL){
+                        vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/__main__.fpl").c_str());
+                        return NULL;
+                    }
+
+
+                    fseek(f, 0, SEEK_END);
+                    long fsize = ftell(f);
+                    fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+
+                    char *s = (char*)malloc(fsize + 1);
+                    int i=fread(s, fsize, 1, f);
+                    if (i==0 && fsize>0){
+                        vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
+                        return NULL;
+                    }
+                    s[fsize] = 0;
+                    string str(s);
+                    data=str;
+                }
+                else{ //File
+                    //try nm.fpl
+                    //Later try nm as folder
+                    FILE* f=fopen(name_.c_str(), "rb");
+
+                    fseek(f, 0, SEEK_END);
+                    long fsize = ftell(f);
+                    fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+
+                    char *s = (char*)malloc(fsize + 1);
+                    int i=fread(s, fsize, 1, f);
+                    if (i==0 && fsize>0){
+                        vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
+                        return NULL;
+                    }
+                    s[fsize] = 0;
+                    string str(s);
+                    data=str;
+                }
+            }
+            else{
                 vm_add_err(&ImportError, vm, "'%s' not found", nm.c_str());
                 return NULL;
             }
-
-            fseek(f, 0, SEEK_END);
-            long fsize = ftell(f);
-            fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
-
-            char *s = (char*)malloc(fsize + 1);
-            int i=fread(s, fsize, 1, f);
-            if (i==0 && fsize>0){
-                vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
-                return NULL;
-            }
-            s[fsize] = 0;
-            string str(s);
-            data=str;
             
             
 
