@@ -53,13 +53,22 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
     
 </details>   
 
-### Control structures ###
-- ```if```, ```else```, and ```elif```
-- ```try```, ```except```, and ```finally```
-
-### Loops ###
+### Keywords ###
+- ```func```
+- ```class```
+- ```return```
+- ```if```
+- ```else```
+- ```elif```
+- ```raise```
+- ```try```
+- ```except```
+- ```finally```
 - ```for```
+- ```break```
 - ```while```
+- ```import```
+- ```from```
 
 ### Sample Program ###
 
