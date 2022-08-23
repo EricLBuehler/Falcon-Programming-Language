@@ -89,7 +89,7 @@ object* file_read_meth(object* args, object* kwargs){
 
     char *s = (char*)malloc(fsize + 1);
     int i=fread(s, fsize, 1, CAST_FILE(self)->file);
-    if (i==0){
+    if (i==0 && fsize>0){
         vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
         return NULL;
     }
@@ -142,7 +142,7 @@ object* file_write_meth(object* args, object* kwargs){
 
     string s=object_cstr(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
     int i=fprintf(CAST_FILE(self)->file, "%s", s.c_str() );
-    if (i==0){
+    if (i==0 && s.size()>0){
         vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
         return NULL;
     }
