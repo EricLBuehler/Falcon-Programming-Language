@@ -276,3 +276,12 @@ object* str_iter_cmp(object* self, object* other, uint8_t type){
 object* str_iter_bool(object* self){
     return new_bool_true();
 }
+
+object* str_add(object* self, object* other){
+    if (other->type!=&StrType){
+        vm_add_err(&TypeError, vm, "Invalid operand type for +: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
+        return NULL;
+    }
+        
+    return str_new_fromstr(*CAST_STRING(self)->val+*CAST_STRING(other)->val);
+}

@@ -117,7 +117,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=28;
+const size_t nbuiltins=29;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -131,6 +131,7 @@ TypeObject RecursionError;
 TypeObject StopIteration;
 TypeObject FileNotFoundError;
 TypeObject InvalidOperationError;
+TypeObject ImportError;
 
 Parser parser;
 
@@ -371,7 +372,9 @@ void setup_types_consts(){
     inherit_type_dict(&FuncType);
     inherit_type_dict(&NoneType);
     inherit_type_dict(&BuiltinType);
+
     inherit_type_dict(&ExceptionType);
+
     inherit_type_dict(&FileType);
     inherit_type_methods(&FileType);
 
@@ -379,5 +382,4 @@ void setup_types_consts(){
     inherit_type_dict(&FloatType); 
     inherit_type_dict(&ListIterType);     
     inherit_type_dict(&TupleIterType);    
-
 }

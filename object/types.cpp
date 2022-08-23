@@ -121,6 +121,8 @@ object* str_wrapper_bool(object* args, object* kwargs);
 object* str_wrapper_ne(object* args, object* kwargs);
 object* str_wrapper_eq(object* args, object* kwargs);
 
+object* str_add(object* self, object* other);
+
 object* str_new_fromstr(string val);
 
 typedef struct StrObject{
@@ -129,7 +131,7 @@ typedef struct StrObject{
 }StrObject;
 
 static NumberMethods str_num_methods{
-    0, //slot_add
+    (binopfunc)str_add, //slot_add
     0, //slot_sub
     0, //slot_mul
     0, //slot_div
@@ -881,7 +883,7 @@ static NumberMethods object_num_methods{
 
 Method object_methods[]={{NULL,NULL}};
 GetSets object_getsets[]={{NULL,NULL}};
-OffsetMember object_offsets[]={{NULL}};
+OffsetMember object_offsets[]={{"__bases__",offsetof(TypeObject, bases)}, {NULL}};
 
 static Mappings object_mappings{
     0, //slot_get
@@ -1037,7 +1039,9 @@ object* new_type_exception(string* name, object* bases, object* dict){
         0, //slot_cmp
     };
         
-    return finalize_type(&newtype);
+    object* o=finalize_type(&newtype);
+    inherit_type_offsets((TypeObject*)o);
+    return o;
 }
 
 void setup_exception_type(){
@@ -1074,6 +1078,10 @@ void setup_exception_type(){
     object* invalidopr_bases=new_tuple();
     invalidopr_bases->type->slot_mappings->slot_append(invalidopr_bases, (object*)&TypeError);
     InvalidOperationError=(*(TypeObject*)new_type_exception(new string("InvalidOperationError"), invalidopr_bases, new_dict()));
+
+    object* importerr_bases=new_tuple();
+    importerr_bases->type->slot_mappings->slot_append(importerr_bases, (object*)&FileNotFoundError);
+    ImportError=(*(TypeObject*)new_type_exception(new string("ImportError"), importerr_bases, new_dict()));
 }
 
 
@@ -1841,7 +1849,6 @@ object* finalize_type(TypeObject* newtype){
     }
 
     uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
-
     if (total_bases==0 || list_index_int(tp_tp->bases, total_bases-1)->type!=&ObjectType){
         list_append(tp_tp->bases, INCREF((object*)&ObjectType));
         total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
@@ -1872,7 +1879,7 @@ object* finalize_type(TypeObject* newtype){
     tp_tp->slot_mappings=ma;
 
     tp_tp->refcnt=1;
-
+    
     return tp;
 }
 
@@ -1981,16 +1988,16 @@ object* inherit_type_offsets(TypeObject* tp){
         TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
         //Inherit methods
         uint32_t idx=0;
-        while (base_tp->slot_offsets[idx].name!=NULL){
+        while (base_tp->slot_offsets!=NULL && base_tp->slot_offsets[idx].name!=NULL){
             object* ob= (*(object**)((char*)tp + base_tp->slot_offsets[idx].offset)); //tp_tp+... on purpose
             dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_offsets[idx].name), ob);
             idx++;
-        }        
+        }      
     }
 
     //Inherit methods
     uint32_t idx=0;
-    while (tp_tp->slot_offsets[idx].name!=NULL){
+    while (tp_tp->slot_offsets!=NULL && tp_tp->slot_offsets[idx].name!=NULL){
         object* ob= (*(object**)((char*)tp + tp_tp->slot_offsets[idx].offset));
         dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_offsets[idx].name), ob);
         idx++;
