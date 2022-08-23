@@ -820,7 +820,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
             char *s = (char*)malloc(fsize + 1);
             int i=fread(s, fsize, 1, f);
-            if (i==0){
+            if (i==0 && fsize>0){
                 vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
                 return NULL;
             }
@@ -845,6 +845,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             kwds.push_back("break");
             kwds.push_back("while");
             kwds.push_back("import");
+            kwds.push_back("from");
 
             Lexer lexer(data,kwds);
             lexer.pos=Position(program);
@@ -886,6 +887,22 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case IMPORT_FROM_MOD: {
+            object* names=pop_dataframe(vm->objstack);
+            object* lib=pop_dataframe(vm->objstack);
+            for (uint32_t i=0; i<CAST_INT(names->type->slot_mappings->slot_len(names))->val->to_int(); i++){
+                object* o=object_getattr(lib, list_index_int(names, i));
+                if (o==NULL){
+                    DECREF(vm->exception);
+                    vm->exception=NULL;
+                    vm_add_err(&ImportError,vm, "Cannot import name '%s' from '%s'",CAST_STRING(list_index_int(names, i))->val->c_str(), CAST_STRING(CAST_MODULE(lib)->name)->val->c_str());
+                    return NULL;
+                }
+                vm_add_var_locals(vm, list_index_int(names, i), o);
+            }
+            break;
+        }
+
         default:
             return NULL;
             
@@ -905,7 +922,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
     vm->callstack->head->line=list_index_int(linetup, 2);
     while ((*ip)<instructions){
         instruction=list_index_int(code, (*ip)++);
-        
         if (((*ip)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
