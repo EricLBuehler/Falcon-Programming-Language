@@ -48,6 +48,7 @@ enum opcode{
     BINOP_IMUL,
     BINOP_IDIV,
     IMPORT_NAME,
+    IMPORT_FROM_MOD,
 };
 
 enum scope{
@@ -107,6 +108,7 @@ struct compiler{
 #define WHILE(node) ((While*)node)
 #define MULTIIDENT(node) ((MultiIdentifier*)node)
 #define IMPORT(node) ((Import*)node)
+#define FROM(node) ((From*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 

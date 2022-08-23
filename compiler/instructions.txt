@@ -98,4 +98,6 @@ BINOP_IMUL(n) - Implements TOS*TOS-1 and assigns to names[n]
 
 BINOP_IDIV(n) - Implements TOS/TOS-1 and assigns to names[n]
 
-IMPORT_NAME(arg) - Imports library names[arg] and pushes module object onto stack
+IMPORT_NAME(arg) - Imports library names[arg] and pushes module object onto stack for store or use
+
+IMPORT_FROM_MOD - Loads attrs in list on TOS, from module TOS-1

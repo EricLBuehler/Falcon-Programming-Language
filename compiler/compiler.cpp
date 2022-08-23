@@ -1415,7 +1415,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         idx=object_find(compiler->names, str_new_fromstr(*IDENTI(name->node)->name));
                     }
                 }
-                
+
                 switch (compiler->scope){
                     case SCOPE_GLOBAL:
                         add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
@@ -1426,6 +1426,43 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         break;
                 }
             }
+            break;
+        }
+
+        case N_FROM: {
+            uint32_t idx;
+            if (!_list_contains(compiler->names, IDENTI(FROM(expr->node)->name->node)->name)){
+                //Create object
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FROM(expr->node)->name->node)->name));
+                idx=NAMEIDX(compiler->names);
+            }
+            else{
+                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(FROM(expr->node)->name->node)->name));
+            }
+
+            add_instruction(compiler->instructions, IMPORT_NAME, idx, expr->start, expr->end);
+            
+
+            object* names=new_list();
+            for (uint32_t i=0; i<FROM(expr->node)->names->size(); i++){
+                Node* name=FROM(expr->node)->names->at(i);
+                
+                list_append(names, str_new_fromstr(*IDENTI(name->node)->name));
+            }
+            
+            
+            if (!object_find_bool(compiler->consts, noneobj)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, names);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, names);
+            }
+
+            add_instruction(compiler->instructions, LOAD_CONST, idx, expr->start, expr->end);
+
+            add_instruction(compiler->instructions, IMPORT_FROM_MOD, 0, expr->start, expr->end);
             break;
         }
 
