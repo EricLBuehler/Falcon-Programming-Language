@@ -33,5 +33,5 @@ object* module_cmp(object* self, object* other, uint8_t type){
             return new_bool_true();
         }
     }
-    return new_bool_true();
+    return new_bool_false();
 }

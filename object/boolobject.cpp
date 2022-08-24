@@ -1,7 +1,10 @@
 object* bool_new(object* type, object* args, object* kwargs){
-    object* obj=new_object(&BoolType);
-    CAST_BOOL(obj)->val=true;
-    return obj;
+    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    if (len!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got '%d'",len);
+        return NULL;
+    }
+    return list_index_int(args,0)->type->slot_number->slot_bool(list_index_int(args,0));
 }
 
 object* _new_bool_true(){

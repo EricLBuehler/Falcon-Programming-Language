@@ -117,7 +117,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=29;
+const size_t nbuiltins=30;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -160,6 +160,7 @@ bool object_issubclass(object* obj, TypeObject* t);
 object* generic_iter_iter(object* self);
 
 #define list_index_int(self, i) CAST_LIST(self)->array[i]
+#define tuple_index_int(self, i) CAST_TUPLE(self)->array[i]
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
@@ -272,6 +273,7 @@ struct vm{
 #define CAST_STRITER(obj) ((StrIterObject*)obj)
 #define CAST_FILE(obj) ((FileObject*)obj)
 #define CAST_MODULE(obj) ((ModuleObject*)obj)
+#define CAST_SLICE(obj) ((SliceObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -322,6 +324,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "slotwrapperobject.cpp"
 #include "floatobject.cpp"
 #include "moduleobject.cpp"
+#include "sliceobject.cpp"
 
 void setup_types_consts(){
     setup_object_type(); 
@@ -351,6 +354,7 @@ void setup_types_consts(){
     setup_dictiter_type();
     setup_striter_type();
     setup_module_type();
+    setup_slice_type();
 
     setup_builtins();
     
@@ -436,4 +440,8 @@ void setup_types_consts(){
     inherit_type_dict(&ModuleType);
     inherit_type_offsets(&ModuleType);
     inherit_type_getsets(&ModuleType);
+    
+    inherit_type_dict(&SliceType);
+    inherit_type_offsets(&SliceType);
+    inherit_type_getsets(&SliceType);
 }

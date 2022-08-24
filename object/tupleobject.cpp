@@ -21,6 +21,7 @@ object* new_tuple(){
     return (object*)obj;
 }
 
+
 object* tuple_new(object* type, object* args, object* kwargs){
     if (object_istype(args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type, &TupleType)){
         return INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
@@ -84,7 +85,30 @@ object* tuple_len(object* self){
     return new_int_fromint(CAST_TUPLE(self)->size);
 }
 
+object* tuple_slice(object* self, object* idx){
+    object* start=CAST_SLICE(idx)->start;
+    object* end=CAST_SLICE(idx)->end;
+
+    object* result=new_list();
+
+    int start_v=CAST_INT(start)->val->to_int();
+    int end_v=CAST_INT(end)->val->to_int();
+    if (start<0){
+        start_v=0;
+    }
+    if (end_v>=CAST_TUPLE(self)->size){
+        end_v=CAST_TUPLE(self)->size-1;
+    }
+    for (int i=start_v; i<=end_v; i++){
+        list_append(result, tuple_index_int(self, i));
+    }
+    return result;
+}
+
 object* tuple_get(object* self, object* idx){
+    if (object_istype(idx->type, &SliceType)){
+        return list_slice(self, idx);
+    }
     if (!object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
         return (object*)0x1;

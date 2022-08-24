@@ -122,6 +122,7 @@ object* str_wrapper_ne(object* args, object* kwargs);
 object* str_wrapper_eq(object* args, object* kwargs);
 
 object* str_add(object* self, object* other);
+object* str_get(object* self, object* idx);
 
 object* str_new_fromstr(string val);
 
@@ -144,7 +145,7 @@ static NumberMethods str_num_methods{
 };
 
 static Mappings str_mappings{
-    0, //slot_get
+    str_get, //slot_get
     0, //slot_set
     str_len, //slot_len
 };
@@ -442,6 +443,7 @@ TypeObject CodeType={
 
 void setup_code_type(){
     CodeType=(*(TypeObject*)finalize_type(&CodeType));
+    CodeType.slot_new=NULL;
 }
 
 
@@ -1759,6 +1761,80 @@ TypeObject ModuleType={
 void setup_module_type(){
     ModuleType=(*(TypeObject*)finalize_type(&ModuleType));
     ModuleType.slot_new=NULL;
+}
+
+
+object* slice_new(object* type, object* args, object* kwargs);
+void slice_del(object* self);
+object* slice_repr(object* self);
+object* slice_cmp(object* self, object* other, uint8_t type);
+object* slice_new_fromnums(object* start, object* end);
+
+typedef struct SliceObject{
+    OBJHEAD_EXTRA
+    object* start;
+    object* end;
+}SliceObject;
+
+static NumberMethods slice_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    0, //slot_bool
+};
+
+Method slice_methods[]={{NULL,NULL}};
+GetSets slice_getsets[]={{NULL,NULL}};
+OffsetMember slice_offsets[]={{NULL}};
+
+static Mappings slice_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
+TypeObject SliceType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("slice"), //name
+    sizeof(SliceObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+    0, //slot_init
+    slice_new, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    (reprfunc)slice_repr, //slot_repr
+    (reprfunc)slice_repr, //slot_str
+    0, //slot_call
+
+    &slice_num_methods, //slot_number
+    &slice_mappings, //slot_mapping
+
+    slice_methods, //slot_methods
+    slice_getsets, //slot_getsets
+    slice_offsets, //slot_offsests
+
+    (compfunc)slice_cmp, //slot_cmp
+};
+
+void setup_slice_type(){
+    SliceType=(*(TypeObject*)finalize_type(&SliceType));
 }
 
 

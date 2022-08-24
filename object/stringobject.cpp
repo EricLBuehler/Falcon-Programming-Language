@@ -63,6 +63,41 @@ object* str_new(object* type, object* args, object* kwargs){
     return o;
 }
 
+object* str_slice(object* self, object* idx){
+    object* start=CAST_SLICE(idx)->start;
+    object* end=CAST_SLICE(idx)->end;
+
+    string s="";
+    int start_v=CAST_INT(start)->val->to_int();
+    int end_v=CAST_INT(end)->val->to_int();
+    if (start<0){
+        start_v=0;
+    }
+    if (end_v>=CAST_STRING(self)->val->size()){
+        end_v=CAST_STRING(self)->val->size()-1;
+    }
+    for (int i=start_v; i<=end_v; i++){
+        s+=CAST_STRING(self)->val->at(i);
+    }
+    return str_new_fromstr(s);
+}
+
+object* str_get(object* self, object* idx){
+    if (object_istype(idx->type, &SliceType)){
+        return str_slice(self, idx);
+    }
+    if (!object_istype(idx->type, &IntType)){
+        vm_add_err(&TypeError, vm, "String must be indexed by int not '%s'",idx->type->name->c_str());
+        return (object*)0x1;
+    }
+    if (CAST_STRING(self)->val->size()<=CAST_INT(idx)->val->to_long_long()){
+        vm_add_err(&IndexError, vm, "String index out of range");
+        return (object*)0x1;
+    }
+    
+    return str_new_fromstr(string(1,CAST_STRING(self)->val->at(CAST_INT(idx)->val->to_long_long())));
+}
+
 object* str_len(object* self){
     return new_int_fromint(CAST_STRING(self)->val->size());
 }

@@ -80,7 +80,59 @@ object* list_len(object* self){
     return new_int_fromint(CAST_LIST(self)->size);
 }
 
+object* list_slice(object* self, object* idx){
+    object* start=CAST_SLICE(idx)->start;
+    object* end=CAST_SLICE(idx)->end;
+
+    object* result=new_list();
+    int start_v=CAST_INT(start)->val->to_int();
+    int end_v=CAST_INT(end)->val->to_int();
+    if (start<0){
+        start_v=0;
+    }
+    if (end_v>=CAST_LIST(self)->size){
+        end_v=CAST_LIST(self)->size-1;
+    }
+    for (int i=start_v; i<=end_v; i++){
+        list_append(result, list_index_int(self, i));
+    }
+    return result;
+}
+
+void list_store_slice(object* self, object* idx, object* val){
+    object* start=CAST_SLICE(idx)->start;
+    object* end=CAST_SLICE(idx)->end;
+    
+    int n=0;
+    
+    int start_v=CAST_INT(start)->val->to_int();
+    int end_v=CAST_INT(end)->val->to_int();
+    if (start<0){
+        start_v=0;
+    }
+    if (end_v>=CAST_LIST(self)->size){
+        end_v=CAST_LIST(self)->size-1;
+    }
+    if (end_v>=CAST_LIST(self)->size-1){
+        end_v=CAST_LIST(val)->size+start_v;
+    }
+    for (int i=start_v; i<=end_v; i++){
+        if (n>CAST_LIST(val)->size-1){
+            break;
+        }
+        if (i>CAST_LIST(self)->size-1){
+            list_append(self, list_index_int(val, n++));
+            continue;
+        }
+        list_set(self, new_int_fromint(i), list_index_int(val, n++));
+    }
+    
+}
+
 object* list_get(object* self, object* idx){
+    if (object_istype(idx->type, &SliceType)){
+        return list_slice(self, idx);
+    }
     if (!object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
         return (object*)0x1;
@@ -94,6 +146,10 @@ object* list_get(object* self, object* idx){
 }
 
 void list_set(object* self, object* idx, object* val){
+    if (object_istype(idx->type, &SliceType)){
+        list_store_slice(self, idx,val);
+        return;
+    }
     if (!object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
         //Error
