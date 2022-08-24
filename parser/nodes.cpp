@@ -36,6 +36,8 @@ enum nodetype{
     N_MULTIIDENT,
     N_IMPORT,
     N_FROM,
+    N_SLICE,
+    N_STORE_SLICE,
 };
 
 enum precedence {
@@ -246,6 +248,16 @@ struct Import{
 struct From{
     Node* name;
     vector<Node*>* names;
+};
+
+struct Slice{
+    Node* left;
+    Node* right;
+};
+
+struct StoreSlice{
+    Node* left;
+    Node* expr;
 };
 
 

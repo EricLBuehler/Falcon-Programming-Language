@@ -689,16 +689,79 @@ class Parser{
             return node;
         }
 
-        Node* make_subscr(parse_ret* ret, Node* left){
+        Node* make_store_slice(parse_ret* ret, Node* left){
             this->advance();
             Node* expr=this->expr(ret, LOWEST);
-            if (!this->current_tok_is(T_RSQUARE)){
-                this->add_parsing_error(ret, "SyntaxError: Expected ], got '%s'",token_type_to_str(this->current_tok.type).c_str());
-                this->advance();
-                return NULL;
-            }
+            
+            Node* node=make_node(N_STORE_SLICE);
+            node->start=left->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            StoreSlice* s=(StoreSlice*)malloc(sizeof(StoreSlice));
+            s->left=left;
+            s->expr=expr;
+            
+            node->node=s;
             
             this->advance();
+            return node;
+        }
+
+        Node* make_slice(parse_ret* ret, Node* left){
+            this->advance();
+            if (this->current_tok_is(T_RSQUARE)){
+                Node* node=make_node(N_SLICE);
+                node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line); //No guarrantee
+                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                
+                Slice* s=(Slice*)malloc(sizeof(Slice));
+                s->left=left;
+                s->right=NULL;
+                
+                node->node=s;
+                
+                this->advance();
+
+                if (this->current_tok_is(T_EQ)){
+                    return this->make_store_slice(ret, node);
+                }
+                return node;
+            }
+            Node* expr=this->expr(ret, LOWEST);
+            
+            Node* node=make_node(N_SLICE);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line); //No guarrantee
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            Slice* s=(Slice*)malloc(sizeof(Slice));
+            s->left=left; //If null, same passthrough
+            s->right=expr;
+            
+            node->node=s;
+            
+            this->advance();
+            if (this->current_tok_is(T_EQ)){
+                return this->make_store_slice(ret, node);
+            }
+            return node;
+        }
+
+        Node* make_subscr(parse_ret* ret, Node* left){
+            this->advance();
+            if (this->current_tok_is(T_COLON)){
+                Node* node=make_node(N_SUBSCR);
+                node->start=left->start;
+                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                
+                Subscript* s=(Subscript*)malloc(sizeof(Subscript));
+                s->left=left;
+                s->expr=NULL;
+                
+                node->node=s;
+
+                return this->make_slice(ret, node);
+            }
+            Node* expr=this->expr(ret, LOWEST);
             
             Node* node=make_node(N_SUBSCR);
             node->start=left->start;
@@ -709,6 +772,19 @@ class Parser{
             s->expr=expr;
             
             node->node=s;
+
+            if (this->current_tok_is(T_COLON)){
+                return this->make_slice(ret, node);
+            }
+
+            if (!this->current_tok_is(T_RSQUARE)){
+                this->add_parsing_error(ret, "SyntaxError: Expected ], got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            
+            this->advance();
+
             if (this->current_tok_is(T_EQ)){
                 return this->make_store_subscr(ret, node);
             }
