@@ -933,6 +933,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case MAKE_SLICE: {
+            object* end=pop_dataframe(vm->objstack);
+            object* start=pop_dataframe(vm->objstack);
+            object* base=peek_dataframe(vm->objstack);
+            add_dataframe(vm, vm->objstack, slice_new_fromnums(start, end));
+            break;
+        }
+
         default:
             return NULL;
             
