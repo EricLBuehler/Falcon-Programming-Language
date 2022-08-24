@@ -75,7 +75,6 @@ object* newtp_next(object* self);
 object* newtp_get(object* self, object* idx);
 object* newtp_len(object* self);
 void newtp_set(object* self, object* idx, object* val);
-void newtp_append(object* self, object* val);
 object* newtp_repr(object* self);
 object* newtp_str(object* self);
 object* newtp_call(object* self, object* args, object* kwargs);
