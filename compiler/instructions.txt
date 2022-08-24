@@ -101,3 +101,5 @@ BINOP_IDIV(n) - Implements TOS/TOS-1 and assigns to names[n]
 IMPORT_NAME(arg) - Imports library names[arg] and pushes module object onto stack for store or use
 
 IMPORT_FROM_MOD - Loads attrs in list on TOS, from module TOS-1
+
+MAKE_SLICE(arg) - Make slice from TOS-2[TOS-1:TOS]

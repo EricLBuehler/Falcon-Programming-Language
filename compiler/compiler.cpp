@@ -947,9 +947,20 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_SUBSCR: {
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+            if (!ret){
+                compiler->keep_return=false;
+            }
+            compiler->keep_return=ret;
             compile_expr(compiler, SUBSCR(expr->node)->left);
             compile_expr(compiler, SUBSCR(expr->node)->expr);
             add_instruction(compiler->instructions,BINOP_SUBSCR, 0, expr->start, expr->end);
+            
+
+            if (!compiler->keep_return){
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            }
             break;
         }
 
@@ -1463,6 +1474,167 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions, LOAD_CONST, idx, expr->start, expr->end);
 
             add_instruction(compiler->instructions, IMPORT_FROM_MOD, 0, expr->start, expr->end);
+            break;
+        }
+        
+        case N_SLICE: {
+            Node* base=SUBSCR(SLICE(expr->node)->left->node)->left;
+            Node* left=SUBSCR(SLICE(expr->node)->left->node)->expr;
+            Node* right=SLICE(expr->node)->right;
+
+            uint32_t type=0;
+            if (left==NULL && right!=NULL){
+                type=1;
+            }
+            else if (left!=NULL && right==NULL){
+                type=2;
+            }
+            else if (left==NULL && right==NULL){
+                type=4;
+            }
+            else{
+                type=3;
+            }
+
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+            if (!ret){
+                compiler->keep_return=false;
+            }
+            compiler->keep_return=ret;
+
+
+            compile_expr(compiler, base);
+            if (type==3){
+                compile_expr(compiler, left);
+                compile_expr(compiler, right);
+                add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+            }
+            else if (type==2){
+                compile_expr(compiler, left);
+                uint32_t idx;
+                if (!object_find_bool(compiler->consts,noneobj)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, noneobj);
+                }
+                
+                add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+                add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+            }
+            else if (type==1) {
+                uint32_t idx;
+                if (!object_find_bool(compiler->consts,noneobj)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, noneobj);
+                }
+                
+                add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+                compile_expr(compiler, right);
+                add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+            }
+            else{
+                //Type 4 needs nothing
+                break;
+            }
+
+            add_instruction(compiler->instructions, BINOP_SUBSCR, 0, expr->start, expr->end);
+            
+
+            if (!compiler->keep_return){
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            }
+            break;
+        }
+
+        case N_STORE_SLICE: {
+
+            Node* base=SUBSCR(SLICE(STSLICE(expr->node)->left->node)->left->node)->left;
+            Node* left=SUBSCR(SLICE(STSLICE(expr->node)->left->node)->left->node)->expr;
+            Node* right=SLICE(STSLICE(expr->node)->left->node)->right;
+
+            uint32_t type=0;
+            if (left==NULL && right!=NULL){
+                type=1;
+            }
+            else if (left!=NULL && right==NULL){
+                type=2;
+            }
+            else if (left==NULL && right==NULL){
+                type=4;
+            }
+            else{
+                type=3;
+            }
+
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+            if (!ret){
+                compiler->keep_return=false;
+            }
+            compiler->keep_return=ret;
+
+
+            compile_expr(compiler, base);
+            if (type==3){
+                compile_expr(compiler, left);
+                compile_expr(compiler, right);
+                add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+            }
+            else if (type==2){
+                compile_expr(compiler, left);
+                uint32_t idx;
+                if (!object_find_bool(compiler->consts,noneobj)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, noneobj);
+                }
+                
+                add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+                add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+            }
+            else if (type==1) {
+                uint32_t idx;
+                if (!object_find_bool(compiler->consts,noneobj)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, noneobj);
+                }
+                
+                add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+                compile_expr(compiler, right);
+                add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+            }
+            else{
+                //Type 4 needs nothing
+                break;
+            }
+            
+            compile_expr(compiler, STSLICE(expr->node)->expr);
+            if (!ret){
+                compiler->keep_return=false;
+            }
+            compiler->keep_return=ret;
+            add_instruction(compiler->instructions,STORE_SUBSCR, 0, expr->start, expr->end);
+
+            
+
+            if (!compiler->keep_return){
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            }
             break;
         }
 

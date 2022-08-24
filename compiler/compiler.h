@@ -49,6 +49,7 @@ enum opcode{
     BINOP_IDIV,
     IMPORT_NAME,
     IMPORT_FROM_MOD,
+    MAKE_SLICE,
 };
 
 enum scope{
@@ -109,6 +110,8 @@ struct compiler{
 #define MULTIIDENT(node) ((MultiIdentifier*)node)
 #define IMPORT(node) ((Import*)node)
 #define FROM(node) ((From*)node)
+#define SLICE(node) ((Slice*)node)
+#define STSLICE(node) ((StoreSlice*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 
