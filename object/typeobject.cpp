@@ -161,9 +161,9 @@ object* new_type(string* name, object* bases, object* dict){
     
     object* tp=finalize_type(&newtype);
     inherit_type_dict((TypeObject*)tp);
-    inherit_type_getsets((TypeObject*)tp);
-    inherit_type_methods((TypeObject*)tp);
-    inherit_type_offsets((TypeObject*)tp);
+    setup_type_getsets((TypeObject*)tp);
+    setup_type_methods((TypeObject*)tp);
+    setup_type_offsets((TypeObject*)tp);
     return tp;
 }
 

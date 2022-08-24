@@ -1046,7 +1046,7 @@ object* new_type_exception(string* name, object* bases, object* dict){
     };
         
     object* o=finalize_type(&newtype);
-    inherit_type_offsets((TypeObject*)o);
+    setup_type_offsets((TypeObject*)o);
     return o;
 }
 
@@ -2064,27 +2064,8 @@ void inherit_type_dict(TypeObject* tp){
     
 }
 
-object* inherit_type_methods(TypeObject* tp){
+object* setup_type_methods(TypeObject* tp){
     TypeObject* tp_tp=CAST_TYPE(tp);
-
-    //tp is the what we'll copy to...
-
-    //Clean out bases
-    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
-
-    //This is a slower method than could theoritically be done.
-    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
-    //also breaks fewer rules...
-    
-    for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
-        //Inherit methods
-        uint32_t idx=0;
-        while (base_tp->slot_methods[idx].name!=NULL){
-            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)base_tp->slot_methods[idx].function, base_tp->slot_methods[idx].name));
-            idx++;
-        }        
-    }
 
     //Inherit methods
     uint32_t idx=0;
@@ -2096,27 +2077,8 @@ object* inherit_type_methods(TypeObject* tp){
     return (object*)tp;
 }
 
-object* inherit_type_getsets(TypeObject* tp){
+object* setup_type_getsets(TypeObject* tp){
     TypeObject* tp_tp=CAST_TYPE(tp);
-
-    //tp is the what we'll copy to...
-
-    //Clean out bases
-    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
-
-    //This is a slower method than could theoritically be done.
-    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
-    //also breaks fewer rules...
-    
-    for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
-        //Inherit methods
-        uint32_t idx=0;
-        while (base_tp->slot_getsets[idx].name!=NULL){
-            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)base_tp->slot_getsets[idx].function, base_tp->slot_getsets[idx].name, tp_tp));
-            idx++;
-        }        
-    }
 
     //Inherit methods
     uint32_t idx=0;
@@ -2128,27 +2090,8 @@ object* inherit_type_getsets(TypeObject* tp){
     return (object*)tp;
 }
 
-object* inherit_type_offsets(TypeObject* tp){
+object* setup_type_offsets(TypeObject* tp){
     TypeObject* tp_tp=CAST_TYPE(tp);
-
-    //tp is the what we'll copy to...
-    
-    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
-
-    //This is a slower method than could theoritically be done.
-    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
-    //also breaks fewer rules...
-    
-    for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
-        //Inherit methods
-        uint32_t idx=0;
-        while (base_tp->slot_offsets!=NULL && base_tp->slot_offsets[idx].name!=NULL){
-            object* ob= (*(object**)((char*)tp + base_tp->slot_offsets[idx].offset)); //tp_tp+... on purpose
-            dict_set(tp_tp->dict, str_new_fromstr(base_tp->slot_offsets[idx].name), ob);
-            idx++;
-        }      
-    }
 
     //Inherit methods
     uint32_t idx=0;

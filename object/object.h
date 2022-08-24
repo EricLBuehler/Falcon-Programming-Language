@@ -183,9 +183,9 @@ object* new_int_fromint(int i);
 
 object* finalize_type(TypeObject* newtype);
 void inherit_type_dict(TypeObject* tp);
-object* inherit_type_methods(TypeObject* tp);
-object* inherit_type_getsets(TypeObject* tp);
-object* inherit_type_offsets(TypeObject* tp);
+object* setup_type_methods(TypeObject* tp);
+object* setup_type_getsets(TypeObject* tp);
+object* setup_type_offsets(TypeObject* tp);
 
 struct vm* vm=NULL;
 
@@ -359,89 +359,89 @@ void setup_types_consts(){
     setup_builtins();
     
     inherit_type_dict(&ObjectType);
-    inherit_type_offsets(&ObjectType);
+    setup_type_offsets(&ObjectType);
 
     inherit_type_dict(&TypeType);
-    inherit_type_getsets(&TypeType);
-    inherit_type_offsets(&TypeType);
+    setup_type_getsets(&TypeType);
+    setup_type_offsets(&TypeType);
 
     inherit_type_dict(&IntType);
     setup_int_dir();
-    inherit_type_offsets(&IntType);
-    inherit_type_getsets(&IntType);
+    setup_type_offsets(&IntType);
+    setup_type_getsets(&IntType);
 
     inherit_type_dict(&StrType);
     setup_str_dir();
-    inherit_type_offsets(&StrType);
-    inherit_type_getsets(&StrType);
+    setup_type_offsets(&StrType);
+    setup_type_getsets(&StrType);
 
     inherit_type_dict(&ListType);
-    inherit_type_methods(&ListType);
-    inherit_type_offsets(&ListType);
-    inherit_type_getsets(&ListType);
+    setup_type_methods(&ListType);
+    setup_type_offsets(&ListType);
+    setup_type_getsets(&ListType);
 
     inherit_type_dict(&DictType);    
-    inherit_type_offsets(&DictType);
-    inherit_type_getsets(&DictType);
+    setup_type_offsets(&DictType);
+    setup_type_getsets(&DictType);
 
     inherit_type_dict(&CodeType);
-    inherit_type_offsets(&CodeType);
-    inherit_type_getsets(&CodeType);
+    setup_type_offsets(&CodeType);
+    setup_type_getsets(&CodeType);
 
     inherit_type_dict(&BoolType);
-    inherit_type_offsets(&BoolType);
-    inherit_type_getsets(&BoolType);
+    setup_type_offsets(&BoolType);
+    setup_type_getsets(&BoolType);
 
     inherit_type_dict(&TupleType);
-    inherit_type_offsets(&TupleType);
-    inherit_type_getsets(&TupleType);
+    setup_type_offsets(&TupleType);
+    setup_type_getsets(&TupleType);
 
     inherit_type_dict(&FuncType);
-    inherit_type_offsets(&FuncType);
-    inherit_type_getsets(&FuncType);
+    setup_type_offsets(&FuncType);
+    setup_type_getsets(&FuncType);
 
     inherit_type_dict(&NoneType);
-    inherit_type_offsets(&NoneType);
-    inherit_type_getsets(&NoneType);
+    setup_type_offsets(&NoneType);
+    setup_type_getsets(&NoneType);
 
     inherit_type_dict(&BuiltinType);
-    inherit_type_offsets(&BuiltinType);
-    inherit_type_getsets(&BuiltinType);
+    setup_type_offsets(&BuiltinType);
+    setup_type_getsets(&BuiltinType);
 
     inherit_type_dict(&ExceptionType);
-    inherit_type_offsets(&ExceptionType);
-    inherit_type_getsets(&ExceptionType);
+    setup_type_offsets(&ExceptionType);
+    setup_type_getsets(&ExceptionType);
 
     inherit_type_dict(&FileType);
-    inherit_type_offsets(&FileType);
-    inherit_type_methods(&FileType);
-    inherit_type_getsets(&FileType);
+    setup_type_offsets(&FileType);
+    setup_type_methods(&FileType);
+    setup_type_getsets(&FileType);
 
     inherit_type_dict(&CWrapperType);
-    inherit_type_offsets(&CWrapperType);
-    inherit_type_getsets(&CWrapperType);
+    setup_type_offsets(&CWrapperType);
+    setup_type_getsets(&CWrapperType);
 
     inherit_type_dict(&FloatType); 
-    inherit_type_offsets(&FloatType);
-    inherit_type_getsets(&FloatType);
+    setup_type_offsets(&FloatType);
+    setup_type_getsets(&FloatType);
 
     inherit_type_dict(&ListIterType); 
-    inherit_type_offsets(&ListIterType);
-    inherit_type_getsets(&ListIterType);
+    setup_type_offsets(&ListIterType);
+    setup_type_getsets(&ListIterType);
 
     inherit_type_dict(&TupleIterType);    
-    inherit_type_offsets(&TupleIterType);
-    inherit_type_getsets(&TupleIterType);
+    setup_type_offsets(&TupleIterType);
+    setup_type_getsets(&TupleIterType);
 
     inherit_type_dict(&StrIterType);    
-    inherit_type_offsets(&StrIterType);
-    inherit_type_getsets(&StrIterType);
+    setup_type_offsets(&StrIterType);
+    setup_type_getsets(&StrIterType);
     
     inherit_type_dict(&ModuleType);
-    inherit_type_offsets(&ModuleType);
-    inherit_type_getsets(&ModuleType);
+    setup_type_offsets(&ModuleType);
+    setup_type_getsets(&ModuleType);
     
     inherit_type_dict(&SliceType);
-    inherit_type_offsets(&SliceType);
-    inherit_type_getsets(&SliceType);
+    setup_type_offsets(&SliceType);
+    setup_type_getsets(&SliceType);
 }
