@@ -91,8 +91,20 @@ object* tuple_slice(object* self, object* idx){
 
     object* result=new_list();
 
-    int start_v=CAST_INT(start)->val->to_int();
-    int end_v=CAST_INT(end)->val->to_int();
+    int start_v;
+    int end_v;
+    if (object_istype(start->type, &NoneType)){
+        start_v=0;
+    }
+    else{
+        start_v=CAST_INT(start)->val->to_int();
+    }
+    if (object_istype(end->type, &NoneType)){
+        end_v=CAST_TUPLE(self)->size-1;
+    }
+    else{
+        end_v=CAST_INT(end)->val->to_int();
+    }
     if (start<0){
         start_v=0;
     }

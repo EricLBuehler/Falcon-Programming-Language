@@ -85,8 +85,20 @@ object* list_slice(object* self, object* idx){
     object* end=CAST_SLICE(idx)->end;
 
     object* result=new_list();
-    int start_v=CAST_INT(start)->val->to_int();
-    int end_v=CAST_INT(end)->val->to_int();
+    int start_v;
+    int end_v;
+    if (object_istype(start->type, &NoneType)){
+        start_v=0;
+    }
+    else{
+        start_v=CAST_INT(start)->val->to_int();
+    }
+    if (object_istype(end->type, &NoneType)){
+        end_v=CAST_LIST(self)->size-1;
+    }
+    else{
+        end_v=CAST_INT(end)->val->to_int();
+    }
     if (start<0){
         start_v=0;
     }
@@ -103,18 +115,36 @@ void list_store_slice(object* self, object* idx, object* val){
     object* start=CAST_SLICE(idx)->start;
     object* end=CAST_SLICE(idx)->end;
     
-    int n=0;
     
-    int start_v=CAST_INT(start)->val->to_int();
-    int end_v=CAST_INT(end)->val->to_int();
-    if (start<0){
+    int n=0;
+    int start_v;
+    int end_v;
+    if (object_istype(start->type, &NoneType)){
         start_v=0;
     }
-    if (end_v>=CAST_LIST(self)->size){
+    else{
+        start_v=CAST_INT(start)->val->to_int();
+    }
+    if (object_istype(end->type, &NoneType)){
         end_v=CAST_LIST(self)->size-1;
     }
-    if (end_v>=CAST_LIST(self)->size-1){
-        end_v=CAST_LIST(val)->size+start_v;
+    else{
+        end_v=CAST_INT(end)->val->to_int();
+    }
+    
+
+    if (start_v<0){
+        start_v=0;
+    }
+    if (end_v>CAST_LIST(self)->size-1){
+        end_v=CAST_LIST(self)->size-1;
+    }
+    
+    if (end_v-start_v+1>CAST_LIST(val)->size){
+        int numpop=end_v-start_v+1-CAST_LIST(val)->size;
+        for (int i=0; i<numpop; i++){
+            list_pop(self);
+        }
     }
     for (int i=start_v; i<=end_v; i++){
         if (n>CAST_LIST(val)->size-1){
@@ -127,6 +157,24 @@ void list_store_slice(object* self, object* idx, object* val){
         list_set(self, new_int_fromint(i), list_index_int(val, n++));
     }
     
+}
+
+object* list_pop(object* self){
+    if (CAST_LIST(self)->size-1 < 0){ //Alloc more space
+        vm_add_err(&IndexError, vm, "Pop from empty list");
+        //Error
+        return NULL;
+    }
+
+    CAST_LIST(self)->size--;
+    object* o=CAST_LIST(self)->array[CAST_LIST(self)->size]; //No need to decref, we return a reference
+
+    ((object_var*)self)->var_size=sizeof(ListObject)+CAST_LIST(self)->size;
+
+    if (CAST_LIST(self)->size == CAST_LIST(self)->capacity){ //DEalloc space
+        list_resize(CAST_LIST(self), CAST_LIST(self)->size);
+    }
+    return o;
 }
 
 object* list_get(object* self, object* idx){

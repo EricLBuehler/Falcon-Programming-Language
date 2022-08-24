@@ -210,6 +210,7 @@ object* list_cmp(object* self, object* other, uint8_t type);
 object* list_bool(object* self);
 object* list_append_meth(object* args, object* kwargs);
 object* list_iter(object* self);
+object* list_pop(object* self);
 
 typedef struct ListObject{
     OBJHEAD_VAR
