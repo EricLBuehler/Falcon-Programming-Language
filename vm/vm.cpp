@@ -125,7 +125,9 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     vsnprintf(msg, length, format, args);
     va_end(args);
     
-    DECREF(CAST_EXCEPTION(vm->exception)->err);
+    if (CAST_EXCEPTION(vm->exception)->err!=NULL){
+        DECREF(CAST_EXCEPTION(vm->exception)->err);
+    }
     CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(msg);
     free(msg);
 }
@@ -148,7 +150,9 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
     vsnprintf(msg, length, format, args);
     va_end(args);
     
-    DECREF(CAST_EXCEPTION(exc)->err);
+    if (CAST_EXCEPTION(vm->exception)->err!=NULL){
+        DECREF(CAST_EXCEPTION(vm->exception)->err);
+    }
     CAST_EXCEPTION(exc)->err=str_new_fromstr(msg);
     return exc;
 }
@@ -458,6 +462,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         }
 
         case RETURN_VAL: {
+            cout<<vm->objstack->size;
             return pop_dataframe(vm->objstack);
         }
 
@@ -515,7 +520,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
                 return NULL;
             }
-                
 
             //Setup kwargs
             object* kwargs=new_dict();
@@ -1013,7 +1017,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
         }
-        //cout<<instruction<<","<<list_index_int(code, *ip)<<"  ";
+        //cout<<instruction<<","<<list_index_int(code, *ip)<<endl;
         object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip);
 
         if (obj==CALL_ERR){
