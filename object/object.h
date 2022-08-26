@@ -10,12 +10,13 @@ typedef struct object*(*getfunc)(struct object*, struct object*);
 typedef struct object*(*newfunc)(object* type, object* args, object* kwargs);
 typedef struct object*(*lenfunc)(struct object*);
 typedef struct object*(*reprfunc)(struct object*);
-typedef void (*setfunc)(object*, object*, object*);
+typedef object* (*setfunc)(object*, object*, object*);
 typedef void (*appendfunc)(object*, object*);
 typedef struct object*(*compfunc)(struct object*, struct object*, uint8_t type);
 typedef object* (*callfunc)(object*, object*, object*);
 typedef object* (*getattrfunc)(object*, object*);
 typedef void (*setattrfunc)(object*, object*, object*);
+typedef void (*posttpcallfunc)(object*);
 
 
 typedef object* (*cwrapperfunc)(object*, object*);
@@ -97,6 +98,7 @@ typedef struct object_type{
     OffsetMember* slot_offsets;
 
     compfunc slot_cmp;
+    posttpcallfunc slot_post_tpcall;
 }TypeObject;
 
 #define OBJHEAD size_t refcnt; struct object* ob_prev; struct object* ob_next; uint32_t gen;
@@ -158,9 +160,15 @@ object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
 bool object_issubclass(object* obj, TypeObject* t);
 object* generic_iter_iter(object* self);
+object* object_getattr_noerror(object* obj, object* attr);
 
 #define list_index_int(self, i) CAST_LIST(self)->array[i]
 #define tuple_index_int(self, i) CAST_TUPLE(self)->array[i]
+
+const bool NEWTP_PRIMARY_COPY=true;
+const bool NEWTP_NUMBER_COPY=true;
+
+vector<TypeObject*> fplbases;
 
 object* run_vm(object* codeobj, uint32_t* ip);
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
@@ -327,6 +335,8 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "sliceobject.cpp"
 
 void setup_types_consts(){
+    fplbases.clear();
+
     setup_object_type(); 
 
     trueobj=_new_bool_true();

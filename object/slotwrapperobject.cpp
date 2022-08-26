@@ -16,7 +16,7 @@ object* slotwrapper_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
         return NULL;
     }
-    object* o=new_object(&SlotWrapperType);
+    object* o=new_object(CAST_TYPE(type));
     CAST_SLOTWRAPPER(o)->function=NULL;
     CAST_SLOTWRAPPER(o)->name=NULL;
     CAST_SLOTWRAPPER(o)->basetype=NULL;

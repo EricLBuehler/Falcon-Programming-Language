@@ -1,5 +1,5 @@
 object* exception_new(object* type, object* args, object* kwargs){
-    object* tp = new_object((TypeObject*)type);
+    object* tp = new_object(CAST_TYPE(type));
     CAST_EXCEPTION(tp)->err=new_none();
     if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()==1){
         DECREF(tp);

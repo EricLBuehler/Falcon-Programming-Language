@@ -39,7 +39,7 @@ object* str_float(object* self){
 
 object* str_new(object* type, object* args, object* kwargs){
     if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
-        object* obj=new_object(&StrType);
+        object* obj=new_object(CAST_TYPE(type));
         ((StrObject*)obj)->val=new string("");
 
         object* o = in_immutables((struct object*)obj);
@@ -52,7 +52,7 @@ object* str_new(object* type, object* args, object* kwargs){
     object* val=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
     string s=object_cstr(val);
 
-    object* obj=new_object(&StrType);
+    object* obj=new_object(CAST_TYPE(type));
     ((StrObject*)obj)->val=new string(s);
 
     object* o = in_immutables((struct object*)obj);

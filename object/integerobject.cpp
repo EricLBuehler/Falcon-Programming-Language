@@ -43,14 +43,14 @@ object* int_float(object* self){
 object* int_new(object* type, object* args, object* kwargs){
     object* val=list_index_int(args, 0);
     
-    if (object_istype(val->type, &IntType)){
+    if (object_istype(val->type, CAST_TYPE(type))){
         return INCREF(val);
     }
 
 
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     if (len==0){
-        object* obj=new_object(&IntType);
+        object* obj=new_object(CAST_TYPE(type));
         ((IntObject*)obj)->val=new BigInt(0);
 
         object* o = in_immutables((struct object*)obj);

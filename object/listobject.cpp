@@ -20,6 +20,14 @@ object* new_list(){
 }
 
 object* list_new(object* type, object* args, object* kwargs){
+    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+        object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
+        CAST_LIST(obj)->capacity=2; //Start with 2
+        CAST_LIST(obj)->size=0;
+        CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
+        
+        return (object*)obj;
+    }
     if (object_istype(args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type, &ListType)){
         return INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
     }
@@ -27,7 +35,7 @@ object* list_new(object* type, object* args, object* kwargs){
         object* o=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
         object* iter=o->type->slot_iter(o);
 
-        object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
+        object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
         CAST_LIST(obj)->capacity=2; //Start with 2
         CAST_LIST(obj)->size=0;
         CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
@@ -49,17 +57,9 @@ object* list_new(object* type, object* args, object* kwargs){
         }
         return (object*)obj;
     }
-    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
-        object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
-        CAST_LIST(obj)->capacity=2; //Start with 2
-        CAST_LIST(obj)->size=0;
-        CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
-        
-        return (object*)obj;
-    }
 
     //Append
-    object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
+    object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
     CAST_LIST(obj)->capacity=2; //Start with 2
     CAST_LIST(obj)->size=0;
     CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
@@ -193,25 +193,26 @@ object* list_get(object* self, object* idx){
     return CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()];
 }
 
-void list_set(object* self, object* idx, object* val){
+object* list_set(object* self, object* idx, object* val){
     if (object_istype(idx->type, &SliceType)){
         list_store_slice(self, idx,val);
-        return;
+        return new_none();
     }
     if (!object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
         //Error
-        return;
+        return new_none();
     }
     if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long()){
         vm_add_err(&IndexError, vm, "List index out of range");
         //Error
-        return;
+        return new_none();
     }
     
     DECREF(CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]);
 
     CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]=INCREF(val);
+    return new_none();
 }
 
 bool _list_contains(object* haystack, string* needle){

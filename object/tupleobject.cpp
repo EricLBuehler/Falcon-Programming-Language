@@ -23,6 +23,15 @@ object* new_tuple(){
 
 
 object* tuple_new(object* type, object* args, object* kwargs){
+    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+        object_var* obj=new_object_var(CAST_TYPE(type), sizeof(TupleObject)+2*sizeof(object*));
+        CAST_TUPLE(obj)->capacity=2; //Start with 2
+        CAST_TUPLE(obj)->size=0;
+        CAST_TUPLE(obj)->idx=0;
+        CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
+        
+        return (object*)obj;
+    }
     if (object_istype(args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type, &TupleType)){
         return INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
     }
@@ -30,7 +39,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
         object* o=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
         object* iter=o->type->slot_iter(o);
 
-        object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));
+        object_var* obj=new_object_var(CAST_TYPE(type), sizeof(TupleObject)+2*sizeof(object*));
         CAST_TUPLE(obj)->capacity=2; //Start with 2
         CAST_TUPLE(obj)->size=0;
         CAST_TUPLE(obj)->idx=0;
@@ -53,18 +62,9 @@ object* tuple_new(object* type, object* args, object* kwargs){
         }
         return (object*)obj;
     }
-    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
-        object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));
-        CAST_TUPLE(obj)->capacity=2; //Start with 2
-        CAST_TUPLE(obj)->size=0;
-        CAST_TUPLE(obj)->idx=0;
-        CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
-        
-        return (object*)obj;
-    }
 
     //Append
-    object_var* obj=new_object_var(&TupleType, sizeof(TupleObject)+2*sizeof(object*));
+    object_var* obj=new_object_var(CAST_TYPE(type), sizeof(TupleObject)+2*sizeof(object*));
     CAST_TUPLE(obj)->capacity=2; //Start with 2
     CAST_TUPLE(obj)->size=0;
     CAST_TUPLE(obj)->idx=0;

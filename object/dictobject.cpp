@@ -17,7 +17,7 @@ object* dict_new(object* type, object* args, object* kwargs){
         object* o=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
         object* iter=o->type->slot_iter(o);
 
-        object_var* obj=new_object_var(&DictType, 0);
+        object_var* obj=new_object_var(CAST_TYPE(type), 0);
         CAST_DICT(obj)->val=new map<object*, object*>;
         CAST_DICT(obj)->keys=new vector<object*>;
         CAST_DICT(obj)->val->clear();
@@ -44,7 +44,7 @@ object* dict_new(object* type, object* args, object* kwargs){
     }
     
     if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0 && CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
-        object_var* obj=new_object_var(&DictType, 0);
+        object_var* obj=new_object_var(CAST_TYPE(type), 0);
         CAST_DICT(obj)->val=new map<object*, object*>;
         CAST_DICT(obj)->keys=new vector<object*>;
         CAST_DICT(obj)->val->clear();
@@ -53,7 +53,7 @@ object* dict_new(object* type, object* args, object* kwargs){
         return (object*)obj;    
     }
 
-    object_var* obj=new_object_var(&DictType, 0);
+    object_var* obj=new_object_var(CAST_TYPE(type), 0);
     CAST_DICT(obj)->val=new map<object*, object*>;
     CAST_DICT(obj)->keys=new vector<object*>;
     CAST_DICT(obj)->val->clear();
@@ -91,31 +91,31 @@ object* dict_get(object* self, object* key){
     return NULL;
 }
 
-void dict_set(object* self, object* key, object* val){
+object* dict_set(object* self, object* key, object* val){
     //Fast path for immutables
     if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
         //Do not incref key!
         if ((*CAST_DICT(self)->val)[key]==val){ //Same val
             //Do not incref val!
-            return;
+            return new_none();
         }
         (*CAST_DICT(self)->val)[key]=INCREF(val);
         CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
-        return;
+        return new_none();
     }
 
     for (auto k: (*CAST_DICT(self)->val)){
         if (istrue(object_cmp(key, k.first, CMP_EQ))){
             if (istrue(object_cmp(val, k.second, CMP_EQ))){ //Same val
                 //Do not incref val!
-                return;
+                return new_none();
             }
             if (key->type->size==0){
                 ((object_var*)key)->gc_ref++;
             }
             (*CAST_DICT(self)->val)[key]=INCREF(val);
             CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
-            return;
+            return new_none();
         }
     }
 
@@ -123,6 +123,7 @@ void dict_set(object* self, object* key, object* val){
 
     (*CAST_DICT(self)->val)[INCREF(key)]=INCREF(val);
     CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+    return new_none();
 }
 
 object* dict_repr(object* self){

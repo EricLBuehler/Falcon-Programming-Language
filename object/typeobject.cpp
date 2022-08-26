@@ -74,7 +74,7 @@ void newtp_del(object* self);
 object* newtp_next(object* self);
 object* newtp_get(object* self, object* idx);
 object* newtp_len(object* self);
-void newtp_set(object* self, object* idx, object* val);
+object* newtp_set(object* self, object* idx, object* val);
 object* newtp_repr(object* self);
 object* newtp_str(object* self);
 object* newtp_call(object* self, object* args, object* kwargs);
@@ -88,7 +88,9 @@ object* newtp_div(object* self, object* other);
 
 object* newtp_neg(object* self);
 object* newtp_bool(object* self);
-
+object* newtp_int(object* self);
+object* newtp_float(object* self);
+void newtp_post_tpcall(object* ob);
 
 NumberMethods newtp_number={    
     //binops
@@ -120,51 +122,7 @@ OffsetMember newtp_offsets[]={{"__bases__",offsetof(TypeObject, bases)}, {NULL}}
 
 #define CAST_NEWTYPE(obj) ((NewTypeObject*)(obj))
 
-object* new_type(string* name, object* bases, object* dict){
-    TypeObject newtype={
-        0, //refcnt
-        0, //ob_prev
-        0, //ob_next
-        0, //gen
-        &TypeType, //type
-        name, //name
-        sizeof(NewTypeObject), //size
-        0, //var_base_size
-        true, //gc_trackable
-        bases, //bases
-        0, //dict_offset
-        dict, //dict
-        object_genericgetattr, //slot_getattr
-        object_genericsetattr, //slot_setattr
-
-        newtp_init, //slot_init
-        newtp_new, //slot_new
-        newtp_del, //slot_del
-
-        newtp_next, //slot_next
-        newtp_iter, //slot_iter
-
-        newtp_repr, //slot_repr
-        newtp_str, //slot_str
-        newtp_call, //slot_call
-
-        &newtp_number, //slot_number
-        &newtp_mappings, //slot_mapping
-
-        newtp_methods, //slot_methods
-        newtp_getsets, //slot_getsets
-        newtp_offsets, //slot_offsests
-        
-        newtp_cmp, //slot_cmp
-    };
-    
-    object* tp=finalize_type(&newtype);
-    inherit_type_dict((TypeObject*)tp);
-    setup_type_getsets((TypeObject*)tp);
-    setup_type_methods((TypeObject*)tp);
-    setup_type_offsets((TypeObject*)tp);
-    return tp;
-}
+object* new_type(string* name, object* bases, object* dict);
 
 object* type_new(object* type, object* args, object* kwargs);
 void type_del(object* self);
@@ -173,4 +131,5 @@ object* type_cmp(object* self, object* other, uint8_t type);
 object* type_call(object* self, object* args, object* kwargs);
 void setup_type_type(){
     TypeType=(*(TypeObject*)finalize_type(&TypeType));
+    fplbases.push_back(&TypeType);
 }

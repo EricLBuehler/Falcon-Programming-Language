@@ -4,7 +4,14 @@ object* bool_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got '%d'",len);
         return NULL;
     }
-    return list_index_int(args,0)->type->slot_number->slot_bool(list_index_int(args,0));
+    object* boolv=list_index_int(args,0)->type->slot_number->slot_bool(list_index_int(args,0));
+    if (boolv==NULL){
+        return NULL;
+    }
+    object* o=new_object(CAST_TYPE(type));
+    CAST_BOOL(o)->val=CAST_BOOL(boolv)->val;
+    DECREF(boolv);
+    return o;
 }
 
 object* _new_bool_true(){

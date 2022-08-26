@@ -1,266 +1,212 @@
 object* newtp_init(object* self, object* args, object* kwargs){
     //Try to call __new__
     object* n=object_getattr(self, str_new_fromstr("__init__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-    }
-    else{
-        //args->type->slot_mappings->slot_append(args, self); //do not need to
-        object* val=object_call(n, args, kwargs);
-        return val;
-    }
-    return new_none();
+    object* val=object_call(n, args, kwargs);
+    return val;
 }
 object* newtp_new(object* self, object* args, object* kwargs){
     object* o=new_object((TypeObject*)self);
-    CAST_NEWTYPE(o)->dict=new_dict();
-    o->type->dict_offset=offsetof(NewTypeObject, dict);
+    (*(object**)((char*)o + o->type->dict_offset))=new_dict();
 
     //Setup dunder attributes
     object_setattr(o, str_new_fromstr("__class__"), self);
 
     //Try to call __new__
     object* n=object_getattr(o, str_new_fromstr("__new__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-    }
-    else{
-        args->type->slot_mappings->slot_append(args, o);
-        object* val=object_call(n, args, kwargs);
-        return val;
-    }
-    return o;
+    object* val=object_call(n, args, kwargs);
+    return val;
 }
 void newtp_del(object* self){
     object* n=object_getattr(self, str_new_fromstr("__del__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object_call(n, args, new_dict());
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object_call(n, args, new_dict());
 }
 object* newtp_next(object* self){
-    return new_none();
+    object* n=object_getattr(self, str_new_fromstr("__next__"));
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 object* newtp_get(object* self, object* idx){
-    return new_none();
+    object* n=object_getattr(self, str_new_fromstr("__get__"));
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    args->type->slot_mappings->slot_append(args, idx);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 object* newtp_len(object* self){
     object* n=object_getattr(self, str_new_fromstr("__len__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
-void newtp_set(object* self, object* idx, object* val){
+
+object* newtp_set(object* self, object* idx, object* val){
     object* n=object_getattr(self, str_new_fromstr("__set__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    args->type->slot_mappings->slot_append(args, idx);
+    args->type->slot_mappings->slot_append(args, val);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 object* newtp_repr(object* self){
     object* n=object_getattr(self, str_new_fromstr("__repr__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
-
-    char buf[32];
-    sprintf(buf, "0x%x", self);
-
-    string s="<";
-    s+=self->type->name->c_str();
-    s+=" object @ ";
-    s+=buf;
-    s+=">";
-    return str_new_fromstr(s);
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 object* newtp_str(object* self){
     object* n=object_getattr(self, str_new_fromstr("__str__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
-
-    char buf[32];
-    sprintf(buf, "0x%x", self);
-
-    string s="<";
-    s+=self->type->name->c_str();
-    s+=" object @ ";
-    s+=buf;
-    s+=">";
-    return str_new_fromstr(s);
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 object* newtp_call(object* self, object* args, object* kwargs){
     //Try to call __call__
     object* function=object_getattr(self, str_new_fromstr("__call__"));
-    if (function==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-    }
-    else{
-        uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->operator+((*CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val)).to_int()+1;
-        uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+1;
-        uint32_t kwargc=argc-posargc;     
+    uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->operator+((*CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val)).to_int()+1;
+    uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+1;
+    uint32_t kwargc=argc-posargc;     
 
-        if (function->type->slot_call==NULL){
-            vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-            return NULL;
-        }
-        
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(function, args, kwargs);
-        return val;
-    }
-    return new_none();
-}
-object* newtp_cmp(object* self, object* other, uint8_t type){
-    object* n=object_getattr(self, str_new_fromstr("__cmp__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
+    if (function->type->slot_call==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
         return NULL;
     }
-    else{
+    
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(function, args, kwargs);
+    return val;
+}
+
+object* newtp_cmp(object* self, object* other, uint8_t type){
+    object* n=object_getattr_noerror(self, str_new_fromstr("__eq__"));
+    if (n!=NULL){
         object* args=new_tuple();
         args->type->slot_mappings->slot_append(args, self);
         object* val=object_call(n, args, new_dict());
         return val;
     }
+
+    n=object_getattr_noerror(self, str_new_fromstr("__ne__"));
+    if (n!=NULL){
+        object* args=new_tuple();
+        args->type->slot_mappings->slot_append(args, self);
+        object* val=object_call(n, args, new_dict());
+        return val;
+    }
+
+    n=object_getattr_noerror(self, str_new_fromstr("__lt__"));
+    if (n!=NULL){
+        object* args=new_tuple();
+        args->type->slot_mappings->slot_append(args, self);
+        object* val=object_call(n, args, new_dict());
+        return val;
+    }
+
+    n=object_getattr_noerror(self, str_new_fromstr("__gt__"));
+    if (n!=NULL){
+        object* args=new_tuple();
+        args->type->slot_mappings->slot_append(args, self);
+        object* val=object_call(n, args, new_dict());
+        return val;
+    }
+
+    n=object_getattr_noerror(self, str_new_fromstr("__lte__"));
+    if (n!=NULL){
+        object* args=new_tuple();
+        args->type->slot_mappings->slot_append(args, self);
+        object* val=object_call(n, args, new_dict());
+        return val;
+    }
+
+    n=object_getattr_noerror(self, str_new_fromstr("__gte__"));
+    if (n!=NULL){
+        object* args=new_tuple();
+        args->type->slot_mappings->slot_append(args, self);
+        object* val=object_call(n, args, new_dict());
+        return val;
+    }
+    return NULL;
 }
 
 object* newtp_add(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__add__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 object* newtp_sub(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__sub__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 object* newtp_mul(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__mul__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self); //do not need to
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 object* newtp_div(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__div__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 
 object* newtp_neg(object* self){
     object* n=object_getattr(self, str_new_fromstr("__neg__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 
 object* newtp_bool(object* self){
     object* n=object_getattr(self, str_new_fromstr("__bool__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
+}
+
+object* newtp_int(object* self){
+    object* n=object_getattr(self, str_new_fromstr("__int__"));
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
+}
+
+object* newtp_float(object* self){
+    object* n=object_getattr(self, str_new_fromstr("__float__"));
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
 }
 
 object* newtp_iter(object* self){
     object* n=object_getattr(self, str_new_fromstr("__iter__"));
-    if (n==NULL){
-        DECREF(vm->exception);
-        vm->exception=NULL;
-        return NULL;
-    }
-    else{
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
-    }
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
+}
+
+
+
+void newtp_post_tpcall(object* ob){
+    (*(object**)((char*)ob + ob->type->dict_offset))=new_dict();
 }

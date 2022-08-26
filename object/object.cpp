@@ -351,6 +351,14 @@ object* object_genericgetattr(object* obj, object* attr){
     return NULL;
 }
 
+object* object_getattr_noerror(object* obj, object* attr){
+    if (obj->type->slot_getattr!=NULL){
+        return obj->type->slot_getattr(obj, attr);
+    }
+    
+    return NULL;
+}
+
 object* object_getattr(object* obj, object* attr){
     if (obj->type->slot_getattr!=NULL){
         return obj->type->slot_getattr(obj, attr);

@@ -11,7 +11,7 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
 }
 
 object* func_new(object* type, object* args, object* kwargs){
-    object* obj=new_object(&FuncType);
+    object* obj=new_object(CAST_TYPE(type));
     if (CAST_LIST(args)->size!=5){
         //Error
         return NULL;

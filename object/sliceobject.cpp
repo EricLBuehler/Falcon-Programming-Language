@@ -11,7 +11,7 @@ object* slice_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got '%d'",len);
         return NULL;
     }
-    object* slice=new_object(&SliceType);
+    object* slice=new_object(CAST_TYPE(type));
     CAST_SLICE(slice)->start=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
     CAST_SLICE(slice)->end=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
     return slice;

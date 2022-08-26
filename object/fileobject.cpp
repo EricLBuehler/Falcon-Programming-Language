@@ -23,7 +23,7 @@ object* file_new(object* type, object* args, object* kwargs){
         return NULL;
     }
 
-    object* o=new_object(&FileType);
+    object* o=new_object(CAST_TYPE(type));
     CAST_FILE(o)->name=name;
     CAST_FILE(o)->file=f;
     CAST_FILE(o)->open=true;

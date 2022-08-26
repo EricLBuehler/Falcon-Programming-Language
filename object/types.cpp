@@ -97,6 +97,7 @@ TypeObject IntType={
 
 void setup_int_type(){
     IntType=(*(TypeObject*)finalize_type(&IntType));
+    fplbases.push_back(&IntType);
 }
 
 
@@ -193,6 +194,7 @@ TypeObject StrType={
 
 void setup_str_type(){
     StrType=(*(TypeObject*)finalize_type(&StrType));
+    fplbases.push_back(&StrType);
 }
 
 
@@ -203,7 +205,7 @@ object* list_len(object* self);
 object* list_get(object* self, object* idx);
 void list_append(object* self, object* obj);
 object* list_new(object* type, object* args, object* kwargs);
-void list_set(object* self, object* idx, object* val);
+object* list_set(object* self, object* idx, object* val);
 object* list_repr(object* self);
 object* list_next(object* self);
 object* list_cmp(object* self, object* other, uint8_t type);
@@ -280,6 +282,7 @@ TypeObject ListType={
 
 void setup_list_type(){
     ListType=(*(TypeObject*)finalize_type(&ListType));
+    fplbases.push_back(&ListType);
 }
 
 
@@ -288,7 +291,7 @@ object* dict_new(object* type, object* args, object* kwargs);
 void dict_del(object* self);
 object* dict_len(object* self);
 object* dict_get(object* self, object* idx);
-void dict_set(object* self, object* key, object* val);
+object* dict_set(object* self, object* key, object* val);
 object* dict_repr(object* self);
 object* dict_str(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
@@ -362,6 +365,7 @@ static TypeObject DictType={
 
 void setup_dict_type(){
     DictType=(*(TypeObject*)finalize_type(&DictType));
+    fplbases.push_back(&DictType);
 }
 
 
@@ -445,6 +449,7 @@ TypeObject CodeType={
 void setup_code_type(){
     CodeType=(*(TypeObject*)finalize_type(&CodeType));
     CodeType.slot_new=NULL;
+    fplbases.push_back(&CodeType);
 }
 
 
@@ -540,6 +545,7 @@ TypeObject BoolType={
 
 void setup_bool_type(){
     BoolType=(*(TypeObject*)finalize_type(&BoolType));
+    fplbases.push_back(&BoolType);
 }
 
 
@@ -625,6 +631,7 @@ TypeObject TupleType={
 
 void setup_tuple_type(){
     TupleType=(*(TypeObject*)finalize_type(&TupleType));
+    fplbases.push_back(&TupleType);
 }
 
 
@@ -708,6 +715,7 @@ TypeObject FuncType={
 void setup_func_type(){
     FuncType=(*(TypeObject*)finalize_type(&FuncType));
     FuncType.slot_new=NULL;
+    fplbases.push_back(&FuncType);
 }
 
 
@@ -782,6 +790,7 @@ TypeObject NoneType={
 
 void setup_none_type(){
     NoneType=(*(TypeObject*)finalize_type(&NoneType));
+    fplbases.push_back(&NoneType);
 }
 
 
@@ -862,6 +871,7 @@ TypeObject BuiltinType={
 void setup_builtin_type(){
     BuiltinType=(*(TypeObject*)finalize_type(&BuiltinType));
     BuiltinType.slot_new=NULL;
+    fplbases.push_back(&BuiltinType);
 }
 
 
@@ -934,7 +944,7 @@ TypeObject ObjectType={
 };
 
 void setup_object_type(){
-    ObjectType=(*(TypeObject*)finalize_type(&ObjectType));
+    ObjectType=(*(TypeObject*)finalize_type(&ObjectType));;
 }
 
 
@@ -1052,42 +1062,55 @@ object* new_type_exception(string* name, object* bases, object* dict){
 
 void setup_exception_type(){
     ExceptionType=(*(TypeObject*)finalize_type(&ExceptionType));
+    fplbases.push_back(&ExceptionType);
 
     TypeError=(*(TypeObject*)new_type_exception(new string("TypeError"), new_tuple(), new_dict()));
+    fplbases.push_back(&TypeError);
     
     ValueError=(*(TypeObject*)new_type_exception(new string("ValueError"), new_tuple(), new_dict()));
+    fplbases.push_back(&ValueError);
     
     AttributeError=(*(TypeObject*)new_type_exception(new string("AttributeError"), new_tuple(), new_dict()));
+    fplbases.push_back(&AttributeError);
     
     object* indexerr_bases=new_tuple();
     indexerr_bases->type->slot_mappings->slot_append(indexerr_bases, (object*)&ValueError);
     IndexError=(*(TypeObject*)new_type_exception(new string("IndexError"), indexerr_bases, new_dict()));
+    fplbases.push_back(&IndexError);
     
     KeyError=(*(TypeObject*)new_type_exception(new string("KeyError"), new_tuple(), new_dict()));
+    fplbases.push_back(&KeyError);
     
     NameError=(*(TypeObject*)new_type_exception(new string("NameError"), new_tuple(), new_dict()));
+    fplbases.push_back(&NameError);
     
     MemoryError=(*(TypeObject*)new_type_exception(new string("MemoryError"), new_tuple(), new_dict()));
+    fplbases.push_back(&MemoryError);
     
     object* recursionerr_bases=new_tuple();
     recursionerr_bases->type->slot_mappings->slot_append(recursionerr_bases, (object*)&MemoryError);
     RecursionError=(*(TypeObject*)new_type_exception(new string("RecursionError"), recursionerr_bases, new_dict()));
+    fplbases.push_back(&RecursionError);
 
     object* stopiter_bases=new_tuple();
     stopiter_bases->type->slot_mappings->slot_append(stopiter_bases, (object*)&ValueError);
     StopIteration=(*(TypeObject*)new_type_exception(new string("StopIteration"), stopiter_bases, new_dict()));
+    fplbases.push_back(&StopIteration);
 
     object* filenotfound_bases=new_tuple();
     filenotfound_bases->type->slot_mappings->slot_append(filenotfound_bases, (object*)&NameError);
     FileNotFoundError=(*(TypeObject*)new_type_exception(new string("FileNotFoundError"), filenotfound_bases, new_dict()));
+    fplbases.push_back(&FileNotFoundError);
 
     object* invalidopr_bases=new_tuple();
     invalidopr_bases->type->slot_mappings->slot_append(invalidopr_bases, (object*)&TypeError);
     InvalidOperationError=(*(TypeObject*)new_type_exception(new string("InvalidOperationError"), invalidopr_bases, new_dict()));
+    fplbases.push_back(&InvalidOperationError);
 
     object* importerr_bases=new_tuple();
     importerr_bases->type->slot_mappings->slot_append(importerr_bases, (object*)&FileNotFoundError);
     ImportError=(*(TypeObject*)new_type_exception(new string("ImportError"), importerr_bases, new_dict()));
+    fplbases.push_back(&ImportError);
 }
 
 
@@ -1169,6 +1192,7 @@ TypeObject FileType={
 
 void setup_file_type(){
     FileType=(*(TypeObject*)finalize_type(&FileType));
+    fplbases.push_back(&FileType);
 }
 
 object* cwrapper_call(object* self, object* args, object* kwargs);
@@ -1225,6 +1249,7 @@ TypeObject CWrapperType={
 void setup_cwrapper_type(){
     CWrapperType=(*(TypeObject*)finalize_type(&CWrapperType));
     CWrapperType.slot_new=NULL;
+    fplbases.push_back(&CWrapperType);
 }
 
 object* slotwrapper_new_fromfunc(getsetfunc func,string name, TypeObject* basetype);
@@ -1284,6 +1309,7 @@ void setup_slotwrapper_type(){
 
     SlotWrapperType=(*(TypeObject*)finalize_type(&SlotWrapperType));
     SlotWrapperType.slot_new=NULL;
+    fplbases.push_back(&SlotWrapperType);
 }
 
 
@@ -1386,6 +1412,7 @@ TypeObject FloatType={
 
 void setup_float_type(){
     FloatType=(*(TypeObject*)finalize_type(&FloatType));
+    fplbases.push_back(&FloatType);
 }
 
 void list_iter_del(object* self);
@@ -1462,6 +1489,7 @@ TypeObject ListIterType={
 
 void setup_listiter_type(){
     ListIterType=(*(TypeObject*)finalize_type(&ListIterType));
+    fplbases.push_back(&ListIterType);
 }
 
 
@@ -1539,6 +1567,7 @@ TypeObject TupleIterType={
 
 void setup_tupleiter_type(){
     TupleIterType=(*(TypeObject*)finalize_type(&TupleIterType));
+    fplbases.push_back(&TupleIterType);
 }
 
 
@@ -1615,6 +1644,7 @@ TypeObject DictIterType={
 
 void setup_dictiter_type(){
     DictIterType=(*(TypeObject*)finalize_type(&DictIterType));
+    fplbases.push_back(&DictIterType);
 }
 
 void str_iter_del(object* self);
@@ -1689,6 +1719,7 @@ TypeObject StrIterType={
 
 void setup_striter_type(){
     StrIterType=(*(TypeObject*)finalize_type(&StrIterType));
+    fplbases.push_back(&StrIterType);
 }
 
 
@@ -1762,6 +1793,7 @@ TypeObject ModuleType={
 void setup_module_type(){
     ModuleType=(*(TypeObject*)finalize_type(&ModuleType));
     ModuleType.slot_new=NULL;
+    fplbases.push_back(&ModuleType);
 }
 
 
@@ -1836,6 +1868,7 @@ TypeObject SliceType={
 
 void setup_slice_type(){
     SliceType=(*(TypeObject*)finalize_type(&SliceType));
+    fplbases.push_back(&SliceType);
 }
 
 
@@ -1891,6 +1924,9 @@ object* type_call(object* self, object* args, object* kwargs){
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
     if (o != NULL && o->type->slot_init!=NULL){
         o->type->slot_init(o, args, kwargs);
+    }
+    if (o->type->slot_post_tpcall!=NULL){
+        o->type->slot_post_tpcall(o);
     }
     return o;
 }
@@ -2117,6 +2153,257 @@ object* type_dict(object* type){
     return CAST_SLOTWRAPPER(type)->basetype->dict;
 }
 
+
+object* new_type(string* name, object* bases, object* dict){
+    reprfunc repr_func=NULL;
+    newfunc new_func=NULL;
+    initfunc init_func=NULL;
+    delfunc del_func=NULL;
+    iternextfunc next_func=NULL;
+    unaryfunc iter_func=NULL;
+    reprfunc str_func=NULL;
+    callfunc call_func=NULL;
+    compfunc comp_func=NULL;
+
+    NumberMethods number=(*(NumberMethods*)malloc(sizeof(NumberMethods)));
+    memset(&number, 0, sizeof(NumberMethods));
+    if (NEWTP_PRIMARY_COPY){
+        object* n=object_getattr(dict, str_new_fromstr("__repr__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            repr_func=(reprfunc)newtp_repr;
+        }
+
+        n=object_getattr(dict, str_new_fromstr("__new__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            new_func=(newfunc)newtp_new;
+        }
+
+        n=object_getattr(dict, str_new_fromstr("__init__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            init_func=(initfunc)newtp_init;
+        }
+
+        n=object_getattr(dict, str_new_fromstr("__del__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            del_func=(delfunc)newtp_del;
+        }
+
+        n=object_getattr(dict, str_new_fromstr("__next__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            next_func=(iternextfunc)newtp_next;
+        }
+
+        n=object_getattr(dict, str_new_fromstr("__iter__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            iter_func=(unaryfunc)newtp_iter;
+        }
+
+        n=object_getattr(dict, str_new_fromstr("__str__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            str_func=(reprfunc)newtp_str;
+        }
+
+        n=object_getattr(dict, str_new_fromstr("__call__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            call_func=(callfunc)newtp_call;
+        }
+
+        bool c=object_getattr(dict, str_new_fromstr("__eq__"));
+        c=object_getattr(dict, str_new_fromstr("__ne__"));
+        c=object_getattr(dict, str_new_fromstr("__lt__"));
+        c=object_getattr(dict, str_new_fromstr("__lte__"));
+        c=object_getattr(dict, str_new_fromstr("__gt__"));
+        c=object_getattr(dict, str_new_fromstr("__gte__"));
+        if (c){
+            comp_func=(compfunc)newtp_cmp;
+        }
+    }
+    if (NEWTP_NUMBER_COPY){
+        object* n=object_getattr(dict, str_new_fromstr("__add__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_add=(binopfunc)newtp_add;
+        }
+        
+        n=object_getattr(dict, str_new_fromstr("__sub__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_sub=(binopfunc)newtp_sub;
+        }     
+        
+        n=object_getattr(dict, str_new_fromstr("__mul__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_mul=(binopfunc)newtp_mul;
+        }     
+        
+        n=object_getattr(dict, str_new_fromstr("__div__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_div=(binopfunc)newtp_div;
+        }   
+        
+        n=object_getattr(dict, str_new_fromstr("__neg__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_neg=(unaryfunc)newtp_neg;
+        }  
+        
+        n=object_getattr(dict, str_new_fromstr("__bool__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_bool=(unaryfunc)newtp_bool;
+        }    
+        
+        n=object_getattr(dict, str_new_fromstr("__int__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_int=(unaryfunc)newtp_int;
+        }    
+        
+        n=object_getattr(dict, str_new_fromstr("__float__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_float=(unaryfunc)newtp_float;
+        }       
+    }
+
+
+    uint32_t maxsize=0;
+    uint32_t maxvarsize=0;
+    uint32_t nfplbases=0;
+    for (uint32_t i=0; i<CAST_LIST(bases)->size; i++){
+        object* base_=list_index_int(bases, i);
+        TypeObject* base;
+        if (object_istype(base_->type, &TypeType)){
+            base=CAST_TYPE(base_);
+        }
+        else{
+            base=base_->type;
+        }
+        if (std::find(fplbases.begin(), fplbases.end(), base) != fplbases.end()){
+            nfplbases++;
+            if (nfplbases==2){
+                vm_add_err(&TypeError, vm, "Cannot inherit from more than one builtin type");
+                return NULL;
+            }
+        }
+
+        if (base->size>maxsize){
+            maxsize=base->size;
+        }
+        if (base->var_base_size>maxvarsize){
+            maxvarsize=base->var_base_size;
+        }
+    }
+
+    size_t size=maxvarsize;
+    if (maxsize>maxvarsize){
+        size=maxsize;
+    }
+
+
+    TypeObject newtype={
+        0, //refcnt
+        0, //ob_prev
+        0, //ob_next
+        0, //gen
+        &TypeType, //type
+        name, //name
+        maxsize+sizeof(object*), //size
+        maxvarsize+sizeof(object*), //var_base_size
+        true, //gc_trackable
+        bases, //bases
+        size, //dict_offset
+        dict, //dict
+        object_genericgetattr, //slot_getattr
+        object_genericsetattr, //slot_setattr
+
+        init_func, //slot_init
+        new_func, //slot_new
+        del_func, //slot_del
+
+        next_func, //slot_next
+        iter_func, //slot_iter
+
+        repr_func, //slot_repr
+        str_func, //slot_str
+        call_func, //slot_call
+
+        &newtp_number, //slot_number
+        &newtp_mappings, //slot_mapping
+
+        newtp_methods, //slot_methods
+        newtp_getsets, //slot_getsets
+        newtp_offsets, //slot_offsests
+        
+        comp_func, //slot_cmp
+        newtp_post_tpcall, //slot_post_tpcall
+    };
+    
+    object* tp=finalize_type(&newtype);
+    inherit_type_dict((TypeObject*)tp);
+    setup_type_getsets((TypeObject*)tp);
+    setup_type_methods((TypeObject*)tp);
+    setup_type_offsets((TypeObject*)tp);
+    return tp;
+}
 
 #include "typeobject_newtp.cpp"
 #include "object_dicts.cpp"
