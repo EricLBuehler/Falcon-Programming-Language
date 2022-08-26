@@ -2191,7 +2191,6 @@ object* new_type(string* name, object* bases, object* dict){
             vm->exception=NULL;
         }
         else{
-            cout<<"init";
             init_func=(initfunc)newtp_init;
         }
 
