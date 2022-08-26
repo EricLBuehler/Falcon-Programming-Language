@@ -267,9 +267,7 @@ int main(int argc, char** argv) {
         }
         if ((string)argv[1]==(string)"-l"){
             cout<<"FPL License\n";
-            cout<<FPL_LICENSE;/*
-            cout<<"\n\n-------------------------------------\n\nBigFloat License\n";
-            cout<<FPL_BigFloat_LICENSE;*/
+            cout<<FPL_LICENSE;
             return 0;
         }
         program=argv[1];
