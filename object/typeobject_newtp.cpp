@@ -51,8 +51,8 @@ object* newtp_set(object* self, object* idx, object* val){
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, idx);
     args->type->slot_mappings->slot_append(args, val);
-    object* val=object_call(n, args, new_dict());
-    return val;
+    object* ret=object_call(n, args, new_dict());
+    return ret;
 }
 object* newtp_repr(object* self){
     object* n=object_getattr(self, str_new_fromstr("__repr__"));
