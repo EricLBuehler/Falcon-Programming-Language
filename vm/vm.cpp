@@ -424,6 +424,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case BINOP_NE:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_cmp(left, right, CMP_NE);
+            add_dataframe(vm, vm->objstack, ret);
+            break;
+        }
+
         case UNARY_NEG:{
             struct object* right=pop_dataframe(vm->objstack);
             
