@@ -50,6 +50,7 @@ enum opcode{
     IMPORT_NAME,
     IMPORT_FROM_MOD,
     MAKE_SLICE,
+    BINOP_NE,
 };
 
 enum scope{

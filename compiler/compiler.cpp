@@ -155,6 +155,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 case T_EE:
                     add_instruction(compiler->instructions,BINOP_EE,0, expr->start, expr->end);
                     break;
+                case T_NE:
+                    add_instruction(compiler->instructions,BINOP_NE,0, expr->start, expr->end);
+                    break;
                 case T_GT:
                     add_instruction(compiler->instructions,BINOP_GT,0, expr->start, expr->end);
                     break;
