@@ -12,6 +12,7 @@ object* builtin_repr(object* self, object* args){
 
 object* builtin___build_class__(object* self, object* args){
     object* function=args->type->slot_mappings->slot_get(args, str_new_fromstr("func"));
+    object* name=args->type->slot_mappings->slot_get(args, str_new_fromstr("name"));
     object* dict;
     
 
@@ -35,7 +36,7 @@ object* builtin___build_class__(object* self, object* args){
         return NULL;
     }
     
-    object* t=new_type(CAST_STRING(object_str(CAST_FUNC(function)->name))->val, args->type->slot_mappings->slot_get(args, str_new_fromstr("bases")), dict);
+    object* t=new_type(CAST_STRING(name)->val, args->type->slot_mappings->slot_get(args, str_new_fromstr("bases")), dict);
     return t;
 }
 
