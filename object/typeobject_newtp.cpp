@@ -86,52 +86,65 @@ object* newtp_call(object* self, object* args, object* kwargs){
 }
 
 object* newtp_cmp(object* self, object* other, uint8_t type){
-    object* n=object_getattr_noerror(self, str_new_fromstr("__eq__"));
-    if (n!=NULL){
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
+    if (type==CMP_EQ){
+        object* n=object_getattr(self, str_new_fromstr("__eq__"));
+        if (n!=NULL){
+            object* args=new_tuple();
+            args->type->slot_mappings->slot_append(args, self);
+            object* val=object_call(n, args, new_dict());
+            return val;
+        }
     }
 
-    n=object_getattr_noerror(self, str_new_fromstr("__ne__"));
-    if (n!=NULL){
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
+    if (type==CMP_NE){
+        object* n=object_getattr(self, str_new_fromstr("__ne__"));
+        if (n!=NULL){
+            object* args=new_tuple();
+            args->type->slot_mappings->slot_append(args, self);
+            object* val=object_call(n, args, new_dict());
+            return val;
+        }
     }
 
-    n=object_getattr_noerror(self, str_new_fromstr("__lt__"));
-    if (n!=NULL){
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
+    if (type==CMP_LT){
+        object* n=object_getattr(self, str_new_fromstr("__lt__"));
+        if (n!=NULL){
+            object* args=new_tuple();
+            args->type->slot_mappings->slot_append(args, self);
+            object* val=object_call(n, args, new_dict());
+            return val;
+        }
+        return NULL;
     }
 
-    n=object_getattr_noerror(self, str_new_fromstr("__gt__"));
-    if (n!=NULL){
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
+    if (type==CMP_GT){
+        object* n=object_getattr(self, str_new_fromstr("__gt__"));
+        if (n!=NULL){
+            object* args=new_tuple();
+            args->type->slot_mappings->slot_append(args, self);
+            object* val=object_call(n, args, new_dict());
+            return val;
+        }
     }
 
-    n=object_getattr_noerror(self, str_new_fromstr("__lte__"));
-    if (n!=NULL){
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
+    if (type==CMP_LTE){
+        object* n=object_getattr(self, str_new_fromstr("__lte__"));
+        if (n!=NULL){
+            object* args=new_tuple();
+            args->type->slot_mappings->slot_append(args, self);
+            object* val=object_call(n, args, new_dict());
+            return val;
+        }
     }
 
-    n=object_getattr_noerror(self, str_new_fromstr("__gte__"));
-    if (n!=NULL){
-        object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
-        object* val=object_call(n, args, new_dict());
-        return val;
+    if (type==CMP_GTE){
+        object* n=object_getattr(self, str_new_fromstr("__gte__"));
+        if (n!=NULL){
+            object* args=new_tuple();
+            args->type->slot_mappings->slot_append(args, self);
+            object* val=object_call(n, args, new_dict());
+            return val;
+        }
     }
     return NULL;
 }

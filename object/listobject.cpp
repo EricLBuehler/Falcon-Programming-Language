@@ -271,7 +271,19 @@ object* list_cmp(object* self, object* other, uint8_t type){
         }
         return new_bool_true();
     }
-    return new_bool_false();
+    if (type==CMP_NE){
+        if (CAST_LIST(self)->size == CAST_LIST(other)->size){
+            return new_bool_false();
+        }
+        
+        for (size_t i=0; i<CAST_LIST(self)->size; i++){
+            if (istrue(object_cmp(CAST_LIST(self)->array[i], CAST_LIST(other)->array[i], type))){
+                return new_bool_false(); 
+            }
+        }
+        return new_bool_true();
+    }
+    return NULL;
 }
 
 object* list_append_meth(object* args, object* kwargs){

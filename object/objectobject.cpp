@@ -25,6 +25,13 @@ object* object_cmp_(object* self, object* other, uint8_t type){
         if (self==other){
             return new_bool_true();
         }
+        return new_bool_false();
     }
-    return new_bool_false();
+    if (type==CMP_NE){
+        if (self!=other){
+            return new_bool_true();
+        }
+        return new_bool_false();
+    }
+    return NULL;
 }

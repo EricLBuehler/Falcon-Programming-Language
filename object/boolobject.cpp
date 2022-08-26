@@ -75,9 +75,9 @@ object* bool_repr(object* self){
 
 object* bool_int(object* self){
     if (CAST_BOOL(self)->val==1){
-        return new_float_fromdouble(1);
+        return new_int_fromint(1);
     }
-    return new_float_fromdouble(0);
+    return new_int_fromint(0);
 }
 
 object* bool_float(object* self){
@@ -95,8 +95,15 @@ object* bool_cmp(object* self, object* other, uint8_t type){
         if (CAST_BOOL(self)->val==CAST_BOOL(other)->val){
             return new_bool_true();
         }
+        return new_bool_false();
     }
-    return new_bool_false();
+    if (type==CMP_NE){
+        if (CAST_BOOL(self)->val!=CAST_BOOL(other)->val){
+            return new_bool_true();
+        }
+        return new_bool_false();
+    }
+    return NULL;
 }
 
 object* bool_bool(object* self){

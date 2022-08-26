@@ -138,8 +138,18 @@ object* str_cmp(object* self, object* other, uint8_t type){
         if ((*CAST_STRING(self)->val)==(*CAST_STRING(other)->val)){
             return new_bool_true();
         }
+        return new_bool_false();
     }
-    return new_bool_false();
+    if (type==CMP_NE){
+        if (CAST_STRING(self)->val->size()==CAST_STRING(other)->val->size()){
+            return new_bool_false();
+        }
+        if ((*CAST_STRING(self)->val)!=(*CAST_STRING(other)->val)){
+            return new_bool_true();
+        }
+        return new_bool_false();
+    }
+    return NULL;
 }
 
 void str_del(object* obj){

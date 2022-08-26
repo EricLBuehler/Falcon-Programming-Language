@@ -32,6 +32,13 @@ object* module_cmp(object* self, object* other, uint8_t type){
         if (istrue(object_cmp(CAST_MODULE(self)->dict, CAST_MODULE(other)->dict, CMP_EQ))){
             return new_bool_true();
         }
+        return new_bool_false();
     }
-    return new_bool_false();
+    if (type==CMP_NE){
+        if (!istrue(object_cmp(CAST_MODULE(self)->dict, CAST_MODULE(other)->dict, CMP_EQ))){
+            return new_bool_true();
+        }
+        return new_bool_false();
+    }
+    return NULL;
 }

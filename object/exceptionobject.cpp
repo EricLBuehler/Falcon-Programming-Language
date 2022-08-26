@@ -33,10 +33,18 @@ object* exception_cmp(object* self, object* other, uint8_t type){
     if (!object_istype(self->type, other->type)){
         return new_bool_false();
     }
-
-    if (istrue(object_cmp(CAST_EXCEPTION(self)->err, CAST_EXCEPTION(other)->err, CMP_EQ))){
-        return new_bool_true();
+    if (type==CMP_EQ){
+        if (istrue(object_cmp(CAST_EXCEPTION(self)->err, CAST_EXCEPTION(other)->err, CMP_EQ))){
+            return new_bool_true();
+        }
+        return new_bool_false();
+    }
+    if (type==CMP_NE){
+        if (!istrue(object_cmp(CAST_EXCEPTION(self)->err, CAST_EXCEPTION(other)->err, CMP_EQ))){
+            return new_bool_true();
+        }
+        return new_bool_false();
     }
 
-    return new_bool_false();
+    return NULL;
 }

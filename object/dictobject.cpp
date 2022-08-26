@@ -184,7 +184,27 @@ object* dict_cmp(object* self, object* other, uint8_t type){
         }
         return new_bool_true();
     }
-    return new_bool_false();
+    if (type==CMP_NE){
+        if ((*CAST_DICT(self)->val) != (*CAST_DICT(other)->val)){
+            return new_bool_true();
+        }
+        if (CAST_DICT(self)->val->size() == CAST_DICT(other)->val->size()){
+            return new_bool_false();
+        }
+        
+        for(auto it_m1 = (*CAST_DICT(self)->val).cbegin(), end_m1 = (*CAST_DICT(self)->val).cend(), it_m2 = (*CAST_DICT(other)->val).cbegin(), end_m2 = (*CAST_DICT(other)->val).cend(); it_m1 != end_m1 || it_m2 != end_m2;){
+            if (istrue(object_cmp(it_m1->first, it_m2->first, type))){
+                return new_bool_false(); 
+            }
+            if (istrue(object_cmp(it_m1->second, it_m2->second, type))){
+                return new_bool_false(); 
+            }
+            it_m1++;
+            it_m2++;
+        }
+        return new_bool_true();
+    }
+    return NULL;
 }
 
 void dict_del(object* obj){

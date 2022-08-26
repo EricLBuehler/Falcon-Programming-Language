@@ -114,10 +114,19 @@ object* builtin_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
         return new_bool_false();
     }
-    if (CAST_BUILTIN(self)->function!=CAST_BUILTIN(other)->function){
+    if (type==CMP_EQ){
+        if (CAST_BUILTIN(self)->function==CAST_BUILTIN(other)->function){
+            return new_bool_true();
+        }
         return new_bool_false();
     }
-    return new_bool_true();
+   if (type==CMP_NE){
+        if (CAST_BUILTIN(self)->function!=CAST_BUILTIN(other)->function){
+            return new_bool_true();
+        }
+        return new_bool_false();
+    }
+    return NULL;
 }
 
 object* builtin_bool(object* self){

@@ -477,7 +477,7 @@ typedef struct BoolObject{
 }BoolObject;
 
 bool istrue(object* boolean){
-    if (CAST_BOOL(boolean)->val==1){
+    if (boolean!=NULL && CAST_BOOL(boolean)->val==1){
         return true;
     }
     return false;
@@ -722,7 +722,6 @@ void setup_func_type(){
 object* none_new( object* args, object* kwargs);
 void none_del(object* self);
 object* none_repr(object* self);
-object* none_cmp(object* self, object* other, uint8_t type);
 object* none_bool(object* self);
 
 
@@ -785,7 +784,7 @@ TypeObject NoneType={
     none_getsets, //slot_getsets
     none_offsets, //slot_offsests
 
-    (compfunc)none_cmp, //slot_cmp
+    0, //slot_cmp
 };
 
 void setup_none_type(){

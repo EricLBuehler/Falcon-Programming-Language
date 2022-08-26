@@ -45,6 +45,14 @@ object* slice_cmp(object* self, object* other, uint8_t type){
         && istrue(object_cmp(CAST_SLICE(self)->end, CAST_SLICE(other)->end, CMP_EQ))){
             return new_bool_true();
         }
+        return new_bool_false();
     }
-    return new_bool_false();
+    if (type==CMP_NE){
+        if (!istrue(object_cmp(CAST_SLICE(self)->start, CAST_SLICE(other)->start, CMP_EQ))\
+        || !istrue(object_cmp(CAST_SLICE(self)->end, CAST_SLICE(other)->end, CMP_EQ))){
+            return new_bool_true();
+        }
+        return new_bool_false();
+    }
+    return NULL;
 }

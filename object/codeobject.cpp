@@ -69,8 +69,18 @@ object* code_cmp(object* self, object* other, uint8_t type){
         istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type))){
             return new_bool_true();
         }
+        return new_bool_false();
     }
-    return new_bool_false();
+    if (type==CMP_NE){
+        if (!istrue(object_cmp(CAST_CODE(self)->co_file, CAST_CODE(other)->co_file, type)) || \
+        !istrue(object_cmp(CAST_CODE(self)->co_consts, CAST_CODE(other)->co_consts, type)) || \
+        !istrue(object_cmp(CAST_CODE(self)->co_names, CAST_CODE(other)->co_names, type)) || \
+        !istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type))){
+            return new_bool_true();
+        }
+        return new_bool_false();
+    }
+    return NULL;
 }
 
 object* code_bool(object* self){
