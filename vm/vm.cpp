@@ -1032,7 +1032,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             print_traceback();
             
-            cout<<vm->exception->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err)<<endl;
+            cout<<vm->exception->type->name->c_str();
+            if (CAST_EXCEPTION(vm->exception)->err!=NULL){
+                cout<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err);
+            }
+            cout<<endl;
     
             if (vm->exception!=NULL){
                 DECREF(vm->exception);
@@ -1064,8 +1068,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else if (frame!=NULL && frame->obj!=NULL && frame->arg!=3){
                 print_traceback();
-
-                cout<<frame->obj->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(frame->obj)->err)<<endl;
+                
+                cout<<frame->obj->type->name->c_str();
+                if (CAST_EXCEPTION(frame->obj)->err!=NULL){
+                    cout<<": "<<object_cstr(CAST_EXCEPTION(frame->obj)->err);
+                }
+                cout<<endl;
                 if ((void*)frame->obj==(void*)vm->exception){ //Reraised
                     return NULL;
                 }
@@ -1076,7 +1084,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             show_exception:
             print_traceback();
             
-            cout<<vm->exception->type->name->c_str()<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err)<<endl;
+            cout<<vm->exception->type->name->c_str();
+            if (CAST_EXCEPTION(vm->exception)->err!=NULL){
+                cout<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err);
+            }
+            cout<<endl;
     
             if (vm->exception!=NULL){
                 DECREF(vm->exception);
