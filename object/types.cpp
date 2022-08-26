@@ -2163,12 +2163,11 @@ object* new_type(string* name, object* bases, object* dict){
     unaryfunc iter_func=NULL;
     reprfunc str_func=NULL;
     callfunc call_func=NULL;
-    compfunc comp_func=NULL;
 
     NumberMethods number=(*(NumberMethods*)malloc(sizeof(NumberMethods)));
     memset(&number, 0, sizeof(NumberMethods));
     if (NEWTP_PRIMARY_COPY){
-        object* n=object_getattr(dict, str_new_fromstr("__repr__"));
+        object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__repr__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2177,7 +2176,7 @@ object* new_type(string* name, object* bases, object* dict){
             repr_func=(reprfunc)newtp_repr;
         }
 
-        n=object_getattr(dict, str_new_fromstr("__new__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__new__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2186,16 +2185,17 @@ object* new_type(string* name, object* bases, object* dict){
             new_func=(newfunc)newtp_new;
         }
 
-        n=object_getattr(dict, str_new_fromstr("__init__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__init__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
         }
         else{
+            cout<<"init";
             init_func=(initfunc)newtp_init;
         }
 
-        n=object_getattr(dict, str_new_fromstr("__del__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__del__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2204,7 +2204,7 @@ object* new_type(string* name, object* bases, object* dict){
             del_func=(delfunc)newtp_del;
         }
 
-        n=object_getattr(dict, str_new_fromstr("__next__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__next__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2213,7 +2213,7 @@ object* new_type(string* name, object* bases, object* dict){
             next_func=(iternextfunc)newtp_next;
         }
 
-        n=object_getattr(dict, str_new_fromstr("__iter__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__iter__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2222,7 +2222,7 @@ object* new_type(string* name, object* bases, object* dict){
             iter_func=(unaryfunc)newtp_iter;
         }
 
-        n=object_getattr(dict, str_new_fromstr("__str__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__str__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2231,7 +2231,7 @@ object* new_type(string* name, object* bases, object* dict){
             str_func=(reprfunc)newtp_str;
         }
 
-        n=object_getattr(dict, str_new_fromstr("__call__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__call__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2239,22 +2239,9 @@ object* new_type(string* name, object* bases, object* dict){
         else{
             call_func=(callfunc)newtp_call;
         }
-
-
-        /*
-        bool c=object_getattr(dict, str_new_fromstr("__eq__"));
-        c=object_getattr(dict, str_new_fromstr("__ne__"));
-        c=object_getattr(dict, str_new_fromstr("__lt__"));
-        c=object_getattr(dict, str_new_fromstr("__lte__"));
-        c=object_getattr(dict, str_new_fromstr("__gt__"));
-        c=object_getattr(dict, str_new_fromstr("__gte__"));
-        if (c){
-            comp_func=(compfunc)newtp_cmp;
-        }*/
-        comp_func=(compfunc)newtp_cmp;
     }
     if (NEWTP_NUMBER_COPY){
-        object* n=object_getattr(dict, str_new_fromstr("__add__"));
+        object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__add__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2263,7 +2250,7 @@ object* new_type(string* name, object* bases, object* dict){
             number.slot_add=(binopfunc)newtp_add;
         }
         
-        n=object_getattr(dict, str_new_fromstr("__sub__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__sub__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2272,7 +2259,7 @@ object* new_type(string* name, object* bases, object* dict){
             number.slot_sub=(binopfunc)newtp_sub;
         }     
         
-        n=object_getattr(dict, str_new_fromstr("__mul__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__mul__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2281,7 +2268,7 @@ object* new_type(string* name, object* bases, object* dict){
             number.slot_mul=(binopfunc)newtp_mul;
         }     
         
-        n=object_getattr(dict, str_new_fromstr("__div__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__div__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2290,7 +2277,7 @@ object* new_type(string* name, object* bases, object* dict){
             number.slot_div=(binopfunc)newtp_div;
         }   
         
-        n=object_getattr(dict, str_new_fromstr("__neg__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__neg__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2299,7 +2286,7 @@ object* new_type(string* name, object* bases, object* dict){
             number.slot_neg=(unaryfunc)newtp_neg;
         }  
         
-        n=object_getattr(dict, str_new_fromstr("__bool__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__bool__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2308,7 +2295,7 @@ object* new_type(string* name, object* bases, object* dict){
             number.slot_bool=(unaryfunc)newtp_bool;
         }    
         
-        n=object_getattr(dict, str_new_fromstr("__int__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__int__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2317,7 +2304,7 @@ object* new_type(string* name, object* bases, object* dict){
             number.slot_int=(unaryfunc)newtp_int;
         }    
         
-        n=object_getattr(dict, str_new_fromstr("__float__"));
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__float__"));
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
@@ -2326,7 +2313,6 @@ object* new_type(string* name, object* bases, object* dict){
             number.slot_float=(unaryfunc)newtp_float;
         }       
     }
-
 
     uint32_t maxsize=0;
     uint32_t maxvarsize=0;
@@ -2369,8 +2355,8 @@ object* new_type(string* name, object* bases, object* dict){
         0, //gen
         &TypeType, //type
         name, //name
-        maxsize+sizeof(object*), //size
-        maxvarsize+sizeof(object*), //var_base_size
+        maxsize+sizeof(object*)+sizeof(object), //size
+        maxvarsize+sizeof(object*)+sizeof(object), //var_base_size
         true, //gc_trackable
         bases, //bases
         size, //dict_offset
@@ -2389,14 +2375,14 @@ object* new_type(string* name, object* bases, object* dict){
         str_func, //slot_str
         call_func, //slot_call
 
-        &newtp_number, //slot_number
+        &number, //slot_number
         &newtp_mappings, //slot_mapping
 
         newtp_methods, //slot_methods
         newtp_getsets, //slot_getsets
         newtp_offsets, //slot_offsests
         
-        comp_func, //slot_cmp
+        (compfunc)newtp_cmp, //slot_cmp
         newtp_post_tpcall, //slot_post_tpcall
     };
     
