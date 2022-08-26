@@ -2240,6 +2240,8 @@ object* new_type(string* name, object* bases, object* dict){
             call_func=(callfunc)newtp_call;
         }
 
+
+        /*
         bool c=object_getattr(dict, str_new_fromstr("__eq__"));
         c=object_getattr(dict, str_new_fromstr("__ne__"));
         c=object_getattr(dict, str_new_fromstr("__lt__"));
@@ -2248,7 +2250,8 @@ object* new_type(string* name, object* bases, object* dict){
         c=object_getattr(dict, str_new_fromstr("__gte__"));
         if (c){
             comp_func=(compfunc)newtp_cmp;
-        }
+        }*/
+        comp_func=(compfunc)newtp_cmp;
     }
     if (NEWTP_NUMBER_COPY){
         object* n=object_getattr(dict, str_new_fromstr("__add__"));
