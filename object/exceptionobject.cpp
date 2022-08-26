@@ -1,6 +1,6 @@
 object* exception_new(object* type, object* args, object* kwargs){
     object* tp = new_object(CAST_TYPE(type));
-    CAST_EXCEPTION(tp)->err=new_none();
+    CAST_EXCEPTION(tp)->err=NULL;//new_none();
     if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()==1){
         DECREF(tp);
         return vm_setup_err((TypeObject*)type, vm, object_cstr(args->type->slot_mappings->slot_get(args, new_int_fromint(0)) ).c_str() );
@@ -9,7 +9,9 @@ object* exception_new(object* type, object* args, object* kwargs){
 }
 
 void exception_del(object* self){
-    DECREF(CAST_EXCEPTION(self)->err);
+    if (CAST_EXCEPTION(self)->err!=NULL){
+        DECREF(CAST_EXCEPTION(self)->err);
+    }
 }
 
 object* exception_repr(object* self){
