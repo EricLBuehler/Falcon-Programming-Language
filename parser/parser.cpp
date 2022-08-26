@@ -632,7 +632,7 @@ class Parser{
                 if (ret->errornum>0){
                     return NULL;
                 }
-                if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_RPAREN)){
+                if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_RPAREN) && !this->current_tok_is(T_EOF)){
                     this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
                     this->advance();
                     return NULL;
