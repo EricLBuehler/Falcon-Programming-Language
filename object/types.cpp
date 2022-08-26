@@ -1914,7 +1914,14 @@ object* type_call(object* self, object* args, object* kwargs){
         if (CAST_INT(list_len(args))->val->to_long()==1){
             return (object*)(list_get(args, new_int_fromint(0)));
         }
-        vm_add_err(&ValueError, vm, "'type' takes 1 argument");
+        if (CAST_INT(list_len(args))->val->to_long()==3){
+            object* args_=new_dict();
+            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("func"), list_get(args, new_int_fromint(0)));
+            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("name"), list_get(args, new_int_fromint(1)));
+            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("bases"), list_get(args, new_int_fromint(2)));
+            return builtin___build_class__(NULL, args_);
+        }
+        vm_add_err(&ValueError, vm, "'type' takes 1 or 3 arguments");
         return NULL;
     }
     if (CAST_TYPE(self)->slot_new==NULL){
