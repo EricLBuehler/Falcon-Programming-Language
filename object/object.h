@@ -1,5 +1,4 @@
 #include "BigInt.hpp"
-#include "BigFloat.cpp"
 
 typedef struct object*(*initfunc)(struct object*, struct object*, struct object* );
 typedef struct object*(*iternextfunc)(struct object*);
