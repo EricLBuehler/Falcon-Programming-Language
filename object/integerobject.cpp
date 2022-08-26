@@ -9,6 +9,18 @@ object* new_int_fromint(int v){
     return o;
 }
 
+object* new_int_fromstr(string v){
+    object* obj=new_object(&IntType);
+    CAST_INT(obj)->val=new BigInt(v);
+    object* o = in_immutables((struct object*)obj);
+    if (o==NULL){
+        return (object*)obj;
+    }
+    DECREF((struct object*)obj);
+    return o;
+}
+
+
 object* new_int_fromstr(string* v){
     object* obj=new_object(&IntType);
     CAST_INT(obj)->val=new BigInt((*v));
@@ -76,57 +88,35 @@ object* int_new(object* type, object* args, object* kwargs){
 }
 
 object* int_add(object* self, object* other){
-    if (other->type==&FloatType){
-        BigFloat f(CAST_INT(self)->val->to_string());
-        f.SetPrecision(OP_FALLBACK_PREC);
-        return new_float_frombigfloat(f+*CAST_FLOAT(other)->val);
+    object* otherint=object_int(other);
+    if (otherint==NULL){
+        return NULL;
     }
-    else if (other->type==&IntType){
-        return new_int_frombigint(new BigInt((*CAST_INT(self)->val)+(*CAST_INT(other)->val)));
-    }
-    return NULL;
+    return new_int_frombigint(new BigInt(*CAST_INT(self)->val+*CAST_INT(otherint)->val));
 }
 
 object* int_sub(object* self, object* other){
-    if (other->type==&FloatType){
-        BigFloat f(CAST_INT(self)->val->to_string());
-        f.SetPrecision(OP_FALLBACK_PREC);
-        return new_float_frombigfloat(f-*CAST_FLOAT(other)->val);
+    object* otherint=object_int(other);
+    if (otherint==NULL){
+        return NULL;
     }
-    else if (other->type==&IntType){
-        return new_int_frombigint(new BigInt((*CAST_INT(self)->val)-(*CAST_INT(other)->val)));
-    }
-    return NULL;
+    return new_int_frombigint(new BigInt(*CAST_INT(self)->val-*CAST_INT(otherint)->val));
 }
 
 object* int_mul(object* self, object* other){
-    if (other->type==&FloatType){
-        BigFloat f(CAST_INT(self)->val->to_string());
-        f.SetPrecision(OP_FALLBACK_PREC);
-        return new_float_frombigfloat(f* (*CAST_FLOAT(other)->val));
+    object* otherint=object_int(other);
+    if (otherint==NULL){
+        return NULL;
     }
-    else if (other->type==&IntType){
-        return new_int_frombigint(new BigInt((*CAST_INT(self)->val)*(*CAST_INT(other)->val)));
-    }
-    return NULL;
+    return new_int_frombigint(new BigInt(*CAST_INT(self)->val * *CAST_INT(otherint)->val));
 }
 
 object* int_div(object* self, object* other){
-    if (other->type==&FloatType){
-        BigFloat f(CAST_INT(self)->val->to_string());
-        f.SetPrecision(OP_FALLBACK_PREC);
-        return new_float_frombigfloat(f/ (*CAST_FLOAT(other)->val));
+    object* otherint=object_int(other);
+    if (otherint==NULL){
+        return NULL;
     }
-    else if (other->type==&IntType){
-        if ((*CAST_INT(self)->val)%(*CAST_INT(other)->val)!=0){
-            BigFloat a(CAST_INT(self)->val->to_string());
-            a.SetPrecision(OP_FALLBACK_PREC);
-            BigFloat b(CAST_INT(other)->val->to_string());
-            return new_float_frombigfloat(a/b);
-        }
-        return new_int_frombigint(new BigInt((*CAST_INT(self)->val)/(*CAST_INT(other)->val)));
-    }
-    return NULL;
+    return new_int_frombigint(new BigInt(*CAST_INT(self)->val / *CAST_INT(otherint)->val));
 }
 
 object* int_neg(object* self){

@@ -1342,11 +1342,10 @@ object* float_wrapper_lte(object* args, object* kwargs);
 
 object* new_float_fromdouble(double v);
 object* new_float_fromstr(string* v);
-object* new_float_frombigfloat(BigFloat v);
 
 typedef struct FloatObject{
     OBJHEAD_EXTRA
-    BigFloat* val;
+    double val;
 }FloatObject;
 
 static NumberMethods float_num_methods{

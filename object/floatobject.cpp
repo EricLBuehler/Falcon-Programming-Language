@@ -1,17 +1,6 @@
 object* new_float_fromdouble(double v){
     object* obj=new_object(&FloatType);
-    CAST_FLOAT(obj)->val=new BigFloat(v);
-    object* o = in_immutables(obj);
-    if (o==NULL){
-        return obj;
-    }
-    DECREF(obj);
-    return o;
-}
-
-object* new_float_frombigfloat(BigFloat v){
-    object* obj=new_object(&FloatType);
-    CAST_FLOAT(obj)->val=new BigFloat(v);
+    CAST_FLOAT(obj)->val=v;
     object* o = in_immutables(obj);
     if (o==NULL){
         return obj;
@@ -22,7 +11,7 @@ object* new_float_frombigfloat(BigFloat v){
 
 object* new_float_fromstr(string* v){
     object* obj=new_object(&FloatType);
-    CAST_FLOAT(obj)->val=new BigFloat(*v);
+    CAST_FLOAT(obj)->val=stod(v->c_str());
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){
         return (object*)obj;
@@ -33,9 +22,7 @@ object* new_float_fromstr(string* v){
 
 
 object* float_int(object* self){
-    BigFloat f=BigFloat(CAST_FLOAT(self)->val->ToString());
-    f.SetPrecision(0);
-    return new_int_frombigint(new BigInt(f.ToString()));
+    return new_int_fromstr(to_string(round(CAST_FLOAT(self)->val)));
 }
 
 object* float_float(object* self){
@@ -75,61 +62,45 @@ object* float_new(object* type, object* args, object* kwargs){
 }
 
 object* float_add(object* self, object* other){
-    if (other->type==&FloatType){
-        BigFloat f(CAST_FLOAT(self)->val->ToString());
-        f.SetPrecision(OP_FALLBACK_PREC);
-        return new_float_frombigfloat(f+*CAST_FLOAT(other)->val);
+    object* otherfloat=object_float(other);
+    if (otherfloat==NULL){
+        return NULL;
     }
-    else if (other->type==&IntType){
-        return new_float_frombigfloat(*CAST_FLOAT(self)->val+CAST_INT(other)->val->to_int());
-    }
-    return NULL;
+    return new_float_fromdouble(CAST_FLOAT(self)->val+CAST_FLOAT(otherfloat)->val);
 }
 
 object* float_sub(object* self, object* other){
-    if (other->type==&FloatType){
-        BigFloat f(CAST_FLOAT(self)->val->ToString());
-        f.SetPrecision(OP_FALLBACK_PREC);
-        return new_float_frombigfloat(f-*CAST_FLOAT(other)->val);
+    object* otherfloat=object_float(other);
+    if (otherfloat==NULL){
+        return NULL;
     }
-    else if (other->type==&IntType){
-        return new_float_frombigfloat(*CAST_FLOAT(self)->val-CAST_INT(other)->val->to_int());
-    }
-    return NULL;
+    return new_float_fromdouble(CAST_FLOAT(self)->val-CAST_FLOAT(otherfloat)->val);
 }
 
 object* float_mul(object* self, object* other){
-    if (other->type==&FloatType){
-        BigFloat f(CAST_FLOAT(self)->val->ToString());
-        f.SetPrecision(OP_FALLBACK_PREC);
-        return new_float_frombigfloat(f* (*CAST_FLOAT(other)->val));
+    object* otherfloat=object_float(other);
+    if (otherfloat==NULL){
+        return NULL;
     }
-    else if (other->type==&IntType){
-        return new_float_frombigfloat(*CAST_FLOAT(self)->val*CAST_INT(other)->val->to_int());
-    }
-    return NULL;
+    return new_float_fromdouble(CAST_FLOAT(self)->val*CAST_FLOAT(otherfloat)->val);
 }
 
 object* float_div(object* self, object* other){
-    if (other->type==&FloatType){
-        BigFloat f(CAST_FLOAT(self)->val->ToString());
-        f.SetPrecision(OP_FALLBACK_PREC);
-        return new_float_frombigfloat(f/ (*CAST_FLOAT(other)->val));
+    object* otherfloat=object_float(other);
+    if (otherfloat==NULL){
+        return NULL;
     }
-    else if (other->type==&IntType){
-        return new_float_frombigfloat(*CAST_FLOAT(self)->val/CAST_INT(other)->val->to_int());
-    }
-    return NULL;
+    return new_float_fromdouble(CAST_FLOAT(self)->val/CAST_FLOAT(otherfloat)->val);
 }
 
 object* float_neg(object* self){
-    return new_float_frombigfloat(*CAST_FLOAT(self)->val*-1);
+    return new_float_fromdouble(CAST_FLOAT(self)->val*-1);
 }
 
 object* float_repr(object* self){
-    BigFloat f=BigFloat(CAST_FLOAT(self)->val->ToString());
-    f.TrailTrim();
-    return str_new_fromstr(f.ToString());
+    char buf[to_string(CAST_FLOAT(self)->val).size()];
+    sprintf(buf, "%g", CAST_FLOAT(self)->val);
+    return str_new_fromstr(string(buf));
 }
 
 object* float_cmp(object* self, object* other, uint8_t type){
@@ -139,31 +110,31 @@ object* float_cmp(object* self, object* other, uint8_t type){
     }
     
     if (type==CMP_EQ){
-        if (*CAST_FLOAT(self)->val==*CAST_FLOAT(otherfloat)->val){
+        if (CAST_FLOAT(self)->val==CAST_FLOAT(otherfloat)->val){
             return new_bool_true();
         }
         return new_bool_false();
     }
     else if (type==CMP_GT){
-        if (*CAST_FLOAT(self)->val>*CAST_FLOAT(otherfloat)->val){
+        if (CAST_FLOAT(self)->val>CAST_FLOAT(otherfloat)->val){
             return new_bool_true();
         }
         return new_bool_false();
     }
     else if (type==CMP_GTE){
-        if (*CAST_FLOAT(self)->val>=*CAST_FLOAT(otherfloat)->val){
+        if (CAST_FLOAT(self)->val>=CAST_FLOAT(otherfloat)->val){
             return new_bool_true();
         }
         return new_bool_false();
     }
     else if (type==CMP_LT){
-        if (*CAST_FLOAT(self)->val<*CAST_FLOAT(otherfloat)->val){
+        if (CAST_FLOAT(self)->val<CAST_FLOAT(otherfloat)->val){
             return new_bool_true();
         }
         return new_bool_false();
     }
     else if (type==CMP_LTE){
-        if (*CAST_FLOAT(self)->val<=*CAST_FLOAT(otherfloat)->val){
+        if (CAST_FLOAT(self)->val<=CAST_FLOAT(otherfloat)->val){
             return new_bool_true();
         }
         return new_bool_false();
