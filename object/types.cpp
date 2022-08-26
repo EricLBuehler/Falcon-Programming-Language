@@ -1912,8 +1912,10 @@ object* type_call(object* self, object* args, object* kwargs){
     //Special case
     if (object_istype(CAST_TYPE(self), &TypeType)){
         if (CAST_INT(list_len(args))->val->to_long()==1){
-            return (object*)(list_get(args, new_int_fromint(0))->type);
+            return (object*)(list_get(args, new_int_fromint(0)));
         }
+        vm_add_err(&ValueError, vm, "'type' takes 1 argument");
+        return NULL;
     }
     if (CAST_TYPE(self)->slot_new==NULL){
         vm_add_err(&TypeError, vm, "Cannot create instances of type '%s'", CAST_TYPE(self)->name);

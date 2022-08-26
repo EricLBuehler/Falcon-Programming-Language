@@ -18,7 +18,9 @@ object* str_int(object* self){
         b=new BigInt(CAST_STRING(self)->val->c_str());
     }
     catch (std::invalid_argument){
-        vm_add_err(&ValueError, vm, "Invalid literal %s", CAST_STRING(self)->val->c_str());
+        if (vm!=NULL){
+            vm_add_err(&ValueError, vm, "Invalid literal %s", CAST_STRING(self)->val->c_str());
+        }
         return NULL;
     }
     return new_int_frombigint(b);
@@ -30,7 +32,9 @@ object* str_float(object* self){
         d=stod(CAST_STRING(self)->val->c_str());
     }
     catch (std::invalid_argument){
-        vm_add_err(&ValueError, vm, "Invalid literal %s", CAST_STRING(self)->val->c_str());
+        if (vm!=NULL){
+            vm_add_err(&ValueError, vm, "Invalid literal %s", CAST_STRING(self)->val->c_str());
+        }
         return NULL;
     }
     return new_float_fromdouble(d);
