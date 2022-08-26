@@ -14,6 +14,12 @@
 #include <stdlib.h>
 #include <chrono>
 
+#include <sys/stat.h>
+#include <cstdio>
+#include <cstdlib>
+
+#include <iostream>
+
 auto time_nanoseconds() {
     return std::chrono::steady_clock::now();//std::chrono::high_resolution_clock::now();
 }
@@ -77,6 +83,8 @@ int execute(string data, bool objdump, bool verbose){
     kwds.push_back("for");
     kwds.push_back("break");
     kwds.push_back("while");
+    kwds.push_back("import");
+    kwds.push_back("from");
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
@@ -115,7 +123,7 @@ int execute(string data, bool objdump, bool verbose){
 
     struct compiler* compiler = new_compiler();
 
-
+    glblfildata=new string(data);
     object* code=compile(compiler, ast);
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
@@ -259,9 +267,9 @@ int main(int argc, char** argv) {
         }
         if ((string)argv[1]==(string)"-l"){
             cout<<"FPL License\n";
-            cout<<FPL_LICENSE;
+            cout<<FPL_LICENSE;/*
             cout<<"\n\n-------------------------------------\n\nBigFloat License\n";
-            cout<<FPL_BigFloat_LICENSE;
+            cout<<FPL_BigFloat_LICENSE;*/
             return 0;
         }
         program=argv[1];
