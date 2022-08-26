@@ -1080,8 +1080,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
             }
             
-
-            show_exception:
+            
             print_traceback();
             
             cout<<vm->exception->type->name->c_str();
