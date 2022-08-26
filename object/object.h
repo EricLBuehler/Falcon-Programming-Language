@@ -293,6 +293,7 @@ struct vm{
 #define CMP_GTE 2
 #define CMP_LT 3
 #define CMP_LTE 4
+#define CMP_NE 4
 
 #define SETSLOT(tp, base, slot) if (base_tp->slot!=NULL){tp->slot=base->slot;}
 object* finalize_type(TypeObject* newtype);
