@@ -341,6 +341,7 @@ object* import_name(string data, object* name){
     kwds.push_back("while");
     kwds.push_back("import");
     kwds.push_back("from");
+    kwds.push_back("del");
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
@@ -379,6 +380,19 @@ object* import_name(string data, object* name){
     object* o=module_new_fromdict(dict, name);
 
     return o;
+}
+
+void vm_del_var_locals(struct vm* vm, object* name){
+    for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
+        if (istrue(object_cmp(name, k.first, CMP_EQ))){
+            ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
+
+            dict_del_item(vm->callstack->head->locals, name);
+            return;
+        }
+    }
+    vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+    return;
 }
 
 
@@ -1042,6 +1056,18 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             break;
         }
 
+        case DEL_SUBSCR: {
+            object* idx=pop_dataframe(vm->objstack);
+            object* base=pop_dataframe(vm->objstack);
+            object_del_item(base, idx);
+            break;
+        }
+
+        case DEL_NAME: {
+            vm_del_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            break;
+        }
+        
         default:
             return NULL;
             
