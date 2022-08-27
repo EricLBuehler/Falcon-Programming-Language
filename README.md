@@ -41,7 +41,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 
 
 <details>
-<summary>Types</summary>
+<summary>Builtin Accessible Types</summary>
 
 - ```str```
 - ```int```
@@ -248,7 +248,6 @@ Help
 ```./fpl -h```
 
 ### Links ###
-Below are useful references.
 - <a href='https://github.com/dannyvankooten/pepper-lang'>Pepper Lang</a>
 - <a href='https://github.com/davidcallanan/py-myopl-code'>py-myopl-code</a>
 - <a href='https://github.com/faheel/BigInt'>BigInt</a> (Used this library)
