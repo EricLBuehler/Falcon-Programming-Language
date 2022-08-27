@@ -17,6 +17,8 @@
 #include <sys/stat.h>
 #include <cstdio>
 #include <cstdlib>
+#include <dirent.h>
+#include <sys/types.h>
 
 #include <iostream>
 
@@ -85,6 +87,7 @@ int execute(string data, bool objdump, bool verbose){
     kwds.push_back("while");
     kwds.push_back("import");
     kwds.push_back("from");
+    kwds.push_back("del");
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
