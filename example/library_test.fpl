@@ -1,0 +1,4 @@
+from library import f
+
+f.function()
+print(f.a)
