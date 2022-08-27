@@ -118,7 +118,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
-const size_t nbuiltins=30;
+const size_t nbuiltins=31;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;

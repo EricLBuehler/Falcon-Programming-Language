@@ -72,6 +72,8 @@ void setup_builtins(){
     builtins[27]=(object*)&InvalidOperationError;
     builtins[28]=(object*)&ImportError;
     builtins[29]=(object*)&SliceType;
+
+    builtins[30]=(object*)&BoolType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){
