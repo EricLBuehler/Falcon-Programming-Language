@@ -298,6 +298,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 idx=NAMEIDX(compiler->consts);
             }
             else{
+                object* o=str_new_fromstr(*STRLIT(expr->node)->literal);
                 idx=object_find(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
             }
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
@@ -1637,6 +1638,101 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             if (!compiler->keep_return){
                 add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            }
+            break;
+        }
+
+        case N_DEL: {
+            if (DEL(expr->node)->expr->type==N_SUBSCR){
+                Node* subexpr=DEL(expr->node)->expr;
+                
+                compile_expr(compiler, SUBSCR(subexpr->node)->left);
+                compile_expr(compiler, SUBSCR(subexpr->node)->expr);
+                add_instruction(compiler->instructions,DEL_SUBSCR, 0, expr->start, expr->end);
+            }
+            else if (DEL(expr->node)->expr->type==N_SLICE){
+                Node* sliceexpr=DEL(expr->node)->expr;
+
+                Node* base=SUBSCR(SLICE(sliceexpr->node)->left->node)->left;
+                Node* left=SUBSCR(SLICE(sliceexpr->node)->left->node)->expr;
+                Node* right=SLICE(sliceexpr->node)->right;
+
+                uint32_t type=0;
+                if (left==NULL && right!=NULL){
+                    type=1;
+                }
+                else if (left!=NULL && right==NULL){
+                    type=2;
+                }
+                else if (left==NULL && right==NULL){
+                    type=4;
+                }
+                else{
+                    type=3;
+                }
+
+                bool ret=compiler->keep_return;
+                compiler->keep_return=true;
+                if (!ret){
+                    compiler->keep_return=false;
+                }
+                compiler->keep_return=ret;
+
+
+                compile_expr(compiler, base);
+                if (type==3){
+                    compile_expr(compiler, left);
+                    compile_expr(compiler, right);
+                    add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+                }
+                else if (type==2){
+                    compile_expr(compiler, left);
+                    uint32_t idx;
+                    if (!object_find_bool(compiler->consts,noneobj)){
+                        //Create object
+                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, noneobj);
+                    }
+                    
+                    add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+                    add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+                }
+                else if (type==1) {
+                    uint32_t idx;
+                    if (!object_find_bool(compiler->consts,noneobj)){
+                        //Create object
+                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, noneobj);
+                    }
+                    
+                    add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+                    compile_expr(compiler, right);
+                    add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
+                }
+                else{
+                    //Type 4 needs nothing
+                    break;
+                }
+
+                add_instruction(compiler->instructions, DEL_SUBSCR, 0, expr->start, expr->end);
+            } 
+            else{
+                uint32_t idx;
+                if (!_list_contains(compiler->names, IDENTI(DEL(expr->node)->expr->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(DEL(expr->node)->expr->node)->name));
+                    idx = NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(*IDENTI(DEL(expr->node)->expr->node)->name));
+                }
+                add_instruction(compiler->instructions, DEL_NAME, idx, expr->start, expr->end);
             }
             break;
         }

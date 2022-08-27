@@ -51,6 +51,8 @@ enum opcode{
     IMPORT_FROM_MOD,
     MAKE_SLICE,
     BINOP_NE,
+    DEL_SUBSCR,
+    DEL_NAME,
 };
 
 enum scope{
@@ -113,6 +115,7 @@ struct compiler{
 #define FROM(node) ((From*)node)
 #define SLICE(node) ((Slice*)node)
 #define STSLICE(node) ((StoreSlice*)node)
+#define DEL(node) ((Del*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 

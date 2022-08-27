@@ -54,7 +54,7 @@ POP_JMP_TOS_FALSE(idx) - Adds idx to IP and pops TOS if TOS is falsy
 
 JUMP_TO(idx) - Unconditionally adds idx to IP
 
-BINOP_SUBSCR - Implements TOS=TOS[TOS-1]
+BINOP_SUBSCR - Implements TOS=TOS-1[TOS]
 
 RAISE_EXC - Attempts to raise TOS as exception
 
@@ -105,3 +105,7 @@ IMPORT_FROM_MOD - Loads attrs in list on TOS, from module TOS-1
 MAKE_SLICE(arg) - Make slice from TOS-2[TOS-1:TOS]
 
 BINOP_EE - Implements TOS != TOS-1
+
+DEL_SUBSCR - Implements del TOS-1[TOS]
+
+DEL_NAME(arg) - Implements del co_names[arg]
