@@ -193,19 +193,53 @@ object* list_get(object* self, object* idx){
     return CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()];
 }
 
+void list_del_slice(object* self, object* index){
+    uint32_t start=CAST_INT(CAST_SLICE(index)->start)->val->to_int();
+    uint32_t end=CAST_INT(CAST_SLICE(index)->end)->val->to_int();
+
+    for (uint32_t idx=start; idx<end; idx++){
+        DECREF(CAST_LIST(self)->array[idx]);
+        
+        for(int i = start; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+            CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
+        }
+    }
+    CAST_LIST(self)->size=CAST_LIST(self)->size-(end-start);
+    
+    list_resize(CAST_LIST(self), CAST_LIST(self)->size);
+}
+
+void list_del_item(object* self, object* index){
+    uint32_t idx=CAST_INT(index)->val->to_int();
+    DECREF(CAST_LIST(self)->array[idx]);
+    for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+        CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
+    }
+    list_resize(CAST_LIST(self), CAST_LIST(self)->size--);
+}
+
 object* list_set(object* self, object* idx, object* val){
     if (object_istype(idx->type, &SliceType)){
+        if (val==NULL){
+            list_del_slice(self, idx);
+            return new_none();
+        }
         list_store_slice(self, idx,val);
         return new_none();
     }
     if (!object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
         //Error
-        return new_none();
+        return NULL;
     }
     if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long()){
         vm_add_err(&IndexError, vm, "List index out of range");
         //Error
+        return NULL;
+    }
+
+    if (val==NULL){
+        list_del_item(self, idx);
         return new_none();
     }
     

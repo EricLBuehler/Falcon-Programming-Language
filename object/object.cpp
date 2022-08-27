@@ -497,3 +497,7 @@ object* object_float(object* left){
 object* generic_iter_iter(object* self){
     return self;
 }
+
+void object_del_item(object* base, object* idx){
+    base->type->slot_mappings->slot_set(base, idx, NULL);
+}

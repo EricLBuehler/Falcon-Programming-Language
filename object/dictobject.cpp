@@ -91,7 +91,26 @@ object* dict_get(object* self, object* key){
     return NULL;
 }
 
+void dict_del_item(object* self, object* key){
+    for (auto k: (*CAST_DICT(self)->val)){
+        if (istrue(object_cmp(key, k.first, CMP_EQ))){
+            CAST_DICT(self)->val->erase(CAST_DICT(self)->val->find(k.first));
+            return;
+        }
+        if (vm->exception!=NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+    }
+    
+    vm_add_err(&KeyError, vm, "%s is not a key", object_crepr(key).c_str());
+}
+
 object* dict_set(object* self, object* key, object* val){
+    if (val==NULL){
+        dict_del_item(self, key);
+        return new_none();
+    }
     //Fast path for immutables
     if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
         //Do not incref key!
