@@ -1,0 +1,5 @@
+print("loaded")
+a=1
+func function(){
+    print("Function called")
+}
