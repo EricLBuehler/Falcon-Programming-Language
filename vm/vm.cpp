@@ -928,7 +928,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                             if (string(en->d_name)==string(".") || string(en->d_name)==string("..")){
                                 continue;
                             }
-                            cout<<" \n";
 
                             
                             string extension="";
