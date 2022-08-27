@@ -324,6 +324,62 @@ void print_traceback(){
     }
 }
 
+object* import_name(string data, object* name){
+    vector<string> kwds;
+    kwds.push_back("func");
+    kwds.push_back("class");
+    kwds.push_back("return");
+    kwds.push_back("if");
+    kwds.push_back("else");
+    kwds.push_back("elif");
+    kwds.push_back("raise");
+    kwds.push_back("try");
+    kwds.push_back("except");
+    kwds.push_back("finally");
+    kwds.push_back("for");
+    kwds.push_back("break");
+    kwds.push_back("while");
+    kwds.push_back("import");
+    kwds.push_back("from");
+
+    Lexer lexer(data,kwds);
+    lexer.pos=Position(program);
+
+    Position end=lexer.tokenize();
+
+    parser=Parser(lexer.tokens, data);
+    parse_ret ast=parser.parse();
+
+    if (ast.errornum>0){
+        cout<<ast.header<<endl;
+        cout<<ast.snippet<<endl;
+        cout<<ast.arrows<<endl;
+        printf("%s\n",ast.error);
+        exit(0);
+    }
+
+    struct compiler* compiler = new_compiler();
+    glblfildata=new string(data);
+    object* code=compile(compiler, ast);
+    if (code==NULL){
+        cout<<parseretglbl.header<<endl;
+        cout<<parseretglbl.snippet<<endl;
+        printf("%s\n",parseretglbl.error);
+        exit(0);
+    }
+    CAST_CODE(code)->co_file=object_repr(name);
+    struct vm* vm_=::vm;
+    ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
+    ::vm->globals=new_dict();
+    ::vm->callstack->head->locals=INCREF(::vm->globals);
+    object* ret=run_vm(code, &::vm->ip);
+    object* dict=::vm->callstack->head->locals;
+    ::vm=vm_;
+
+    object* o=module_new_fromdict(dict, name);
+
+    return o;
+}
 
 
 object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
@@ -462,7 +518,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         }
 
         case RETURN_VAL: {
-            cout<<vm->objstack->size;
             return pop_dataframe(vm->objstack);
         }
 
@@ -863,28 +918,73 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             struct stat st;
             if( stat(nm.c_str(),&st) == 0 || stat(name_.c_str(),&st) == 0 ){
                 if( st.st_mode & S_IFDIR ){//Directory
-                    //try nm/__main__.fpl
-                    //Later try nm as folder
-                    FILE* f=fopen((nm+"/"+IMPORT_DIR_MAIN+".fpl").c_str(), "rb");
-                    if (f==NULL){
-                        vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+IMPORT_DIR_MAIN+".fpl").c_str());
-                        return NULL;
+                    object* dict=new_dict();
+                    
+                    DIR *dr;
+                    struct dirent *en;
+                    dr = opendir(nm.c_str());
+                    if (dr) {
+                        while ((en = readdir(dr)) != NULL) {
+                            if (string(en->d_name)==string(".") || string(en->d_name)==string("..")){
+                                continue;
+                            }
+                            cout<<" \n";
+
+                            
+                            string extension="";
+                            string filename="";
+                            bool extwr=true;
+                            for (int i=string(en->d_name).size(); i>0; i--){
+                                if (string(en->d_name).at(i-1)=='.' && extwr){
+                                    extwr=false;
+                                    continue;
+                                }
+                                if (!extwr){
+                                    filename+=string(en->d_name).at(i-1);
+                                }
+                                if (extwr){
+                                    extension+=string(en->d_name).at(i-1);
+                                }
+                            }
+                            reverse(extension.begin(), extension.end());
+                            reverse(filename.begin(), filename.end());
+                            if (extension!="fpl"){
+                                continue;
+                            }
+
+                            //try en->d_name
+                            //Later try nm as folder
+                            FILE* f=fopen((nm+"/"+string(en->d_name)).c_str(), "rb");
+                            if (f==NULL){
+                                vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+string(en->d_name)).c_str());
+                                return NULL;
+                            }
+
+
+                            fseek(f, 0, SEEK_END);
+                            long fsize = ftell(f);
+                            fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+
+                            char *s = (char*)malloc(fsize + 1);
+                            int i=fread(s, fsize, 1, f);
+                            if (i==0 && fsize>0){
+                                vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
+                                return NULL;
+                            }
+                            s[fsize] = 0;
+                            string str(s);
+                            
+                            object* o=import_name(str, str_new_fromstr(filename));
+                            dict_set(dict, str_new_fromstr(filename), o);
+                        }
+                        closedir(dr);
                     }
+                    
+                    object* o=module_new_fromdict(dict, str_new_fromstr(string(nm)));
+                    add_dataframe(vm, vm->objstack, o);
 
-
-                    fseek(f, 0, SEEK_END);
-                    long fsize = ftell(f);
-                    fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
-
-                    char *s = (char*)malloc(fsize + 1);
-                    int i=fread(s, fsize, 1, f);
-                    if (i==0 && fsize>0){
-                        vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
-                        return NULL;
-                    }
-                    s[fsize] = 0;
-                    string str(s);
-                    data=str;
+                    break;
+                    
                 }
                 else{ //File
                     //try nm.fpl
@@ -913,58 +1013,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             
             
 
-            vector<string> kwds;
-            kwds.push_back("func");
-            kwds.push_back("class");
-            kwds.push_back("return");
-            kwds.push_back("if");
-            kwds.push_back("else");
-            kwds.push_back("elif");
-            kwds.push_back("raise");
-            kwds.push_back("try");
-            kwds.push_back("except");
-            kwds.push_back("finally");
-            kwds.push_back("for");
-            kwds.push_back("break");
-            kwds.push_back("while");
-            kwds.push_back("import");
-            kwds.push_back("from");
-
-            Lexer lexer(data,kwds);
-            lexer.pos=Position(program);
-
-            Position end=lexer.tokenize();
-
-            parser=Parser(lexer.tokens, data);
-            parse_ret ast=parser.parse();
-
-            if (ast.errornum>0){
-                cout<<ast.header<<endl;
-                cout<<ast.snippet<<endl;
-                cout<<ast.arrows<<endl;
-                printf("%s\n",ast.error);
-                exit(0);
-            }
-
-            struct compiler* compiler = new_compiler();
-            glblfildata=new string(data);
-            object* code=compile(compiler, ast);
-            if (code==NULL){
-                cout<<parseretglbl.header<<endl;
-                cout<<parseretglbl.snippet<<endl;
-                printf("%s\n",parseretglbl.error);
-                exit(0);
-            }
-            CAST_CODE(code)->co_file=object_repr(name);
-            struct vm* vm_=::vm;
-            ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
-            ::vm->globals=new_dict();
-            ::vm->callstack->head->locals=INCREF(::vm->globals);
-            object* ret=run_vm(code, &::vm->ip);
-            object* dict=::vm->callstack->head->locals;
-            ::vm=vm_;
-
-            object* o=module_new_fromdict(dict, name);
+            object* o=import_name(data, name);
             add_dataframe(vm, vm->objstack, o);
 
             break;
