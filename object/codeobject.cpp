@@ -60,7 +60,7 @@ object* code_repr(object* self){
 
 object* code_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (istrue(object_cmp(CAST_CODE(self)->co_file, CAST_CODE(other)->co_file, type)) && \

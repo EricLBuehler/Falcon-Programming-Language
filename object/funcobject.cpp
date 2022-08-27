@@ -87,8 +87,9 @@ object* func_repr(object* self){
 
 object* func_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
+    
     if (type==CMP_EQ){
         if (istrue(object_cmp(CAST_FUNC(self)->code, CAST_FUNC(other)->code, type)) && \
         istrue(object_cmp(CAST_FUNC(self)->name, CAST_FUNC(other)->name, type))){

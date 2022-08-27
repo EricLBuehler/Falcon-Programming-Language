@@ -112,7 +112,7 @@ object* builtin_repr_slot(object* self){
 
 object* builtin_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (CAST_BUILTIN(self)->function==CAST_BUILTIN(other)->function){

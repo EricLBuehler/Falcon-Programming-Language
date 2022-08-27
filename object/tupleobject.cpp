@@ -173,7 +173,7 @@ object* tuple_next(object* self){
 
 object* tuple_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (CAST_TUPLE(self)->size != CAST_TUPLE(other)->size){
@@ -233,7 +233,7 @@ object* tuple_iter_next(object* self){
 
 object* tuple_iter_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (CAST_TUPLEITER(self)->size != CAST_TUPLEITER(other)->size){
@@ -246,7 +246,7 @@ object* tuple_iter_cmp(object* self, object* other, uint8_t type){
         }
         return new_bool_true();
     }
-    return new_bool_false();
+    return NULL;
 }
 
 object* tuple_iter_bool(object* self){

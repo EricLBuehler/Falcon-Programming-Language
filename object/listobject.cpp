@@ -257,7 +257,7 @@ object* list_repr(object* self){
 
 object* list_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (CAST_LIST(self)->size != CAST_LIST(other)->size){
@@ -328,7 +328,7 @@ object* list_iter_next(object* self){
 
 object* list_iter_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (CAST_LISTITER(self)->size != CAST_LISTITER(other)->size){
@@ -341,7 +341,7 @@ object* list_iter_cmp(object* self, object* other, uint8_t type){
         }
         return new_bool_true();
     }
-    return new_bool_false();
+    return NULL;
 }
 
 object* list_iter_bool(object* self){

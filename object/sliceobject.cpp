@@ -38,7 +38,7 @@ object* slice_repr(object* self){
 
 object* slice_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (istrue(object_cmp(CAST_SLICE(self)->start, CAST_SLICE(other)->start, CMP_EQ))\

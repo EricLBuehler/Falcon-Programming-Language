@@ -133,7 +133,7 @@ object* str_bool(object* self){
 
 object* str_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (CAST_STRING(self)->val->size()!=CAST_STRING(other)->val->size()){
@@ -265,7 +265,7 @@ object* str_wrapper_ne(object* args, object* kwargs){
     object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
 
     if (self->type!=other->type){
-        return new_bool_true();
+        return NULL;
     }
     if (CAST_STRING(self)->val->size()!=CAST_STRING(other)->val->size()){
         return new_bool_true();
@@ -291,7 +291,7 @@ object* str_wrapper_eq(object* args, object* kwargs){
     object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
 
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (CAST_STRING(self)->val->size()!=CAST_STRING(other)->val->size()){
         return new_bool_false();
@@ -325,14 +325,14 @@ object* str_iter_next(object* self){
 
 object* str_iter_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if ((*CAST_STRITER(self)->val) == (*CAST_STRITER(other)->val)){
             return new_bool_true();
         }
     }
-    return new_bool_false();
+    return NULL;
 }
 
 object* str_iter_bool(object* self){

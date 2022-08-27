@@ -26,7 +26,7 @@ object* module_repr(object* self){
 
 object* module_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (istrue(object_cmp(CAST_MODULE(self)->dict, CAST_MODULE(other)->dict, CMP_EQ))){

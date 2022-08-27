@@ -89,7 +89,7 @@ object* bool_float(object* self){
 
 object* bool_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if (CAST_BOOL(self)->val==CAST_BOOL(other)->val){

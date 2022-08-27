@@ -346,7 +346,7 @@ object* int_wrapper_ne(object* args, object* kwargs){
     object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
 
     if (self->type!=other->type){
-        return new_bool_true();
+        return NULL;
     }
     if ((*CAST_INT(self)->val)!=(*CAST_INT(other)->val)){
         return new_bool_true();
@@ -367,9 +367,9 @@ object* int_wrapper_eq(object* args, object* kwargs){
     }
     object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
     object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
-
+    
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if ((*CAST_INT(self)->val)==(*CAST_INT(other)->val)){
         return new_bool_true();

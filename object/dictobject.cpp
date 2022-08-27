@@ -162,7 +162,7 @@ object* dict_str(object* self){
 
 object* dict_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if ((*CAST_DICT(self)->val) == (*CAST_DICT(other)->val)){
@@ -251,7 +251,7 @@ object* dict_iter_next(object* self){
 
 object* dict_iter_cmp(object* self, object* other, uint8_t type){
     if (self->type!=other->type){
-        return new_bool_false();
+        return NULL;
     }
     if (type==CMP_EQ){
         if ((*CAST_DICTITER(self)->val) == (*CAST_DICTITER(other)->val)){
@@ -273,7 +273,7 @@ object* dict_iter_cmp(object* self, object* other, uint8_t type){
         }
         return new_bool_true();
     }
-    return new_bool_false();
+    return NULL;
 }
 
 object* dict_iter_bool(object* self){

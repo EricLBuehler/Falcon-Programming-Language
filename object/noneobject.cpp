@@ -20,5 +20,4 @@ object* none_bool(object* self){
     return new_bool_false();
 }
 
-
 void none_del(object* obj){}

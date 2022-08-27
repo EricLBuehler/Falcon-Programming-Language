@@ -161,6 +161,8 @@ bool object_issubclass(object* obj, TypeObject* t);
 object* generic_iter_iter(object* self);
 object* object_getattr_noerror(object* obj, object* attr);
 
+object* builtin___build_class__(object* self, object* args);
+
 #define list_index_int(self, i) CAST_LIST(self)->array[i]
 #define tuple_index_int(self, i) CAST_TUPLE(self)->array[i]
 
