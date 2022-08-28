@@ -1725,6 +1725,7 @@ void setup_striter_type(){
 void module_del(object* self);
 object* module_repr(object* self);
 object* module_cmp(object* self, object* other, uint8_t type);
+object* module_new_fromdict(object* dict, object* name);
 
 typedef struct ModuleObject{
     OBJHEAD_EXTRA

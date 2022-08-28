@@ -118,6 +118,7 @@ uint32_t immutable_size=0;
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
+
 const size_t nbuiltins=31;
 object* builtins[nbuiltins];
 
@@ -315,6 +316,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "types.cpp"
 #include "gc.h"
 #include "object.cpp"
+#include "../fpl/fpl.h"
 
 #include "../builtins/builtins.h"
 #include "integerobject.cpp"
