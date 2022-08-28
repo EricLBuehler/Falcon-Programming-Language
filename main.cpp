@@ -69,6 +69,7 @@ int execute(string data, bool objdump, bool verbose){
     //Prep constants and types
     new_gc();
     setup_types_consts();
+    setup_modules();
     
 
     vector<string> kwds;
