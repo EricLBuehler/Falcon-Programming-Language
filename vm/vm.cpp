@@ -231,12 +231,8 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
                 return builtins[i];
             }
         }
-        else{
-            if (builtins[i]->type->name->compare((*CAST_STRING(name)->val))==0){
-                return builtins[i];
-            }
-            if (object_istype(builtins[i]->type, &TypeType) && \
-            CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+        else if (object_istype(builtins[i]->type, &TypeType)){
+            if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
                 return builtins[i];
             }
         }
@@ -270,12 +266,8 @@ struct object* vm_get_var_globals(struct vm* vm, object* name){
                 return builtins[i];
             }
         }
-        else{
-            if (builtins[i]->type->name->compare((*CAST_STRING(name)->val))==0){
-                return builtins[i];
-            }
-            if (object_istype(builtins[i]->type, &TypeType) && \
-            CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+        else if (object_istype(builtins[i]->type, &TypeType)){
+            if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
                 return builtins[i];
             }
         }
