@@ -371,6 +371,7 @@ void setup_types_consts(){
     setup_builtins();
     
     inherit_type_dict(&ObjectType);
+    setup_type_getsets(&ObjectType);
     setup_type_offsets(&ObjectType);
 
     inherit_type_dict(&TypeType);
