@@ -213,6 +213,7 @@ object* list_bool(object* self);
 object* list_append_meth(object* args, object* kwargs);
 object* list_iter(object* self);
 object* list_pop(object* self);
+object* list_pop_meth(object* args, object* kwargs);
 
 typedef struct ListObject{
     OBJHEAD_VAR
@@ -221,7 +222,7 @@ typedef struct ListObject{
     size_t size;
 }ListObject;
 
-Method list_methods[]={{"append", (cwrapperfunc)list_append_meth}, {NULL,NULL}};
+Method list_methods[]={{"append", (cwrapperfunc)list_append_meth}, {"pop", (cwrapperfunc)list_pop_meth}, {NULL,NULL}};
 GetSets list_getsets[]={{NULL,NULL}};
 OffsetMember list_offsets[]={{NULL}};
 

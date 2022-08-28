@@ -384,3 +384,25 @@ object* list_iter_bool(object* self){
     }
     return new_bool_true();
 }
+
+object* list_pop_meth(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
+    if (len!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+
+
+    uint32_t idx=CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1;
+    if (CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()==0){
+        vm_add_err(&ValueError, vm, "Cannot pop from empty list");
+        return NULL; 
+    }
+    object* ob=CAST_LIST(self)->array[idx];
+    for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+        CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
+    }
+    list_resize(CAST_LIST(self), CAST_LIST(self)->size--);
+    return ob;
+}
