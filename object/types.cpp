@@ -2024,6 +2024,82 @@ void setup_range_type(){
     fplbases.push_back(&RangeType);
 }
 
+void zip_del(object* self);
+object* zip_next(object* self);
+object* zip_new(object* type, object* args, object* kwargs);
+object* zip_cmp(object* self, object* other, uint8_t type);
+
+
+typedef struct ZipObject{
+    OBJHEAD_VAR
+    object** iterators;
+    size_t n_iterators;
+    uint32_t idx;
+}ZipObject;
+
+Method zip_methods[]={{NULL,NULL}};
+GetSets zip_getsets[]={{NULL,NULL}};
+
+static NumberMethods zip_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    0, //slot_bool
+};
+
+static Mappings zip_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject ZipType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("zip"), //name
+    sizeof(ZipObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    zip_new, //slot_new
+    0, //slot_del
+
+    (iternextfunc)zip_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &zip_num_methods, //slot_number
+    &zip_mappings, //slot_mapping
+
+    zip_methods, //slot_methods
+    zip_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)zip_cmp, //slot_cmp
+};
+
+void setup_zip_type(){
+    ZipType=(*(TypeObject*)finalize_type(&ZipType));
+    fplbases.push_back(&ZipType);
+}
+
 
 
 object* new_type(string* name, object* bases, object* dict);

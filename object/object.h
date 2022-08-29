@@ -119,7 +119,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=34;
+const size_t nbuiltins=35;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -286,6 +286,7 @@ struct vm{
 #define CAST_SLICE(obj) ((SliceObject*)obj)
 #define CAST_ENUM(obj) ((EnumObject*)obj)
 #define CAST_RANGE(obj) ((RangeObject*)obj)
+#define CAST_ZIP(obj) ((ZipObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -340,6 +341,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "sliceobject.cpp"
 #include "enumobject.cpp"
 #include "rangeobject.cpp"
+#include "zipobject.cpp"
 
 void setup_types_consts(){
     fplbases.clear();
@@ -374,6 +376,7 @@ void setup_types_consts(){
     setup_slice_type();
     setup_enum_type();
     setup_range_type();
+    setup_zip_type();
 
     setup_builtins();
     
@@ -472,4 +475,8 @@ void setup_types_consts(){
     inherit_type_dict(&RangeType);
     setup_type_offsets(&RangeType);
     setup_type_getsets(&RangeType);
+
+    inherit_type_dict(&ZipType);
+    setup_type_offsets(&ZipType);
+    setup_type_getsets(&ZipType);
 }

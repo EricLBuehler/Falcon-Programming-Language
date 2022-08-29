@@ -6,9 +6,16 @@ object* enum_new(object* type, object* args, object* kwargs){
     }
 
     object* enumer=new_object(CAST_TYPE(type));
-    CAST_ENUM(enumer)->iterator=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    CAST_ENUM(enumer)->iterator=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
     if (CAST_ENUM(enumer)->iterator->type->slot_iter!=NULL){
-        CAST_ENUM(enumer)->iterator=CAST_ENUM(enumer)->iterator->type->slot_iter(CAST_ENUM(enumer)->iterator);
+        DECREF(CAST_ENUM(enumer)->iterator);
+        CAST_ENUM(enumer)->iterator=INCREF(CAST_ENUM(enumer)->iterator->type->slot_iter(CAST_ENUM(enumer)->iterator));
+    }
+    else{
+        DECREF(enumer);
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s'", CAST_ENUM(enumer)->iterator->type->name->c_str());
+        DECREF(CAST_ENUM(enumer)->iterator);
+        return NULL;
     }
     CAST_ENUM(enumer)->idx=0;
     return enumer;

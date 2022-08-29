@@ -84,6 +84,7 @@ void setup_builtins(){
     
     builtins[32]=(object*)&EnumType;
     builtins[33]=(object*)&RangeType;
+    builtins[34]=(object*)&ZipType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){
