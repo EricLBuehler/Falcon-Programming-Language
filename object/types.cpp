@@ -1949,6 +1949,81 @@ void setup_enum_type(){
 }
 
 
+void range_del(object* self);
+object* range_next(object* self);
+object* range_new(object* type, object* args, object* kwargs);
+object* range_cmp(object* self, object* other, uint8_t type);
+
+typedef struct RangeObject{
+    OBJHEAD_VAR
+    uint32_t start;
+    uint32_t end;
+    uint32_t idx;
+}RangeObject;
+
+Method range_methods[]={{NULL,NULL}};
+GetSets range_getsets[]={{NULL,NULL}};
+
+static NumberMethods range_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    0, //slot_bool
+};
+
+static Mappings range_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject RangeType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("range"), //name
+    sizeof(RangeObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    range_new, //slot_new
+    0, //slot_del
+
+    (iternextfunc)range_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &range_num_methods, //slot_number
+    &range_mappings, //slot_mapping
+
+    range_methods, //slot_methods
+    range_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)range_cmp, //slot_cmp
+};
+
+void setup_range_type(){
+    RangeType=(*(TypeObject*)finalize_type(&RangeType));
+    fplbases.push_back(&RangeType);
+}
+
 
 
 object* new_type(string* name, object* bases, object* dict);
