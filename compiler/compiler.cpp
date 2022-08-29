@@ -1304,7 +1304,15 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_FOR: { 
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+
             compile_expr(compiler, FOR(expr->node)->expr);
+            
+            if (!ret){
+                compiler->keep_return=false;
+            }
+            
             add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
 
             uint32_t start=compiler->instructions->count*2;
