@@ -22,6 +22,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```round```
 - ```enumerate```
 - ```range```
+- ```zip```
 
 <details>
 <summary>Exceptions</summary>
