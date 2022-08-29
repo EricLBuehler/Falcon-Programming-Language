@@ -22,7 +22,10 @@ object* new_float_fromstr(string* v){
 
 
 object* float_int(object* self){
-    return new_int_fromstr(to_string(round(CAST_FLOAT(self)->val)));
+    char buf[to_string(round(CAST_FLOAT(self)->val)).size()];
+    sprintf(buf, "%g", round(CAST_FLOAT(self)->val));
+    string s(buf);
+    return new_int_fromstr(s);
 }
 
 object* float_float(object* self){
