@@ -1012,6 +1012,19 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 }
             }
             else{
+                
+                bool done=false;
+                for (int i=0; i<nmodules; i++){
+                    if (istrue(object_cmp(name, CAST_MODULE(modules[i])->name, CMP_EQ))){
+                        add_dataframe(vm, vm->objstack, modules[i]);
+                        done=true;
+                        break;
+                    }
+                }
+                if (done){
+                    break;
+                }
+
                 vm_add_err(&ImportError, vm, "'%s' not found", nm.c_str());
                 return NULL;
             }
