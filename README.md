@@ -19,6 +19,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```repr```
 - ```iter```
 - ```next```
+- ```round```
 
 <details>
 <summary>Exceptions</summary>
