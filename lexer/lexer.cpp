@@ -361,6 +361,7 @@ class Lexer{
 
         _tok_data make_number(){
             int dotcount = 0;
+            int expcount = 0;
 
             string output;
 
@@ -371,6 +372,17 @@ class Lexer{
                     }
                     dotcount++;
                     
+                    output.push_back(this->chr);
+                }
+                else if (this->chr=='e'){
+                    if (expcount==1){
+                        break;
+                    }
+                    expcount++;
+                    
+                    output.push_back(this->chr);
+                }
+                else if ( (this->chr=='-' || this->chr=='+') && expcount==1){
                     output.push_back(this->chr);
                 }
                 else if (isdigit(this->chr)){
@@ -389,7 +401,7 @@ class Lexer{
             if (dotcount==0){
                 res.type=T_INT;
             }
-            if (dotcount==1){
+            if (dotcount==1 || expcount==1){
                 res.type=T_FLOAT;
             }
             return res;
