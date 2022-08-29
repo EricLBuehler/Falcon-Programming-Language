@@ -72,3 +72,33 @@ object* builtin_next(object* self, object* args){
     }
     return obj->type->slot_next(obj);
 }
+
+object* builtin_round(object* self, object* args){
+    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* digits=args->type->slot_mappings->slot_get(args, str_new_fromstr("digits"));
+    
+    object* floatval=object_float(obj);
+    if (floatval==NULL){
+        return NULL;
+    }
+    object* ndigits=object_int(digits);
+    if (ndigits==NULL){
+        return NULL;
+    }
+
+    char buf[to_string(CAST_FLOAT(floatval)->val).size()];
+    sprintf(buf, "%g", CAST_FLOAT(floatval)->val);
+
+    string orig_val(buf);
+    size_t pos=orig_val.find('.');
+    
+    string substr;
+    if (CAST_INT(ndigits)->val->to_int()==0){
+        substr=orig_val.substr(0, pos+1+CAST_INT(ndigits)->val->to_int());
+    }
+    else{
+        substr=orig_val.substr(0, pos+2+CAST_INT(ndigits)->val->to_int());
+    }
+    
+    return new_float_fromdouble(round_double(stod(substr), CAST_INT(ndigits)->val->to_int()));
+}
