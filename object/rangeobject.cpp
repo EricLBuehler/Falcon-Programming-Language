@@ -43,13 +43,13 @@ object* range_cmp(object* self, object* other, uint8_t type){
         return NULL;
     }
     if (type==CMP_EQ){
-        if (istrue(object_cmp(CAST_ENUM(self)->iterator, CAST_ENUM(other)->iterator, CMP_EQ))){
+        if (CAST_RANGE(self)->start==CAST_RANGE(other)->start && CAST_RANGE(self)->end==CAST_RANGE(other)->end){
             return new_bool_true();
         }
         return new_bool_false();
     }
     if (type==CMP_NE){
-        if (!istrue(object_cmp(CAST_ENUM(self)->iterator, CAST_ENUM(other)->iterator, CMP_EQ))){
+        if (CAST_RANGE(self)->start!=CAST_RANGE(other)->start || CAST_RANGE(self)->end!=CAST_RANGE(other)->end){
             return new_bool_true();
         }
         return new_bool_false();
