@@ -1874,6 +1874,81 @@ void setup_slice_type(){
 }
 
 
+void enum_del(object* self);
+object* enum_next(object* self);
+object* enum_new(object* type, object* args, object* kwargs);
+object* enum_cmp(object* self, object* other, uint8_t type);
+
+typedef struct EnumObject{
+    OBJHEAD_VAR
+    object* iterator;
+    uint32_t idx;
+}EnumObject;
+
+Method enum_methods[]={{NULL,NULL}};
+GetSets enum_getsets[]={{NULL,NULL}};
+
+static NumberMethods enum_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+
+    0, //slot_neg
+
+    0, //slot_bool
+};
+
+static Mappings enum_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject EnumType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("enumerate"), //name
+    sizeof(EnumObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    enum_new, //slot_new
+    (delfunc)enum_del, //slot_del
+
+    (iternextfunc)enum_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &enum_num_methods, //slot_number
+    &enum_mappings, //slot_mapping
+
+    enum_methods, //slot_methods
+    enum_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)enum_cmp, //slot_cmp
+};
+
+void setup_enum_type(){
+    EnumType=(*(TypeObject*)finalize_type(&EnumType));
+    fplbases.push_back(&EnumType);
+}
+
+
 
 
 object* new_type(string* name, object* bases, object* dict);
@@ -2336,7 +2411,8 @@ object* new_type(string* name, object* bases, object* dict){
         else{
             base=base_->type;
         }
-        if (std::find(fplbases.begin(), fplbases.end(), base) != fplbases.end()){
+        if (std::find(fplbases.begin(), fplbases.end(), base) != fplbases.end()\
+        || (base->slot_next!=NULL && (base->size>0 && base->var_base_size>0) ) ){
             nfplbases++;
             if (nfplbases==2){
                 vm_add_err(&TypeError, vm, "Cannot inherit from more than one builtin type");

@@ -81,6 +81,8 @@ void setup_builtins(){
     object* roundkwargs=new_tuple();
     roundkwargs->type->slot_mappings->slot_append(roundkwargs, new_int_fromint(0));
     builtins[31]=new_builtin((builtinfunc)builtin_round, str_new_fromstr("round"), roundargs, roundkwargs, CAST_INT(roundargs->type->slot_mappings->slot_len(roundargs))->val->to_int());
+    
+    builtins[32]=(object*)&EnumType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

@@ -315,14 +315,18 @@ object* list_cmp(object* self, object* other, uint8_t type){
         return new_bool_true();
     }
     if (type==CMP_NE){
-        if (CAST_LIST(self)->size == CAST_LIST(other)->size){
-            return new_bool_false();
+        if (CAST_LIST(self)->size != CAST_LIST(other)->size){
+            return new_bool_true();
         }
-        
+
+        bool t=false;
         for (size_t i=0; i<CAST_LIST(self)->size; i++){
-            if (istrue(object_cmp(CAST_LIST(self)->array[i], CAST_LIST(other)->array[i], type))){
-                return new_bool_false(); 
+            if (!istrue(object_cmp(CAST_LIST(self)->array[i], CAST_LIST(other)->array[i], type))){
+                t=true;
             }
+        }
+        if (!t){
+            return new_bool_false();
         }
         return new_bool_true();
     }
@@ -381,6 +385,18 @@ object* list_iter_cmp(object* self, object* other, uint8_t type){
             if (!istrue(object_cmp(CAST_LISTITER(self)->array[i], CAST_LISTITER(other)->array[i], type))){
                 return new_bool_false(); 
             }
+        }
+        return new_bool_true();
+    }
+    if (type==CMP_NE){
+        bool t=false;
+        for (size_t i=0; i<CAST_LISTITER(self)->size; i++){
+            if (!istrue(object_cmp(CAST_LISTITER(self)->array[i], CAST_LISTITER(other)->array[i], type))){
+                t=true;
+            }
+        }
+        if (!t){
+            return new_bool_false();
         }
         return new_bool_true();
     }

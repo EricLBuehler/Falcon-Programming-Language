@@ -188,14 +188,18 @@ object* tuple_cmp(object* self, object* other, uint8_t type){
         return new_bool_true();
     }
     if (type==CMP_NE){
-        if (CAST_TUPLE(self)->size == CAST_TUPLE(other)->size){
-            return new_bool_false();
+        if (CAST_TUPLE(self)->size != CAST_TUPLE(other)->size){
+            return new_bool_true();
         }
-        
+
+        bool t=false;
         for (size_t i=0; i<CAST_TUPLE(self)->size; i++){
-            if (istrue(object_cmp(CAST_TUPLE(self)->array[i], CAST_TUPLE(other)->array[i], type))){
-                return new_bool_false(); 
+            if (!istrue(object_cmp(CAST_TUPLE(self)->array[i], CAST_TUPLE(other)->array[i], type))){
+                t=true;
             }
+        }
+        if (!t){
+            return new_bool_false();
         }
         return new_bool_true();
     }
@@ -243,6 +247,18 @@ object* tuple_iter_cmp(object* self, object* other, uint8_t type){
             if (!istrue(object_cmp(CAST_TUPLEITER(self)->array[i], CAST_TUPLEITER(other)->array[i], type))){
                 return new_bool_false(); 
             }
+        }
+        return new_bool_true();
+    }
+    if (type==CMP_NE){
+        bool t=false;
+        for (size_t i=0; i<CAST_TUPLEITER(self)->size; i++){
+            if (!istrue(object_cmp(CAST_TUPLEITER(self)->array[i], CAST_TUPLEITER(other)->array[i], type))){
+                t=true;
+            }
+        }
+        if (!t){
+            return new_bool_false();
         }
         return new_bool_true();
     }

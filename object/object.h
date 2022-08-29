@@ -119,7 +119,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=32;
+const size_t nbuiltins=33;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -284,11 +284,11 @@ struct vm{
 #define CAST_FILE(obj) ((FileObject*)obj)
 #define CAST_MODULE(obj) ((ModuleObject*)obj)
 #define CAST_SLICE(obj) ((SliceObject*)obj)
+#define CAST_ENUM(obj) ((EnumObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
 
-#define OP_FALLBACK_PREC 24
 
 #define CMP_EQ 0
 #define CMP_GT 1
@@ -337,6 +337,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "floatobject.cpp"
 #include "moduleobject.cpp"
 #include "sliceobject.cpp"
+#include "enumobject.cpp"
 
 void setup_types_consts(){
     fplbases.clear();
@@ -369,6 +370,7 @@ void setup_types_consts(){
     setup_striter_type();
     setup_module_type();
     setup_slice_type();
+    setup_enum_type();
 
     setup_builtins();
     
@@ -459,4 +461,8 @@ void setup_types_consts(){
     inherit_type_dict(&SliceType);
     setup_type_offsets(&SliceType);
     setup_type_getsets(&SliceType);
+
+    inherit_type_dict(&EnumType);
+    setup_type_offsets(&EnumType);
+    setup_type_getsets(&EnumType);
 }

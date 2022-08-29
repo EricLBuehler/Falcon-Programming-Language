@@ -191,35 +191,42 @@ object* dict_cmp(object* self, object* other, uint8_t type){
             return new_bool_false();
         }
         
-        for(auto it_m1 = (*CAST_DICT(self)->val).cbegin(), end_m1 = (*CAST_DICT(self)->val).cend(), it_m2 = (*CAST_DICT(other)->val).cbegin(), end_m2 = (*CAST_DICT(other)->val).cend(); it_m1 != end_m1 || it_m2 != end_m2;){
-            if (!istrue(object_cmp(it_m1->first, it_m2->first, type))){
+        for (int i=0; i<CAST_DICT(self)->keys->size(); i++){
+            object* key1=CAST_DICT(self)->keys->at(i);
+            object* val1=(*CAST_DICT(self)->val)[key1];
+            object* key2=CAST_DICT(other)->keys->at(i);
+            object* val2=(*CAST_DICT(other)->val)[key2];
+
+            if (!istrue(object_cmp(key1, key1, type))){
                 return new_bool_false(); 
             }
-            if (!istrue(object_cmp(it_m1->second, it_m2->second, type))){
+            if (!istrue(object_cmp(key2, key2, type))){
                 return new_bool_false(); 
             }
-            it_m1++;
-            it_m2++;
         }
         return new_bool_true();
     }
     if (type==CMP_NE){
-        if ((*CAST_DICT(self)->val) != (*CAST_DICT(other)->val)){
-            return new_bool_true();
-        }
-        if (CAST_DICT(self)->val->size() == CAST_DICT(other)->val->size()){
+        if ((*CAST_DICT(self)->val) == (*CAST_DICT(other)->val)){
             return new_bool_false();
         }
+        if (CAST_DICT(self)->val->size() != CAST_DICT(other)->val->size()){
+            return new_bool_true();
+        }
         
-        for(auto it_m1 = (*CAST_DICT(self)->val).cbegin(), end_m1 = (*CAST_DICT(self)->val).cend(), it_m2 = (*CAST_DICT(other)->val).cbegin(), end_m2 = (*CAST_DICT(other)->val).cend(); it_m1 != end_m1 || it_m2 != end_m2;){
-            if (istrue(object_cmp(it_m1->first, it_m2->first, type))){
-                return new_bool_false(); 
+        bool t=false;
+        for (int i=0; i<CAST_DICT(self)->keys->size(); i++){
+            object* key1=CAST_DICT(self)->keys->at(i);
+            object* val1=(*CAST_DICT(self)->val)[key1];
+            object* key2=CAST_DICT(other)->keys->at(i);
+            object* val2=(*CAST_DICT(other)->val)[key2];
+            
+            if (!istrue(object_cmp(key1, key1, type)) && !istrue(object_cmp(key2, key2, type))){
+                bool t=true;
             }
-            if (istrue(object_cmp(it_m1->second, it_m2->second, type))){
-                return new_bool_false(); 
-            }
-            it_m1++;
-            it_m2++;
+        }
+        if (!t){
+            return new_bool_false();
         }
         return new_bool_true();
     }
@@ -280,15 +287,42 @@ object* dict_iter_cmp(object* self, object* other, uint8_t type){
             return new_bool_false();
         }
         
-        for(auto it_m1 = (*CAST_DICTITER(self)->val).cbegin(), end_m1 = (*CAST_DICTITER(self)->val).cend(), it_m2 = (*CAST_DICTITER(other)->val).cbegin(), end_m2 = (*CAST_DICTITER(other)->val).cend(); it_m1 != end_m1 || it_m2 != end_m2;){
-            if (!istrue(object_cmp(it_m1->first, it_m2->first, type))){
+        for (int i=0; i<CAST_DICTITER(self)->keys->size(); i++){
+            object* key1=CAST_DICTITER(self)->keys->at(i);
+            object* val1=(*CAST_DICTITER(self)->val)[key1];
+            object* key2=CAST_DICTITER(other)->keys->at(i);
+            object* val2=(*CAST_DICTITER(other)->val)[key2];
+
+            if (!istrue(object_cmp(key1, key1, type))){
                 return new_bool_false(); 
             }
-            if (!istrue(object_cmp(it_m1->second, it_m2->second, type))){
+            if (!istrue(object_cmp(key2, key2, type))){
                 return new_bool_false(); 
             }
-            it_m1++;
-            it_m2++;
+        }
+        return new_bool_true();
+    }
+    if (type==CMP_NE){
+        if ((*CAST_DICTITER(self)->val) == (*CAST_DICTITER(other)->val)){
+            return new_bool_false();
+        }
+        if (CAST_DICTITER(self)->val->size() != CAST_DICTITER(other)->val->size()){
+            return new_bool_true();
+        }
+        
+        bool t=false;
+        for (int i=0; i<CAST_DICTITER(self)->keys->size(); i++){
+            object* key1=CAST_DICTITER(self)->keys->at(i);
+            object* val1=(*CAST_DICTITER(self)->val)[key1];
+            object* key2=CAST_DICTITER(other)->keys->at(i);
+            object* val2=(*CAST_DICTITER(other)->val)[key2];
+            
+            if (!istrue(object_cmp(key1, key1, type)) && !istrue(object_cmp(key2, key2, type))){
+                bool t=true;
+            }
+        }
+        if (!t){
+            return new_bool_false();
         }
         return new_bool_true();
     }

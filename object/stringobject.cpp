@@ -312,7 +312,7 @@ object* str_iter(object* self){
 }
 
 void str_iter_del(object* self){
-    delete CAST_DICTITER(self)->val;
+    delete CAST_STRITER(self)->val;
 }
 
 object* str_iter_next(object* self){
@@ -329,6 +329,11 @@ object* str_iter_cmp(object* self, object* other, uint8_t type){
     }
     if (type==CMP_EQ){
         if ((*CAST_STRITER(self)->val) == (*CAST_STRITER(other)->val)){
+            return new_bool_true();
+        }
+    }
+    if (type==CMP_NE){
+        if ((*CAST_STRITER(self)->val) != (*CAST_STRITER(other)->val)){
             return new_bool_true();
         }
     }
