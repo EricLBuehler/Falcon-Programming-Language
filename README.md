@@ -20,6 +20,8 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```iter```
 - ```next```
 - ```round```
+- ```enumerate```
+- ```range```
 
 <details>
 <summary>Exceptions</summary>
