@@ -74,6 +74,13 @@ void setup_builtins(){
     builtins[29]=(object*)&SliceType;
 
     builtins[30]=(object*)&BoolType;
+    
+    object* roundargs=new_tuple();
+    roundargs->type->slot_mappings->slot_append(roundargs, str_new_fromstr("object"));
+    roundargs->type->slot_mappings->slot_append(roundargs, str_new_fromstr("digits"));
+    object* roundkwargs=new_tuple();
+    roundkwargs->type->slot_mappings->slot_append(roundkwargs, new_int_fromint(0));
+    builtins[31]=new_builtin((builtinfunc)builtin_round, str_new_fromstr("round"), roundargs, roundkwargs, CAST_INT(roundargs->type->slot_mappings->slot_len(roundargs))->val->to_int());
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc){

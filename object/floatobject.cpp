@@ -25,7 +25,7 @@ object* float_int(object* self){
     char buf[to_string(round(CAST_FLOAT(self)->val)).size()];
     sprintf(buf, "%g", round(CAST_FLOAT(self)->val));
     string s(buf);
-    return new_int_fromstr(s);
+    return new_int_fromint(round(CAST_FLOAT(self)->val));
 }
 
 object* float_float(object* self){
