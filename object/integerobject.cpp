@@ -11,7 +11,15 @@ object* new_int_fromint(int v){
 
 object* new_int_fromstr(string v){
     object* obj=new_object(&IntType);
-    CAST_INT(obj)->val=new BigInt(v);
+    try{    
+        CAST_INT(obj)->val=new BigInt(v);
+    }
+    catch (std::invalid_argument){
+        if (::vm!=NULL){
+            vm_add_err(&ValueError, vm, "Invalid literal '%s'", v.c_str());
+            return NULL;
+        }
+    }
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){
         return (object*)obj;
@@ -23,7 +31,15 @@ object* new_int_fromstr(string v){
 
 object* new_int_fromstr(string* v){
     object* obj=new_object(&IntType);
-    CAST_INT(obj)->val=new BigInt((*v));
+    try{    
+        CAST_INT(obj)->val=new BigInt(*v);
+    }
+    catch (std::invalid_argument){
+        if (::vm!=NULL){
+            vm_add_err(&ValueError, vm, "Invalid literal '%s'", v->c_str());
+            return NULL;
+        }
+    }
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){
         return (object*)obj;

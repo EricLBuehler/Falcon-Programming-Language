@@ -20,6 +20,17 @@ object* new_float_fromstr(string* v){
     return o;
 }
 
+object* new_float_fromstr(string v){
+    object* obj=new_object(&FloatType);
+    CAST_FLOAT(obj)->val=stod(v.c_str());
+    object* o = in_immutables((struct object*)obj);
+    if (o==NULL){
+        return (object*)obj;
+    }
+    DECREF((struct object*)obj);
+    return o;
+}
+
 
 object* float_int(object* self){
     char buf[to_string(round(CAST_FLOAT(self)->val)).size()];
@@ -409,4 +420,9 @@ object* float_wrapper_lte(object* args, object* kwargs){
     object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
     object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
     return self->type->slot_cmp(self, other, CMP_LTE);
+}
+
+double round_double(double value, size_t prec){
+  double pow_10 = pow(10.0d, (double)prec);
+  return round(value * pow_10) / pow_10;
 }

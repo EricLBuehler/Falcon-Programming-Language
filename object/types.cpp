@@ -1343,6 +1343,8 @@ object* float_wrapper_lte(object* args, object* kwargs);
 
 object* new_float_fromdouble(double v);
 object* new_float_fromstr(string* v);
+object* new_float_fromstr(string v);
+double round_double(double value, size_t prec);
 
 typedef struct FloatObject{
     OBJHEAD_EXTRA
