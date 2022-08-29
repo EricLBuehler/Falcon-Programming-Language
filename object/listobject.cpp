@@ -197,14 +197,23 @@ void list_del_slice(object* self, object* index){
     uint32_t start=CAST_INT(CAST_SLICE(index)->start)->val->to_int();
     uint32_t end=CAST_INT(CAST_SLICE(index)->end)->val->to_int();
 
-    for (uint32_t idx=start; idx<end; idx++){
+    int start_v;
+    int end_v;
+    if (start<0){
+        start_v=0;
+    }
+    if (end_v>=CAST_LIST(self)->size){
+        end_v=CAST_LIST(self)->size-1;
+    }
+
+    for (uint32_t idx=start_v; idx<end_v; idx++){
         DECREF(CAST_LIST(self)->array[idx]);
         
-        for(int i = start; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+        for(int i = start_v; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
             CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
         }
     }
-    CAST_LIST(self)->size=CAST_LIST(self)->size-(end-start);
+    CAST_LIST(self)->size=CAST_LIST(self)->size-(end_v-start_v);
     
     list_resize(CAST_LIST(self), CAST_LIST(self)->size);
 }
