@@ -4,7 +4,7 @@
 object* time_sleep(object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
     if (len!=2){
-        vm_add_err(&ValueError, vm, "Expected 2 argument, got %d", len);
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
     object* val=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
@@ -29,7 +29,7 @@ object* time_sleep(object* args, object* kwargs){
 object* time_sleep_ms(object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
     if (len!=2){
-        vm_add_err(&ValueError, vm, "Expected 2 argument, got %d", len);
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
     object* val=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
@@ -50,6 +50,19 @@ object* time_sleep_ms(object* args, object* kwargs){
     return new_none();
 }
 
+object* time_time(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
+    if (len!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+    
+    using namespace std::chrono;
+    uint64_t time = time_point_cast<nanoseconds>(system_clock::now()).time_since_epoch().count();
+
+    return new_int_frombigint(new BigInt(time));
+}
+
 object* new_time_module(){
     object* dict=new_dict();
 
@@ -58,6 +71,9 @@ object* new_time_module(){
 
     object* sleep_ms=cwrapper_new_fromfunc((cwrapperfunc)time_sleep_ms, "sleep_ms");
     dict_set(dict, str_new_fromstr("sleep_ms"), sleep_ms);
+
+    object* time=cwrapper_new_fromfunc((cwrapperfunc)time_time, "time");
+    dict_set(dict, str_new_fromstr("time"), time);
 
     return module_new_fromdict(dict, str_new_fromstr("time"));
 }
