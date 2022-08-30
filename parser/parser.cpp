@@ -288,6 +288,12 @@ class Parser{
         }
 
         Node* make_binop(parse_ret* ret, Node* left, enum token_type opr){
+            if (!isname(left->type)){
+                this->add_parsing_error(ret, "SyntaxError: invalid syntax");
+                this->advance();
+                return NULL;
+            }
+
             //Make new binop, with minimal setup
             Node* node=make_node(N_BINOP);
             node->start=left->start;
@@ -972,6 +978,9 @@ class Parser{
             }
             if (this->current_tok.data=="from"){
                 return make_from(ret);
+            }
+            if (this->current_tok.data=="del"){
+                return make_del(ret);
             }
             this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
             this->advance();
@@ -1830,7 +1839,7 @@ class Parser{
             bool m=this->multi;
             this->multi=false;
             if (!this->current_tok_is(T_IDENTIFIER)){
-                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
                 return NULL;
             }
             Node* lib=this->atom(ret);
@@ -1838,7 +1847,7 @@ class Parser{
             this->advance();
 
             if (!(this->current_tok_is(T_KWD) && this->current_tok.data=="import")){
-                this->add_parsing_error(ret, "Expected 'import', got '%s'", token_type_to_str(this->current_tok.type));
+                this->add_parsing_error(ret, "Expected 'import', got '%s'", token_type_to_str(this->current_tok.type).c_str());
                 return NULL;
             }
             
@@ -1848,7 +1857,7 @@ class Parser{
             this->advance();
 
             if (!this->current_tok_is(T_IDENTIFIER)){
-                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
                 return NULL;
             }
             
@@ -1866,7 +1875,7 @@ class Parser{
                 bool m=this->multi;
                 this->multi=false;
                 if (!this->current_tok_is(T_IDENTIFIER)){
-                    this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                    this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
                     return NULL;
                 }
                 Node* name=this->atom(ret);
@@ -1884,6 +1893,29 @@ class Parser{
             i->name=lib;
 
             node->node=i;
+
+            return node;
+        }
+
+        Node* make_del(parse_ret* ret){
+            this->advance();
+
+            Token t=this->current_tok;
+            if (!this->current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
+                return NULL;
+            }
+
+            Node* expr=this->expr(ret, LOWEST);
+            
+            Node* node=make_node(N_DEL);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            Del* d=(Del*)malloc(sizeof(Del));
+            d->expr=expr;
+
+            node->node=d;
 
             return node;
         }
