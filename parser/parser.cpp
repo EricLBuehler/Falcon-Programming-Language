@@ -288,7 +288,7 @@ class Parser{
         }
 
         Node* make_binop(parse_ret* ret, Node* left, enum token_type opr){
-            if ( (current_tok_is(T_IADD) || current_tok_is(T_IMUL) ||current_tok_is(T_ISUB) ||current_tok_is(T_IDIV) ) && !isname(left->type)){
+            if (!isname(left->type)){
                 this->add_parsing_error(ret, "SyntaxError: invalid syntax");
                 this->advance();
                 return NULL;
