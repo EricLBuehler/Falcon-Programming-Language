@@ -38,6 +38,7 @@ enum nodetype{
     N_FROM,
     N_SLICE,
     N_STORE_SLICE,
+    N_DEL,
 };
 
 enum precedence {
@@ -257,6 +258,10 @@ struct Slice{
 
 struct StoreSlice{
     Node* left;
+    Node* expr;
+};
+
+struct Del{
     Node* expr;
 };
 
