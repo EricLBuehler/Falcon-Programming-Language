@@ -830,6 +830,7 @@ typedef struct BuiltinObject{
     object* args; //Tuple
     object* kwargs; //Tuple
     uint32_t argc;
+    bool nargs;
 }BuiltinObject;
 
 static NumberMethods builtin_num_methods{
