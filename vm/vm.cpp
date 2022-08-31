@@ -125,7 +125,7 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     vsnprintf(msg, length, format, args);
     va_end(args);
     
-    if (CAST_EXCEPTION(vm->exception)->err!=NULL){
+    if (vm->exception!=NULL && CAST_EXCEPTION(vm->exception)->err!=NULL){
         DECREF(CAST_EXCEPTION(vm->exception)->err);
     }
     CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(msg);
@@ -150,7 +150,7 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
     vsnprintf(msg, length, format, args);
     va_end(args);
     
-    if (CAST_EXCEPTION(vm->exception)->err!=NULL){
+    if (vm->exception!=NULL && CAST_EXCEPTION(vm->exception)->err!=NULL){
         DECREF(CAST_EXCEPTION(vm->exception)->err);
     }
     CAST_EXCEPTION(exc)->err=str_new_fromstr(msg);
