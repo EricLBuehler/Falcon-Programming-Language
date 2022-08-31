@@ -58,7 +58,7 @@ object* builtin_input(object* self, object* args){
     object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
     cout<<object_cstr(obj);
     string s="";
-    cin>>s;
+    getline(cin,s);
     return str_new_fromstr(s);
 }
 
