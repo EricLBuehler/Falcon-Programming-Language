@@ -13,6 +13,7 @@ static NumberMethods type_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -87,6 +88,7 @@ object* newtp_sub(object* self, object* other);
 object* newtp_mul(object* self, object* other);
 object* newtp_div(object* self, object* other);
 object* newtp_mod(object* self, object* other);
+object* newtp_pow(object* self, object* other);
 
 object* newtp_neg(object* self);
 object* newtp_bool(object* self);
@@ -101,6 +103,7 @@ NumberMethods newtp_number={
     newtp_mul,
     newtp_div,
     newtp_mod,
+    newtp_pow,
 
     //unaryops
     newtp_neg,

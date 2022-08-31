@@ -75,6 +75,20 @@ object* float_new(object* type, object* args, object* kwargs){
     return o;
 }
 
+object* float_pow(object* self, object* other){
+    object* otherfloat=object_float(other);
+    if (otherfloat==NULL){
+        return NULL;
+    }
+    double res=pow(CAST_FLOAT(self)->val,CAST_FLOAT(otherfloat)->val);
+    DECREF(otherfloat);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
+}
+
 object* float_mod(object* self, object* other){
     object* otherfloat=object_float(other);
     if (otherfloat==NULL){

@@ -11,6 +11,7 @@ object* int_bool(object* self);
 object* int_int(object* self);
 object* int_float(object* self);
 object* int_mod(object* self, object* other);
+object* int_pow(object* self, object* other);
 
 object* int_wrapper_add(object* args, object* kwargs);
 object* int_wrapper_sub(object* args, object* kwargs);
@@ -42,6 +43,7 @@ static NumberMethods int_num_methods{
     (binopfunc)int_mul, //slot_mul
     (binopfunc)int_div, //slot_div
     (binopfunc)int_mod, //slot_mod
+    (binopfunc)int_pow, //slot_pow
 
     (unaryfunc)int_neg, //slot_neg
 
@@ -140,6 +142,7 @@ static NumberMethods str_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -235,6 +238,7 @@ static NumberMethods list_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -316,6 +320,7 @@ static NumberMethods dict_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -400,6 +405,7 @@ static NumberMethods code_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -474,6 +480,7 @@ object* bool_bool(object* self);
 object* bool_int(object* self);
 object* bool_float(object* self);
 object* bool_mod(object* self, object* other);
+object* bool_pow(object* self, object* other);
 
 object* new_bool_true();
 object* new_bool_false();
@@ -497,6 +504,7 @@ static NumberMethods bool_num_methods{
     (binopfunc)bool_mul, //slot_mul
     (binopfunc)bool_div, //slot_div
     (binopfunc)bool_mod, //slot_div
+    (binopfunc)bool_pow, //slot_pow
 
     (unaryfunc)bool_neg, //slot_neg
 
@@ -584,6 +592,7 @@ static NumberMethods tuple_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -670,6 +679,7 @@ static NumberMethods func_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -746,6 +756,7 @@ static NumberMethods none_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -827,6 +838,7 @@ static NumberMethods builtin_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -904,6 +916,7 @@ static NumberMethods object_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -978,6 +991,7 @@ static NumberMethods exception_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1142,6 +1156,7 @@ static NumberMethods file_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1341,6 +1356,7 @@ object* float_bool(object* self);
 object* float_int(object* self);
 object* float_float(object* self);
 object* float_mod(object* self, object* other);
+object* float_pow(object* self, object* other);
 
 object* float_wrapper_add(object* args, object* kwargs);
 object* float_wrapper_sub(object* args, object* kwargs);
@@ -1373,6 +1389,7 @@ static NumberMethods float_num_methods{
     (binopfunc)float_mul, //slot_mul
     (binopfunc)float_div, //slot_div
     (binopfunc)float_mod, //slot_div
+    (binopfunc)float_pow, //slot_pow
 
 
     (unaryfunc)float_neg, //slot_neg
@@ -1457,6 +1474,7 @@ static NumberMethods list_iter_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1536,6 +1554,7 @@ static NumberMethods tuple_iter_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1614,6 +1633,7 @@ static NumberMethods dict_iter_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1690,6 +1710,7 @@ static NumberMethods str_iter_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1763,6 +1784,7 @@ static NumberMethods module_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1840,6 +1862,7 @@ static NumberMethods slice_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1918,6 +1941,7 @@ static NumberMethods enum_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -1995,6 +2019,7 @@ static NumberMethods range_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -2072,6 +2097,7 @@ static NumberMethods zip_num_methods{
     0, //slot_mul
     0, //slot_div
     0, //slot_mod
+    0, //slot_pow
 
     0, //slot_neg
 
@@ -2255,6 +2281,7 @@ void _inherit_number_slots(NumberMethods* m, TypeObject* base_tp){
     m->slot_mul=base_tp->slot_number->slot_mul;
     m->slot_div=base_tp->slot_number->slot_div;
     m->slot_mod=base_tp->slot_number->slot_mod;
+    m->slot_pow=base_tp->slot_number->slot_pow;
 
     m->slot_neg=base_tp->slot_number->slot_neg;
 
@@ -2548,6 +2575,15 @@ object* new_type(string* name, object* bases, object* dict){
         }
         else{
             number.slot_mod=(binopfunc)newtp_mod;
+        }     
+        
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__pow__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_mod=(binopfunc)newtp_pow;
         }     
         
         n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__neg__"));

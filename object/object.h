@@ -29,6 +29,7 @@ typedef struct{
     binopfunc slot_mul;
     binopfunc slot_div;
     binopfunc slot_mod;
+    binopfunc slot_pow;
 
     //unaryops
     unaryfunc slot_neg;

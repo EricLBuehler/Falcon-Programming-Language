@@ -34,6 +34,22 @@ object* new_bool_false(){
     return INCREF(falseobj);
 }
 
+object* bool_pow(object* self, object* other){
+    object* otherv=object_float(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    double selfv=(double)CAST_BOOL(self)->val;
+    double otherval=CAST_FLOAT(otherv)->val;
+    double res=pow(selfv, otherval);
+    DECREF(otherv);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
+}
+
 object* bool_mod(object* self, object* other){
     object* otherv=object_float(other);
     if (otherv==NULL){

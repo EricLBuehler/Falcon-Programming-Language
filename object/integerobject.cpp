@@ -103,6 +103,32 @@ object* int_new(object* type, object* args, object* kwargs){
     return o;
 }
 
+object* int_pow(object* self, object* other){
+    if (object_istype(other->type, &IntType)){
+        double selfv =(double)CAST_INT(self)->val->to_int();
+        double otherv=(double)CAST_INT(other)->val->to_int();
+        double res=pow(selfv,otherv);
+        int ires=(int)res;
+        if (res-ires==0){
+            return new_int_fromint(ires);
+        }
+        return new_float_fromdouble(res);
+    }
+    object* otherv=object_float(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    double selfv =(double)CAST_INT(self)->val->to_int();
+    double otherval=CAST_FLOAT(otherv)->val;
+    double res=pow(selfv,otherval);
+    DECREF(otherv);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
+}
+
 object* int_mod(object* self, object* other){
     if (object_istype(other->type, &IntType)){
         double selfv =(double)CAST_INT(self)->val->to_int();
@@ -225,7 +251,6 @@ object* int_div(object* self, object* other){
     double selfv =(double)CAST_INT(self)->val->to_int();
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv/otherval;
-    DECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
