@@ -341,6 +341,7 @@ class Lexer{
                 res.type=T_NE;
                 return res;
             }
+            this->advance();
             return res;
         }
 
@@ -635,8 +636,12 @@ class Lexer{
                     res.type=T_FLOAT;
                     return res;
                 }
-                else{
+
+                for (int i=0; i<1; i++){
                     _tok_data res=make_identifier();
+                    if (res.data==""){
+                        break;
+                    }
                     res.type=T_DOTIDENT;
                     return res;
                 }
