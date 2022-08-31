@@ -23,7 +23,7 @@ inline bool DECREF(struct object* object){
 
 
         //Delete now
-        if (object->type->gc_trackable && no_outside_refs(object) ){ //No outside references, so we can free
+        if (object->type->gc_trackable || no_outside_refs(object) ){ //No outside references, so we can free
             if (((object_var*)object)->gc_ref - ((struct object*)object)->refcnt<0){
                 if (object->type->slot_del!=NULL){
                     object->type->slot_del(object);

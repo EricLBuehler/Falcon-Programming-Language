@@ -1,7 +1,13 @@
 object* newtp_init(object* self, object* args, object* kwargs){
     //Try to call __new__
     object* n=object_getattr(self, str_new_fromstr("__init__"));
-    object* val=object_call(n, args, kwargs);
+
+    object* args_=new_tuple();
+    args_->type->slot_mappings->slot_append(args_, self);
+    for (int i=0; i<CAST_LIST(args)->size; i++){
+        args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
+    }
+    object* val=object_call(n, args_, kwargs);
     return val;
 }
 object* newtp_new(object* self, object* args, object* kwargs){
@@ -13,7 +19,14 @@ object* newtp_new(object* self, object* args, object* kwargs){
 
     //Try to call __new__
     object* n=object_getattr(o, str_new_fromstr("__new__"));
-    object* val=object_call(n, args, kwargs);
+    
+    object* args_=new_tuple();
+    args_->type->slot_mappings->slot_append(args_, o);
+    for (int i=0; i<CAST_LIST(args)->size; i++){
+        args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
+    }
+
+    object* val=object_call(n, args_, kwargs);
     return val;
 }
 void newtp_del(object* self){

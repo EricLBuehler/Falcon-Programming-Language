@@ -2657,6 +2657,9 @@ object* new_type(string* name, object* bases, object* dict){
     if (maxsize>maxvarsize){
         size=maxsize;
     }
+    if (size==0){
+        size=sizeof(object);
+    }
 
 
     TypeObject newtype={
