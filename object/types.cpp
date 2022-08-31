@@ -2195,7 +2195,7 @@ object* type_call(object* self, object* args, object* kwargs){
     //Special case
     if (object_istype(CAST_TYPE(self), &TypeType)){
         if (CAST_INT(list_len(args))->val->to_long()==1){
-            return (object*)(list_get(args, new_int_fromint(0)));
+            return (object*)(list_get(args, new_int_fromint(0))->type);
         }
         if (CAST_INT(list_len(args))->val->to_long()==3){
             object* args_=new_dict();
