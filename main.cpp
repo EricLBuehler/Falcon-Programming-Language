@@ -258,6 +258,19 @@ int main(int argc, char** argv) {
     program="main.fpl";
     bool verbose=false;
     bool objdump=false;
+    if (argc==1){
+        int i=1;
+        while (true){
+            string s="";
+            cout<<"In ["<<i++<<"]: ";
+            cin>>s;
+            if (s=="!exit"){
+                break;
+            }
+            execute(s, false, false);
+        }
+        return 0;
+    }
     if (argc==2){
         if ((string)argv[1]==(string)"-h"){
             cout<<"FPL V1\n";
