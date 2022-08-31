@@ -180,6 +180,13 @@ object_var* new_object_var(TypeObject* type, size_t size){
 
 
 
+object* object_mod(object* left, object* right){
+    if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_mod==NULL || right->type->slot_number->slot_mod==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_mod(left, right);
+}
+
 object* object_add(object* left, object* right){
     if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_add==NULL || right->type->slot_number->slot_add==NULL){
         return NULL;

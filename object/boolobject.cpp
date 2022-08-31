@@ -34,32 +34,84 @@ object* new_bool_false(){
     return INCREF(falseobj);
 }
 
-object* bool_add(object* self, object* other){
-    if (other->type==&IntType){
-        return new_int_frombigint(new BigInt(CAST_BOOL(self)->val+(*CAST_INT(other)->val)));
+object* bool_mod(object* self, object* other){
+    object* otherv=object_float(other);
+    if (otherv==NULL){
+        return NULL;
     }
-    return NULL;
+    double selfv=(double)CAST_BOOL(self)->val;
+    double otherval=CAST_FLOAT(otherv)->val;
+    double res=fmod(selfv, otherval);
+    DECREF(otherv);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
+}
+
+object* bool_add(object* self, object* other){
+    object* otherv=object_float(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    double selfv=(double)CAST_BOOL(self)->val;
+    double otherval=CAST_FLOAT(otherv)->val;
+    double res=selfv+otherval;
+    DECREF(otherv);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
 }
 
 object* bool_sub(object* self, object* other){
-    if (other->type==&IntType){
-        return new_int_frombigint(new BigInt(CAST_BOOL(self)->val-(*CAST_INT(other)->val)));
+    object* otherv=object_float(other);
+    if (otherv==NULL){
+        return NULL;
     }
-    return NULL;    
+    double selfv=(double)CAST_BOOL(self)->val;
+    double otherval=CAST_FLOAT(otherv)->val;
+    double res=selfv-otherval;
+    DECREF(otherv);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);   
 }
 
 object* bool_mul(object* self, object* other){
-    if (other->type==&IntType){
-        return new_int_frombigint(new BigInt(CAST_BOOL(self)->val*(*CAST_INT(other)->val)));
+    object* otherv=object_float(other);
+    if (otherv==NULL){
+        return NULL;
     }
-    return NULL;    
+    double selfv=(double)CAST_BOOL(self)->val;
+    double otherval=CAST_FLOAT(otherv)->val;
+    double res=selfv*otherval;
+    DECREF(otherv);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);      
 }
 
 object* bool_div(object* self, object* other){
-    if (other->type==&IntType){
-        return new_int_frombigint(new BigInt(CAST_BOOL(self)->val/(*CAST_INT(other)->val)));
+    object* otherv=object_float(other);
+    if (otherv==NULL){
+        return NULL;
     }
-    return NULL;    
+    double selfv=(double)CAST_BOOL(self)->val;
+    double otherval=CAST_FLOAT(otherv)->val;
+    double res=selfv/otherval;
+    DECREF(otherv);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);   
 }
 
 object* bool_neg(object* self){

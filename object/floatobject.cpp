@@ -75,12 +75,32 @@ object* float_new(object* type, object* args, object* kwargs){
     return o;
 }
 
+object* float_mod(object* self, object* other){
+    object* otherfloat=object_float(other);
+    if (otherfloat==NULL){
+        return NULL;
+    }
+    double res=fmod(CAST_FLOAT(self)->val,CAST_FLOAT(otherfloat)->val);
+    DECREF(otherfloat);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
+}
+
 object* float_add(object* self, object* other){
     object* otherfloat=object_float(other);
     if (otherfloat==NULL){
         return NULL;
     }
-    return new_float_fromdouble(CAST_FLOAT(self)->val+CAST_FLOAT(otherfloat)->val);
+    double res=CAST_FLOAT(self)->val+CAST_FLOAT(otherfloat)->val;
+    DECREF(otherfloat);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
 }
 
 object* float_sub(object* self, object* other){
@@ -88,7 +108,13 @@ object* float_sub(object* self, object* other){
     if (otherfloat==NULL){
         return NULL;
     }
-    return new_float_fromdouble(CAST_FLOAT(self)->val-CAST_FLOAT(otherfloat)->val);
+    double res=CAST_FLOAT(self)->val-CAST_FLOAT(otherfloat)->val;
+    DECREF(otherfloat);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
 }
 
 object* float_mul(object* self, object* other){
@@ -96,7 +122,13 @@ object* float_mul(object* self, object* other){
     if (otherfloat==NULL){
         return NULL;
     }
-    return new_float_fromdouble(CAST_FLOAT(self)->val*CAST_FLOAT(otherfloat)->val);
+    double res=CAST_FLOAT(self)->val*CAST_FLOAT(otherfloat)->val;
+    DECREF(otherfloat);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
 }
 
 object* float_div(object* self, object* other){
@@ -104,7 +136,13 @@ object* float_div(object* self, object* other){
     if (otherfloat==NULL){
         return NULL;
     }
-    return new_float_fromdouble(CAST_FLOAT(self)->val/CAST_FLOAT(otherfloat)->val);
+    double res=CAST_FLOAT(self)->val/CAST_FLOAT(otherfloat)->val;
+    DECREF(otherfloat);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
 }
 
 object* float_neg(object* self){

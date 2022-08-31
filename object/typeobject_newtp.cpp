@@ -149,6 +149,13 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
     return NULL;
 }
 
+object* newtp_mod(object* self, object* other){
+    object* n=object_getattr(self, str_new_fromstr("__mod__"));
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    object* val=object_call(n, args, new_dict());
+    return val;
+}
 object* newtp_add(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__add__"));
     object* args=new_tuple();
