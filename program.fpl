@@ -124,3 +124,7 @@ print(float("10.222"))
 for n in [10,20,30]{
     print(n)
 }
+
+print(True and False)
+print(True or False)
+print(not 1==1)
