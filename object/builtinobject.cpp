@@ -3,10 +3,8 @@ object* new_builtin(builtinfunc function, object* name, object* args, object* kw
 
 void setup_builtins(){
     object* printargs=new_tuple();
-    printargs->type->slot_mappings->slot_append(printargs, str_new_fromstr("object"));
     printargs->type->slot_mappings->slot_append(printargs, str_new_fromstr("end"));
     object* printkwargs=new_tuple();
-    printkwargs->type->slot_mappings->slot_append(printkwargs, str_new_fromstr(""));
     printkwargs->type->slot_mappings->slot_append(printkwargs, str_new_fromstr("\n"));
     builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr("print"), printargs, printkwargs, CAST_INT(printargs->type->slot_mappings->slot_len(printargs))->val->to_int(), true);
 
@@ -119,10 +117,16 @@ object* builtin_call(object* self, object* args, object* kwargs){
 
     object* builtinargs=new_dict();
     if (!CAST_BUILTIN(self)->nargs){
-        setup_args(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs);
+        if (setup_args(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs)\
+        ==NULL){
+            return NULL;
+        }
     }
     else{
-        setup_args_allargs(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs);
+        if (setup_args_allargs(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs)\
+        ==NULL){
+            return NULL;
+        }
     }
     return CAST_BUILTIN(self)->function(self, builtinargs);
 }

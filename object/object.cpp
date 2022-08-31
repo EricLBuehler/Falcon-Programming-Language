@@ -340,14 +340,8 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
     uint32_t argsnum=argc-CAST_INT(selfargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
 
     //Positional
-    object* names=new_list();
-    for (int i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
-        object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn));
-        names->type->slot_mappings->slot_append(names, o);
-        argn++;
-    }
 
-    dict->type->slot_mappings->slot_set(dict, str_new_fromstr("args"), INCREF(args));
+    dict->type->slot_mappings->slot_set(dict, str_new_fromstr("args"), args);
     
     //
 
@@ -358,17 +352,14 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
     for (int i=0; i<CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int(); i++){
         object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn_tmp));
         
-        if (!object_find_bool(names, o)){
-            dict->type->slot_mappings->slot_set(dict, o, selfkwargs->type->slot_mappings->slot_get(selfkwargs, new_int_fromint(i)));
-        }
+        dict->type->slot_mappings->slot_set(dict, o, selfkwargs->type->slot_mappings->slot_get(selfkwargs, new_int_fromint(i)));
         argn_tmp++;
     }
     //Setup user kwargs
     for (auto k: (*CAST_DICT(kwargs)->val)){
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){
-            vm_add_err(&NameError, vm, "Got unexpected keyword argument %s", object_cstr(k.first).c_str());
-            DECREF(names);
+            vm_add_err(&NameError, vm, "Got unexpected keyword argument '%s'", object_cstr(k.first).c_str());
             return NULL;
         }
         //
@@ -376,7 +367,6 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
         dict->type->slot_mappings->slot_set(dict, k.first, k.second);
         argn++;
     }
-    DECREF(names);
     
     return dict;
 }
