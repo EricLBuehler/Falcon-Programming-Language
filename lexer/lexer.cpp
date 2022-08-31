@@ -208,9 +208,9 @@ class Lexer{
 
                 if (this->chr=='%'){
                     Position start=this->pos.copy();
+                    struct _tok_data res =make_percent();
                     Position end=this->pos.copy();
-                    end.advance();
-                    Token t("%",T_PERCENT,start,end);
+                    Token t(res.data,res.type,start,end);
                     tokens.push_back(t);
                 }
 
@@ -339,10 +339,6 @@ class Lexer{
                 res.data="!=";
                 res.type=T_NE;
                 return res;
-            }
-            else{
-                cout<<"Expected = after !";
-                while (true);
             }
         }
 
@@ -543,6 +539,11 @@ class Lexer{
                 res.type=T_POW;
                 res.data="**";
                 this->advance();
+                if (this->get_next()=='='){
+                    res.type=T_IPOW;
+                    res.data="**=";
+                    this->advance();
+                }
             }
             if (this->get_next()=='='){
                 this->advance();
@@ -588,6 +589,18 @@ class Lexer{
             return res;
         }
 
+        _tok_data make_percent(){
+            _tok_data res;
+            res.data=this->chr;
+            res.type=T_PERCENT;
+            if (this->get_next()=='='){
+                this->advance();
+                res.data="%=";
+                res.type=T_IMOD;
+            }
+            return res;
+        }
+
         _tok_data make_dot(){
             this->advance();
             if (this->chr!='.'){
@@ -628,9 +641,6 @@ class Lexer{
                 
 
             }
-            //Error!
-            cout<<"Unexpected .";
-            while (true);
         }
 
         void make_comment(){
