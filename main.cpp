@@ -259,15 +259,82 @@ int main(int argc, char** argv) {
     bool verbose=false;
     bool objdump=false;
     if (argc==1){
-        int i=1;
+        //Prep constants and types
+        new_gc();
+        setup_types_consts();
+        setup_modules();
+        
+
+        vector<string> kwds;
+        kwds.push_back("func");
+        kwds.push_back("class");
+        kwds.push_back("return");
+        kwds.push_back("if");
+        kwds.push_back("else");
+        kwds.push_back("elif");
+        kwds.push_back("raise");
+        kwds.push_back("try");
+        kwds.push_back("except");
+        kwds.push_back("finally");
+        kwds.push_back("for");
+        kwds.push_back("break");
+        kwds.push_back("while");
+        kwds.push_back("import");
+        kwds.push_back("from");
+        kwds.push_back("del");
+
+        struct compiler* compiler = new_compiler();
+        vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
+        vm->globals=new_dict();
+        vm->callstack->head->locals=INCREF(vm->globals);
+        
         while (true){
-            string s="";
-            cout<<"In ["<<i++<<"]: ";
-            cin>>s;
-            if (s=="!exit"){
+            string data="";
+            cout<<">>> ";
+            getline(cin,data);
+            if (data=="!exit"){
                 break;
             }
-            execute(s, false, false);
+            
+            Lexer lexer(data,kwds);
+            lexer.pos=Position(program);
+
+            Position end=lexer.tokenize();
+
+            parser=Parser(lexer.tokens, data);
+            parse_ret ast=parser.parse();
+
+            if (ast.errornum>0){
+                cout<<ast.header<<endl;
+                cout<<ast.snippet<<endl;
+                cout<<ast.arrows<<endl;
+                printf("%s\n",ast.error);
+                return -1;
+            }
+
+            glblfildata=new string(data);
+            vm->filedata=&data;
+            object* code=compile(compiler, ast);
+            if (code==NULL){
+                cout<<parseretglbl.header<<endl;
+                cout<<parseretglbl.snippet<<endl;
+                printf("%s\n",parseretglbl.error);
+                return -1;
+            }
+            vm->callstack->head->code=code;
+            vm->ip=0;
+            
+            auto a=time_nanoseconds();
+            object* returned=run_vm(code, &vm->ip);
+            auto b=time_nanoseconds();
+            
+            compiler_del(compiler);
+            DECREF(code);
+            compiler = new_compiler();
+            cout<<endl;
+            if (returned!=NULL){
+                DECREF(returned);
+            }
         }
         return 0;
     }
