@@ -272,7 +272,6 @@ struct vm{
 #define CAST_FUNC(obj) ((FuncObject*)obj)
 #define CAST_NONE(obj) ((NoneObject*)obj)
 #define CAST_BUILTIN(obj) ((BuiltinObject*)obj)
-#define CAST_BOBJ(obj) ((ClassObject*)obj)
 #define CAST_TYPE(obj) ((TypeObject*)obj)
 #define CAST_EXCEPTION(obj) ((ExceptionObject*)obj)
 #define CAST_FILE(obj) ((FileObject*)obj)
