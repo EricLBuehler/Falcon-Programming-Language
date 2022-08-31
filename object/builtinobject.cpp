@@ -38,6 +38,7 @@ void setup_builtins(){
     object* inputargs=new_tuple();
     inputargs->type->slot_mappings->slot_append(inputargs, str_new_fromstr("object"));
     object* inputkwargs=new_tuple();
+    inputkwargs->type->slot_mappings->slot_append(inputkwargs, str_new_fromstr(""));
     builtins[17]=new_builtin((builtinfunc)builtin_input, str_new_fromstr("input"), inputargs, inputkwargs, 1, false);
     
     builtins[18]=(object*)&FileType;
