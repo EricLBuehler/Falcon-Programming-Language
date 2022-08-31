@@ -81,6 +81,7 @@ enum precedence get_precedence(Token t){
             return LESSGREATER;
         case T_PLUS:
         case T_MINUS:
+        case T_NOT:
             return SUM;
         case T_MUL:
         case T_DIV:

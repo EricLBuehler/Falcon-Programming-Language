@@ -840,6 +840,7 @@ class Parser{
 
                 case T_PLUS:
                 case T_MINUS:
+                case T_NOT:
                     left=make_unary(ret);
                     break;
 
@@ -859,6 +860,11 @@ class Parser{
                 if (this->current_tok.type==T_ERROR_EOF){
                     this->add_parsing_error(ret, "SyntaxError: Unexpected EOF.");
                     this->advance();
+                    return left;
+                }
+                if (this->current_tok.type==T_ERR){
+                    this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
+                    this->backadvance();
                     return left;
                 }
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -894,6 +900,8 @@ class Parser{
                     case T_POW:
                     case T_IPOW:
                     case T_IMOD:
+                    case T_AND:
+                    case T_OR:
                         left=make_binop(ret, left, this->current_tok.type);
                         break;
                     
