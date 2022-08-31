@@ -334,12 +334,14 @@ class Lexer{
 
         _tok_data make_notequals(){
             _tok_data res;
+            res.type=T_ERR;
             if (this->get_next()=='='){
                 this->advance();
                 res.data="!=";
                 res.type=T_NE;
                 return res;
             }
+            return res;
         }
 
         _tok_data make_equals(){
@@ -641,6 +643,9 @@ class Lexer{
                 
 
             }
+            _tok_data res;
+            res.type=T_ERR;
+            return res;
         }
 
         void make_comment(){
