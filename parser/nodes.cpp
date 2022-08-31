@@ -50,6 +50,7 @@ enum precedence {
     LESSGREATER,  
     SUM,          
     PRODUCT, 
+    EXP,
     UNARY,        
     CALL,         
     INDEX,         
@@ -62,6 +63,8 @@ enum precedence get_precedence(Token t){
         case T_ISUB:
         case T_IMUL:
         case T_IDIV:
+        case T_IMOD:
+        case T_IPOW:
             return ASSIGN;
         case T_OR:
             return LOGICAL_OR;
@@ -83,6 +86,8 @@ enum precedence get_precedence(Token t){
         case T_DIV:
         case T_PERCENT:
             return PRODUCT;
+        case T_POW:
+            return EXP;
         case T_LPAREN:
             return CALL;
         case T_LSQUARE:
