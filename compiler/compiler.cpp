@@ -299,6 +299,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
             switch (UNARYOP(expr->node)->opr){
                 case T_MINUS:
                     add_instruction(compiler->instructions,UNARY_NEG,0, expr->start, expr->end);
+                    break; 
+                case T_NOT:
+                    add_instruction(compiler->instructions,UNARY_NOT,0, expr->start, expr->end);
                     break;
                 case T_PLUS:
                     break;
