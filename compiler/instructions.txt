@@ -109,3 +109,11 @@ BINOP_EE - Implements TOS != TOS-1
 DEL_SUBSCR - Implements del TOS-1[TOS]
 
 DEL_NAME(arg) - Implements del co_names[arg]
+
+BINOP_MOD - IF TOS-1 % TOS
+
+BINOP_POW - IF TOS-1 ** TOS
+
+BINOP_IPOW(n) - Implements TOS**TOS-1 and assigns to names[n]
+
+BINOP_IMOD(n) - Implements TOS%TOS-1 and assigns to names[n]

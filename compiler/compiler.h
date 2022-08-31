@@ -53,6 +53,10 @@ enum opcode{
     BINOP_NE,
     DEL_SUBSCR,
     DEL_NAME,
+    BINOP_MOD,
+    BINOP_POW,
+    BINOP_IPOW,
+    BINOP_IMOD,
 };
 
 enum scope{
