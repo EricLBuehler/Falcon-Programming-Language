@@ -596,7 +596,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             for (uint32_t i=0; i<posargc; i++){
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
-            
             //
             
             //Call
@@ -1124,6 +1123,56 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 return NULL;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            break;
+        }
+
+        case BINOP_AND:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            right=right->type->slot_number->slot_bool(right);
+            left=right->type->slot_number->slot_bool(left);
+            bool r=CAST_BOOL(right)->val;
+            bool l=CAST_BOOL(left)->val;
+            DECREF(right);
+            DECREF(left);
+            if (r && l){
+                add_dataframe(vm, vm->objstack, new_bool_true());
+                break;
+            }
+            add_dataframe(vm, vm->objstack, new_bool_false());
+            break;
+        }
+
+        case BINOP_OR:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            right=right->type->slot_number->slot_bool(right);
+            left=right->type->slot_number->slot_bool(left);
+            bool r=CAST_BOOL(right)->val;
+            bool l=CAST_BOOL(left)->val;
+            DECREF(right);
+            DECREF(left);
+            if (r || l){
+                add_dataframe(vm, vm->objstack, new_bool_true());
+                break;
+            }
+            add_dataframe(vm, vm->objstack, new_bool_false());
+            break;
+        }
+
+        case UNARY_NOT:{
+            struct object* right=pop_dataframe(vm->objstack);
+            
+            right=right->type->slot_number->slot_bool(right);
+            bool v=CAST_BOOL(right)->val;
+            DECREF(right);
+            if (!v){
+                add_dataframe(vm, vm->objstack, new_bool_true());
+                break;
+            }
+            add_dataframe(vm, vm->objstack, new_bool_false());
             break;
         }
         
