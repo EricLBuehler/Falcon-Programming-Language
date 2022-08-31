@@ -377,6 +377,24 @@ class Parser{
             return node;
         }
 
+        Node* make_not(parse_ret* ret){
+            Node* node=make_node(N_UNARY);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            enum token_type type=this->current_tok.type;
+            this->advance();
+            Node* right=this->expr(ret, LOWEST);
+
+            node->end=right->end;
+
+            UnaryOp* unary=(UnaryOp*)malloc(sizeof(UnaryOp));
+            unary->right=right;
+            unary->opr=type;
+
+            node->node=unary;
+            return node;
+        }
+
         Node* make_list(parse_ret* ret){
             this->advance();
             vector<Node*>* list=new vector<Node*>;
@@ -840,9 +858,14 @@ class Parser{
 
                 case T_PLUS:
                 case T_MINUS:
-                case T_NOT:
                     left=make_unary(ret);
                     break;
+                    
+                case T_NOT:
+                    left=make_not(ret);
+                    break;
+
+                    
 
                 default:
                     return NULL;

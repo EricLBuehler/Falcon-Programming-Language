@@ -46,8 +46,9 @@ enum precedence {
     ASSIGN,
     LOGICAL_OR,   
     LOGICAL_AND,
+    LOGICAL_NOT, 
     EQUALS,         
-    LESSGREATER,  
+    LESSGREATER, 
     SUM,          
     PRODUCT, 
     EXP,
@@ -70,6 +71,8 @@ enum precedence get_precedence(Token t){
             return LOGICAL_OR;
         case T_AND:
             return LOGICAL_AND;
+        case T_NOT:
+            return LOGICAL_NOT;
         case T_EE:
         case T_NE:
         case T_IS:
@@ -81,7 +84,6 @@ enum precedence get_precedence(Token t){
             return LESSGREATER;
         case T_PLUS:
         case T_MINUS:
-        case T_NOT:
             return SUM;
         case T_MUL:
         case T_DIV:
