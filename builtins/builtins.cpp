@@ -2,7 +2,14 @@
 #define BUILTIN_BUILD_CLASS builtins[1]
 
 object* builtin_print(object* self, object* args){
-    printf("%s%s",object_cstr(args->type->slot_mappings->slot_get(args, str_new_fromstr("object"))).c_str(), object_cstr(dict_get(args, str_new_fromstr("end"))).c_str());
+    object* tupargs=args->type->slot_mappings->slot_get(args, str_new_fromstr("args"));
+    for (int n=0; n<CAST_TUPLE(tupargs)->size; n++){
+        printf("%s",object_cstr(tupargs->type->slot_mappings->slot_get(tupargs, new_int_fromint(n))).c_str());
+        if (n+1!=CAST_TUPLE(tupargs)->size){
+            cout<<" ";
+        }
+    }
+    printf("%s",object_cstr(dict_get(args, str_new_fromstr("end"))).c_str());
     return new_none();
 }
 
@@ -93,12 +100,14 @@ object* builtin_round(object* self, object* args){
     size_t pos=orig_val.find('.');
     
     string substr;
+    if (pos==-1){
+        return new_int_fromint(stod(orig_val));
+    }
     if (CAST_INT(ndigits)->val->to_int()==0){
-        substr=orig_val.substr(0, pos+1+CAST_INT(ndigits)->val->to_int());
+        substr=orig_val.substr(0, pos+2);
+        return new_int_fromint(round(stod(substr)));
     }
-    else{
-        substr=orig_val.substr(0, pos+2+CAST_INT(ndigits)->val->to_int());
-    }
+    substr=orig_val.substr(0, pos+2+CAST_INT(ndigits)->val->to_int());
     
     return new_float_fromdouble(round_double(stod(substr), CAST_INT(ndigits)->val->to_int()));
 }
