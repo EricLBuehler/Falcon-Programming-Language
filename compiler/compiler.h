@@ -57,6 +57,8 @@ enum opcode{
     BINOP_POW,
     BINOP_IPOW,
     BINOP_IMOD,
+    BINOP_AND,
+    BINOP_OR,
 };
 
 enum scope{

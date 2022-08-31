@@ -117,3 +117,7 @@ BINOP_POW - IF TOS-1 ** TOS
 BINOP_IPOW(n) - Implements TOS**TOS-1 and assigns to names[n]
 
 BINOP_IMOD(n) - Implements TOS%TOS-1 and assigns to names[n]
+
+BINOP_AND(n) - Implements TOS and TOS-1
+
+BINOP_OR(n) - Implements TOS or TOS-1

@@ -176,6 +176,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 case T_POW:
                     add_instruction(compiler->instructions,BINOP_POW,0, expr->start, expr->end);
                     break;
+                case T_AND:
+                    add_instruction(compiler->instructions,BINOP_AND,0, expr->start, expr->end);
+                    break;
+                case T_OR:
+                    add_instruction(compiler->instructions,BINOP_OR,0, expr->start, expr->end);
+                    break;
                 case T_IADD: {
                     uint32_t idx;
                     if (BINOP(expr->node)->left->type!=N_IDENT){
