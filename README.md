@@ -206,21 +206,26 @@ print(float("10.222"))
 for n in [10,20,30]{
     print(n)
 }
+
+print(True and False)
+print(True or False)
+print(not 1==1)
 ```
 
 #### Output ####
 When run with ```./fpl.exe program.fpl```
 
 ```
-__new__ called
-<Peregrine object @ 0xef93a8>
-__new__ called
-<Peregrine object @ 0xef98c8>
+__new__ called        
+<Peregrine @ 0xba7a98>
+__new__ called        
+<Peregrine @ 0xba7b40>
 5
 Value
 Sound!
 [<class 'Falcon'>, <class 'object'>]
-Function f says: A
+Function f says:  
+A
 True
 Done
 4
@@ -238,6 +243,9 @@ I is 50!
 10
 20
 30
+False
+True
+False
 ```
 
 ### Usage ###
