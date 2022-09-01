@@ -78,7 +78,9 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 
 ### Sample Program ###
 
-#### Program ####
+<details>
+<summary>Program</summary>
+
 ```js
 m="Placeholder value"
 
@@ -212,8 +214,12 @@ print(True or False)
 print(not 1==1)
 ```
 
-#### Output ####
+</details>
+
 When run with ```./fpl.exe program.fpl```
+
+<details>
+<summary>Output</summary>
 
 ```
 __new__ called        
@@ -247,6 +253,8 @@ False
 True
 False
 ```
+
+</details>
 
 ### Usage ###
 Build entire Falcon programming language
