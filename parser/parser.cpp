@@ -288,8 +288,8 @@ class Parser{
         }
 
         Node* make_binop(parse_ret* ret, Node* left, enum token_type opr){
-            if ( (current_tok_is(T_IADD) || current_tok_is(T_IMUL) ||current_tok_is(T_ISUB) ||current_tok_is(T_IDIV) ) && !isname(left->type)){
-                this->add_parsing_error(ret, "SyntaxError: invalid syntax");
+            if ( (current_tok_is(T_IADD) || current_tok_is(T_IMUL) ||current_tok_is(T_ISUB) ||current_tok_is(T_IDIV) ||current_tok_is(T_IPOW) ||current_tok_is(T_IMOD) ) && !isname(left->type)){
+                this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
                 return NULL;
             }
@@ -331,6 +331,11 @@ class Parser{
                 assign->dot=left;
 
                 this->advance();
+                if (!is_atomic()){
+                    this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
+                    this->advance();
+                    return NULL;
+                }
                 Node* right=this->expr(ret, LOWEST);
                 if (right==NULL){
                     return NULL;
@@ -349,6 +354,11 @@ class Parser{
             assign->name=left;
 
             this->advance();
+            if (!is_atomic()){
+                this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
+                this->advance();
+                return NULL;
+            }
             Node* right=this->expr(ret, LOWEST);
             if (right==NULL){
                 return NULL;
@@ -637,6 +647,9 @@ class Parser{
                 bool b=this->multi;
                 this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                if (expr==NULL){
+                    return NULL;
+                }
                 this->multi=b;
 
                 if (expr->type==N_ASSIGN){
@@ -874,6 +887,26 @@ class Parser{
             return left;
         }
 
+        bool is_atomic(){
+            switch (this->current_tok.type){
+                case T_INT:
+                case T_FLOAT:
+                case T_STR:
+                case T_IDENTIFIER:
+                case T_LPAREN:
+                case T_LSQUARE:
+                case T_LCURLY:
+                case T_TRUE:
+                case T_FALSE:
+                case T_NONE:
+                case T_PLUS:
+                case T_MINUS:
+                case T_NOT:
+                    return true;
+            }
+            return false;
+        }
+
         Node* expr(parse_ret* ret, int prec){
             Node* left=this->atom(ret);
             if (left==NULL){
@@ -1054,6 +1087,9 @@ class Parser{
                     bool b=this->multi;
                     this->multi=false;
                     Node* expr=this->expr(ret, LOWEST);
+                    if (expr==NULL){
+                        return NULL;
+                    }
                     this->multi=b;
                     kwargs->push_back(expr);
                     if (this->current_tok_is(T_RPAREN)){
@@ -1072,6 +1108,9 @@ class Parser{
                     bool b=this->multi;
                     this->multi=false;
                     Node* base=this->atom(ret);
+                    if (base==NULL){
+                        return NULL;
+                    }
                     this->multi=b;
                     if (base->type!=N_IDENT){
                         this->add_parsing_error(ret, "SyntaxError: Expected identifier");
@@ -1162,6 +1201,9 @@ class Parser{
                 bool b=this->multi;
                 this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                if (expr==NULL){
+                    return NULL;
+                }
                 this->multi=b;
 
                 bases->push_back(expr);
