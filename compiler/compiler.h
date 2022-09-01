@@ -123,6 +123,7 @@ struct compiler{
 #define SLICE(node) ((Slice*)node)
 #define STSLICE(node) ((StoreSlice*)node)
 #define DEL(node) ((Del*)node)
+#define GLBLIDENT(node) ((GlblIdent*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 

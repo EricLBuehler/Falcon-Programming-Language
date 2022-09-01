@@ -1794,6 +1794,14 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_GLBL_IDENT: {
+            enum scope s=compiler->scope;
+            compiler->scope=SCOPE_GLOBAL;
+            compile_expr(compiler, GLBLIDENT(expr->node)->name);
+            compiler->scope=s;
+            break;
+        }
+
     }
 
     return 0;
