@@ -39,6 +39,7 @@ enum nodetype{
     N_SLICE,
     N_STORE_SLICE,
     N_DEL,
+    N_GLBL_IDENT,
 };
 
 enum precedence {
@@ -272,6 +273,11 @@ struct StoreSlice{
 struct Del{
     Node* expr;
 };
+
+struct GlblIdent{
+    Node* name;
+};
+
 
 
 void destroy_node(struct Node* node){
