@@ -534,7 +534,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,trueobj)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, trueobj);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_true());
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -549,11 +549,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,falseobj)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, falseobj);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
                 idx=NAMEIDX(compiler->consts);
             }
             else{
-                idx=object_find(compiler->consts, falseobj);
+                idx=object_find(compiler->consts, new_bool_false());
             }
             
             add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
