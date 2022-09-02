@@ -255,7 +255,7 @@ object* object_cmp(object* self, object* other, uint8_t type){
 
 size_t object_find(object* iter, object* needle){
     for (int i=0; i<CAST_INT(iter->type->slot_mappings->slot_len(iter))->val->to_int(); i++){
-        bool b=istrue(object_cmp(iter->type->slot_mappings->slot_get(iter, new_int_fromint(i)),needle, CMP_EQ));
+        bool b=list_index_int(iter, i)->type==needle->type && istrue(object_cmp(iter->type->slot_mappings->slot_get(iter, new_int_fromint(i)),needle, CMP_EQ));
         if (b){
             return i;
         }
@@ -265,7 +265,7 @@ size_t object_find(object* iter, object* needle){
 
 bool object_find_bool(object* iter, object* needle){
     for (int i=0; i<CAST_INT(iter->type->slot_mappings->slot_len(iter))->val->to_int(); i++){
-        if (istrue(object_cmp(iter->type->slot_mappings->slot_get(iter, new_int_fromint(i)),needle, CMP_EQ))){
+        if (list_index_int(iter, i)->type==needle->type && istrue(object_cmp(list_index_int(iter, i),needle, CMP_EQ))){
             return true;
         }
     }

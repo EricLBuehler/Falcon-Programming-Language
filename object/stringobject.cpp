@@ -19,7 +19,7 @@ object* str_int(object* self){
     }
     catch (std::invalid_argument){
         if (vm!=NULL){
-            vm_add_err(&ValueError, vm, "Invalid literal %s", CAST_STRING(self)->val->c_str());
+            vm_add_err(&ValueError, vm, "Invalid literal '%s'", CAST_STRING(self)->val->c_str());
         }
         return NULL;
     }
@@ -33,7 +33,7 @@ object* str_float(object* self){
     }
     catch (std::invalid_argument){
         if (vm!=NULL){
-            vm_add_err(&ValueError, vm, "Invalid literal %s", CAST_STRING(self)->val->c_str());
+            vm_add_err(&ValueError, vm, "Invalid literal '%s'", CAST_STRING(self)->val->c_str());
         }
         return NULL;
     }

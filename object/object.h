@@ -121,7 +121,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=35;
+const size_t nbuiltins=38;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -204,6 +204,7 @@ struct vm* vm=NULL;
 enum blocktype{
     TRY_BLOCK,
     FOR_BLOCK,
+    NONLOCAL_BLOCK,
 };
 
 struct dataframe{

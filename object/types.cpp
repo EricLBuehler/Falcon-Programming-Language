@@ -2216,7 +2216,7 @@ object* type_call(object* self, object* args, object* kwargs){
     if (o != NULL && o->type->slot_init!=NULL){
         o->type->slot_init(o, args, kwargs);
     }
-    if (o->type->slot_post_tpcall!=NULL){
+    if (o != NULL && o->type->slot_post_tpcall!=NULL){
         o->type->slot_post_tpcall(o);
     }
     return o;

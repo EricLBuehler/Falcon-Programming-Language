@@ -84,6 +84,18 @@ void setup_builtins(){
     builtins[32]=(object*)&EnumType;
     builtins[33]=(object*)&RangeType;
     builtins[34]=(object*)&ZipType;
+
+    object* globalsargs=new_tuple();
+    object* globalskwargs=new_tuple();
+    builtins[35]=new_builtin((builtinfunc)builtin_globals, str_new_fromstr("globals"), globalsargs, globalskwargs, 0, false);
+
+    object* localsargs=new_tuple();
+    object* localskwargs=new_tuple();
+    builtins[36]=new_builtin((builtinfunc)builtin_locals, str_new_fromstr("locals"), localsargs, localskwargs, 0, false);
+
+    object* alllocalsargs=new_tuple();
+    object* alllocalskwargs=new_tuple();
+    builtins[36]=new_builtin((builtinfunc)builtin_alllocals, str_new_fromstr("alllocals"), alllocalsargs, alllocalskwargs, 0, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
