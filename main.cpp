@@ -259,6 +259,9 @@ int main(int argc, char** argv) {
     bool verbose=false;
     bool objdump=false;
     if (argc==1){
+        cout<<"Falcon Programming Language V1.00"<<endl;
+        cout<<"Eric Buehler 2022"<<endl;
+        cout<<"!exit to exit"<<endl<<endl;
         //Prep constants and types
         new_gc();
         setup_types_consts();
