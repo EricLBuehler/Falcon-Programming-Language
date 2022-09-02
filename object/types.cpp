@@ -388,6 +388,12 @@ object* code_repr(object* self);
 object* code_cmp(object* self, object* other, uint8_t type);
 object* code_bool(object* self);
 
+object* code_co_names(object* code);
+object* code_co_consts(object* code);
+object* code_co_code(object* code);
+object* code_co_file(object* code);
+object* code_co_lines(object* code);
+
 typedef struct CodeObject{
     OBJHEAD_EXTRA
     object* co_names;
@@ -419,7 +425,9 @@ static Mappings code_mappings{
 };
 
 Method code_methods[]={{NULL,NULL}};
-GetSets code_getsets[]={{NULL,NULL}};
+GetSets code_getsets[]={{"co_names", (getsetfunc)code_co_names}, {"co_consts", (getsetfunc)code_co_consts}, \
+{"co_code", (getsetfunc)code_co_code}, {"co_file", (getsetfunc)code_co_file}, {"co_lines", (getsetfunc)code_co_lines}, \
+{NULL,NULL}};
 OffsetMember code_offsets[]={{NULL}};
 
 TypeObject CodeType={
@@ -2706,6 +2714,26 @@ object* new_type(string* name, object* bases, object* dict){
     setup_type_methods((TypeObject*)tp);
     setup_type_offsets((TypeObject*)tp);
     return tp;
+}
+
+object* code_co_names(object* code){
+    return CAST_CODE(code)->co_names;
+}
+
+object* code_co_consts(object* code){
+    return CAST_CODE(code)->co_consts;
+}
+
+object* code_co_file(object* code){
+    return CAST_CODE(code)->co_file;
+}
+
+object* code_co_code(object* code){
+    return CAST_CODE(code)->co_code;
+}
+
+object* code_co_lines(object* code){
+    return CAST_CODE(code)->co_lines;    
 }
 
 #include "typeobject_newtp.cpp"
