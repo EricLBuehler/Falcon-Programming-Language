@@ -95,7 +95,7 @@ void setup_builtins(){
 
     object* alllocalsargs=new_tuple();
     object* alllocalskwargs=new_tuple();
-    builtins[36]=new_builtin((builtinfunc)builtin_alllocals, str_new_fromstr("alllocals"), alllocalsargs, alllocalskwargs, 0, false);
+    builtins[37]=new_builtin((builtinfunc)builtin_alllocals, str_new_fromstr("alllocals"), alllocalsargs, alllocalskwargs, 0, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
