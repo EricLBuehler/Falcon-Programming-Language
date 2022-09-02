@@ -837,7 +837,6 @@ class Parser{
                 return NULL;
             }
             Node* name=this->expr(ret, LOWEST);
-            this->advance();
             
             Node* node=make_node(N_GLBL_IDENT);
             node->start=name->start;
