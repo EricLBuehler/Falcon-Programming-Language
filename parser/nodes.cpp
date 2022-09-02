@@ -279,7 +279,6 @@ struct GlblIdent{
 };
 
 
-
 void destroy_node(struct Node* node){
     if (node->type==N_INT){
         delete ((IntLiteral*)(node->node))->literal;

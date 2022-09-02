@@ -829,33 +829,25 @@ class Parser{
         }
 
         Node* make_colon(parse_ret* ret){
-            int n_colons=1;
             this->advance();
 
-            if (this->current_tok_is(T_COLON)){
-                n_colons=2;
-                this->advance();
-            }
-
-            Node* name=this->expr(ret, LOWEST);
-            if (!isname(name->type)){
+            if (!this->current_tok_is(T_IDENTIFIER)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
                 return NULL;
             }
-
-            if (n_colons==2){
-                Node* node=make_node(N_GLBL_IDENT);
-                node->start=name->start;
-                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-                
-                GlblIdent* g=(GlblIdent*)malloc(sizeof(GlblIdent));
-                g->name=name;
-                
-                node->node=g;
-                return node;
-            }
-            return NULL;
+            Node* name=this->expr(ret, LOWEST);
+            this->advance();
+            
+            Node* node=make_node(N_GLBL_IDENT);
+            node->start=name->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            GlblIdent* g=(GlblIdent*)malloc(sizeof(GlblIdent));
+            g->name=name;
+            
+            node->node=g;
+            return node;
         }
 
         Node* atom(parse_ret* ret){
