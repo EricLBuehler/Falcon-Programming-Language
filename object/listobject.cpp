@@ -185,7 +185,7 @@ object* list_get(object* self, object* idx){
         vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
         return (object*)0x1;
     }
-    if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long()){
+    if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long() || CAST_INT(idx)->val->to_long_long()<0){
         vm_add_err(&IndexError, vm, "List index out of range");
         return (object*)0x1;
     }
@@ -241,7 +241,7 @@ object* list_set(object* self, object* idx, object* val){
         //Error
         return NULL;
     }
-    if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long()){
+    if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long() || CAST_INT(idx)->val->to_long_long()<0){
         vm_add_err(&IndexError, vm, "List index out of range");
         //Error
         return NULL;
