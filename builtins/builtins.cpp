@@ -111,3 +111,21 @@ object* builtin_round(object* self, object* args){
     
     return new_float_fromdouble(round_double(stod(substr), CAST_INT(ndigits)->val->to_int()));
 }
+
+object* builtin_globals(object* self, object* args){
+    return vm->globals;
+}
+    
+object* builtin_locals(object* self, object* args){
+    return vm->callstack->head->locals;
+}
+    
+object* builtin_alllocals(object* self, object* args){
+    object* locals=new_list();
+    struct callframe* c=vm->callstack->head;
+    while(c){
+        list_append(locals, c->locals);
+        c=c->next;
+    }
+    return locals;
+}
