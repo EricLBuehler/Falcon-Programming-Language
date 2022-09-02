@@ -334,7 +334,7 @@ int main(int argc, char** argv) {
             compiler_del(compiler);
             DECREF(code);
             compiler = new_compiler();
-            cout<<endl;
+            //cout<<endl;
             if (returned!=NULL){
                 DECREF(returned);
             }

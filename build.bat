@@ -1,4 +1,4 @@
 cls
-g++ main.cpp -o fpl
+g++ main.cpp -o fpl -static-libstdc++ -static
 
-fpl program.fpl -v
+fpl program.fpl -v 
