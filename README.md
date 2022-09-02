@@ -23,6 +23,9 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```enumerate```
 - ```range```
 - ```zip```
+- ```globals```
+- ```locals```
+- ```alllocals```
 
 <details>
 <summary>Exceptions</summary>
