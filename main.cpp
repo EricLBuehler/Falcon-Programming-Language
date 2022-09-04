@@ -142,7 +142,7 @@ int execute(string data, bool objdump, bool verbose){
         cout<<object_cstr(list_len(CAST_CODE(code)->co_code))<<" bytes."<<endl<<endl;
     }
 
-    vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
+    vm=new_vm(0, code, compiler->instructions, new string(data)); //data is still in scope...
     vm->globals=new_dict();
     vm->callstack->head->locals=INCREF(vm->globals);
 
@@ -167,10 +167,11 @@ int execute(string data, bool objdump, bool verbose){
 
         if (vm->exception==NULL){
             cout<<"\nIP: "<<vm->ip<<"\n\n";
-            
+
             for (auto k: (*CAST_DICT(vm->globals)->val)){
                 cout<<object_cstr(k.first)<<" = "<<(*CAST_STRING(object_repr(k.second))->val)<<endl;
             }
+            
         }
         else{
             delete &lexer;
@@ -251,7 +252,13 @@ int execute(string data, bool objdump, bool verbose){
             cout<<"\nTotal "<<total;
         }
     }
-    return (uint64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(b-a).count();
+    
+    delete &lexer;
+    compiler_del(compiler);
+    vm_del(vm);
+    DECREF(code);
+    DECREF(returned);
+    return 0;
 }
 
 int main(int argc, char** argv) {
@@ -266,7 +273,6 @@ int main(int argc, char** argv) {
         new_gc();
         setup_types_consts();
         setup_modules();
-        
 
         vector<string> kwds;
         kwds.push_back("func");
@@ -360,7 +366,6 @@ int main(int argc, char** argv) {
         }
         program=argv[1];
     }
-
     if (argc==3){
         program=argv[1];
         if ((string)argv[2]==(string)"-v"){
@@ -382,5 +387,6 @@ int main(int argc, char** argv) {
     } 
     
     execute(loadFile(program), objdump, verbose);
+    cout<<"F";
     return 0;
 }
