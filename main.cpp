@@ -252,12 +252,6 @@ int execute(string data, bool objdump, bool verbose){
             cout<<"\nTotal "<<total;
         }
     }
-    
-    delete &lexer;
-    compiler_del(compiler);
-    vm_del(vm);
-    DECREF(code);
-    DECREF(returned);
     return 0;
 }
 
@@ -387,6 +381,5 @@ int main(int argc, char** argv) {
     } 
     
     execute(loadFile(program), objdump, verbose);
-    cout<<"F";
     return 0;
 }
