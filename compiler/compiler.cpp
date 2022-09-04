@@ -50,7 +50,7 @@ void compiler_del(struct compiler* compiler){
     DECREF(compiler->names);
     struct instruction* i=compiler->instructions->first;
     while (i){
-        struct instruction* i_=i=i->next;;
+        struct instruction* i_=i->next;
         free(i);
         i=i_;
     }
