@@ -23,7 +23,7 @@ inline bool DECREF(struct object* object){
 
 
         //Delete now
-        if (object->type->gc_trackable || no_outside_refs(object) ){ //No outside references, so we can free
+        else if (object->type->gc_trackable || no_outside_refs(object) ){ //No outside references, so we can free
             if (((object_var*)object)->gc_ref - ((struct object*)object)->refcnt<0){
                 if (object->type->slot_del!=NULL){
                     object->type->slot_del(object);
@@ -140,11 +140,11 @@ object* new_object(TypeObject* type){
 }
 
 object_var* new_object_var(TypeObject* type, size_t size){
-    object_var* object = (object_var*) malloc(sizeof(struct object_var)+type->var_base_size+size);
+    object_var* object = (object_var*) malloc(sizeof(struct object_var)+type->var_base_size);
     object->refcnt=1;
     object->gc_ref=0;
     object->type=type;
-    object->var_size=sizeof(struct object_var)+size;
+    object->var_size=type->var_base_size;
     object->gen=0;
 
     if (object->type->gc_trackable){

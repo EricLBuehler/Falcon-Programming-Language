@@ -11,7 +11,7 @@ void list_resize(ListObject* obj, size_t size){
 }
 
 object* new_list(){
-    object_var* obj=new_object_var(&ListType, sizeof(ListObject)+2*sizeof(object*));
+    object_var* obj=new_object_var(&ListType, 0);
     CAST_LIST(obj)->capacity=2; //Start with 2
     CAST_LIST(obj)->size=0;
     CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));

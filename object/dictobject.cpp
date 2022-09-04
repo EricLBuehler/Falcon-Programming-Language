@@ -132,12 +132,12 @@ object* dict_set(object* self, object* key, object* val){
             if (key->type->size==0){
                 ((object_var*)key)->gc_ref++;
             }
+            
             (*CAST_DICT(self)->val)[key]=INCREF(val);
             CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
             return new_none();
         }
     }
-
     CAST_DICT(self)->keys->push_back(key);
 
     (*CAST_DICT(self)->val)[INCREF(key)]=INCREF(val);

@@ -979,7 +979,7 @@ TypeObject ObjectType={
 };
 
 void setup_object_type(){
-    ObjectType=(*(TypeObject*)finalize_type(&ObjectType));;
+    ObjectType=(*(TypeObject*)finalize_type(&ObjectType));
 }
 
 
@@ -2333,6 +2333,7 @@ object* finalize_type(TypeObject* newtype){
         
     TypeObject* tp_tp=CAST_TYPE(tp);
 
+
     //tp is the what we'll copy to...
 
     //Clean out bases
@@ -2342,10 +2343,9 @@ object* finalize_type(TypeObject* newtype){
 
     uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
     if (total_bases==0 || CAST_TYPE(list_index_int(tp_tp->bases, total_bases-1))!=&ObjectType){
-        list_append(tp_tp->bases, INCREF((object*)&ObjectType));
+        list_append(tp_tp->bases, (object*)&ObjectType);
         total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
     }
-
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
     //also breaks fewer rules...
