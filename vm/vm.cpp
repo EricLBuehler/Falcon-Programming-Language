@@ -182,20 +182,23 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
 void vm_del(struct vm* vm){
     struct callframe* i=vm->callstack->head;
     while (i){
-        struct callframe* i_=i=i->next;;
+        struct callframe* i_=i->next;;
+        DECREF(i->locals);
         free(i);
         i=i_;
     }
     struct dataframe* j=vm->objstack->head;
     while (j){
-        struct dataframe* j_=j=j->next;;
-        free(i);
+        struct dataframe* j_=j->next;;
+        free(j);
         j=j_;
     }
 
     DECREF(vm->globals);
     delete vm->filedata;
-    DECREF(vm->exception);
+    if (vm->exception!=NULL){
+        DECREF(vm->exception);
+    }
 }
 
 void vm_add_var_locals(struct vm* vm, object* name, object* value){
@@ -231,7 +234,7 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
                 return builtins[i];
             }
         }
-        else if (object_istype(builtins[i]->type, &TypeType)){
+        if (object_istype(builtins[i]->type, &TypeType)){
             if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
                 return builtins[i];
             }
@@ -266,7 +269,7 @@ struct object* vm_get_var_globals(struct vm* vm, object* name){
                 return builtins[i];
             }
         }
-        else if (object_istype(builtins[i]->type, &TypeType)){
+        if (object_istype(builtins[i]->type, &TypeType)){
             if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
                 return builtins[i];
             }
@@ -1273,7 +1276,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 }
                 cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
             }
-            
             
             print_traceback();
             
