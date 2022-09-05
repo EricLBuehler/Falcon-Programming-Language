@@ -873,7 +873,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 return NULL;
             }
             for (uint32_t i=len; i>0; i--){
-                add_dataframe(vm, vm->objstack, o->type->slot_mappings->slot_get(o, new_int_fromint(i-1)));
+                add_dataframe(vm, vm->objstack, list_index_int(o, i-1));
             }
             break;
         }
