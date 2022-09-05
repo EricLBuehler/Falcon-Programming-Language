@@ -1,5 +1,7 @@
 #include <chrono>
 #include <thread>
+#include <iomanip>
+#include <sstream>
 
 object* time_sleep(object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
@@ -63,6 +65,26 @@ object* time_time(object* args, object* kwargs){
     return new_int_frombigint(new BigInt(time));
 }
 
+object* time_strftime(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
+    if (len!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 argument, got %d", len);
+        return NULL; 
+    }
+    
+    string format=*CAST_STRING(list_index_int(args,1))->val;
+    
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    auto out_=std::put_time(&tm, format.c_str());
+    
+    std::stringstream buffer;
+    buffer<<out_;
+    string out(buffer.str());
+
+    return str_new_fromstr(out);
+}
+
 object* new_time_module(){
     object* dict=new_dict();
 
@@ -74,6 +96,9 @@ object* new_time_module(){
 
     object* time=cwrapper_new_fromfunc((cwrapperfunc)time_time, "time");
     dict_set(dict, str_new_fromstr("time"), time);
+
+    object* strftime=cwrapper_new_fromfunc((cwrapperfunc)time_strftime, "strftime");
+    dict_set(dict, str_new_fromstr("strftime"), strftime);
 
     return module_new_fromdict(dict, str_new_fromstr("time"));
 }
