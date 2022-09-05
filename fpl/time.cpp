@@ -7,7 +7,7 @@ object* time_sleep(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
-    object* val=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* val=list_index_int(args, 1);
     long time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
@@ -32,7 +32,7 @@ object* time_sleep_ms(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
-    object* val=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* val=list_index_int(args, 1);
     long time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
