@@ -1032,7 +1032,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 }
             }
             else{
-                
                 bool done=false;
                 for (int i=0; i<nmodules; i++){
                     if (istrue(object_cmp(name, CAST_MODULE(modules[i])->name, CMP_EQ))){
@@ -1212,7 +1211,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
     uint32_t linetup_cntr=0;
     object* instruction;
     uint32_t instructions=CAST_CODE(codeobj)->co_instructions;
-    object* linetup=list_index_int(lines, linetup_cntr);
+    object* linetup=list_index_int(lines, linetup_cntr++);
     
     vm->callstack->head->line=list_index_int(linetup, 2);
     while ((*ip)<instructions){
