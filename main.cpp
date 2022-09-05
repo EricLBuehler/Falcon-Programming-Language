@@ -31,7 +31,8 @@ auto time_nanoseconds() {
 using namespace std;
 
 #define DEBUG
-#define CALL_ERR (object*)0xffff
+#define CALL_ERR (object*)0x1000
+#define TERM_PROGRAM (object*)0x2000
 
 string program;
 
@@ -159,7 +160,7 @@ int execute(string data, bool objdump, bool verbose){
     if (verbose){
         cout<<"--------";
     }
-    if (returned==CALL_ERR || returned==NULL){
+    if (returned==CALL_ERR || returned==NULL || returned==TERM_PROGRAM){
         return -1;
     }
     if (verbose){
