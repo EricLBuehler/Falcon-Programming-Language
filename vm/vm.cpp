@@ -345,8 +345,10 @@ object* import_name(string data, object* name){
 
     Position end=lexer.tokenize();
 
+    Parser p=parser;
     parser=Parser(lexer.tokens, data);
     parse_ret ast=parser.parse();
+    parser=p;
 
     if (ast.errornum>0){
         cout<<ast.header<<endl;
@@ -357,8 +359,11 @@ object* import_name(string data, object* name){
     }
 
     struct compiler* compiler = new_compiler();
+
+    string* g=glblfildata;
     glblfildata=new string(data);
     object* code=compile(compiler, ast);
+    glblfildata=g;
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;
