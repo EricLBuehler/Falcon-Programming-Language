@@ -128,7 +128,6 @@ struct compiler{
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 
 parse_ret parseretglbl;
-string* glblfildata=NULL;
 
 struct object* compile(struct compiler* compiler, parse_ret ast);
 uint32_t num_instructions(vector<Node*>* nodes, scope s);

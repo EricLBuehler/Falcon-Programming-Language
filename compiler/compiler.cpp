@@ -1474,7 +1474,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 else{
                     idx=object_find(compiler->names, str_new_fromstr(*IDENTI(libname->node)->name));
                 }
-
+                
                 add_instruction(compiler->instructions, IMPORT_NAME, idx, expr->start, expr->end);
 
                 if (name!=NULL){
@@ -1864,9 +1864,9 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         object* tuple=new_tuple();
         object* lineno=object_sub(lines->type->slot_mappings->slot_len(lines), new_int_fromint(1));
         object* line=lines->type->slot_mappings->slot_get(lines, lineno);
-        tuple->type->slot_mappings->slot_append(tuple, line->type->slot_mappings->slot_get(line, new_int_fromint(0)));
-        tuple->type->slot_mappings->slot_append(tuple, object_add(line->type->slot_mappings->slot_get(line, new_int_fromint(1)), new_int_fromint(2)));
-        tuple->type->slot_mappings->slot_append(tuple, line->type->slot_mappings->slot_get(line, new_int_fromint(2)));
+        tuple->type->slot_mappings->slot_append(tuple, tuple_index_int(line, 0));
+        tuple->type->slot_mappings->slot_append(tuple, object_add(tuple_index_int(line, 1), new_int_fromint(2)));
+        tuple->type->slot_mappings->slot_append(tuple, tuple_index_int(line, 2));
         
         lines->type->slot_mappings->slot_set(lines, lineno, tuple);
     }
