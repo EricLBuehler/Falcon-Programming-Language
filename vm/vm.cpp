@@ -364,12 +364,14 @@ object* import_name(string data, object* name){
     glblfildata=new string(data);
     object* code=compile(compiler, ast);
     glblfildata=g;
+    
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;
         printf("%s\n",parseretglbl.error);
         return TERM_PROGRAM;
     }
+
     CAST_CODE(code)->co_file=object_repr(name);
     struct vm* vm_=::vm;
     ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
