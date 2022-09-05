@@ -303,7 +303,6 @@ class Parser{
             binop->opr=opr;
             int precedence=get_precedence(this->current_tok);
             this->advance();
-            cout<<this->current_tok;
             
             binop->right=this->expr(ret, precedence);
             if (ret->errornum>0){
