@@ -28,11 +28,11 @@ object* list_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
-    if (object_istype(args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type, &ListType)){
-        return INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
+    if (object_istype(list_index_int(args, 0)->type, &ListType)){
+        return INCREF(list_index_int(args, 0));
     }
-    if (args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type->slot_iter!=NULL){
-        object* o=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    if (list_index_int(args, 0)->type->slot_iter!=NULL){
+        object* o=list_index_int(args, 0);
         object* iter=o->type->slot_iter(o);
 
         object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
@@ -66,7 +66,7 @@ object* list_new(object* type, object* args, object* kwargs){
 
     size_t len=(size_t)CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     for (size_t i=0; i<len; i++){
-        list_append((object*)obj, INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(i))));
+        list_append((object*)obj, INCREF(list_index_int(args, i)));
     }
     
     return (object*)obj;
@@ -154,7 +154,9 @@ void list_store_slice(object* self, object* idx, object* val){
             list_append(self, list_index_int(val, n++));
             continue;
         }
-        list_set(self, new_int_fromint(i), list_index_int(val, n++));
+        object* intv=new_int_fromint(i);
+        list_set(self, intv, list_index_int(val, n++));
+        DECREF(intv);
     }
     
 }
@@ -340,8 +342,8 @@ object* list_append_meth(object* args, object* kwargs){
         return NULL; 
     }
     
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    list_append(self, args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    object* self=list_index_int(args, 0);
+    list_append(self, list_index_int(args, 1));
     return new_none();
 }
 
@@ -416,7 +418,7 @@ object* list_pop_meth(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* self=list_index_int(args, 0);
 
 
     uint32_t idx=CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1;

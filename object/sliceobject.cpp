@@ -12,8 +12,8 @@ object* slice_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     object* slice=new_object(CAST_TYPE(type));
-    CAST_SLICE(slice)->start=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
-    CAST_SLICE(slice)->end=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    CAST_SLICE(slice)->start=INCREF(list_index_int(args, 0));
+    CAST_SLICE(slice)->end=INCREF(list_index_int(args, 1));
     return slice;
 }
 

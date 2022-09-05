@@ -663,13 +663,12 @@ void setup_tuple_type(){
 
 
 void func_del(object* self);
-object* func_new(object* type, object* args, object* kwargs);
 object* func_repr(object* self);
 object* func_cmp(object* self, object* other, uint8_t type);
 object* func_call(object* self, object* args, object* callfunc);
 object* func_bool(object* self);
 object* func_call_nostack(object* self, object* args, object* kwargs);
-
+object* func_run(object* self, object* args, object* kwargs);
 
 typedef struct FuncObject{
     OBJHEAD_EXTRA
@@ -721,7 +720,7 @@ TypeObject FuncType={
     (setattrfunc)object_genericsetattr, //slot_setattr
 
     0, //slot_init
-    (newfunc)func_new, //slot_new
+    0, //slot_new
     (delfunc)func_del, //slot_del
 
     0, //slot_next
@@ -743,7 +742,6 @@ TypeObject FuncType={
 
 void setup_func_type(){
     FuncType=(*(TypeObject*)finalize_type(&FuncType));
-    FuncType.slot_new=NULL;
     fplbases.push_back(&FuncType);
 }
 
@@ -2173,23 +2171,23 @@ object* type_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     //
-    if (!object_istype(list_get(args, new_int_fromint(0))->type, &StrType)){
-        vm_add_err(&ValueError, vm, "Expected first argument to be string, got type '%s'",list_get(args, new_int_fromint(0))->type->name->c_str());
+    if (!object_istype(list_index_int(args, 0)->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected first argument to be string, got type '%s'",list_index_int(args, 0)->type->name->c_str());
         return NULL;
     }
-    if (!object_istype(list_get(args, new_int_fromint(1))->type, &ListType) || \
-    !object_istype(list_get(args, new_int_fromint(1))->type, &TupleType)){
-        vm_add_err(&ValueError, vm, "Expected first argument to be list or tuple, got type '%s'",list_get(args, new_int_fromint(0))->type->name->c_str());
+    if (!object_istype(list_index_int(args, 1)->type, &ListType) || \
+    !object_istype(list_index_int(args, 1)->type, &TupleType)){
+        vm_add_err(&ValueError, vm, "Expected first argument to be list or tuple, got type '%s'",list_index_int(args, 0)->type->name->c_str());
         return NULL;
     }
-    if (!object_istype(list_get(args, new_int_fromint(2))->type, &DictType)){
-        vm_add_err(&ValueError, vm, "Expected first argument to be dict, got type '%s'",list_get(args, new_int_fromint(0))->type->name->c_str());
+    if (!object_istype(list_index_int(args, 2)->type, &DictType)){
+        vm_add_err(&ValueError, vm, "Expected first argument to be dict, got type '%s'",list_index_int(args, 0)->type->name->c_str());
         return NULL;
     }
     //
-    string* name=CAST_STRING(list_get(args, new_int_fromint(0)))->val;
-    object* bases=list_get(args, new_int_fromint(1));
-    object* dict=list_get(args, new_int_fromint(2));
+    string* name=CAST_STRING(list_index_int(args, 0))->val;
+    object* bases=INCREF(list_index_int(args, 1));
+    object* dict=INCREF(list_index_int(args, 2));
     return new_type(name, bases, dict);
 }
 
@@ -2204,13 +2202,13 @@ object* type_call(object* self, object* args, object* kwargs){
     //Special case
     if (object_istype(CAST_TYPE(self), &TypeType)){
         if (CAST_INT(list_len(args))->val->to_long()==1){
-            return (object*)(list_get(args, new_int_fromint(0))->type);
+            return (object*)(list_index_int(args, 0)->type);
         }
         if (CAST_INT(list_len(args))->val->to_long()==3){
             object* args_=new_dict();
-            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("func"), list_get(args, new_int_fromint(0)));
-            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("name"), list_get(args, new_int_fromint(1)));
-            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("bases"), list_get(args, new_int_fromint(2)));
+            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("func"), list_index_int(args, 0));
+            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("name"), list_index_int(args, 1));
+            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("bases"), list_index_int(args, 2));
             return builtin___build_class__(NULL, args_);
         }
         vm_add_err(&ValueError, vm, "'type' takes 1 or 3 arguments");
@@ -2254,7 +2252,7 @@ object* type_get(object* self, object* attr){
 
     uint32_t total_bases = CAST_INT(list_len(self->type->bases))->val->to_long_long();
     for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(list_get(self->type->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_index_int(self->type->bases, i-1));
 
         //Check type dict
         if (base_tp->dict!=0){
@@ -2358,7 +2356,7 @@ object* finalize_type(TypeObject* newtype){
     Mappings* ma=(Mappings*)malloc(sizeof(Mappings));
     memset(ma, 0, sizeof(Mappings));
     for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_index_int(tp_tp->bases, i-1));
         //Dirty inheritance here... go over each
         _inherit_slots(tp_tp, base_tp, m, ma);
         //      
@@ -2388,10 +2386,10 @@ void inherit_type_dict(TypeObject* tp){
 
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
-    //also breaks fewer rules...
+    //also breaks fewer rules.
     
     for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(list_get(tp_tp->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_index_int(tp_tp->bases, i-1));
         object* dict=base_tp->dict;
 
         for (auto k: (*CAST_DICT(dict)->val)){

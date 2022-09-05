@@ -32,11 +32,11 @@ object* tuple_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
-    if (object_istype(args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type, &TupleType)){
-        return INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
+    if (object_istype(list_index_int(args, 0)->type, &TupleType)){
+        return INCREF(list_index_int(args, 0));
     }
-    if (args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type->slot_iter!=NULL){
-        object* o=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    if (list_index_int(args, 0)->type->slot_iter!=NULL){
+        object* o=list_index_int(args, 0);
         object* iter=o->type->slot_iter(o);
 
         object_var* obj=new_object_var(CAST_TYPE(type), sizeof(TupleObject)+2*sizeof(object*));
@@ -71,7 +71,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
     CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
 
     for (size_t i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
-        tuple_append((object*)obj, INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(i))));
+        tuple_append((object*)obj, INCREF(list_index_int(args, i)));
     }
     
     return (object*)obj;

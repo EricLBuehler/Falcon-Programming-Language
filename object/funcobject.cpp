@@ -10,22 +10,6 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     return obj;
 }
 
-object* func_new(object* type, object* args, object* kwargs){
-    object* obj=new_object(CAST_TYPE(type));
-    if (CAST_LIST(args)->size!=5){
-        //Error
-        return NULL;
-    }
-    CAST_FUNC(obj)->code=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
-    CAST_FUNC(obj)->args=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
-    CAST_FUNC(obj)->kwargs=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(2)));
-    CAST_FUNC(obj)->argc=CAST_INT(args->type->slot_mappings->slot_get(args, new_int_fromint(3)))->val->to_int();
-    CAST_FUNC(obj)->name=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(4)));
-    CAST_FUNC(obj)->dict=new_dict();
-    
-    return obj;
-}
-
 object* func_call(object* self, object* args, object* kwargs){
     uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
     uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();

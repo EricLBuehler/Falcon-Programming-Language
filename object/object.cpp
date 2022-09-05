@@ -255,7 +255,7 @@ object* object_cmp(object* self, object* other, uint8_t type){
 
 size_t object_find(object* iter, object* needle){
     for (int i=0; i<CAST_INT(iter->type->slot_mappings->slot_len(iter))->val->to_int(); i++){
-        bool b=list_index_int(iter, i)->type==needle->type && istrue(object_cmp(iter->type->slot_mappings->slot_get(iter, new_int_fromint(i)),needle, CMP_EQ));
+        bool b=list_index_int(iter, i)->type==needle->type && istrue(object_cmp(list_index_int(iter, i),needle, CMP_EQ));
         if (b){
             return i;
         }
@@ -297,8 +297,8 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     //Positional
     object* names=new_list();
     for (int i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
-        object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn));
-        dict->type->slot_mappings->slot_set(dict, o, args->type->slot_mappings->slot_get(args, new_int_fromint(i)));
+        object* o=list_index_int(selfargs, argn);
+        dict->type->slot_mappings->slot_set(dict, o, list_index_int(args, i));
         names->type->slot_mappings->slot_append(names, o);
         argn++;
     }
@@ -310,10 +310,10 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     //Keyword
     uint32_t argn_tmp=argsnum;
     for (int i=0; i<CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int(); i++){
-        object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn_tmp));
+        object* o=list_index_int(selfargs, argn_tmp);
         
         if (!object_find_bool(names, o)){
-            dict->type->slot_mappings->slot_set(dict, o, selfkwargs->type->slot_mappings->slot_get(selfkwargs, new_int_fromint(i)));
+            dict->type->slot_mappings->slot_set(dict, o, list_index_int(selfkwargs, i));
         }
         argn_tmp++;
     }
@@ -350,9 +350,9 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
     //Keyword
     uint32_t argn_tmp=argsnum;
     for (int i=0; i<CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int(); i++){
-        object* o=selfargs->type->slot_mappings->slot_get(selfargs, new_int_fromint(argn_tmp));
+        object* o=list_index_int(selfargs, argn_tmp);
         
-        dict->type->slot_mappings->slot_set(dict, o, selfkwargs->type->slot_mappings->slot_get(selfkwargs, new_int_fromint(i)));
+        dict->type->slot_mappings->slot_set(dict, o, list_index_int(selfkwargs, i));
         argn_tmp++;
     }
     //Setup user kwargs
@@ -389,7 +389,7 @@ object* object_genericgetattr(object* obj, object* attr){
     //Check bases
     uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
     for (uint32_t i=0; i<total_bases; i++){
-        TypeObject* base_tp=CAST_TYPE(list_get(obj->type->bases, new_int_fromint(i)));
+        TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i));
         //Check type dict
         if (base_tp->dict!=0){
             object* dict = base_tp->dict;
@@ -436,7 +436,7 @@ void object_genericsetattr(object* obj, object* attr, object* val){
     //Check bases
     uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
     for (uint32_t i=0; i<total_bases; i++){
-        TypeObject* base_tp=CAST_TYPE(list_get(obj->type->bases, new_int_fromint(i-1)));
+        TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i-1));
 
         //Check type dict
         if (base_tp->dict!=0){
@@ -494,7 +494,7 @@ bool object_issubclass(object* obj, TypeObject* t){
         return true;
     }
     for (int i=0; i<CAST_INT(obj->type->bases->type->slot_mappings->slot_len(obj->type->bases))->val->to_int(); i++){
-        if ((void*)obj->type->bases->type->slot_mappings->slot_get(obj->type->bases, new_int_fromint(i))==(void*)t){
+        if ((void*)list_index_int(obj->type->bases, i)==(void*)t){
             return true;
         }
     }

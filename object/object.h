@@ -174,7 +174,11 @@ const bool NEWTP_NUMBER_COPY=true;
 
 vector<TypeObject*> fplbases;
 
+string* glblfildata=NULL;
+
 object* run_vm(object* codeobj, uint32_t* ip);
+struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, string* filedata);
+
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
 object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
 

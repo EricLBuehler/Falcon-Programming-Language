@@ -224,7 +224,7 @@ void float_del(object* obj){
 object* float_wrapper_add(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -233,14 +233,14 @@ object* float_wrapper_add(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    return self->type->slot_number->slot_add(self, args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    object* self=list_index_int(args, 0);
+    return self->type->slot_number->slot_add(self, list_index_int(args, 1));
 }
 
 object* float_wrapper_sub(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -249,14 +249,14 @@ object* float_wrapper_sub(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    return self->type->slot_number->slot_sub(self, args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    object* self=list_index_int(args, 0);
+    return self->type->slot_number->slot_sub(self, list_index_int(args, 1));
 }
 
 object* float_wrapper_mul(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -265,14 +265,14 @@ object* float_wrapper_mul(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    return self->type->slot_number->slot_mul(self, args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    object* self=list_index_int(args, 0);
+    return self->type->slot_number->slot_mul(self, list_index_int(args, 1));
 }
 
 object* float_wrapper_div(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -281,14 +281,14 @@ object* float_wrapper_div(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    return self->type->slot_number->slot_div(self, args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    object* self=list_index_int(args, 0);
+    return self->type->slot_number->slot_div(self, list_index_int(args, 1));
 }
 
 object* float_wrapper_neg(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -297,14 +297,14 @@ object* float_wrapper_neg(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* self=list_index_int(args, 0);
     return self->type->slot_number->slot_neg(self);
 }
 
 object* float_wrapper_repr(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -313,14 +313,14 @@ object* float_wrapper_repr(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* self=list_index_int(args, 0);
     return self->type->slot_repr(self);
 }
 
 object* float_wrapper_bool(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -329,7 +329,7 @@ object* float_wrapper_bool(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* self=list_index_int(args, 0);
     return self->type->slot_number->slot_bool(self);
 }
 
@@ -348,10 +348,10 @@ object* float_wrapper_new(object* args, object* kwargs){
         DECREF((struct object*)obj);
         return o;
     }
-    object* val=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    object* val=INCREF(list_index_int(args, 1));
     if (!object_istype(val->type, &IntType) && !object_istype(val->type, &StrType)){
         DECREF(obj);
-        vm_add_err(&ValueError, vm, "Expected argument to be int or str, got type '%s'",args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Expected argument to be int or str, got type '%s'",list_index_int(args, 0)->type->name->c_str());
         return NULL;
     }
     
@@ -374,7 +374,7 @@ object* float_wrapper_new(object* args, object* kwargs){
 object* float_wrapper_ne(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -382,8 +382,8 @@ object* float_wrapper_ne(object* args, object* kwargs){
         }
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* self=list_index_int(args, 0);
+    object* other=list_index_int(args, 1);
 
     return self->type->slot_cmp(self, other, CMP_NE);
 }
@@ -391,7 +391,7 @@ object* float_wrapper_ne(object* args, object* kwargs){
 object* float_wrapper_eq(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -399,8 +399,8 @@ object* float_wrapper_eq(object* args, object* kwargs){
         }
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* self=list_index_int(args, 0);
+    object* other=list_index_int(args, 1);
 
     return self->type->slot_cmp(self, other, CMP_EQ);
 }
@@ -408,7 +408,7 @@ object* float_wrapper_eq(object* args, object* kwargs){
 object* float_wrapper_gt(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -417,15 +417,15 @@ object* float_wrapper_gt(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* self=list_index_int(args, 0);
+    object* other=list_index_int(args, 1);
     return self->type->slot_cmp(self, other, CMP_GT);
 }
 
 object* float_wrapper_gte(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -434,15 +434,15 @@ object* float_wrapper_gte(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* self=list_index_int(args, 0);
+    object* other=list_index_int(args, 1);
     return self->type->slot_cmp(self, other, CMP_GTE);
 }
 
 object* float_wrapper_lt(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -451,15 +451,15 @@ object* float_wrapper_lt(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* self=list_index_int(args, 0);
+    object* other=list_index_int(args, 1);
     return self->type->slot_cmp(self, other, CMP_LT);
 }
 
 object* float_wrapper_lte(object* args, object* kwargs){
     if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2){
         if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val>=1){
-            TypeObject* tp=args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type;
+            TypeObject* tp=list_index_int(args, 0)->type;
             if (!object_istype(tp, &FloatType)){
                 vm_add_err(&TypeError, vm, "Expected 'float' object, got '%s' object",tp->name->c_str());
                 return NULL;
@@ -468,8 +468,8 @@ object* float_wrapper_lte(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int());
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
-    object* other=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* self=list_index_int(args, 0);
+    object* other=list_index_int(args, 1);
     return self->type->slot_cmp(self, other, CMP_LTE);
 }
 

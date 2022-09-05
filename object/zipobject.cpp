@@ -5,7 +5,7 @@ object* zip_new(object* type, object* args, object* kwargs){
     CAST_ZIP(zip)->n_iterators=niterators;
     CAST_ZIP(zip)->iterators=(object**)malloc(sizeof(object*)*niterators);
     for (uint32_t i=0; i<niterators; i++){
-        CAST_ZIP(zip)->iterators[i]=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(i)));
+        CAST_ZIP(zip)->iterators[i]=INCREF(list_index_int(args, i));
         if (CAST_ZIP(zip)->iterators[i]->type->slot_iter!=NULL){
             DECREF(CAST_ZIP(zip)->iterators[i]);
             CAST_ZIP(zip)->iterators[i]=INCREF(CAST_ZIP(zip)->iterators[i]->type->slot_iter(CAST_ZIP(zip)->iterators[i]));

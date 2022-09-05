@@ -6,7 +6,7 @@ object* enum_new(object* type, object* args, object* kwargs){
     }
 
     object* enumer=new_object(CAST_TYPE(type));
-    CAST_ENUM(enumer)->iterator=INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
+    CAST_ENUM(enumer)->iterator=INCREF(list_index_int(args, 0));
     if (CAST_ENUM(enumer)->iterator->type->slot_iter!=NULL){
         DECREF(CAST_ENUM(enumer)->iterator);
         CAST_ENUM(enumer)->iterator=INCREF(CAST_ENUM(enumer)->iterator->type->slot_iter(CAST_ENUM(enumer)->iterator));

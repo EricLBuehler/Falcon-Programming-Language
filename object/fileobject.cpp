@@ -4,12 +4,12 @@ object* file_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
-    object* name=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* name=list_index_int(args, 0);
     if (!object_istype(name->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected string type name, got type '%s'", name->type->name->c_str());
         return NULL;
     }
-    object* mode_=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* mode_=list_index_int(args, 1);
     if (!object_istype(mode_->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected string type name, got type '%s'", mode_->type->name->c_str());
         return NULL;
@@ -73,7 +73,7 @@ object* file_read_meth(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* self=list_index_int(args, 0);
     if (object_istype(self->type, &TypeType)){
         vm_add_err(&TypeError, vm, "Expected file type, got type '%s'", self->type->name->c_str());
         return NULL;
@@ -104,7 +104,7 @@ object* file_seek_meth(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* self=list_index_int(args, 0);
     if (object_istype(self->type, &TypeType)){
         vm_add_err(&TypeError, vm, "Expected file type, got type '%s'", self->type->name->c_str());
         return NULL;
@@ -113,7 +113,7 @@ object* file_seek_meth(object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Attempting to seek in a closed file");
         return NULL;
     }
-    object* o=args->type->slot_mappings->slot_get(args, new_int_fromint(1));
+    object* o=list_index_int(args, 1);
     object* val=o->type->slot_number->slot_int(o);
     if (val==NULL){
         return val;
@@ -130,7 +130,7 @@ object* file_write_meth(object* args, object* kwargs){
         return NULL;
     }
      
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* self=list_index_int(args, 0);
     if (object_istype(self->type, &TypeType)){
         vm_add_err(&TypeError, vm, "Expected file type, got type '%s'", self->type->name->c_str());
         return NULL;
@@ -140,7 +140,7 @@ object* file_write_meth(object* args, object* kwargs){
         return NULL;
     }
 
-    string s=object_cstr(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+    string s=object_cstr(list_index_int(args, 1));
     int i=fprintf(CAST_FILE(self)->file, "%s", s.c_str() );
     if (i==0 && s.size()>0){
         vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
@@ -150,7 +150,7 @@ object* file_write_meth(object* args, object* kwargs){
 }
 
 object* file_close_meth(object* args, object* kwargs){    
-    object* self=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+    object* self=list_index_int(args, 0);
     if (object_istype(self->type, &TypeType)){
         vm_add_err(&TypeError, vm, "Expected file type, got type '%s'", self->type->name->c_str());
         return NULL;

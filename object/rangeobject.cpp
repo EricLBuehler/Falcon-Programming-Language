@@ -5,14 +5,14 @@ object* range_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     object* range=new_object(CAST_TYPE(type));
-    object* arg=object_int(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
+    object* arg=object_int(list_index_int(args, 0));
     if (arg==NULL){
         DECREF(range);
         return arg;
     }
     CAST_RANGE(range)->start=CAST_INT(arg)->val->to_int();
     if (len!=1){
-        arg=object_int(args->type->slot_mappings->slot_get(args, new_int_fromint(1)));
+        arg=object_int(list_index_int(args, 1));
         if (arg==NULL){
             DECREF(range);
             return arg;

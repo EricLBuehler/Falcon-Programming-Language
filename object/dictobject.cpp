@@ -10,11 +10,21 @@ object* new_dict(){
 }
 
 object* dict_new(object* type, object* args, object* kwargs){
-    if (object_istype(args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type, &DictType)){
-        return INCREF(args->type->slot_mappings->slot_get(args, new_int_fromint(0)));
+    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0 && CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+        object_var* obj=new_object_var(CAST_TYPE(type), 0);
+        CAST_DICT(obj)->val=new map<object*, object*>;
+        CAST_DICT(obj)->keys=new vector<object*>;
+        CAST_DICT(obj)->val->clear();
+        CAST_DICT(obj)->keys->clear();
+        obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
+        return (object*)obj;    
     }
-    if (args->type->slot_mappings->slot_get(args, new_int_fromint(0))->type->slot_iter!=NULL){
-        object* o=args->type->slot_mappings->slot_get(args, new_int_fromint(0));
+
+    if (object_istype(list_index_int(args, 0)->type, &DictType)){
+        return INCREF(list_index_int(args, 0));
+    }
+    if (list_index_int(args, 0)->type->slot_iter!=NULL){
+        object* o=list_index_int(args, 0);
         object* iter=o->type->slot_iter(o);
 
         object_var* obj=new_object_var(CAST_TYPE(type), 0);
@@ -32,7 +42,7 @@ object* dict_new(object* type, object* args, object* kwargs){
                 vm_add_err(&ValueError, vm, "Expected 2 values (key/value) for dictionary update, got '%d'",CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int());
                 return NULL;
             }
-            dict_set((object*)obj, o->type->slot_mappings->slot_get(o, new_int_fromint(0)), o->type->slot_mappings->slot_get(o, new_int_fromint(1)));
+            dict_set((object*)obj, list_index_int(o, 0), list_index_int(o, 1));
             
             o=iter->type->slot_next(iter);
         }
@@ -41,16 +51,6 @@ object* dict_new(object* type, object* args, object* kwargs){
             vm->exception=NULL;
         }
         return (object*)obj;
-    }
-    
-    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0 && CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
-        object_var* obj=new_object_var(CAST_TYPE(type), 0);
-        CAST_DICT(obj)->val=new map<object*, object*>;
-        CAST_DICT(obj)->keys=new vector<object*>;
-        CAST_DICT(obj)->val->clear();
-        CAST_DICT(obj)->keys->clear();
-        obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
-        return (object*)obj;    
     }
 
     object_var* obj=new_object_var(CAST_TYPE(type), 0);
