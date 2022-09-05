@@ -61,7 +61,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_ASSIGN: {
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
-            compile_expr(compiler, ASSIGN(expr->node)->right); //Push data
+            int cmpexpr=compile_expr(compiler, ASSIGN(expr->node)->right); //Push data
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
                 add_instruction(compiler->instructions,UNPACK_SEQ,  MULTIIDENT(ASSIGN(expr->node)->name->node)->name->size(), expr->start, expr->end);
             }
@@ -94,7 +97,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
             else if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
-                compile_expr(compiler, ASSIGN(expr->node)->name);
+                int cmpexpr=compile_expr(compiler, ASSIGN(expr->node)->name);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
                 add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
             break;
@@ -130,8 +136,20 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_BINOP: {
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
-            compile_expr(compiler, BINOP(expr->node)->left); //Push data
-            compile_expr(compiler, BINOP(expr->node)->right); //Push data
+            int cmpexpr=compile_expr(compiler, BINOP(expr->node)->left); //Push data
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            cmpexpr=compile_expr(compiler, BINOP(expr->node)->right); //Push data
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             if (!ret){
                 compiler->keep_return=false;
             }
@@ -291,7 +309,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_UNARY: {
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
-            compile_expr(compiler, UNARYOP(expr->node)->right); //Push data
+            int cmpexpr=compile_expr(compiler, UNARYOP(expr->node)->right); //Push data
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             if (!ret){
                 compiler->keep_return=false;
             }
@@ -347,7 +368,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 idx=NAMEIDX(compiler->consts);
             }
             else{
-                object* o=str_new_fromstr(*STRLIT(expr->node)->literal);
                 idx=object_find(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
             }
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
@@ -410,7 +430,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*FUNCT(expr->node)->kwargs)){
                 argc++;
                 args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
-                compile_expr(compiler, ASSIGN(n->node)->right);
+                int cmpexpr=compile_expr(compiler, ASSIGN(n->node)->right);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
             }
             //
 
@@ -484,7 +507,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler->keep_return=true;
             //Args (iterate backwards)
             for (auto it =  (*CALL(expr->node)->args).rbegin(); it != (*CALL(expr->node)->args).rend(); ++it){
-                compile_expr(compiler, *it);
+                int cmpexpr=compile_expr(compiler, *it);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
             }
             //Kwargs (iterate backwards)
             for (auto it =  (*CALL(expr->node)->kwargs).rbegin(); it != (*CALL(expr->node)->kwargs).rend(); ++it){
@@ -498,7 +524,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     idx=object_find(compiler->consts, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                 }
                 add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
-                compile_expr(compiler, ASSIGN((*it)->node)->right);
+                int cmpexpr=compile_expr(compiler, ASSIGN((*it)->node)->right);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
             }
             if (!ret){
                 compiler->keep_return=false;
@@ -520,7 +549,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
             //Object
-            compile_expr(compiler, CALL(expr->node)->object);
+            int cmpexpr=compile_expr(compiler, CALL(expr->node)->object);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
 
             add_instruction(compiler->instructions,CALL_FUNCTION, argc, expr->start, expr->end);
 
@@ -635,7 +667,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             uint32_t nbases=CLASS(expr->node)->bases->size();
             for (Node* n: *CLASS(expr->node)->bases){
-                compile_expr(compiler, n);
+                int cmpexpr=compile_expr(compiler, n);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
             }
             add_instruction(compiler->instructions,BUILD_LIST, nbases, expr->start, expr->end);
 
@@ -709,7 +744,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_DOTASSIGN: {
-            compile_expr(compiler, DOTASSIGN(expr->node)->right);
+            int cmpexpr=compile_expr(compiler, DOTASSIGN(expr->node)->right);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
             vector<Node*>* names=DOT(DOTASSIGN(expr->node)->dot->node)->names;
@@ -754,7 +792,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             for (size_t i=0; i<names->size(); i++){
                 if (names->at(i)->type!=N_IDENT){
-                    compile_expr(compiler, names->at(i));
+                    int cmpexpr=compile_expr(compiler, names->at(i));
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     continue;
                 }
 
@@ -786,7 +827,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     compiler->keep_return=true;
                     //Args (iterate backwards)
                     for (auto it =  (*DOTCALL(expr->node)->args).rbegin(); it != (*DOTCALL(expr->node)->args).rend(); ++it){
-                        compile_expr(compiler, *it);
+                        int cmpexpr=compile_expr(compiler, *it);
+                        if (cmpexpr==0x100){
+                            return cmpexpr;
+                        }
                     }
                     //Kwargs (iterate backwards)
                     for (auto it =  (*DOTCALL(expr->node)->kwargs).rbegin(); it != (*DOTCALL(expr->node)->kwargs).rend(); ++it){
@@ -800,7 +844,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             idx=object_find(compiler->consts, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                         }
                         add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
-                        compile_expr(compiler, ASSIGN((*it)->node)->right);
+                        int cmpexpr=compile_expr(compiler, ASSIGN((*it)->node)->right);
+                        if (cmpexpr==0x100){
+                            return cmpexpr;
+                        }
                     }
                     if (!ret){
                         compiler->keep_return=false;
@@ -858,7 +905,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
-            compile_expr(compiler, RETURN(expr->node)->node);
+            int cmpexpr=compile_expr(compiler, RETURN(expr->node)->node);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             compiler->keep_return=ret;
             
             add_instruction(compiler->instructions, RETURN_VAL, 0, expr->start, expr->end);
@@ -867,7 +917,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_LIST: {
             for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
-                compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+                int cmpexpr=compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
             }
             add_instruction(compiler->instructions, BUILD_LIST, LIST(expr->node)->list->size(), new Position, new Position);
             break;
@@ -875,7 +928,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_TUPLE: {
             for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
-                compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+                int cmpexpr=compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
             }
             add_instruction(compiler->instructions, BUILD_TUPLE, LIST(expr->node)->list->size(), new Position, new Position);
             break;
@@ -883,15 +939,24 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_DICT: {
             for (size_t i=DICT(expr->node)->keys->size(); i>0; i--){
-                compile_expr(compiler, DICT(expr->node)->vals->at(i-1)); //Value
-                compile_expr(compiler, DICT(expr->node)->keys->at(i-1)); //Value
+                int cmpexpr=compile_expr(compiler, DICT(expr->node)->vals->at(i-1)); //Value
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
+                cmpexpr=compile_expr(compiler, DICT(expr->node)->keys->at(i-1)); //Value
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
             }
             add_instruction(compiler->instructions, BUILD_DICT, DICT(expr->node)->keys->size(), new Position, new Position);
             break;
         }
 
         case N_IF: {
-            compile_expr(compiler, IF(expr->node)->expr);
+            int cmpexpr=compile_expr(compiler, IF(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
 
             add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(expr->node)->code, compiler->scope)*2, expr->start, expr->end); 
 
@@ -920,7 +985,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_ELSE : {
             if (ELSE(expr->node)->base!=NULL){
-                compile_expr(compiler, ELSE(expr->node)->base); //Compile first options
+                int cmpexpr=compile_expr(compiler, ELSE(expr->node)->base); //Compile first options
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
             }
 
             //Code
@@ -952,7 +1020,14 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     instrs+=num_instructions(IF(n->node)->expr, compiler->scope)*2;
                     instrs+=2; 
 
-                    compile_expr(compiler, IF(n->node)->expr);
+                    int cmpexpr=compile_expr(compiler, IF(n->node)->expr);
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(n->node)->code, compiler->scope)*2+2, n->start, n->end);
 
                     //Code
@@ -1006,8 +1081,14 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->keep_return=false;
             }
             compiler->keep_return=ret;
-            compile_expr(compiler, SUBSCR(expr->node)->left);
-            compile_expr(compiler, SUBSCR(expr->node)->expr);
+            int cmpexpr=compile_expr(compiler, SUBSCR(expr->node)->left);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            cmpexpr=compile_expr(compiler, SUBSCR(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             add_instruction(compiler->instructions,BINOP_SUBSCR, 0, expr->start, expr->end);
             
 
@@ -1020,7 +1101,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_RAISE: {
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
-            compile_expr(compiler, RAISE(expr->node)->expr);
+            int cmpexpr=compile_expr(compiler, RAISE(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             if (!ret){
                 compiler->keep_return=false;
             }
@@ -1030,12 +1114,21 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_STORE_SUBSCR: {
-            compile_expr(compiler, SUBSCR(STSUBSCR(expr->node)->left->node)->left);
+            int cmpexpr=compile_expr(compiler, SUBSCR(STSUBSCR(expr->node)->left->node)->left);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
 
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
-            compile_expr(compiler, SUBSCR(STSUBSCR(expr->node)->left->node)->expr);
-            compile_expr(compiler, STSUBSCR(expr->node)->expr);
+            cmpexpr=compile_expr(compiler, SUBSCR(STSUBSCR(expr->node)->left->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            cmpexpr=compile_expr(compiler, STSUBSCR(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             if (!ret){
                 compiler->keep_return=false;
             }
@@ -1356,7 +1449,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
 
-            compile_expr(compiler, FOR(expr->node)->expr);
+            int cmpexpr=compile_expr(compiler, FOR(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             
             if (!ret){
                 compiler->keep_return=false;
@@ -1396,7 +1492,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             else if (FOR(expr->node)->ident->type==N_MULTIIDENT){
                 add_instruction(compiler->instructions,UNPACK_SEQ, MULTIIDENT(FOR(expr->node)->ident->node)->name->size(), expr->start, expr->end);
-                compile_expr(compiler, FOR(expr->node)->ident);
+                int cmpexpr=compile_expr(compiler, FOR(expr->node)->ident);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
                 add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
             
@@ -1435,7 +1534,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_WHILE: {
             //Checks here
             uint32_t start=compiler->instructions->count*2;
-            compile_expr(compiler, WHILE(expr->node)->expr);
+            int cmpexpr=compile_expr(compiler, WHILE(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(WHILE(expr->node)->code, compiler->scope)*2+2, expr->start, expr->end); 
             
             //Code
@@ -1568,14 +1670,20 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler->keep_return=ret;
 
 
-            compile_expr(compiler, base);
+            int cmpexpr=compile_expr(compiler, base);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             if (type==3){
-                compile_expr(compiler, left);
-                compile_expr(compiler, right);
+                cmpexpr=compile_expr(compiler, left);
+                cmpexpr=compile_expr(compiler, right);
                 add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
             }
             else if (type==2){
-                compile_expr(compiler, left);
+                int cmpexpr=compile_expr(compiler, left);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
@@ -1601,7 +1709,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 
                 add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
-                compile_expr(compiler, right);
+                int cmpexpr=compile_expr(compiler, right);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
                 add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
             }
             else{
@@ -1646,14 +1757,20 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler->keep_return=ret;
 
 
-            compile_expr(compiler, base);
+            int cmpexpr=compile_expr(compiler, base);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             if (type==3){
-                compile_expr(compiler, left);
-                compile_expr(compiler, right);
+                cmpexpr=compile_expr(compiler, left);
+                cmpexpr=compile_expr(compiler, right);
                 add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
             }
             else if (type==2){
-                compile_expr(compiler, left);
+                int cmpexpr=compile_expr(compiler, left);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
@@ -1679,7 +1796,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 
                 add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
-                compile_expr(compiler, right);
+                int cmpexpr=compile_expr(compiler, right);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
                 add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
             }
             else{
@@ -1687,7 +1807,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 break;
             }
             
-            compile_expr(compiler, STSLICE(expr->node)->expr);
+            cmpexpr=compile_expr(compiler, STSLICE(expr->node)->expr);
             if (!ret){
                 compiler->keep_return=false;
             }
@@ -1706,8 +1826,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (DEL(expr->node)->expr->type==N_SUBSCR){
                 Node* subexpr=DEL(expr->node)->expr;
                 
-                compile_expr(compiler, SUBSCR(subexpr->node)->left);
-                compile_expr(compiler, SUBSCR(subexpr->node)->expr);
+                int cmpexpr=compile_expr(compiler, SUBSCR(subexpr->node)->left);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
+                cmpexpr=compile_expr(compiler, SUBSCR(subexpr->node)->expr);
                 add_instruction(compiler->instructions,DEL_SUBSCR, 0, expr->start, expr->end);
             }
             else if (DEL(expr->node)->expr->type==N_SLICE){
@@ -1739,14 +1862,20 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->keep_return=ret;
 
 
-                compile_expr(compiler, base);
+                int cmpexpr=compile_expr(compiler, base);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
                 if (type==3){
-                    compile_expr(compiler, left);
-                    compile_expr(compiler, right);
+                    cmpexpr=compile_expr(compiler, left);
+                    cmpexpr=compile_expr(compiler, right);
                     add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
                 }
                 else if (type==2){
-                    compile_expr(compiler, left);
+                    int cmpexpr=compile_expr(compiler, left);
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx;
                     if (!object_find_bool(compiler->consts,noneobj)){
                         //Create object
@@ -1772,7 +1901,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     
                     add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
-                    compile_expr(compiler, right);
+                    int cmpexpr=compile_expr(compiler, right);
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     add_instruction(compiler->instructions, MAKE_SLICE, 0, expr->start, expr->end);
                 }
                 else{
@@ -1800,8 +1932,73 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_GLBL_IDENT: {
             enum scope s=compiler->scope;
             compiler->scope=SCOPE_GLOBAL;
-            compile_expr(compiler, GLBLIDENT(expr->node)->name);
+            int cmpexpr=compile_expr(compiler, GLBLIDENT(expr->node)->name);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
             compiler->scope=s;
+            break;
+        }
+
+        case N_FSTRING: {
+            string data=*STRLIT(expr->node)->literal;
+            
+            for (int i=0; i<data.size(); i++){
+                if (data[i]=='{'){
+                    string segment="";
+                    i++;
+                    while (data[i]!='}' && data[i]!='\0'){
+                        segment+=data[i++];
+                    }
+                    i++;
+                    if (data[i]=='\0'){
+                        parser.add_parsing_error(&parseretglbl, "SyntaxError: Expected '}' for format string");
+                        return 0x100;
+                    }
+
+                    Lexer lexer(segment,kwds);
+                    lexer.pos=Position(program);
+
+                    Position end=lexer.tokenize();
+
+                    Parser p=parser;
+                    parser=Parser(lexer.tokens, data);
+                    parse_ret ast=parser.parse();
+                    parser=p;
+
+                    if (ast.errornum>0){
+                        cout<<ast.header<<endl;
+                        cout<<ast.snippet<<endl;
+                        cout<<ast.arrows<<endl;
+                        printf("%s\n",ast.error);
+                        return 0x100;
+                    }
+
+                    int cmpexpr=compile_expr(compiler, ast.nodes.at(0));
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                }
+                else{
+                    string segment="";
+                    while (data[i]!='{'){
+                        segment+=data[i++];
+                    }
+
+                    string* s=new string(segment);
+                    uint32_t idx;
+                    if (!_list_contains(compiler->consts, s)){
+                        //Create object
+                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(segment));
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, str_new_fromstr(segment));
+                    }
+                    delete s;
+                    add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+                }
+            }
             break;
         }
 
@@ -1815,7 +2012,10 @@ uint32_t num_instructions(vector<Node*>* nodes, scope s){
     comp->lines=NULL;
     comp->scope=s;
     for (Node* n: (*nodes)){    
-        compile_expr(comp, n);
+        int cmpexpr=compile_expr(comp, n);
+        if (cmpexpr==0x100){
+            return -1;
+        }
     }
     return comp->instructions->count;
 }
@@ -1824,7 +2024,10 @@ uint32_t num_instructions(Node* node, scope s){
     struct compiler* comp=new_compiler(); 
     comp->lines=NULL;   
     comp->scope=s;  
-    compile_expr(comp, node);
+    int cmpexpr=compile_expr(comp, node);
+    if (cmpexpr==0x100){
+        return -1;
+    }
         
     return comp->instructions->count;
 }
