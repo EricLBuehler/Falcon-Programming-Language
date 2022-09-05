@@ -306,7 +306,7 @@ class Parser{
             cout<<this->current_tok;
             
             binop->right=this->expr(ret, precedence);
-            if (ret->errornum>0 || binop->right==NULL){
+            if (ret->errornum>0){
                 return NULL;
             }
 
@@ -424,7 +424,7 @@ class Parser{
             }
             
             Node* expr=this->expr(ret, LOWEST);
-            if (ret->errornum>0 || expr==NULL){
+            if (ret->errornum>0){
                 delete list;
                 return NULL;
             }
@@ -433,7 +433,7 @@ class Parser{
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
                 Node* expr=this->expr(ret, LOWEST);
-                if (ret->errornum>0 || expr==NULL){
+                if (ret->errornum>0){
                     delete list;
                     return NULL;
                 }
@@ -473,7 +473,7 @@ class Parser{
             }
             
             Node* expr=this->expr(ret, LOWEST);
-            if (ret->errornum>0 || expr==NULL){
+            if (ret->errornum>0){
                 delete list;
                 return NULL;
             }
@@ -482,7 +482,7 @@ class Parser{
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
                 Node* expr=this->expr(ret, LOWEST);
-                if (ret->errornum>0 || expr==NULL){
+                if (ret->errornum>0){
                     delete list;
                     return NULL;
                 }
@@ -523,7 +523,7 @@ class Parser{
             }
             
             Node* key=this->expr(ret, LOWEST);
-            if (ret->errornum>0 || key==NULL){
+            if (ret->errornum>0){
                 delete vals;
                 delete keys;
                 return NULL;
@@ -536,7 +536,7 @@ class Parser{
             }
             this->advance();
             Node* value=this->expr(ret, LOWEST);
-            if (ret->errornum>0 || value==NULL){
+            if (ret->errornum>0){
                 delete vals;
                 delete keys;
                 return NULL;
@@ -547,7 +547,7 @@ class Parser{
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
                 Node* key=this->expr(ret, LOWEST);
-                if (ret->errornum>0 || key==NULL){
+                if (ret->errornum>0){
                     delete vals;
                     delete keys;
                     return NULL;
@@ -560,7 +560,7 @@ class Parser{
                 }
                 this->advance();
                 Node* value=this->expr(ret, LOWEST);
-                if (ret->errornum>0 || value==NULL){
+                if (ret->errornum>0){
                     delete vals;
                     delete keys;
                     return NULL;
@@ -630,7 +630,7 @@ class Parser{
             Node* expr=this->expr(ret, LOWEST);
             this->multi=b;
 
-            if (ret->errornum>0 || expr==NULL){
+            if (ret->errornum>0){
                 return NULL;
             }
             if (expr->type==N_ASSIGN){
@@ -667,7 +667,7 @@ class Parser{
                     }
                     args->push_back(expr);
                 }
-                if (ret->errornum>0 || expr==NULL){
+                if (ret->errornum>0){
                     return NULL;
                 }
                 if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_RPAREN) && !this->current_tok_is(T_EOF)){
@@ -936,6 +936,8 @@ class Parser{
             Node* left=this->atom(ret);
             if (left==NULL){
                 if (this->current_tok.type==T_EOF){
+                    this->add_parsing_error(ret, "SyntaxError: Unexpected EOF.");
+                    this->advance();
                     return left;
                 }
                 if (this->current_tok.type==T_ERROR_EOF){
