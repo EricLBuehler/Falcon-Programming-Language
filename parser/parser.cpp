@@ -218,7 +218,18 @@ class Parser{
             return node;
         }
 
-        Node* make_identifier(){
+        Node* make_fstring(parse_ret* ret){
+            this->advance();
+            Node* node=make_string_literal();
+            node->type=N_FSTRING;
+            
+            return node;
+        }
+
+        Node* make_identifier(parse_ret* ret){
+            if (this->current_tok.data=="f"){
+                return make_fstring(ret);
+            }
             Node* node=make_node(N_IDENT);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
@@ -865,7 +876,7 @@ class Parser{
                     break;
                 
                 case T_IDENTIFIER:
-                    left=make_identifier();
+                    left=make_identifier(ret);
                     break;
 
                 case T_LPAREN:

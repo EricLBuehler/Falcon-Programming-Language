@@ -40,6 +40,7 @@ enum nodetype{
     N_STORE_SLICE,
     N_DEL,
     N_GLBL_IDENT,
+    N_FSTRING,
 };
 
 enum precedence {
