@@ -338,6 +338,8 @@ object* import_name(string data, object* name){
     kwds.push_back("from");
     kwds.push_back("del");
 
+    program=object_cstr(name);
+
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
 
@@ -351,7 +353,7 @@ object* import_name(string data, object* name){
         cout<<ast.snippet<<endl;
         cout<<ast.arrows<<endl;
         printf("%s\n",ast.error);
-        exit(0);
+        return TERM_PROGRAM;
     }
 
     struct compiler* compiler = new_compiler();
@@ -361,7 +363,7 @@ object* import_name(string data, object* name){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;
         printf("%s\n",parseretglbl.error);
-        exit(0);
+        return TERM_PROGRAM;
     }
     CAST_CODE(code)->co_file=object_repr(name);
     struct vm* vm_=::vm;
@@ -569,6 +571,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             if (ret==NULL){
                 return CALL_ERR;
             }
+            if (ret==TERM_PROGRAM){
+                return TERM_PROGRAM;
+            }
             add_dataframe(vm, vm->objstack, ret);
             break;
         }
@@ -605,6 +610,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL){ 
                 return CALL_ERR;
+            }
+            if (ret==TERM_PROGRAM){
+                return TERM_PROGRAM;
             }
             
             add_dataframe(vm, vm->objstack, ret);
@@ -982,6 +990,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                             string str(s);
                             
                             object* o=import_name(str, str_new_fromstr(filename));
+                            if (o==TERM_PROGRAM){
+                                return TERM_PROGRAM;
+                            }
                             dict_set(dict, str_new_fromstr(filename), o);
                         }
                         closedir(dr);
@@ -1031,8 +1042,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 return NULL;
             }
             
-            
             object* o=import_name(data, name);
+            if (o==TERM_PROGRAM){
+                return TERM_PROGRAM;
+            }
             add_dataframe(vm, vm->objstack, o);
 
             break;
@@ -1203,6 +1216,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         //cout<<instruction<<","<<list_index_int(code, *ip)<<endl;
         object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip);
+
+        if (obj==TERM_PROGRAM){
+            return TERM_PROGRAM;
+        }
 
         if (obj==CALL_ERR){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
