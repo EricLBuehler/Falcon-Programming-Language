@@ -1518,6 +1518,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* names=new_list();
             for (uint32_t i=0; i<FROM(expr->node)->names->size(); i++){
                 Node* name=FROM(expr->node)->names->at(i);
+                if (name==NULL){
+                    break;
+                }
                 
                 list_append(names, str_new_fromstr(*IDENTI(name->node)->name));
             }
