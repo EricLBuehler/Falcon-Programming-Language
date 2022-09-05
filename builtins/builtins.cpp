@@ -4,7 +4,7 @@
 object* builtin_print(object* self, object* args){
     object* tupargs=args->type->slot_mappings->slot_get(args, str_new_fromstr("args"));
     for (int n=0; n<CAST_TUPLE(tupargs)->size; n++){
-        printf("%s",object_cstr(tupargs->type->slot_mappings->slot_get(tupargs, new_int_fromint(n))).c_str());
+        printf("%s",object_cstr(tuple_index_int(tupargs, n)).c_str());
         if (n+1!=CAST_TUPLE(tupargs)->size){
             cout<<" ";
         }
