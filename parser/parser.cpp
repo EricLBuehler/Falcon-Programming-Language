@@ -1958,14 +1958,17 @@ class Parser{
 
             this->advance();
 
-            if (!this->current_tok_is(T_IDENTIFIER)){
+            if (!this->current_tok_is(T_IDENTIFIER) && !this->current_tok_is(T_MUL)){
                 this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
                 return NULL;
             }
             
             m=this->multi;
             this->multi=false;
-            Node* name=this->atom(ret);
+            Node* name=NULL;
+            if (!this->current_tok_is(T_MUL)){
+                this->atom(ret);
+            }
             this->multi=m;
 
             this->advance();
