@@ -130,6 +130,7 @@ object* str_add(object* self, object* other);
 object* str_get(object* self, object* idx);
 
 object* str_new_fromstr(string val);
+object* string_join_meth(object* args, object* kwargs);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA
@@ -157,7 +158,7 @@ static Mappings str_mappings{
     str_len, //slot_len
 };
 
-Method str_methods[]={{NULL,NULL}};
+Method str_methods[]={{"join", (cwrapperfunc)string_join_meth}, {NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 OffsetMember str_offsets[]={{NULL}};
 
@@ -306,6 +307,8 @@ object* dict_str(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
 object* dict_bool(object* self);
 object* dict_iter(object* self);
+object* dict_keys_meth(object* args, object* kwargs);
+object* dict_values_meth(object* args, object* kwargs);
 
 
 typedef struct DictObject{
@@ -333,7 +336,7 @@ static Mappings dict_mappings{
     dict_len, //slot_len
 };
 
-Method dict_methods[]={{NULL,NULL}};
+Method dict_methods[]={{"keys", (cwrapperfunc)dict_keys_meth}, {"values", (cwrapperfunc)dict_values_meth},{NULL,NULL}};
 GetSets dict_getsets[]={{NULL,NULL}};
 OffsetMember dict_offsets[]={{NULL}};
 
@@ -1121,6 +1124,7 @@ void setup_exception_type(){
     
     MemoryError=(*(TypeObject*)new_type_exception(new string("MemoryError"), new_tuple(), new_dict()));
     fplbases.push_back(&MemoryError);
+    setup_memory_error=true;
     
     object* recursionerr_bases=new_tuple();
     recursionerr_bases->type->slot_mappings->slot_append(recursionerr_bases, (object*)&MemoryError);
@@ -2326,7 +2330,7 @@ void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp, NumberMethods* m, Ma
 }
 
 object* finalize_type(TypeObject* newtype){
-    object* tp=(object*)malloc(sizeof(TypeObject));
+    object* tp=(object*)fpl_malloc(sizeof(TypeObject));
     memcpy(tp, newtype, sizeof(TypeObject));
         
     TypeObject* tp_tp=CAST_TYPE(tp);
@@ -2350,10 +2354,10 @@ object* finalize_type(TypeObject* newtype){
     
     
 
-    NumberMethods* m=(NumberMethods*)malloc(sizeof(NumberMethods));
+    NumberMethods* m=(NumberMethods*)fpl_malloc(sizeof(NumberMethods));
     memset(m, 0, sizeof(NumberMethods));
 
-    Mappings* ma=(Mappings*)malloc(sizeof(Mappings));
+    Mappings* ma=(Mappings*)fpl_malloc(sizeof(Mappings));
     memset(ma, 0, sizeof(Mappings));
     for (uint32_t i=total_bases; i>0; i--){
         TypeObject* base_tp=CAST_TYPE(list_index_int(tp_tp->bases, i-1));
@@ -2463,7 +2467,7 @@ object* new_type(string* name, object* bases, object* dict){
     reprfunc str_func=NULL;
     callfunc call_func=NULL;
 
-    NumberMethods number=(*(NumberMethods*)malloc(sizeof(NumberMethods)));
+    NumberMethods number=(*(NumberMethods*)fpl_malloc(sizeof(NumberMethods)));
     memset(&number, 0, sizeof(NumberMethods));
     if (NEWTP_PRIMARY_COPY){
         object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__repr__"));

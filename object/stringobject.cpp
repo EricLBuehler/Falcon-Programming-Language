@@ -352,3 +352,41 @@ object* str_add(object* self, object* other){
         
     return str_new_fromstr(*CAST_STRING(self)->val+*CAST_STRING(other)->val);
 }
+
+
+object* string_join_meth(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
+    if (len!=2 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() == 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);
+    object* arg=tuple_index_int(args, 1);
+
+    if (arg->type->slot_iter==NULL){
+        vm_add_err(&ValueError, vm, "Expected iterable");
+        return NULL; 
+    }
+
+    object* iter=arg->type->slot_iter(arg);
+
+    string selfstr=object_cstr(self);
+    
+    string s="";
+    int i=0;
+    len=CAST_INT(arg->type->slot_mappings->slot_len(arg))->val->to_long()-1;
+    while (vm->exception==NULL){
+        object* o=iter->type->slot_next(iter);
+        if (o==NULL){
+            DECREF(vm->exception);
+            break;
+        }
+        s+=object_cstr(o);
+        if (i<len){
+            s+=selfstr;
+        }
+        i++;
+    }
+    vm->exception=NULL;
+    return str_new_fromstr(s);
+}

@@ -1,5 +1,5 @@
 void tuple_resize(TupleObject* obj, size_t size){
-    object** buf=(object**)malloc(obj->capacity * sizeof(struct object*));
+    object** buf=(object**)fpl_malloc(obj->capacity * sizeof(struct object*));
     memcpy(buf, obj->array, obj->capacity * sizeof(struct object*));
     size_t oldcap=obj->capacity;
 
@@ -16,7 +16,7 @@ object* new_tuple(){
     CAST_TUPLE(obj)->capacity=2; //Start with 2
     CAST_TUPLE(obj)->size=0;
     CAST_TUPLE(obj)->idx=0;
-    CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
+    CAST_TUPLE(obj)->array=(object**)fpl_malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
     
     return (object*)obj;
 }
@@ -28,7 +28,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
         CAST_TUPLE(obj)->capacity=2; //Start with 2
         CAST_TUPLE(obj)->size=0;
         CAST_TUPLE(obj)->idx=0;
-        CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
+        CAST_TUPLE(obj)->array=(object**)fpl_malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
         
         return (object*)obj;
     }
@@ -43,7 +43,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
         CAST_TUPLE(obj)->capacity=2; //Start with 2
         CAST_TUPLE(obj)->size=0;
         CAST_TUPLE(obj)->idx=0;
-        CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
+        CAST_TUPLE(obj)->array=(object**)fpl_malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
 
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
@@ -68,7 +68,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
     CAST_TUPLE(obj)->capacity=2; //Start with 2
     CAST_TUPLE(obj)->size=0;
     CAST_TUPLE(obj)->idx=0;
-    CAST_TUPLE(obj)->array=(object**)malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
+    CAST_TUPLE(obj)->array=(object**)fpl_malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
 
     for (size_t i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
         tuple_append((object*)obj, INCREF(list_index_int(args, i)));
@@ -213,7 +213,7 @@ object* tuple_iter(object* self){
     CAST_TUPLEITER(iter)->capacity=CAST_TUPLE(self)->capacity;
     CAST_TUPLEITER(iter)->size=CAST_TUPLE(self)->size;
     CAST_TUPLEITER(iter)->idx=0;
-    CAST_TUPLEITER(iter)->array=(object**)malloc(CAST_TUPLEITER(iter)->capacity * sizeof(struct object*));
+    CAST_TUPLEITER(iter)->array=(object**)fpl_malloc(CAST_TUPLEITER(iter)->capacity * sizeof(struct object*));
     for (size_t i=0; i<CAST_TUPLE(self)->size; i++){
         CAST_TUPLEITER(iter)->array[i]=INCREF(CAST_TUPLE(self)->array[i]);
     }

@@ -1,5 +1,5 @@
 void list_resize(ListObject* obj, size_t size){
-    object** buf=(object**)malloc(obj->capacity * sizeof(struct object*));
+    object** buf=(object**)fpl_malloc(obj->capacity * sizeof(struct object*));
     memcpy(buf, obj->array, obj->capacity * sizeof(struct object*));
     size_t oldcap=obj->capacity;
 
@@ -14,7 +14,7 @@ object* new_list(){
     object_var* obj=new_object_var(&ListType, 0);
     CAST_LIST(obj)->capacity=2; //Start with 2
     CAST_LIST(obj)->size=0;
-    CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
+    CAST_LIST(obj)->array=(object**)fpl_malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
     
     return (object*)obj;
 }
@@ -24,7 +24,7 @@ object* list_new(object* type, object* args, object* kwargs){
         object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
         CAST_LIST(obj)->capacity=2; //Start with 2
         CAST_LIST(obj)->size=0;
-        CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
+        CAST_LIST(obj)->array=(object**)fpl_malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
         
         return (object*)obj;
     }
@@ -38,7 +38,7 @@ object* list_new(object* type, object* args, object* kwargs){
         object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
         CAST_LIST(obj)->capacity=2; //Start with 2
         CAST_LIST(obj)->size=0;
-        CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
+        CAST_LIST(obj)->array=(object**)fpl_malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
         
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
@@ -62,7 +62,7 @@ object* list_new(object* type, object* args, object* kwargs){
     object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
     CAST_LIST(obj)->capacity=2; //Start with 2
     CAST_LIST(obj)->size=0;
-    CAST_LIST(obj)->array=(object**)malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
+    CAST_LIST(obj)->array=(object**)fpl_malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
 
     size_t len=(size_t)CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     for (size_t i=0; i<len; i++){
@@ -337,7 +337,7 @@ object* list_cmp(object* self, object* other, uint8_t type){
 
 object* list_append_meth(object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
-    if (len!=2){
+    if (len!=2 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() == 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -353,7 +353,7 @@ object* list_iter(object* self){
     CAST_LISTITER(iter)->capacity=CAST_LIST(self)->capacity;
     CAST_LISTITER(iter)->size=CAST_LIST(self)->size;
     CAST_LISTITER(iter)->idx=0;
-    CAST_LISTITER(iter)->array=(object**)malloc(CAST_LISTITER(iter)->capacity * sizeof(struct object*));
+    CAST_LISTITER(iter)->array=(object**)fpl_malloc(CAST_LISTITER(iter)->capacity * sizeof(struct object*));
     for (size_t i=0; i<CAST_LIST(self)->size; i++){
         CAST_LISTITER(iter)->array[i]=INCREF(CAST_LIST(self)->array[i]);
     }

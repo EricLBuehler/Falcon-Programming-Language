@@ -121,7 +121,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=40;
+const size_t nbuiltins=41;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -136,6 +136,8 @@ TypeObject StopIteration;
 TypeObject FileNotFoundError;
 TypeObject InvalidOperationError;
 TypeObject ImportError;
+
+bool setup_memory_error=false;
 
 Parser parser;
 
@@ -186,6 +188,7 @@ inline void add_dataframe(struct vm* vm, struct datastack* stack, struct object*
 inline object* pop_dataframe(struct datastack* stack);
 inline void add_callframe(struct callstack* stack, object* line, string* name, object* code);
 inline void pop_callframe(struct callstack* stack);
+void print_traceback();
 
 object* new_list();
 object* new_none();
@@ -208,8 +211,10 @@ struct vm* vm=NULL;
 enum blocktype{
     TRY_BLOCK,
     FOR_BLOCK,
-    NONLOCAL_BLOCK,
 };
+
+
+struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type);
 
 struct dataframe{
     struct object* obj;
@@ -403,6 +408,7 @@ void setup_types_consts(){
     setup_str_dir();
     setup_type_offsets(&StrType);
     setup_type_getsets(&StrType);
+    setup_type_methods(&StrType);
 
     inherit_type_dict(&ListType);
     setup_type_methods(&ListType);
@@ -412,6 +418,7 @@ void setup_types_consts(){
     inherit_type_dict(&DictType);    
     setup_type_offsets(&DictType);
     setup_type_getsets(&DictType);
+    setup_type_methods(&DictType);
 
     inherit_type_dict(&CodeType);
     setup_type_offsets(&CodeType);

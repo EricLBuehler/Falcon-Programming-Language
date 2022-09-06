@@ -103,7 +103,7 @@ object* in_immutables(object* obj){
 }
 
 object* new_object(TypeObject* type){
-    object* object = (struct object*) malloc(type->size);
+    object* object = (struct object*) fpl_malloc(type->size);
     object->refcnt=1;
     object->type=type;
     object->gen=0;
@@ -140,7 +140,7 @@ object* new_object(TypeObject* type){
 }
 
 object_var* new_object_var(TypeObject* type, size_t size){
-    object_var* object = (object_var*) malloc(sizeof(struct object_var)+type->var_base_size);
+    object_var* object = (object_var*) fpl_malloc(sizeof(struct object_var)+type->var_base_size);
     object->refcnt=1;
     object->gc_ref=0;
     object->type=type;
@@ -550,4 +550,55 @@ object* generic_iter_iter(object* self){
 
 void object_del_item(object* base, object* idx){
     base->type->slot_mappings->slot_set(base, idx, NULL);
+}
+
+//I have setup memory_error to be a fatal exception
+void memory_error(){
+    object* exception=NULL;
+    if (!setup_memory_error){
+        goto fatal;
+    }
+    exception=new_object(&MemoryError);
+    if (exception==NULL){
+        goto fatal;
+    }
+    CAST_EXCEPTION(exception)->err=str_new_fromstr("Out of memory");
+    if (CAST_EXCEPTION(exception)->err->type==&MemoryError){
+        DECREF(exception);
+        goto fatal;
+    }
+
+    if (vm!=NULL){
+        struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
+        if (frame!=NULL && frame->obj!=NULL && frame->arg!=3){
+            print_traceback();
+            
+            cout<<frame->obj->type->name->c_str();
+            if (CAST_EXCEPTION(frame->obj)->err!=NULL){
+                cout<<": "<<*CAST_STRING(CAST_EXCEPTION(frame->obj)->err)->val;
+            }
+            cout<<endl;
+            cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
+            goto done;
+        }
+        
+        print_traceback();
+        
+        cout<<exception->type->name->c_str();
+        if (CAST_EXCEPTION(exception)->err!=NULL){
+            cout<<": "<<*CAST_STRING(CAST_EXCEPTION(exception)->err)->val;
+        }
+        cout<<endl;
+
+        if (exception!=NULL){
+            DECREF(exception);
+        }
+        goto done;
+    }
+
+    fatal:
+    cout<<"Fatal memory error before necessary initialization.";
+
+    done:
+    exit(0);
 }

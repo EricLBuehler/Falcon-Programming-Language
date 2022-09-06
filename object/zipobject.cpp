@@ -3,7 +3,7 @@ object* zip_new(object* type, object* args, object* kwargs){
     uint32_t niterators=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
     CAST_ZIP(zip)->idx=0;
     CAST_ZIP(zip)->n_iterators=niterators;
-    CAST_ZIP(zip)->iterators=(object**)malloc(sizeof(object*)*niterators);
+    CAST_ZIP(zip)->iterators=(object**)fpl_malloc(sizeof(object*)*niterators);
     for (uint32_t i=0; i<niterators; i++){
         CAST_ZIP(zip)->iterators[i]=INCREF(list_index_int(args, i));
         if (CAST_ZIP(zip)->iterators[i]->type->slot_iter!=NULL){

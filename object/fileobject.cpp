@@ -27,7 +27,7 @@ object* file_new(object* type, object* args, object* kwargs){
     CAST_FILE(o)->name=name;
     CAST_FILE(o)->file=f;
     CAST_FILE(o)->open=true;
-    CAST_FILE(o)->mode=(char*)malloc( (sizeof(char)*strlen(mode.c_str())) +1);
+    CAST_FILE(o)->mode=(char*)fpl_malloc( (sizeof(char)*strlen(mode.c_str())) +1);
     memset(CAST_FILE(o)->mode, 0, sizeof(char)*strlen(mode.c_str()));
     memcpy(CAST_FILE(o)->mode, mode.c_str(), sizeof(char)*strlen(mode.c_str()));
     return o;
@@ -61,7 +61,7 @@ object* file_new_fromfile(object* name, char* mode){
     CAST_FILE(o)->name=name;
     CAST_FILE(o)->file=f;
     CAST_FILE(o)->open=true;
-    CAST_FILE(o)->mode=(char*)malloc( (sizeof(char)*strlen(mode)) +1);
+    CAST_FILE(o)->mode=(char*)fpl_malloc( (sizeof(char)*strlen(mode)) +1);
     memset(CAST_FILE(o)->mode, 0, sizeof(char)*strlen(mode));
     memcpy(CAST_FILE(o)->mode, mode, sizeof(char)*strlen(mode));
     return o;
@@ -87,7 +87,7 @@ object* file_read_meth(object* args, object* kwargs){
     long fsize = ftell(CAST_FILE(self)->file);
     fseek(CAST_FILE(self)->file, 0, SEEK_SET);  /* same as rewind(f); */
 
-    char *s = (char*)malloc(fsize + 1);
+    char *s = (char*)fpl_malloc(fsize + 1);
     int i=fread(s, fsize, 1, CAST_FILE(self)->file);
     if (i==0 && fsize>0){
         vm_add_err(&InvalidOperationError, vm, "Unable to read from file");

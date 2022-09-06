@@ -104,6 +104,11 @@ void setup_builtins(){
     object* copyrightargs=new_tuple();
     object* copyrightkwargs=new_tuple();
     builtins[39]=new_builtin((builtinfunc)builtin_copyright, str_new_fromstr("copyright"), copyrightargs, copyrightkwargs, 0, false);
+        
+    object* lenargs=new_tuple();
+    lenargs->type->slot_mappings->slot_append(lenargs, str_new_fromstr("object"));
+    object* lenkwargs=new_tuple();
+    builtins[40]=new_builtin((builtinfunc)builtin_len, str_new_fromstr("len"), lenargs, lenkwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
