@@ -320,23 +320,6 @@ void print_traceback(){
 }
 
 object* import_name(string data, object* name){
-    vector<string> kwds;
-    kwds.push_back("func");
-    kwds.push_back("class");
-    kwds.push_back("return");
-    kwds.push_back("if");
-    kwds.push_back("else");
-    kwds.push_back("elif");
-    kwds.push_back("raise");
-    kwds.push_back("try");
-    kwds.push_back("except");
-    kwds.push_back("finally");
-    kwds.push_back("for");
-    kwds.push_back("break");
-    kwds.push_back("while");
-    kwds.push_back("import");
-    kwds.push_back("from");
-    kwds.push_back("del");
 
     program=object_cstr(name);
 
@@ -1194,6 +1177,27 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 break;
             }
             add_dataframe(vm, vm->objstack, new_bool_false());
+            break;
+        }
+
+        case BUILD_STRING: {
+            string s="";
+            vector<string> strs;
+            strs.clear();
+            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+                object* flag = pop_dataframe(vm->objstack);
+                object* o=pop_dataframe(vm->objstack);
+                if (istrue(flag)){
+                    strs.push_back(object_crepr(o));
+                    continue;
+                }
+                strs.push_back(object_cstr(o));
+            }
+
+            for (int i=strs.size(); i>0; i--){
+                s+=strs.at(i-1);
+            }
+            add_dataframe(vm, vm->objstack, str_new_fromstr(s));
             break;
         }
         
