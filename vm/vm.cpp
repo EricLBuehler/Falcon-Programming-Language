@@ -1,26 +1,26 @@
 struct datastack* new_datastack(){
-    struct datastack* data=(struct datastack*)malloc(sizeof(struct datastack));
+    struct datastack* data=(struct datastack*)fpl_malloc(sizeof(struct datastack));
     data->head=NULL;
     data->size=0;
     return data;
 }
 
 struct callstack* new_callstack(){
-    struct callstack* call=(struct callstack*)malloc(sizeof(struct callstack));
+    struct callstack* call=(struct callstack*)fpl_malloc(sizeof(struct callstack));
     call->head=NULL;
     call->size=0;
     return call;
 }
 
 struct blockstack* new_blockstack(){
-    struct blockstack* block=(struct blockstack*)malloc(sizeof(struct blockstack));
+    struct blockstack* block=(struct blockstack*)fpl_malloc(sizeof(struct blockstack));
     block->head=NULL;
     block->size=0;
     return block;
 }
 
 void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint32_t arg, enum blocktype tp){
-    struct blockframe* frame=(struct blockframe*)malloc(sizeof(struct blockframe));
+    struct blockframe* frame=(struct blockframe*)fpl_malloc(sizeof(struct blockframe));
     frame->next=stack->head;
     frame->type=tp;
     frame->arg=arg;
@@ -33,7 +33,7 @@ void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint3
 }
 
 inline void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
-    struct dataframe* frame=(struct dataframe*)malloc(sizeof(struct dataframe));
+    struct dataframe* frame=(struct dataframe*)fpl_malloc(sizeof(struct dataframe));
     frame->next=stack->head;
     frame->obj=obj;
 
@@ -78,7 +78,7 @@ struct object* peek_dataframe(struct datastack* stack){
 }
 
 inline void add_callframe(struct callstack* stack, object* line, string* name, object* code){
-    struct callframe* frame=(struct callframe*)malloc(sizeof(struct callframe));
+    struct callframe* frame=(struct callframe*)fpl_malloc(sizeof(struct callframe));
     frame->name=name;
     frame->next=stack->head;
     frame->line=line;
@@ -119,7 +119,7 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     DECREF(eargs);
     DECREF(kwargs);
     
-    char* msg = (char*)malloc(sizeof(char)*length);
+    char* msg = (char*)fpl_malloc(sizeof(char)*length);
 
     va_start(args, _format);
     vsnprintf(msg, length, format, args);
@@ -144,7 +144,7 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
     DECREF(eargs);
     DECREF(kwargs);
 
-    char *msg = (char*)malloc(sizeof(char)*length);
+    char *msg = (char*)fpl_malloc(sizeof(char)*length);
 
     va_start(args, _format);
     vsnprintf(msg, length, format, args);
@@ -158,7 +158,7 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
 }
 
 struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, string* filedata){
-    struct vm* vm=(struct vm*)malloc(sizeof(struct vm));
+    struct vm* vm=(struct vm*)fpl_malloc(sizeof(struct vm));
     vm->id=id;
     vm->ret_val=0;
     vm->ip=0;
@@ -970,7 +970,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                             long fsize = ftell(f);
                             fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
 
-                            char *s = (char*)malloc(fsize + 1);
+                            char *s = (char*)fpl_malloc(fsize + 1);
                             int i=fread(s, fsize, 1, f);
                             if (i==0 && fsize>0){
                                 vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
@@ -1003,7 +1003,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                     long fsize = ftell(f);
                     fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
 
-                    char *s = (char*)malloc(fsize + 1);
+                    char *s = (char*)fpl_malloc(fsize + 1);
                     int i=fread(s, fsize, 1, f);
                     if (i==0 && fsize>0){
                         vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
@@ -1224,6 +1224,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
         }
+        
         //cout<<instruction<<","<<list_index_int(code, *ip)<<endl;
         object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip);
 
