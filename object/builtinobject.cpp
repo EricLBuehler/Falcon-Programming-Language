@@ -96,6 +96,14 @@ void setup_builtins(){
     object* alllocalsargs=new_tuple();
     object* alllocalskwargs=new_tuple();
     builtins[37]=new_builtin((builtinfunc)builtin_alllocals, str_new_fromstr("alllocals"), alllocalsargs, alllocalskwargs, 0, false);
+
+    object* exitargs=new_tuple();
+    object* exitkwargs=new_tuple();
+    builtins[38]=new_builtin((builtinfunc)builtin_exit, str_new_fromstr("exit"), exitargs, exitkwargs, 0, false);
+    
+    object* copyrightargs=new_tuple();
+    object* copyrightkwargs=new_tuple();
+    builtins[39]=new_builtin((builtinfunc)builtin_copyright, str_new_fromstr("copyright"), copyrightargs, copyrightkwargs, 0, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
