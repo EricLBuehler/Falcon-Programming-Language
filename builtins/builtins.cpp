@@ -129,3 +129,11 @@ object* builtin_alllocals(object* self, object* args){
     }
     return locals;
 }
+    
+object* builtin_exit(object* self, object* args){
+    return TERM_PROGRAM;
+}
+    
+object* builtin_copyright(object* self, object* args){
+    return str_new_fromstr(FPL_LICENSE);
+}
