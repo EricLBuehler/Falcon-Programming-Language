@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
     if (argc==1){
         cout<<"Falcon Programming Language V1.00"<<endl;
         cout<<"Eric Buehler 2022"<<endl;
-        cout<<"!exit to exit"<<endl<<endl;
+        cout<<"Type copyright() for copyright and license information, exit() to exit"<<endl<<endl;
         //Prep constants and types
         new_gc();
         setup_types_consts();
@@ -314,6 +314,10 @@ int main(int argc, char** argv) {
             auto a=time_nanoseconds();
             object* returned=run_vm(code, &vm->ip);
             auto b=time_nanoseconds();
+
+            if (returned==TERM_PROGRAM){
+                return 0;
+            }
             
             compiler_del(compiler);
             DECREF(code);
