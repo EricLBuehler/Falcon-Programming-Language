@@ -8,7 +8,7 @@ newmodulefunc newmodules[] = {(newmodulefunc)new_time_module, NULL};
 
 void setup_modules(){
     int i=0;
-    modules=(object**)malloc(sizeof(object*)*nmodules);
+    modules=(object**)fpl_malloc(sizeof(object*)*nmodules);
     newmodulefunc mod=newmodules[i++];
     while (mod){
         modules[i-1]=mod();
