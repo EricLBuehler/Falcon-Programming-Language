@@ -26,6 +26,9 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```globals```
 - ```locals```
 - ```alllocals```
+- ```len```
+- ```copyright```
+- ```exit```
 
 <details>
 <summary>Exceptions</summary>
