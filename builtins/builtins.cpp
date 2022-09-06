@@ -137,3 +137,14 @@ object* builtin_exit(object* self, object* args){
 object* builtin_copyright(object* self, object* args){
     return str_new_fromstr(FPL_LICENSE);
 }
+    
+object* builtin_len(object* self, object* args){
+    object* arg=dict_get(args, str_new_fromstr("object"));
+
+    if (arg->type->slot_mappings->slot_len==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object has no __len__", arg->type->name->c_str());
+        return NULL;
+    }
+
+    return arg->type->slot_mappings->slot_len(arg);
+}
