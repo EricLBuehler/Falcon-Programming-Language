@@ -60,6 +60,7 @@ enum opcode{
     BINOP_AND,
     BINOP_OR,
     UNARY_NOT,
+    BUILD_STRING,
 };
 
 enum scope{

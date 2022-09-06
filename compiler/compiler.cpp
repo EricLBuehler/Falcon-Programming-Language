@@ -1943,26 +1943,46 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_FSTRING: {
             string data=*STRLIT(expr->node)->literal;
             
-            for (int i=0; i<data.size(); i++){
+            int x=0;
+            int i=0;
+            while (i<data.size()){
+                x++;
                 if (data[i]=='{'){
                     string segment="";
+                    bool repr=false;
                     i++;
                     while (data[i]!='}' && data[i]!='\0'){
                         segment+=data[i++];
+                        if (data[i-1]=='!' && data[i]=='r'){
+                            segment.pop_back();
+                            repr=true;
+                            i++;
+                            continue;
+                        }
+
+                        if (data[i]=='\0'){
+                            parser.add_parsing_error(&parseretglbl, "SyntaxError: Expected '}' for format string");
+                            return 0x100;
+                        }
+
+                        if (data[i]=='{'){
+                            parser.add_parsing_error(&parseretglbl, "SyntaxError: Expected '}' for format string");
+                            return 0x100;
+                        }
+
                     }
-                    i++;
-                    if (data[i]=='\0'){
-                        parser.add_parsing_error(&parseretglbl, "SyntaxError: Expected '}' for format string");
-                        return 0x100;
+                    if (data[i]!='\0'){
+                        i++;
                     }
 
+                    
                     Lexer lexer(segment,kwds);
                     lexer.pos=Position(program);
 
                     Position end=lexer.tokenize();
-
+                    
                     Parser p=parser;
-                    parser=Parser(lexer.tokens, data);
+                    parser=Parser(lexer.tokens, segment);
                     parse_ret ast=parser.parse();
                     parser=p;
 
@@ -1978,6 +1998,30 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
+
+                    uint32_t idx;
+
+                    if (repr){
+                        if (!object_find_bool(compiler->consts,trueobj)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_true());
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, trueobj);
+                        }
+                    }
+                    else{
+                        if (!object_find_bool(compiler->consts,falseobj)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, falseobj);
+                        }
+                    }
+                    add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
                 }
                 else{
                     string segment="";
@@ -1997,8 +2041,19 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     delete s;
                     add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
-                }
+
+                    if (!object_find_bool(compiler->consts,falseobj)){
+                        //Create object
+                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, falseobj);
+                    }
+                    add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+                }  
             }
+            add_instruction(compiler->instructions,BUILD_STRING, x, expr->start, expr->end);
             break;
         }
 
