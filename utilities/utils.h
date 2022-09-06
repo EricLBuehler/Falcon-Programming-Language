@@ -1,6 +1,9 @@
 #include "files.cpp"
 #include "strings.cpp"
-//#include "memory.cpp"
+
+
+void memory_error();
+#include "memory.cpp"
 
 #ifndef NULL
 #define NULL 0
