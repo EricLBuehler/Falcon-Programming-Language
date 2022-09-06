@@ -14,7 +14,7 @@ void reverse_instructions(struct instructions* instrs){
 }
 
 struct instructions* new_instructions(){
-    struct instructions* instr=(struct instructions*)malloc(sizeof(struct instructions));
+    struct instructions* instr=(struct instructions*)fpl_malloc(sizeof(struct instructions));
 
     instr->count=0;
     instr->first=NULL;
@@ -23,7 +23,7 @@ struct instructions* new_instructions(){
 }
 
 void add_instruction(struct instructions* instructions, enum opcode opcode, uint32_t arg, Position* start, Position* end){
-    struct instruction* instr=(struct instruction*)malloc(sizeof(struct instruction));
+    struct instruction* instr=(struct instruction*)fpl_malloc(sizeof(struct instruction));
     instr->arg=arg;
     instr->opcode=opcode;
     instr->next=instructions->first;
@@ -35,7 +35,7 @@ void add_instruction(struct instructions* instructions, enum opcode opcode, uint
 }
 
 struct compiler* new_compiler(){
-    struct compiler* compiler=(struct compiler*)malloc(sizeof(struct compiler));
+    struct compiler* compiler=(struct compiler*)fpl_malloc(sizeof(struct compiler));
     compiler->consts=new_list();
     compiler->instructions=new_instructions();
     compiler->names=new_list();
