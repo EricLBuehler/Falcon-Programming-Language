@@ -60,6 +60,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 )"""";
 
+vector<string> kwds;
+
 #include "utilities/utils.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
@@ -72,25 +74,6 @@ int execute(string data, bool objdump, bool verbose){
     new_gc();
     setup_types_consts();
     setup_modules();
-    
-
-    vector<string> kwds;
-    kwds.push_back("func");
-    kwds.push_back("class");
-    kwds.push_back("return");
-    kwds.push_back("if");
-    kwds.push_back("else");
-    kwds.push_back("elif");
-    kwds.push_back("raise");
-    kwds.push_back("try");
-    kwds.push_back("except");
-    kwds.push_back("finally");
-    kwds.push_back("for");
-    kwds.push_back("break");
-    kwds.push_back("while");
-    kwds.push_back("import");
-    kwds.push_back("from");
-    kwds.push_back("del");
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);
@@ -260,6 +243,24 @@ int main(int argc, char** argv) {
     program="main.fpl";
     bool verbose=false;
     bool objdump=false;
+
+    
+    kwds.push_back("func");
+    kwds.push_back("class");
+    kwds.push_back("return");
+    kwds.push_back("if");
+    kwds.push_back("else");
+    kwds.push_back("elif");
+    kwds.push_back("raise");
+    kwds.push_back("try");
+    kwds.push_back("except");
+    kwds.push_back("finally");
+    kwds.push_back("for");
+    kwds.push_back("break");
+    kwds.push_back("while");
+    kwds.push_back("import");
+    kwds.push_back("from");
+    kwds.push_back("del");
     if (argc==1){
         cout<<"Falcon Programming Language V1.00"<<endl;
         cout<<"Eric Buehler 2022"<<endl;
@@ -268,24 +269,6 @@ int main(int argc, char** argv) {
         new_gc();
         setup_types_consts();
         setup_modules();
-
-        vector<string> kwds;
-        kwds.push_back("func");
-        kwds.push_back("class");
-        kwds.push_back("return");
-        kwds.push_back("if");
-        kwds.push_back("else");
-        kwds.push_back("elif");
-        kwds.push_back("raise");
-        kwds.push_back("try");
-        kwds.push_back("except");
-        kwds.push_back("finally");
-        kwds.push_back("for");
-        kwds.push_back("break");
-        kwds.push_back("while");
-        kwds.push_back("import");
-        kwds.push_back("from");
-        kwds.push_back("del");
 
         struct compiler* compiler = new_compiler();
         vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
