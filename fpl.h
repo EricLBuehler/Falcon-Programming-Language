@@ -37,12 +37,33 @@ SOFTWARE.
 
 vector<string> kwds;
 
+bool hit_sigint=false;
+
 #include "utilities/utils.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "object/object.h"
 #include "compiler/compiler.h"
 #include "vm/vm.h"
+
+#include <signal.h>
+
+void sigint(int sig) {
+    signal(sig, SIG_IGN);
+    
+    if (vm==NULL){
+        cout<<"\nKeyboardInterrupt";
+    }
+    else{
+        object* exc=vm_setup_err(&KeyboardInterrupt, vm, "");
+        DECREF(CAST_EXCEPTION(exc)->err);
+        CAST_EXCEPTION(exc)->err=NULL;
+        vm->exception=exc;
+    }
+    
+    signal(SIGINT, sigint);
+    hit_sigint=true;
+};
 
 int execute(string data, bool objdump, bool verbose){
     //Prep constants and types

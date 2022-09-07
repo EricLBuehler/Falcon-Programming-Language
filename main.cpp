@@ -25,6 +25,7 @@
 
 #include "fpl.h"
 int main(int argc, char** argv) {
+    signal(SIGINT, sigint);
     program="main.fpl";
     bool verbose=false;
     bool objdump=false;
@@ -61,9 +62,18 @@ int main(int argc, char** argv) {
         vm->callstack->head->locals=INCREF(vm->globals);
         
         while (true){
+            struct vm* vm_=vm;
+            vm=NULL;
+            
             string data="";
             cout<<">>> ";
             getline(cin,data);
+            if(!cin){
+                cin.clear();
+                while (!hit_sigint){}
+                hit_sigint=false;
+                continue;
+            }
             if (data=="!exit"){
                 break;
             }
@@ -85,7 +95,8 @@ int main(int argc, char** argv) {
             }
 
             glblfildata=new string(data);
-            vm->filedata=&data;
+            vm_->filedata=&data;
+
             object* code=compile(compiler, ast);
             if (code==NULL){
                 cout<<parseretglbl.header<<endl;
@@ -93,6 +104,8 @@ int main(int argc, char** argv) {
                 printf("%s\n",parseretglbl.error);
                 return -1;
             }
+            vm=vm_;
+
             vm->callstack->head->code=code;
             vm->ip=0;
             
