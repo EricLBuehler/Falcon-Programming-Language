@@ -59,6 +59,11 @@ object* builtin_input(object* self, object* args){
     cout<<object_cstr(obj);
     string s="";
     getline(cin,s);
+    if(!cin){
+        cin.clear();
+        while (!hit_sigint){}
+        hit_sigint=false;
+    }
     return str_new_fromstr(s);
 }
 
