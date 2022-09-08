@@ -83,6 +83,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```import```
 - ```from```
 - ```del```
+- ```assert```
 
 ### Sample Program ###
 
