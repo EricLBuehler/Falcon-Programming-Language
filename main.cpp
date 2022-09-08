@@ -47,6 +47,8 @@ int main(int argc, char** argv) {
     kwds.push_back("import");
     kwds.push_back("from");
     kwds.push_back("del");
+    kwds.push_back("assert");
+    
     if (argc==1){
         cout<<"Falcon Programming Language V1.00"<<endl;
         cout<<"Eric Buehler 2022"<<endl;
