@@ -137,6 +137,13 @@ class Parser{
             }
             return false;
         }
+        
+        bool isname_tok(token_type type){
+            if (type==T_IDENTIFIER || type==T_DOTIDENT){
+                return true;
+            }
+            return false;
+        }
 
         parse_ret parse(){
             return this->statements();            
@@ -227,7 +234,7 @@ class Parser{
         }
 
         Node* make_identifier(parse_ret* ret){
-            if (this->current_tok.data=="f"){
+            if (this->current_tok.data=="f" && this->isname_tok(this->get_next().type)){
                 return make_fstring(ret);
             }
             Node* node=make_node(N_IDENT);
@@ -967,7 +974,6 @@ class Parser{
             
             
             this->advance();
-            
             while (!(this->current_tok_is(T_EOF)) && prec<get_precedence(this->current_tok) || this->current_tok_is(T_DOTIDENT)){
                 switch (this->current_tok.type){
                     case T_EQ:
