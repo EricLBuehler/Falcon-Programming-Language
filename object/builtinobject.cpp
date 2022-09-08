@@ -109,6 +109,9 @@ void setup_builtins(){
     lenargs->type->slot_mappings->slot_append(lenargs, str_new_fromstr("object"));
     object* lenkwargs=new_tuple();
     builtins[40]=new_builtin((builtinfunc)builtin_len, str_new_fromstr("len"), lenargs, lenkwargs, 1, false);
+
+    builtins[41]=(object*)&KeyboardInterrupt;
+    builtins[42]=(object*)&AssertionError;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

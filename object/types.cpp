@@ -1150,6 +1150,12 @@ void setup_exception_type(){
     importerr_bases->type->slot_mappings->slot_append(importerr_bases, (object*)&FileNotFoundError);
     ImportError=(*(TypeObject*)new_type_exception(new string("ImportError"), importerr_bases, new_dict()));
     fplbases.push_back(&ImportError);
+
+    KeyboardInterrupt=(*(TypeObject*)new_type_exception(new string("KeyboardInterrupt"), new_tuple(), new_dict()));
+    fplbases.push_back(&KeyboardInterrupt);
+
+    AssertionError=(*(TypeObject*)new_type_exception(new string("AssertionError"), new_tuple(), new_dict()));
+    fplbases.push_back(&AssertionError);
 }
 
 
