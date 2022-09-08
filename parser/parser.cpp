@@ -14,6 +14,7 @@ class Parser{
         int tok_idx;
         string filedata;
         bool multi=true;
+        bool noassign=false;
 
         Parser(){}
 
@@ -25,6 +26,9 @@ class Parser{
         }
 
         void add_parsing_error(parse_ret* ret, const char *_format, ...) {
+            if (ret->errornum>0){
+                return;
+            }
             va_list args;
             const int length=256;
             char format[length];
@@ -132,7 +136,7 @@ class Parser{
         }
         
         bool isname(nodetype type){
-            if (type==N_IDENT || type==N_MULTIIDENT || type==N_ASSIGN || type==N_DOT){
+            if (type==N_IDENT || type==N_MULTIIDENT || type==N_DOT){
                 return true;
             }
             return false;
@@ -334,7 +338,7 @@ class Parser{
         }
 
         Node* make_assignment(parse_ret* ret, Node* left){
-            if (!isname(left->type)){
+            if (!isname(left->type) && left->type!=N_ASSIGN){
                 this->add_parsing_error(ret, "SyntaxError: Cannot assign to literal, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 return NULL;
@@ -977,6 +981,11 @@ class Parser{
             while (!(this->current_tok_is(T_EOF)) && prec<get_precedence(this->current_tok) || this->current_tok_is(T_DOTIDENT)){
                 switch (this->current_tok.type){
                     case T_EQ:
+                        if (this->noassign){
+                            this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                            this->advance();
+                            return NULL;
+                        }
                         left=make_assignment(ret, left);
                         break;
 
@@ -1053,48 +1062,58 @@ class Parser{
         }
 
         Node* keyword(parse_ret* ret){
+            noassign=this->noassign;
+            this->noassign=true;
+            Node* n;
             if (this->current_tok.data=="func"){
-                return make_function(ret);
+                n=make_function(ret);
             }
-            if (this->current_tok.data=="class"){
-                return make_class(ret);
+            else if (this->current_tok.data=="class"){
+                n= make_class(ret);
             }
-            if (this->current_tok.data=="return"){
-                return make_return(ret);
+            else if (this->current_tok.data=="return"){
+                n= make_return(ret);
             }
-            if (this->current_tok.data=="if"){
-                return make_if(ret);
+            else if (this->current_tok.data=="if"){
+                n= make_if(ret);
             }   
-            if (this->current_tok.data=="raise"){
-                return make_raise(ret);
+            else if (this->current_tok.data=="raise"){
+                n= make_raise(ret);
             }
-            if (this->current_tok.data=="try"){
-                return make_try(ret);
+            else if (this->current_tok.data=="try"){
+                n= make_try(ret);
             }               
-            if (this->current_tok.data=="for"){
-                return make_for(ret);
+            else if (this->current_tok.data=="for"){
+                n= make_for(ret);
             }
-            if (this->current_tok.data=="break"){
-                return make_break(ret);
+            else if (this->current_tok.data=="break"){
+                n= make_break(ret);
             }
-            if (this->current_tok.data=="continue"){
-                return make_continue(ret);
+            else if (this->current_tok.data=="continue"){
+                n= make_continue(ret);
             }
-            if (this->current_tok.data=="while"){
-                return make_while(ret);
+            else if (this->current_tok.data=="while"){
+                n= make_while(ret);
             }
-            if (this->current_tok.data=="import"){
-                return make_import(ret);
+            else if (this->current_tok.data=="import"){
+                n= make_import(ret);
             }
-            if (this->current_tok.data=="from"){
-                return make_from(ret);
+            else if (this->current_tok.data=="from"){
+                n= make_from(ret);
             }
-            if (this->current_tok.data=="del"){
-                return make_del(ret);
+            else if (this->current_tok.data=="del"){
+                n= make_del(ret);
             }
-            this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
-            this->advance();
-            return NULL;
+            else if (this->current_tok.data=="assert"){
+                n= make_assert(ret);
+            }
+            else{
+                this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
+                this->advance();
+                return NULL;
+            }
+            this->noassign=noassign;
+            return n;
         }
 
         Node* make_function(parse_ret* ret){
@@ -2044,6 +2063,25 @@ class Parser{
             d->expr=expr;
 
             node->node=d;
+
+            return node;
+        }
+
+        Node* make_assert(parse_ret* ret){
+            this->advance();
+
+            Token t=this->current_tok;
+
+            Node* expr=this->expr(ret, LOWEST);
+
+            Node* node=make_node(N_ASSERT);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            Assert* a=(Assert*)fpl_malloc(sizeof(Assert));
+            a->expr=expr;
+
+            node->node=a;
 
             return node;
         }
