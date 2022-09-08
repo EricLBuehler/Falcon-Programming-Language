@@ -2059,6 +2059,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
     }
 
+    free(expr);
+
     return 0;
 }
 
