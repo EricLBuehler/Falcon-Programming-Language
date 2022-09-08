@@ -1311,8 +1311,14 @@ class Parser{
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
 
             this->advance();
-            skip_newline;
-            Node* n=this->expr(ret, LOWEST);
+            Node* n;
+            if (!this->current_tok_is(T_NEWLINE) && !this->current_tok_is(T_RCURLY)){
+               n=this->expr(ret, LOWEST);
+            }
+            else{
+                n=make_none();
+                this->backadvance();
+            }
 
             node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
 
