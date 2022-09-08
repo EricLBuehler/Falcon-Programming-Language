@@ -126,3 +126,7 @@ BINOP_NOT(n) - Implements not TOS
 
 BUILD_STRING(n) - Concatonates string out of n stack items where each stack itm has a bool object
                 above (True means __repr__, False means __str__) (TOS:top - bottom)
+
+POP_JMP_TOS_TRUE(idx) - Adds idx to IP and pops TOS if TOS is falsy
+
+RAISE_ASSERTIONERR - Raises AssertionError

@@ -61,6 +61,8 @@ enum opcode{
     BINOP_OR,
     UNARY_NOT,
     BUILD_STRING,
+    POP_JMP_TOS_TRUE,
+    RAISE_ASSERTIONERR,
 };
 
 enum scope{
@@ -125,6 +127,7 @@ struct compiler{
 #define STSLICE(node) ((StoreSlice*)node)
 #define DEL(node) ((Del*)node)
 #define GLBLIDENT(node) ((GlblIdent*)node)
+#define ASSERT(node) ((Assert*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 
