@@ -670,6 +670,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
         case POP_JMP_TOS_FALSE: {
             object* o=pop_dataframe(vm->objstack);
+            DECREF(o);
             object* val=object_istruthy(o);
             if (!istrue(val)){
                 DECREF(val);
@@ -1198,6 +1199,27 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 s+=strs.at(i-1);
             }
             add_dataframe(vm, vm->objstack, str_new_fromstr(s));
+            break;
+        }
+
+        case POP_JMP_TOS_TRUE: {
+            object* o=pop_dataframe(vm->objstack);
+            DECREF(o);
+            object* val=object_istruthy(o);
+            if (istrue(val)){
+                DECREF(val);
+                (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
+                break;
+            }
+            DECREF(val);
+            break;
+        }
+
+        case RAISE_ASSERTIONERR: {
+            object* exc=vm_setup_err(&AssertionError, vm, "");
+            DECREF(CAST_EXCEPTION(exc)->err);
+            CAST_EXCEPTION(exc)->err=NULL;
+            vm->exception=exc;
             break;
         }
         
