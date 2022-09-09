@@ -140,6 +140,7 @@ object* builtin_exit(object* self, object* args){
 }
     
 object* builtin_copyright(object* self, object* args){
+    cout<<FPL_LICENSE<<endl;
     return str_new_fromstr(FPL_LICENSE);
 }
     
