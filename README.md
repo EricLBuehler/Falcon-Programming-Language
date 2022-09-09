@@ -1,7 +1,7 @@
 # Falcon Programming Language
 ### Eric Buehler 2022 ###
 
-<img src="logo.jpg" width="160" height="160" align="right" />
+<img src="logo.png"/>
 
 Falcon is an object-oriented interpreted programming language, with a focus on readability and simplicity. It is dynamically typed, and has automatic garbage collection based on reference counting and a tri-generational garbage collector. In comparison to other languages, it a hybrid of Python and C, with the benefits of Python and the syntax of C.
 
