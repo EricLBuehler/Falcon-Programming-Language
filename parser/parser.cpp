@@ -707,6 +707,12 @@ class Parser{
                     return NULL;
                 }
             }
+
+            if (!this->current_tok_is(T_RPAREN)){
+                this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
+                this->advance();
+                return NULL;
+            }
             
 
             Node* node;
