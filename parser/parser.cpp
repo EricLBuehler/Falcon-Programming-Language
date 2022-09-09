@@ -154,6 +154,8 @@ class Parser{
         }
 
         parse_ret statements(){
+            bool noassign=this->noassign;
+            this->noassign=false;
             parse_ret ret;
             ret.errornum=0;
             ret.nodes.clear();
@@ -178,6 +180,7 @@ class Parser{
             }
 
             statements_return:
+            this->noassign=noassign;
             return ret;
         }
 
