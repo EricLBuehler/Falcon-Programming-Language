@@ -15,6 +15,7 @@ class Parser{
         string filedata;
         bool multi=true;
         bool noassign=false;
+        bool inloop=false;
 
         Parser(){}
 
@@ -1828,6 +1829,8 @@ class Parser{
             }
             this->advance();
             
+            bool inloop=this->inloop;
+            this->inloop=true;
             skip_newline;
             parse_ret code;
             if (!this->current_tok_is(T_RCURLY)){
@@ -1836,6 +1839,7 @@ class Parser{
             else{
                 code.nodes.clear();
             }
+            this->inloop=inloop;
 
             if (!this->current_tok_is(T_RCURLY) && !this->get_prev().type!=T_RCURLY){
                 this->backadvance();
@@ -1865,6 +1869,11 @@ class Parser{
         }
 
         Node* make_break(parse_ret* ret){
+            if (!this->inloop){
+                this->add_parsing_error(ret, "Break outside loop");
+                this->advance();
+                return NULL;
+            }
             Node* node=make_node(N_BREAK);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
@@ -1873,6 +1882,11 @@ class Parser{
         }
 
         Node* make_continue(parse_ret* ret){
+            if (!this->inloop){
+                this->add_parsing_error(ret, "Continue outside loop");
+                this->advance();
+                return NULL;
+            }
             Node* node=make_node(N_CONTINUE);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
@@ -1893,6 +1907,8 @@ class Parser{
             }
             this->advance();
             
+            bool inloop=this->inloop;
+            this->inloop=true;
             skip_newline;
             parse_ret code;
             if (!this->current_tok_is(T_RCURLY)){
@@ -1901,6 +1917,7 @@ class Parser{
             else{
                 code.nodes.clear();
             }
+            this->inloop=inloop;
 
             if (!this->current_tok_is(T_RCURLY) && !this->get_prev().type!=T_RCURLY){
                 this->backadvance();
