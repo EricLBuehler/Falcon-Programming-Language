@@ -154,3 +154,19 @@ object* builtin_len(object* self, object* args){
 
     return arg->type->slot_mappings->slot_len(arg);
 }
+
+object* builtin_issubclass(object* self, object* args){
+    object* ob=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* type=args->type->slot_mappings->slot_get(args, str_new_fromstr("type"));
+
+    if (!object_istype(type->type, &TypeType)){
+        vm_add_err(&TypeError, vm, "Expected type object, got '%s' object", type->type->name->c_str());
+        return NULL;
+    }
+
+    bool is=object_issubclass(ob, CAST_TYPE(type));
+    if (is){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
