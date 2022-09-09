@@ -555,9 +555,14 @@ void object_del_item(object* base, object* idx){
 //I have setup memory_error to be a fatal exception
 void memory_error(){
     object* exception=NULL;
+    struct blockframe* frame=NULL;
     if (!setup_memory_error){
         goto fatal;
     }
+    if (hit_memory_error){
+        goto quick_traceback;
+    }
+    hit_memory_error=true;
     exception=new_object(&MemoryError);
     if (exception==NULL){
         goto fatal;
@@ -569,7 +574,7 @@ void memory_error(){
     }
 
     if (vm!=NULL){
-        struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
+        frame=in_blockstack(vm->blockstack, TRY_BLOCK);
         if (frame!=NULL && frame->obj!=NULL && frame->arg!=3){
             print_traceback();
             
@@ -579,9 +584,7 @@ void memory_error(){
             }
             cout<<endl;
             cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
-            goto done;
         }
-        
         print_traceback();
         
         cout<<exception->type->name->c_str();
@@ -593,6 +596,10 @@ void memory_error(){
         if (exception!=NULL){
             DECREF(exception);
         }
+        goto done;
+        
+        quick_traceback:
+        cout<<"MemoryError: Out of memory\n";
         goto done;
     }
 

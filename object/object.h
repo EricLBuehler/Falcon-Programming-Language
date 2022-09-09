@@ -140,6 +140,7 @@ TypeObject KeyboardInterrupt;
 TypeObject AssertionError;
 
 bool setup_memory_error=false;
+bool hit_memory_error=false;
 
 Parser parser;
 
