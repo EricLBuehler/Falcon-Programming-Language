@@ -7,9 +7,7 @@ Falcon is an object-oriented interpreted programming language, with a focus on r
 
 Falcon is implemented in C++. However, although the compiler and interpreter do not use object oriented features and could mostly be compiled in C, the lexer and parser make heavy use of such features.
 
-### Requirements ###
-- GCC compiler installed
-- Only tested on Windows
+**Note: Falcon has only been tested on Windows**
 
 ### Builtins ###
 - ```print```
