@@ -48,6 +48,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```InvalidOperationError```
 - ```ImportError```
 - ```KeyboardInterrupt```
+- ```AssertionError```
     
 </details>    
 
@@ -62,7 +63,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```tuple```
 - ```object```
 - ```float```
-- ```bool```    
+- ```bool```  
 
 </details>   
 
