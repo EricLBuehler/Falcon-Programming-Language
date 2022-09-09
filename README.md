@@ -29,6 +29,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```exit```
 - ```len```
 - ```file```
+- ```isinstance```
 
 <details>
 <summary>Exceptions</summary>
