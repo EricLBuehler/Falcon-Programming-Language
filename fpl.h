@@ -52,7 +52,7 @@ void sigint(int sig) {
     signal(sig, SIG_IGN);
     
     if (vm==NULL){
-        cout<<"\nKeyboardInterrupt";
+        cout<<"\nKeyboardInterrupt\n";
     }
     else{
         object* exc=vm_setup_err(&KeyboardInterrupt, vm, "");
