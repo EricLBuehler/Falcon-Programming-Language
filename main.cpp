@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     kwds.push_back("from");
     kwds.push_back("del");
     kwds.push_back("assert");
+    kwds.push_back("continue");
     
     if (argc==1){
         try{
