@@ -30,6 +30,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```copyright```
 - ```exit```
 - ```len```
+- ```file```
 
 <details>
 <summary>Exceptions</summary>
