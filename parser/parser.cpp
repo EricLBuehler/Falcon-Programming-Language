@@ -649,6 +649,9 @@ class Parser{
             bool b=this->multi;
             this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            if (expr==NULL){
+                return NULL;
+            }
             this->multi=b;
 
             if (ret->errornum>0){
@@ -666,9 +669,13 @@ class Parser{
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
 
+                
                 bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=false;
                 this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                this->noassign=noassign;
                 if (expr==NULL){
                     return NULL;
                 }
@@ -772,7 +779,7 @@ class Parser{
                 Node* node=make_node(N_SLICE);
                 node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line); //No guarrantee
                 node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-                
+
                 Slice* s=(Slice*)fpl_malloc(sizeof(Slice));
                 s->left=left;
                 s->right=NULL;
@@ -798,6 +805,10 @@ class Parser{
             
             node->node=s;
             
+            if (!this->current_tok_is(T_RSQUARE)){
+                return NULL;
+            }
+
             this->advance();
             if (this->current_tok_is(T_EQ)){
                 return this->make_store_slice(ret, node);
@@ -1062,7 +1073,7 @@ class Parser{
         }
 
         Node* keyword(parse_ret* ret){
-            noassign=this->noassign;
+            bool noassign=this->noassign;
             this->noassign=true;
             Node* n;
             if (this->current_tok.data=="func"){
@@ -1147,8 +1158,11 @@ class Parser{
             while (!this->current_tok_is(T_RPAREN)){
                 if (this->next_tok_is(T_EQ)){
                     bool b=this->multi;
+                    bool noassign=this->noassign;
+                    this->noassign=false;
                     this->multi=false;
                     Node* expr=this->expr(ret, LOWEST);
+                    this->noassign=noassign;
                     if (expr==NULL){
                         return NULL;
                     }

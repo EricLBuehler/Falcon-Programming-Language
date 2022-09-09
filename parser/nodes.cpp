@@ -41,6 +41,7 @@ enum nodetype{
     N_DEL,
     N_GLBL_IDENT,
     N_FSTRING,
+    N_ASSERT,
 };
 
 enum precedence {
@@ -278,6 +279,11 @@ struct Del{
 struct GlblIdent{
     Node* name;
 };
+
+struct Assert{
+    Node* expr;
+};
+
 
 
 void destroy_node(struct Node* node){
