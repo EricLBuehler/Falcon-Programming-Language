@@ -112,6 +112,12 @@ void setup_builtins(){
 
     builtins[41]=(object*)&KeyboardInterrupt;
     builtins[42]=(object*)&AssertionError;
+
+    object* isinstargs=new_tuple();
+    isinstargs->type->slot_mappings->slot_append(isinstargs, str_new_fromstr("object"));
+    isinstargs->type->slot_mappings->slot_append(isinstargs, str_new_fromstr("type"));
+    object* isinstkwargs=new_tuple();
+    builtins[43]=new_builtin((builtinfunc)builtin_issubclass, str_new_fromstr("isinstance"), isinstargs, isinstkwargs, 2, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
