@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
                 cin.clear();
                 while (!hit_sigint){}
                 hit_sigint=false;
+                vm=vm_;
                 continue;
             }
             if (data=="!exit"){
@@ -93,7 +94,7 @@ int main(int argc, char** argv) {
                 cout<<ast.snippet<<endl;
                 cout<<ast.arrows<<endl;
                 printf("%s\n",ast.error);
-                return -1;
+                continue;
             }
 
             glblfildata=new string(data);
@@ -104,7 +105,7 @@ int main(int argc, char** argv) {
                 cout<<parseretglbl.header<<endl;
                 cout<<parseretglbl.snippet<<endl;
                 printf("%s\n",parseretglbl.error);
-                return -1;
+                continue;
             }
             vm=vm_;
 
