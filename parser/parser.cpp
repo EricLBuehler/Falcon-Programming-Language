@@ -166,7 +166,7 @@ class Parser{
             if (current_tok_is(T_EOF)){
                 goto statements_return;
             }
-
+            
             skip_newline;
             while (!current_tok_is(T_EOF) && !current_tok_is(T_RCURLY)){
                 skip_newline;
@@ -431,6 +431,7 @@ class Parser{
             unary->opr=type;
 
             node->node=unary;
+            this->backadvance();
             return node;
         }
 
@@ -711,7 +712,7 @@ class Parser{
                     return NULL;
                 }
             }
-
+            
             if (!this->current_tok_is(T_RPAREN)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
                 this->advance();
@@ -1243,6 +1244,7 @@ class Parser{
             this->advance();
             skip_newline;
             parse_ret code;
+            
             if (!this->current_tok_is(T_RCURLY)){
                 code=this->statements();
             }
@@ -1250,7 +1252,7 @@ class Parser{
                 code.nodes.clear();
             }
             
-            if (!this->current_tok_is(T_RCURLY) && !this->get_prev().type!=T_RCURLY){
+            if (!this->current_tok_is(T_RCURLY)){
                 this->backadvance();
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1583,7 +1585,6 @@ class Parser{
             else{
                 code.nodes.clear();
             }
-            
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1609,12 +1610,14 @@ class Parser{
             
             this->advance();
             skip_newline;
-
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="else"){
                 return this->make_else(ret, node);
             }
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="elif"){
                 return this->make_elif(ret, node);
+            }
+            else{
+                reverse_non_newline;
             }
 
             Node* n=make_node(N_CONTROL);
@@ -1757,8 +1760,8 @@ class Parser{
                 bases->push_back(node);
 
                 this->advance();
-
             }
+            
             skip_newline;
 
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="finally"){
@@ -1803,6 +1806,9 @@ class Parser{
                 node->node=i;
 
                 bases->push_back(node);
+            }
+            else{
+                reverse_non_newline;
             }
 
             f->bases=bases;
