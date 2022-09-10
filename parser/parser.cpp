@@ -2103,6 +2103,10 @@ class Parser{
             }
 
             Node* expr=this->expr(ret, LOWEST);
+            if (!this->isname(expr->type)){
+                this->add_parsing_error(ret, "Expected name, got non-name");
+                return NULL;
+            }
             
             Node* node=make_node(N_DEL);
             node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
