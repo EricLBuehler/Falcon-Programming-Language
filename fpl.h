@@ -109,6 +109,7 @@ int execute(string data, bool objdump, bool verbose){
     struct compiler* compiler = new_compiler();
 
     glblfildata=new string(data);
+    
     object* code=compile(compiler, ast);
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
