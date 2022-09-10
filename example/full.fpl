@@ -1,6 +1,14 @@
 m="Placeholder value"
 
-class Peregrine{
+class Falcon{
+    var=m
+    func sound(self){
+        print("Sound!")
+    }
+}
+
+
+class Peregrine(Falcon){
     var=m
     func __new__(self){
         print("__new__ called")
@@ -25,6 +33,10 @@ b=x.var
 
 x.f()
 y.f()
+
+x.sound()
+
+print(x.__bases__)
 
 func f(x,c="A"){
     print("Function f says: ","")
@@ -102,3 +114,23 @@ func fib(n){
 }
 
 print(fib(10))
+
+pi=238649.2131693410000000
+x=pi*100
+print(str(pi))
+print(int("1234"))
+print(float("10.222"))
+
+for n in [10,20,30]{
+    print(n)
+}
+
+i=0
+while i<10{
+    print(i)
+    i+=1
+}
+
+print(True and False)
+print(True or False)
+print(not 1==1)
