@@ -2064,7 +2064,7 @@ class Parser{
             this->multi=false;
             Node* name=NULL;
             if (!this->current_tok_is(T_MUL)){
-                this->atom(ret);
+                name=this->atom(ret);
             }
             this->multi=m;
 
