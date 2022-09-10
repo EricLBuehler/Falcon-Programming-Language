@@ -237,6 +237,13 @@ object* type_wrapper_lt(object* args, object* kwargs);
 object* type_wrapper_gte(object* args, object* kwargs);
 object* type_wrapper_lte(object* args, object* kwargs);
 
+object* newtp_wrapper_eq(object* args, object* kwargs);
+object* newtp_wrapper_ne(object* args, object* kwargs);
+object* newtp_wrapper_gt(object* args, object* kwargs);
+object* newtp_wrapper_lt(object* args, object* kwargs);
+object* newtp_wrapper_gte(object* args, object* kwargs);
+object* newtp_wrapper_lte(object* args, object* kwargs);
+
 struct vm* vm=NULL;
 
 enum blocktype{

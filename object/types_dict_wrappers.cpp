@@ -267,7 +267,7 @@ object* type_wrapper_eq(object* args, object* kwargs){
         return ret;
     }
 
-    object* ret=CAST_TYPE(self)->slot_cmp(self, list_index_int(args, 1), CMP_EQ);
+    object* ret=self->type->slot_cmp(self, list_index_int(args, 1), CMP_EQ);
     if (ret==NULL){
         vm_add_err(&TypeError, vm, "Invalid operand types for ==: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
@@ -292,7 +292,7 @@ object* type_wrapper_ne(object* args, object* kwargs){
         return ret;
     }
 
-    object* ret=CAST_TYPE(self)->slot_cmp(self, list_index_int(args, 1), CMP_NE);
+    object* ret=self->type->slot_cmp(self, list_index_int(args, 1), CMP_NE);
     if (ret==NULL){
         vm_add_err(&TypeError, vm, "Invalid operand types for !=: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
@@ -317,7 +317,7 @@ object* type_wrapper_gt(object* args, object* kwargs){
         return ret;
     }
 
-    object* ret=CAST_TYPE(self)->slot_cmp(self, list_index_int(args, 1), CMP_GT);
+    object* ret=self->type->slot_cmp(self, list_index_int(args, 1), CMP_GT);
     if (ret==NULL){
         vm_add_err(&TypeError, vm, "Invalid operand types for >: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
@@ -342,7 +342,7 @@ object* type_wrapper_lt(object* args, object* kwargs){
         return ret;
     }
 
-    object* ret=CAST_TYPE(self)->slot_cmp(self, list_index_int(args, 1), CMP_LT);
+    object* ret=self->type->slot_cmp(self, list_index_int(args, 1), CMP_LT);
     if (ret==NULL){
         vm_add_err(&TypeError, vm, "Invalid operand types for <: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
@@ -367,7 +367,7 @@ object* type_wrapper_gte(object* args, object* kwargs){
         return ret;
     }
 
-    object* ret=CAST_TYPE(self)->slot_cmp(self, list_index_int(args, 1), CMP_GTE);
+    object* ret=self->type->slot_cmp(self, list_index_int(args, 1), CMP_GTE);
     if (ret==NULL){
         vm_add_err(&TypeError, vm, "Invalid operand types for >=: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
@@ -392,7 +392,7 @@ object* type_wrapper_lte(object* args, object* kwargs){
         return ret;
     }
 
-    object* ret=CAST_TYPE(self)->slot_cmp(self, list_index_int(args, 1), CMP_LTE);
+    object* ret=self->type->slot_cmp(self, list_index_int(args, 1), CMP_LTE);
     if (ret==NULL){
         vm_add_err(&TypeError, vm, "Invalid operand types for <=: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;

@@ -245,8 +245,6 @@ object* newtp_iter(object* self){
     return val;
 }
 
-
-
 void newtp_post_tpcall(object* ob){
     (*(object**)((char*)ob + ob->type->dict_offset))=new_dict();
 }
