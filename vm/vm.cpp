@@ -420,7 +420,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -434,7 +434,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -448,7 +448,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;  
         }
@@ -462,7 +462,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -481,7 +481,12 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_cmp(left, right, CMP_EQ);
-            add_dataframe(vm, vm->objstack, ret);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand types for ==: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
@@ -490,7 +495,12 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_cmp(left, right, CMP_NE);
-            add_dataframe(vm, vm->objstack, ret);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand types for !=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             break;
         }
 
@@ -547,9 +557,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
             //Setup args
             object* args=new_tuple();
-            if (!object_istype(head->type, &TypeType)){
-                tuple_append(args, head);
-            }
+            tuple_append(args, head);
             for (uint32_t i=0; i<posargc-1; i++){
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
@@ -720,7 +728,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         }
 
         case POP_TOS: {
-            pop_dataframe(vm->objstack);
+            DECREF(pop_dataframe(vm->objstack));
             break;
         }
 
@@ -754,7 +762,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -768,7 +776,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for >=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -782,7 +790,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for <=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -796,7 +804,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for <=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -868,7 +876,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             
             object* ret=object_add(left, right);
             if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand type for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 return NULL;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
@@ -881,7 +889,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             
             object* ret=object_sub(left, right);
             if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand type for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 return NULL;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
@@ -894,7 +902,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             
             object* ret=object_mul(left, right);
             if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand type for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 return NULL;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
@@ -907,7 +915,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             
             object* ret=object_div(left, right);
             if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand type for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 return NULL;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
@@ -1086,7 +1094,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for %: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for %: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -1100,7 +1108,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand type for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -1111,7 +1119,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             
             object* ret=object_pow(left, right);
             if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand type for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 return NULL;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
@@ -1124,7 +1132,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             
             object* ret=object_mod(left, right);
             if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand type for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 return NULL;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
