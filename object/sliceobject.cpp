@@ -11,6 +11,10 @@ object* slice_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got '%d'",len);
         return NULL;
     }
+    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
     object* slice=new_object(CAST_TYPE(type));
     CAST_SLICE(slice)->start=INCREF(list_index_int(args, 0));
     CAST_SLICE(slice)->end=INCREF(list_index_int(args, 1));

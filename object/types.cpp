@@ -2406,7 +2406,79 @@ void inherit_type_dict(TypeObject* tp){
             dict_set(tp_tp->dict, k.first, k.second);
         }  
     }
+
+
+    //Adding type slot wrappers
+    if (tp_tp->slot_number!=NULL){
+        if (tp_tp->slot_number->slot_add){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_add, "__add__");
+        }
+        if (tp_tp->slot_number->slot_sub){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_sub, "__sub__");
+        }
+        if (tp_tp->slot_number->slot_mul){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_mul, "__mul__");
+        }
+        if (tp_tp->slot_number->slot_div){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_div, "__div__");
+        }
+        if (tp_tp->slot_number->slot_mod){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_mod, "__mod__");
+        }
+        if (tp_tp->slot_number->slot_pow){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_pow, "__pow__");
+        }
+
+        
+        if (tp_tp->slot_number->slot_neg){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_neg, "__neg__");
+        }
+        if (tp_tp->slot_number->slot_bool){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_bool, "__bool__");
+        }
+        if (tp_tp->slot_number->slot_int){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_int, "__int__");
+        }
+        if (tp_tp->slot_number->slot_float){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_float, "__float__");
+        }
+    }
+
+    if (tp_tp->slot_call){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_call, "__call__");
+    }
+    if (tp_tp->slot_del){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_del, "__del__");
+    }
+    if (tp_tp->slot_init){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_init, "__init__");
+    }
+    if (tp_tp->slot_iter){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_iter, "__iter__");
+    }
+    if (tp_tp->slot_new){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_new, "__new__");
+    }
+    if (tp_tp->slot_next){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_next, "__next__");
+    }
+    if (tp_tp->slot_repr){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_repr, "__repr__");
+    }
+    if (tp_tp->slot_str){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_str, "__str__");
+    }
+
     
+
+    if (tp_tp->slot_cmp){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_eq, "__eq__");
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_ne, "__ne__");
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_gt, "__gt__");
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_lt, "__lt__");
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_gte, "__gte__");
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_lte, "__lte__");
+    }
 }
 
 object* setup_type_methods(TypeObject* tp){
@@ -2744,5 +2816,6 @@ object* code_co_lines(object* code){
     return CAST_CODE(code)->co_lines;    
 }
 
+
+#include "types_dict_wrappers.cpp"
 #include "typeobject_newtp.cpp"
-#include "object_dicts.cpp"

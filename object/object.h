@@ -209,6 +209,34 @@ object* setup_type_methods(TypeObject* tp);
 object* setup_type_getsets(TypeObject* tp);
 object* setup_type_offsets(TypeObject* tp);
 
+object* type_wrapper_add(object* args, object* kwargs);
+object* type_wrapper_sub(object* args, object* kwargs);
+object* type_wrapper_mul(object* args, object* kwargs);
+object* type_wrapper_div(object* args, object* kwargs);
+object* type_wrapper_pow(object* args, object* kwargs);
+object* type_wrapper_mod(object* args, object* kwargs);
+
+object* type_wrapper_bool(object* args, object* kwargs);
+object* type_wrapper_neg(object* args, object* kwargs);
+object* type_wrapper_int(object* args, object* kwargs);
+object* type_wrapper_float(object* args, object* kwargs);
+
+object* type_wrapper_del(object* args, object* kwargs);
+object* type_wrapper_init(object* args, object* kwargs);
+object* type_wrapper_new(object* args, object* kwargs);
+object* type_wrapper_iter(object* args, object* kwargs);
+object* type_wrapper_next(object* args, object* kwargs);
+object* type_wrapper_str(object* args, object* kwargs);
+object* type_wrapper_repr(object* args, object* kwargs);
+object* type_wrapper_call(object* args, object* kwargs);
+
+object* type_wrapper_eq(object* args, object* kwargs);
+object* type_wrapper_ne(object* args, object* kwargs);
+object* type_wrapper_gt(object* args, object* kwargs);
+object* type_wrapper_lt(object* args, object* kwargs);
+object* type_wrapper_gte(object* args, object* kwargs);
+object* type_wrapper_lte(object* args, object* kwargs);
+
 struct vm* vm=NULL;
 
 enum blocktype{
@@ -403,12 +431,10 @@ void setup_types_consts(){
     setup_type_offsets(&TypeType);
 
     inherit_type_dict(&IntType);
-    setup_int_dir();
     setup_type_offsets(&IntType);
     setup_type_getsets(&IntType);
 
     inherit_type_dict(&StrType);
-    setup_str_dir();
     setup_type_offsets(&StrType);
     setup_type_getsets(&StrType);
     setup_type_methods(&StrType);

@@ -28,6 +28,15 @@ object* list_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
+    if (CAST_INT(args->type->slot_mappings->slot_len(kwargs))->val->to_int()>0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
+    if (len!=1 || CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL;
+    }
     if (object_istype(list_index_int(args, 0)->type, &ListType)){
         return INCREF(list_index_int(args, 0));
     }
@@ -64,8 +73,8 @@ object* list_new(object* type, object* args, object* kwargs){
     CAST_LIST(obj)->size=0;
     CAST_LIST(obj)->array=(object**)fpl_malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
 
-    size_t len=(size_t)CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    for (size_t i=0; i<len; i++){
+    size_t length=(size_t)CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    for (size_t i=0; i<length; i++){
         list_append((object*)obj, INCREF(list_index_int(args, i)));
     }
     

@@ -19,11 +19,10 @@ object* dict_new(object* type, object* args, object* kwargs){
         obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
         return (object*)obj;    
     }
-
-    if (object_istype(list_index_int(args, 0)->type, &DictType)){
+    if (CAST_LIST(args)->size!=0 && object_istype(list_index_int(args, 0)->type, &DictType)){
         return INCREF(list_index_int(args, 0));
     }
-    if (list_index_int(args, 0)->type->slot_iter!=NULL){
+    if (CAST_LIST(args)->size!=0 && list_index_int(args, 0)->type->slot_iter!=NULL){
         object* o=list_index_int(args, 0);
         object* iter=o->type->slot_iter(o);
 

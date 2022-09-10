@@ -23,7 +23,7 @@ object* code_new(object* type, object* args, object* kwargs){
         return obj;
     }
     if (CAST_LIST(args)->size!=5){
-        vm_add_err(&ValueError, vm, "Expected 5 arguments, got %d", CAST_LIST(args)->size);
+        vm_add_err(&ValueError, vm, "Expected 6 arguments, got %d", CAST_LIST(args)->size);
         return NULL;
     }
     CAST_CODE(obj)->co_names=INCREF(list_index_int(args, 0));

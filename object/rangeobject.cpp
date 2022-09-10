@@ -4,6 +4,10 @@ object* range_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 1 or 2 arguments, got %d", len);
         return NULL;
     }
+    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
     object* range=new_object(CAST_TYPE(type));
     object* arg=object_int(list_index_int(args, 0));
     if (arg==NULL){
