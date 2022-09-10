@@ -1623,8 +1623,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 list_append(names, str_new_fromstr(*IDENTI(name->node)->name));
             }
             
-            
-            if (!object_find_bool(compiler->consts, noneobj)){
+            if (!object_find_bool(compiler->consts, names)){
                 //Create object
                 compiler->consts->type->slot_mappings->slot_append(compiler->consts, names);
                 idx=NAMEIDX(compiler->consts);
