@@ -2749,6 +2749,7 @@ object* new_type(string* name, object* bases, object* dict){
         size=sizeof(object);
     }
 
+    map<object*, object*> orig_dict(*CAST_DICT(dict)->val);
 
     TypeObject newtype={
         0, //refcnt
@@ -2793,6 +2794,16 @@ object* new_type(string* name, object* bases, object* dict){
     setup_type_getsets((TypeObject*)tp);
     setup_type_methods((TypeObject*)tp);
     setup_type_offsets((TypeObject*)tp);
+
+    //Override slot wrappers added by inherit_type_dict
+    for (auto k: orig_dict){
+        for (auto l: *CAST_DICT(CAST_TYPE(tp)->dict)->val){
+            if (istrue(object_cmp(l.first, k.first, CMP_EQ))){
+                dict_set(CAST_TYPE(tp)->dict, l.first, k.second);
+            }
+        }
+    }
+
     return tp;
 }
 

@@ -32,11 +32,6 @@ object* list_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
         return NULL;
     }
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (len!=1 || CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL;
-    }
     if (object_istype(list_index_int(args, 0)->type, &ListType)){
         return INCREF(list_index_int(args, 0));
     }

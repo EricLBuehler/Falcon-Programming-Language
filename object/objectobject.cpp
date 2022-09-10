@@ -1,10 +1,4 @@
 object* object_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (len!=0){
-        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
-        return NULL;
-    }
-
     return new_object(CAST_TYPE(type));
 }
 object* object_repr_(object* self){
