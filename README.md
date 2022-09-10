@@ -219,6 +219,12 @@ for n in [10,20,30]{
     print(n)
 }
 
+i=0
+while i<10{
+    print(i)
+    i+=1
+}
+
 print(True and False)
 print(True or False)
 print(not 1==1)
