@@ -171,6 +171,9 @@ class Parser{
             while (!current_tok_is(T_EOF) && !current_tok_is(T_RCURLY)){
                 skip_newline;
                 Node* n=this->statement(&ret);
+                if (!this->current_tok_is(T_NEWLINE) && !this->current_tok_is(T_EOF) && !this->current_tok_is(T_RCURLY)){
+                    this->add_parsing_error(&ret, "SyntaxError: Invalid syntax");
+                }
                 if (ret.errornum>0){
                     goto statements_return;
                 }
@@ -1043,6 +1046,11 @@ class Parser{
                         break;
 
                     case T_DOTIDENT: {
+                        if ( !isname(left->type)){
+                            this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
+                            this->advance();
+                            return NULL;
+                        }
                         Node* newnode=make_node(N_DOT);
                         newnode->start=left->start;
                         newnode->end=left->end;
@@ -1575,6 +1583,7 @@ class Parser{
             else{
                 code.nodes.clear();
             }
+            
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1599,7 +1608,6 @@ class Parser{
             bases->push_back(node);
             
             this->advance();
-
             skip_newline;
 
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="else"){
@@ -1690,6 +1698,7 @@ class Parser{
             
             this->advance();
             skip_newline;
+            
             while(this->current_tok_is(T_KWD) && this->current_tok.data=="except"){
                 this->advance();
                 Node* type=NULL;
@@ -1748,9 +1757,9 @@ class Parser{
                 bases->push_back(node);
 
                 this->advance();
-                skip_newline;
 
             }
+            skip_newline;
 
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="finally"){
                 this->advance();
