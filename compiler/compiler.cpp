@@ -978,7 +978,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
 
-            add_instruction(compiler->instructions,JUMP_DELTA,0, expr->start, expr->end);
+            add_instruction(compiler->instructions,JUMP_DELTA,100, expr->start, expr->end);
             
             break;
         }
@@ -1018,16 +1018,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (n->type==N_IF){
                     instrs+=num_instructions(IF(n->node)->code, compiler->scope)*2;
                     instrs+=num_instructions(IF(n->node)->expr, compiler->scope)*2;
-                    instrs+=2; 
-
+                    
                     int cmpexpr=compile_expr(compiler, IF(n->node)->expr);
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
                     
-                    if (cmpexpr==0x100){
-                        return cmpexpr;
-                    }
                     add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(n->node)->code, compiler->scope)*2+2, n->start, n->end);
 
                     //Code
@@ -2060,11 +2056,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_ASSERT: {
             compile_expr(compiler, ASSERT(expr->node)->expr);
             add_instruction(compiler->instructions,POP_JMP_TOS_TRUE, 2, expr->start, expr->end);
-            add_instruction(compiler->instructions,RAISE_ASSERTIONERR, 0, expr->start, expr->end);            
+            add_instruction(compiler->instructions,RAISE_ASSERTIONERR, 0, expr->start, expr->end);
+            break;            
         }
 
     }
-
+    
     free(expr);
 
     return 0;
@@ -2102,6 +2099,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         uint32_t start=compiler->instructions->count;
         
         int i=compile_expr(compiler, n);
+        
         if (i==0x100){
             return NULL;
         }
