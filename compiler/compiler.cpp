@@ -2094,11 +2094,14 @@ uint32_t num_instructions(Node* node, scope s){
 struct object* compile(struct compiler* compiler, parse_ret ast){
     compiler->lines=new_list();
     object* lines=compiler->lines;
+    int i=0;
     for (Node* n: ast.nodes){
         uint32_t start=compiler->instructions->count;
         
-        int i=compile_expr(compiler, n);
+        int line=n->start->line;
         
+        int i=compile_expr(compiler, n);
+
         if (i==0x100){
             return NULL;
         }
@@ -2107,10 +2110,10 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         object* tuple=new_tuple();
         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(n->start->line));
+        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
         lines->type->slot_mappings->slot_append(lines, tuple);
     }
-    
+        
     
     uint32_t idx;
     if (!object_find_bool(compiler->consts, noneobj)){
