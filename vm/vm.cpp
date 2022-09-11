@@ -1054,7 +1054,13 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case IMPORT_FROM_MOD: {
             object* names=pop_dataframe(vm->objstack);
             object* lib=pop_dataframe(vm->objstack);
-            for (uint32_t i=0; i<CAST_INT(names->type->slot_mappings->slot_len(names))->val->to_int(); i++){
+            uint32_t len=CAST_INT(names->type->slot_mappings->slot_len(names))->val->to_int();
+            if (len==0){
+                for (auto k: *CAST_DICT(CAST_MODULE(lib)->dict)->val){
+                    vm_add_var_locals(vm, k.first, k.second);
+                }
+            }
+            for (uint32_t i=0; i<len; i++){
                 object* o=object_getattr(lib, list_index_int(names, i));
                 if (o==NULL){
                     DECREF(vm->exception);
