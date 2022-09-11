@@ -1252,6 +1252,9 @@ class Parser{
             else{
                 code.nodes.clear();
             }
+            if (code.errornum>0){
+                (*ret)=code;
+            }
             
             if (!this->current_tok_is(T_RCURLY)){
                 this->backadvance();
@@ -1334,7 +1337,11 @@ class Parser{
             }
             else{
                 code.nodes.clear();
+            }            
+            if (code.errornum>0){
+                (*ret)=code;
             }
+
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1403,6 +1410,10 @@ class Parser{
             else{
                 code.nodes.clear();
             }
+            if (code.errornum>0){
+                (*ret)=code;
+            }
+
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1460,6 +1471,10 @@ class Parser{
             else{
                 code.nodes.clear();
             }
+            if (code.errornum>0){
+                (*ret)=code;
+            }
+
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1541,6 +1556,10 @@ class Parser{
             else{
                 code.nodes.clear();
             }
+            if (code.errornum>0){
+                (*ret)=code;
+            }
+
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1586,6 +1605,10 @@ class Parser{
             else{
                 code.nodes.clear();
             }
+            if (code.errornum>0){
+                (*ret)=code;
+            }
+
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1676,6 +1699,9 @@ class Parser{
             else{
                 try_code.nodes.clear();
             }
+            if (try_code.errornum>0){
+                (*ret)=try_code;
+            }
             
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -1734,6 +1760,9 @@ class Parser{
                 else{
                     except_code.nodes.clear();
                 }
+                if (except_code.errornum>0){
+                    (*ret)=except_code;
+                }
                 if (!this->current_tok_is(T_RCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
@@ -1784,6 +1813,9 @@ class Parser{
                 }
                 else{
                     finally_code.nodes.clear();
+                }
+                if (finally_code.errornum>0){
+                    (*ret)=finally_code;
                 }
                 if (!this->current_tok_is(T_RCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -1854,6 +1886,9 @@ class Parser{
             }
             else{
                 code.nodes.clear();
+            }
+            if (code.errornum>0){
+                (*ret)=code;
             }
             this->inloop=inloop;
 
@@ -1932,6 +1967,9 @@ class Parser{
             }
             else{
                 code.nodes.clear();
+            }
+            if (code.errornum>0){
+                (*ret)=code;
             }
             this->inloop=inloop;
 
