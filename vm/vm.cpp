@@ -382,6 +382,19 @@ void vm_del_var_locals(struct vm* vm, object* name){
     return;
 }
 
+void vm_del_var_globals(struct vm* vm, object* name){
+    for (auto k: (*CAST_DICT(vm->globals)->val)){
+        if (istrue(object_cmp(name, k.first, CMP_EQ))){
+            ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
+
+            dict_del_item(vm->globals, name);
+            return;
+        }
+    }
+    vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+    return;
+}
+
 
 object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
     //Run one instruction
@@ -1236,6 +1249,11 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             DECREF(CAST_EXCEPTION(exc)->err);
             CAST_EXCEPTION(exc)->err=NULL;
             vm->exception=exc;
+            break;
+        }        
+
+        case DEL_GLBL: {
+            vm_del_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
             break;
         }
         
