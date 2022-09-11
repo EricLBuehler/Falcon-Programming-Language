@@ -137,7 +137,7 @@ class Parser{
         }
         
         bool isname(nodetype type){
-            if (type==N_IDENT || type==N_MULTIIDENT || type==N_DOT){
+            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_MULTIIDENT || type==N_DOT){
                 return true;
             }
             return false;
@@ -2103,7 +2103,7 @@ class Parser{
             this->advance();
 
             Token t=this->current_tok;
-            if (!this->current_tok_is(T_IDENTIFIER)){
+            if (!this->current_tok_is(T_IDENTIFIER) && !this->current_tok_is(T_COLON)){
                 this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
                 return NULL;
             }
