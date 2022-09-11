@@ -30,6 +30,10 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```file```
 - ```isinstance```
 
+### Builtin libraries ###
+- ```time```
+- ```math```
+
 <details>
 <summary>Exceptions</summary>
 
@@ -85,6 +89,9 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```del```
 - ```assert```
 - ```continue```
+
+### Other syntax ###
+- ```:``` - Global variable access
 
 ### Sample Program ###
 
