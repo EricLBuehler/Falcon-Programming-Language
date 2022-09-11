@@ -1250,6 +1250,7 @@ class Parser{
                 code=this->statements();
             }
             else{
+                code.errornum=0;
                 code.nodes.clear();
             }
             if (code.errornum>0){
@@ -1336,8 +1337,10 @@ class Parser{
                 code=this->statements();
             }
             else{
+                code.errornum=0;
                 code.nodes.clear();
-            }            
+            }
+            
             if (code.errornum>0){
                 (*ret)=code;
             }
@@ -1408,6 +1411,7 @@ class Parser{
                 code=this->statements();
             }
             else{
+                code.errornum=0;
                 code.nodes.clear();
             }
             if (code.errornum>0){
@@ -1469,6 +1473,7 @@ class Parser{
                 code=this->statements();
             }
             else{
+                code.errornum=0;
                 code.nodes.clear();
             }
             if (code.errornum>0){
@@ -1554,6 +1559,7 @@ class Parser{
                 code=this->statements();
             }
             else{
+                code.errornum=0;
                 code.nodes.clear();
             }
             if (code.errornum>0){
@@ -1603,6 +1609,7 @@ class Parser{
                 code=this->statements();
             }
             else{
+                code.errornum=0;
                 code.nodes.clear();
             }
             if (code.errornum>0){
@@ -1697,6 +1704,7 @@ class Parser{
                 try_code=this->statements();
             }
             else{
+                try_code.errornum=0;
                 try_code.nodes.clear();
             }
             if (try_code.errornum>0){
@@ -1758,6 +1766,7 @@ class Parser{
                     except_code=this->statements();
                 }
                 else{
+                    except_code.errornum=0;
                     except_code.nodes.clear();
                 }
                 if (except_code.errornum>0){
@@ -1812,6 +1821,7 @@ class Parser{
                     finally_code=this->statements();
                 }
                 else{
+                    finally_code.errornum=0;
                     finally_code.nodes.clear();
                 }
                 if (finally_code.errornum>0){
@@ -1885,6 +1895,7 @@ class Parser{
                 code=this->statements();
             }
             else{
+                code.errornum=0;
                 code.nodes.clear();
             }
             if (code.errornum>0){
@@ -1966,6 +1977,7 @@ class Parser{
                 code=this->statements();
             }
             else{
+                code.errornum=0;
                 code.nodes.clear();
             }
             if (code.errornum>0){
