@@ -249,6 +249,7 @@ class Parser{
                 return make_fstring(ret);
             }
             Node* node=make_node(N_IDENT);
+            
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
 
@@ -273,7 +274,7 @@ class Parser{
             Identifier* i=(Identifier*)fpl_malloc(sizeof(Identifier));
             i->name=new string(this->current_tok.data);
             node->node=i;
-            
+
             return node;
         }
 
@@ -1087,7 +1088,6 @@ class Parser{
                     return left;
                 }
             }
-
             return left;
         }
 
