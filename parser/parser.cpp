@@ -894,6 +894,7 @@ class Parser{
             g->name=name;
             
             node->node=g;
+            this->backadvance();
             return node;
         }
 
