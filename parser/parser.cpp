@@ -1049,7 +1049,7 @@ class Parser{
                         break;
 
                     case T_DOTIDENT: {
-                        if ( !isname(left->type)){
+                        if (!isname(left->type) && (left->type!=N_CALL && this->next_tok_is(T_DOTIDENT))){
                             this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                             this->advance();
                             return NULL;
