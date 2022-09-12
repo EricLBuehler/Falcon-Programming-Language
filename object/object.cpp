@@ -505,6 +505,13 @@ object* object_call(object* obj, object* args, object* kwargs){
     return obj->type->slot_call(obj, args,kwargs);
 }
 
+object* object_call_nokwargs(object* obj, object* args){
+    object* kwargs=new_dict();
+    object* res=obj->type->slot_call(obj, args,kwargs);
+    DECREF(kwargs);
+    return res;
+}
+
 object* object_istruthy(object* obj){
     if (obj->type->slot_number==NULL || obj->type->slot_number->slot_bool==NULL){
         return new_bool_false();

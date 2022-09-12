@@ -179,6 +179,7 @@ bool object_issubclass(object* obj, TypeObject* t);
 object* generic_iter_iter(object* self);
 object* object_getattr_noerror(object* obj, object* attr);
 object* object_cmp(object* self, object* other, uint8_t type);
+object* object_call_nokwargs(object* obj, object* args);
 
 object* builtin___build_class__(object* self, object* args);
 
