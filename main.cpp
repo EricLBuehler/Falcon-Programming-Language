@@ -96,17 +96,19 @@ int main(int argc, char** argv) {
                     cout<<ast.snippet<<endl;
                     cout<<ast.arrows<<endl;
                     printf("%s\n",ast.error);
+                    vm=vm_;
                     continue;
                 }
 
                 glblfildata=new string(data);
                 vm_->filedata=&data;
-
+                
                 object* code=compile(compiler, ast);
                 if (code==NULL){
                     cout<<parseretglbl.header<<endl;
                     cout<<parseretglbl.snippet<<endl;
                     printf("%s\n",parseretglbl.error);
+                    vm=vm_;
                     continue;
                 }
                 vm=vm_;
