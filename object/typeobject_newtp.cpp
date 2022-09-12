@@ -33,13 +33,13 @@ void newtp_del(object* self){
     object* n=object_getattr(self, str_new_fromstr("__del__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object_call(n, args, new_dict());
+    object_call_nokwargs(n, args);
 }
 object* newtp_next(object* self){
     object* n=object_getattr(self, str_new_fromstr("__next__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_get(object* self, object* idx){
@@ -47,14 +47,14 @@ object* newtp_get(object* self, object* idx){
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, idx);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_len(object* self){
     object* n=object_getattr(self, str_new_fromstr("__len__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 
@@ -64,21 +64,21 @@ object* newtp_set(object* self, object* idx, object* val){
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, idx);
     args->type->slot_mappings->slot_append(args, val);
-    object* ret=object_call(n, args, new_dict());
+    object* ret=object_call_nokwargs(n, args);
     return ret;
 }
 object* newtp_repr(object* self){
     object* n=object_getattr(self, str_new_fromstr("__repr__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_str(object* self){
     object* n=object_getattr(self, str_new_fromstr("__str__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_call(object* self, object* args, object* kwargs){
@@ -104,7 +104,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
-            object* val=object_call(n, args, new_dict());
+            object* val=object_call_nokwargs(n, args);
             return val;
         }
     }
@@ -114,7 +114,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
-            object* val=object_call(n, args, new_dict());
+            object* val=object_call_nokwargs(n, args);
             return val;
         }
     }
@@ -124,7 +124,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
-            object* val=object_call(n, args, new_dict());
+            object* val=object_call_nokwargs(n, args);
             return val;
         }
         return NULL;
@@ -135,7 +135,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
-            object* val=object_call(n, args, new_dict());
+            object* val=object_call_nokwargs(n, args);
             return val;
         }
     }
@@ -145,7 +145,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
-            object* val=object_call(n, args, new_dict());
+            object* val=object_call_nokwargs(n, args);
             return val;
         }
     }
@@ -155,7 +155,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
-            object* val=object_call(n, args, new_dict());
+            object* val=object_call_nokwargs(n, args);
             return val;
         }
     }
@@ -166,42 +166,42 @@ object* newtp_pow(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__pow__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_mod(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__mod__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_add(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__add__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_sub(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__sub__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_mul(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__mul__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 object* newtp_div(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__div__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 
@@ -209,7 +209,7 @@ object* newtp_neg(object* self){
     object* n=object_getattr(self, str_new_fromstr("__neg__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 
@@ -217,7 +217,7 @@ object* newtp_bool(object* self){
     object* n=object_getattr(self, str_new_fromstr("__bool__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 
@@ -225,7 +225,7 @@ object* newtp_int(object* self){
     object* n=object_getattr(self, str_new_fromstr("__int__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 
@@ -233,7 +233,7 @@ object* newtp_float(object* self){
     object* n=object_getattr(self, str_new_fromstr("__float__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 
@@ -241,7 +241,7 @@ object* newtp_iter(object* self){
     object* n=object_getattr(self, str_new_fromstr("__iter__"));
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 
@@ -254,7 +254,7 @@ object* newtp_getattr(object* self, object* attr){
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, attr);
-    object* val=object_call(n, args, new_dict());
+    object* val=object_call_nokwargs(n, args);
     return val;
 }
 
@@ -272,5 +272,5 @@ object* newtp_setattr(object* self, object* attr, object* val){
         args->type->slot_mappings->slot_append(args, val);
     }
     
-    return object_call(n, args, new_dict());
+    return object_call_nokwargs(n, args);
 }
