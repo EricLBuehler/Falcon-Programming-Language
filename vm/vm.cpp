@@ -374,7 +374,7 @@ void vm_del_var_locals(struct vm* vm, object* name){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
             ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
 
-            dict_del_item(vm->callstack->head->locals, name);
+            dict_set(vm->callstack->head->locals, name, NULL);
             return;
         }
     }
@@ -387,7 +387,7 @@ void vm_del_var_globals(struct vm* vm, object* name){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
             ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
 
-            dict_del_item(vm->globals, name);
+            dict_set(vm->globals, name, NULL);
             return;
         }
     }
@@ -1254,6 +1254,13 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
         case DEL_GLBL: {
             vm_del_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            break;
+        }
+
+        case DEL_ATTR: {
+            object* obj=pop_dataframe(vm->objstack);
+            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object_setattr(obj, attr, NULL);
             break;
         }
         
