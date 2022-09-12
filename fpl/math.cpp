@@ -644,5 +644,9 @@ object* new_math_module(){
     object* tanh=cwrapper_new_fromfunc((cwrapperfunc)math_tanh, "tanh");
     dict_set(dict, str_new_fromstr("tanh"), tanh);
 
+    dict_set(dict, str_new_fromstr("pi"), new_float_fromdouble(M_PI));
+    dict_set(dict, str_new_fromstr("tau"), new_float_fromdouble(M_PI*2));
+    dict_set(dict, str_new_fromstr("e"), new_float_fromdouble(M_E));
+
     return module_new_fromdict(dict, str_new_fromstr("math"));
 }
