@@ -130,3 +130,7 @@ BUILD_STRING(n) - Concatonates string out of n stack items where each stack itm 
 POP_JMP_TOS_TRUE(idx) - Adds idx to IP and pops TOS if TOS is falsy
 
 RAISE_ASSERTIONERR - Raises AssertionError
+
+DEL_GLBL(idx) - Implements del co_names[idx]
+
+DEL_ATTR(idx) - del TOS.names[idx]

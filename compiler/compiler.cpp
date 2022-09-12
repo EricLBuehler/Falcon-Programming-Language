@@ -715,7 +715,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_DOT: {
             vector<Node*>* names=DOT(expr->node)->names;
-            for (size_t i=0; i<names->size(); i++){
+            compile_expr(compiler, names->at(0));
+
+            for (size_t i=1; i<names->size(); i++){
+                
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
@@ -726,18 +729,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     idx=object_find(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                 }
 
-                if (i==0){
-                    switch (compiler->scope){
-                        case SCOPE_GLOBAL:
-                            add_instruction(compiler->instructions,LOAD_GLOBAL, idx, expr->start, expr->end);
-                            break;
-
-                        case SCOPE_LOCAL:
-                            add_instruction(compiler->instructions,LOAD_NAME, idx, expr->start, expr->end);
-                            break;
-                    }
-                    continue;
-                }      
                 add_instruction(compiler->instructions,LOAD_ATTR, idx, expr->start, expr->end);
             }
             break;
@@ -751,6 +742,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
             vector<Node*>* names=DOT(DOTASSIGN(expr->node)->dot->node)->names;
+            compile_expr(compiler, names->at(0));
             
             for (size_t i=0; i<names->size(); i++){
                 uint32_t idx;
@@ -762,19 +754,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 else{
                     idx=object_find(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                 }
-
-                if (i==0){
-                    switch (compiler->scope){
-                        case SCOPE_GLOBAL:
-                            add_instruction(compiler->instructions,LOAD_GLOBAL, idx, expr->start, expr->end);
-                            break;
-
-                        case SCOPE_LOCAL:
-                            add_instruction(compiler->instructions,LOAD_NAME, idx, expr->start, expr->end);
-                            break;
-                    }
-                    continue;
-                }            
+                
                 if (i==names->size()-1){
                     add_instruction(compiler->instructions,STORE_ATTR, idx, expr->start, expr->end);
                     continue;
@@ -1920,6 +1900,29 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     idx=object_find(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(DEL(expr->node)->expr->node)->name->node)->name));
                 }
                 add_instruction(compiler->instructions, DEL_GLBL, idx, expr->start, expr->end);
+            }
+            else if (DEL(expr->node)->expr->type==N_DOT){
+                vector<Node*>* names=DOT(DEL(expr->node)->expr->node)->names;
+                compile_expr(compiler, names->at(0));
+
+                for (size_t i=1; i<names->size(); i++){
+                    uint32_t idx;
+                    if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
+                        //Create object
+                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                    }
+                                
+                    if (i==names->size()-1){
+                        add_instruction(compiler->instructions,DEL_ATTR, idx, expr->start, expr->end);
+                        continue;
+                    }     
+
+                    add_instruction(compiler->instructions,LOAD_ATTR, idx, expr->start, expr->end);
+                }
             }
             else{
                 uint32_t idx;
