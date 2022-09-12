@@ -118,6 +118,15 @@ void setup_builtins(){
     isinstargs->type->slot_mappings->slot_append(isinstargs, str_new_fromstr("type"));
     object* isinstkwargs=new_tuple();
     builtins[43]=new_builtin((builtinfunc)builtin_issubclass, str_new_fromstr("isinstance"), isinstargs, isinstkwargs, 2, false);
+
+    object* evalargs=new_tuple();
+    evalargs->type->slot_mappings->slot_append(evalargs, str_new_fromstr("string"));
+    evalargs->type->slot_mappings->slot_append(evalargs, str_new_fromstr("globals"));
+    evalargs->type->slot_mappings->slot_append(evalargs, str_new_fromstr("locals"));
+    object* evalkwargs=new_tuple();
+    evalkwargs->type->slot_mappings->slot_append(evalkwargs, new_dict());
+    evalkwargs->type->slot_mappings->slot_append(evalkwargs, new_dict());
+    builtins[44]=new_builtin((builtinfunc)builtin_eval, str_new_fromstr("eval"), evalargs, evalkwargs, 3, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

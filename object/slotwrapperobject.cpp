@@ -1,8 +1,4 @@
-object* slotwrapper_call(object* self, object* args, object* kwargs){
-    return CAST_SLOTWRAPPER(self)->function(self);
-}
-
-object* slotwrapper_new_fromfunc(getsetfunc func, string name, TypeObject* basetype){
+object* slotwrapper_new_fromfunc(getter func, string name, TypeObject* basetype){
     object* o=new_object(&SlotWrapperType);
     CAST_SLOTWRAPPER(o)->function=func;
     CAST_SLOTWRAPPER(o)->name=new string(name);

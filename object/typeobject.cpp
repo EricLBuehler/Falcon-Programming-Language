@@ -96,6 +96,10 @@ object* newtp_int(object* self);
 object* newtp_float(object* self);
 void newtp_post_tpcall(object* ob);
 
+
+object* newtp_getattr(object* self, object* attr);
+object* newtp_setattr(object* self, object* attr, object* val);
+
 NumberMethods newtp_number={    
     //binops
     newtp_add,

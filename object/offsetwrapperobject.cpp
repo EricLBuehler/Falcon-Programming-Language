@@ -1,0 +1,36 @@
+object* offsetwrapper_new_fromoffset(string name, size_t offset, bool readonly){
+    object* o;
+    if (readonly){
+        o=new_object(&OffsetWrapperReadonlyType);
+    }
+    else{
+        o=new_object(&OffsetWrapperType);
+    }
+    CAST_OFFSETWRAPPER(o)->offset=offset;
+    CAST_OFFSETWRAPPER(o)->name=new string(name);
+    return o;
+}
+
+object* offsetwrapper_repr(object* self){
+    char buf[32];
+    sprintf(buf, "0x%x", self);
+    string s="<";
+    s+=self->type->name->c_str();
+    s+=" '";
+    s+=(*CAST_OFFSETWRAPPER(self)->name);
+    s+="' @ ";
+    s+=buf;
+    s+=">";
+    return str_new_fromstr(s);
+}
+
+object* offsetwrapper_offsetget(object* obj, object* self){
+    object* ob= (*(object**)((char*)obj + CAST_OFFSETWRAPPER(self)->offset));
+    return ob;
+}
+
+object* offsetwrapper_offsetset(object* obj, object* self, object* val){
+    DECREF((*(object**)((char*)obj + CAST_OFFSETWRAPPER(self)->offset)));
+    (*(object**)((char*)obj + CAST_OFFSETWRAPPER(self)->offset))=val;
+    return new_none();
+}

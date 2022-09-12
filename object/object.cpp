@@ -143,6 +143,9 @@ object_var* new_object_var(TypeObject* type, size_t size){
     object_var* object = (object_var*) fpl_malloc(sizeof(struct object_var)+type->var_base_size);
     object->refcnt=1;
     object->gc_ref=0;
+    if (vm==NULL){
+        object->gc_ref++;
+    }
     object->type=type;
     object->var_size=type->var_base_size;
     object->gen=0;
@@ -372,34 +375,46 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
 }
 
 object* object_genericgetattr(object* obj, object* attr){
+    object* res=NULL;
     //Check dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
         if (object_find_bool_dict_keys(dict, attr)){
-            return dict_get(dict, attr);
+            res=dict_get(dict, attr);
         }
     }
     //Check type dict
-    if (obj->type->dict!=0){
+    if (res==NULL && obj->type->dict!=0){
         object* dict = obj->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
-            return dict_get(dict, attr);
+            res=dict_get(dict, attr);
         }
     }
-    //Check bases
-    uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
-    for (uint32_t i=0; i<total_bases; i++){
-        TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i));
-        //Check type dict
-        if (base_tp->dict!=0){
-            object* dict = base_tp->dict;
-            if (object_find_bool_dict_keys(dict, attr)){
-                return dict_get(dict, attr);
+    if (res==NULL){
+        //Check bases
+        uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
+        for (uint32_t i=0; i<total_bases; i++){
+            TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i));
+            //Check type dict
+            if (base_tp->dict!=0){
+                object* dict = base_tp->dict;
+                if (object_find_bool_dict_keys(dict, attr)){
+                    res=dict_get(dict, attr);
+                }
             }
         }
     }
-    vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
-    return NULL;
+    if (res==NULL){
+        vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
+    }
+    else{
+        if (res->type->slot_offsetget!=NULL){
+            object* r=res->type->slot_offsetget(obj, res);
+            DECREF(res);
+            return r;
+        }
+    }
+    return res;
 }
 
 object* object_getattr_noerror(object* obj, object* attr){
@@ -419,36 +434,61 @@ object* object_getattr(object* obj, object* attr){
 }
 
 void object_genericsetattr(object* obj, object* attr, object* val){
-     //Try instance dict
+    object* d=NULL;
+    
+    
+    //Try instance dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
-        dict_set(dict, attr, val);
-        return;
-    }
-    //Check type dict 
-    if (obj->type->dict!=0){
-        object* dict = obj->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
-            dict_set(dict, attr, val);
-            return;
+            d=dict;
         }
     }
-    //Check bases
-    uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
-    for (uint32_t i=0; i<total_bases; i++){
-        TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i-1));
+    //Check type dict 
+    if (d==NULL && obj->type->dict!=0){
+        object* dict = obj->type->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            d=dict;
+        }
+    }
 
-        //Check type dict
-        if (base_tp->dict!=0){
-            object* dict = base_tp->dict;
-            if (object_find_bool_dict_keys(dict, attr)){
-                dict_set(dict, attr, val);
-                return;
+    if (d==NULL){
+        //Check bases
+        uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
+        for (uint32_t i=0; i<total_bases; i++){
+            TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i-1));
+
+            //Check type dict
+            if (base_tp->dict!=0){
+                object* dict = base_tp->dict;
+                if (object_find_bool_dict_keys(dict, attr)){
+                    d=dict;
+                }
             }
         }
     }
 
-    vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
+    if (d==NULL){
+        vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
+        return;
+    }
+    else{
+        object* res=dict_get(d, attr);
+        if (res!=NULL && !(res->type->slot_offsetset==NULL && res->type->slot_offsetget==NULL) ){
+            if (res!=NULL && res->type->slot_offsetset!=NULL){
+                res->type->slot_offsetset(obj, res, val);
+                DECREF(res);
+                return;
+            }
+            if (res!=NULL && res->type->slot_offsetget==NULL){
+                vm_add_err(&AttributeError, vm, "%s is read only",res->type->name->c_str());
+                return;
+            }
+        }
+        DECREF(res);
+    }
+    
+    dict_set(d, attr, val);
     return;
 }
 

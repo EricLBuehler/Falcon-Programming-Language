@@ -93,7 +93,10 @@ object* dict_get(object* self, object* key){
 void dict_del_item(object* self, object* key){
     for (auto k: (*CAST_DICT(self)->val)){
         if (istrue(object_cmp(key, k.first, CMP_EQ))){
+            DECREF(k.first);
+            DECREF(k.second);
             CAST_DICT(self)->val->erase(CAST_DICT(self)->val->find(k.first));
+            CAST_DICT(self)->keys->erase(find(CAST_DICT(self)->keys->begin(), CAST_DICT(self)->keys->end(), k.first));
             return;
         }
         if (vm->exception!=NULL){
@@ -165,10 +168,10 @@ object* dict_str(object* self){
     string s="";
     s+="{";
     int i=0;
-    for (auto k: (*CAST_DICT(self)->val)){
-        s+=object_crepr(k.first);
+    for (object* o: *CAST_DICT(self)->keys ){
+        s+=object_crepr(o);
         s+=": ";
-        s+=object_crepr(k.second);
+        s+=object_crepr(CAST_DICT(self)->val->at(o));
         if (i!=CAST_DICT(self)->val->size()-1){
             s+=",\n";
         }

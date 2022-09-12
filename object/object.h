@@ -19,7 +19,10 @@ typedef void (*posttpcallfunc)(object*);
 
 
 typedef object* (*cwrapperfunc)(object*, object*);
-typedef object* (*getsetfunc)(object*);
+typedef object* (*getter)(object*);
+
+typedef object* (*offsetgetfunc)(object*, object*);
+typedef object* (*offsetsetfunc)(object*, object*, object*);
 
 
 typedef struct{    
@@ -48,11 +51,12 @@ typedef struct{
 typedef struct{
     const char* name;
     size_t offset;
+    bool readonly;
 }OffsetMember;
 
 typedef struct{
     const char* name;
-    getsetfunc function;
+    getter get;
 }GetSets;
 
 typedef struct{    
@@ -99,6 +103,10 @@ typedef struct object_type{
     OffsetMember* slot_offsets;
 
     compfunc slot_cmp;
+
+    offsetgetfunc slot_offsetget;
+    offsetsetfunc slot_offsetset;
+
     posttpcallfunc slot_post_tpcall;
 }TypeObject;
 
@@ -121,7 +129,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=44;
+const size_t nbuiltins=45;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -193,6 +201,10 @@ inline object* pop_dataframe(struct datastack* stack);
 inline void add_callframe(struct callstack* stack, object* line, string* name, object* code);
 inline void pop_callframe(struct callstack* stack);
 void print_traceback();
+
+parse_ret parseretglbl;
+struct compiler* new_compiler();
+struct object* compile(struct compiler* compiler, parse_ret ast);
 
 object* new_list();
 object* new_none();
@@ -310,6 +322,7 @@ struct vm{
     object* globals;
 };
 
+
 #define CAST_VAR(obj) ((object_var*)obj)
 #define CAST_INT(obj) ((IntObject*)obj)
 #define CAST_STRING(obj) ((StrObject*)obj)
@@ -337,6 +350,7 @@ struct vm{
 #define CAST_ENUM(obj) ((EnumObject*)obj)
 #define CAST_RANGE(obj) ((RangeObject*)obj)
 #define CAST_ZIP(obj) ((ZipObject*)obj)
+#define CAST_OFFSETWRAPPER(obj) ((OffsetWrapperObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -392,6 +406,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "enumobject.cpp"
 #include "rangeobject.cpp"
 #include "zipobject.cpp"
+#include "offsetwrapperobject.cpp"
 
 void setup_types_consts(){
     fplbases.clear();
@@ -426,7 +441,9 @@ void setup_types_consts(){
     setup_slice_type();
     setup_enum_type();
     setup_range_type();
-    setup_zip_type();
+    setup_zip_type();  
+    setup_offsetwrapper_type();
+    setup_offsetwrapperreadonly_type();
 
     setup_builtins();
     
@@ -529,4 +546,12 @@ void setup_types_consts(){
     inherit_type_dict(&ZipType);
     setup_type_offsets(&ZipType);
     setup_type_getsets(&ZipType);
+
+    inherit_type_dict(&OffsetWrapperType);
+    setup_type_offsets(&OffsetWrapperType);
+    setup_type_getsets(&OffsetWrapperType);
+
+    inherit_type_dict(&OffsetWrapperReadonlyType);
+    setup_type_offsets(&OffsetWrapperReadonlyType);
+    setup_type_getsets(&OffsetWrapperReadonlyType);
 }

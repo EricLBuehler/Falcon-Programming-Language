@@ -428,8 +428,8 @@ static Mappings code_mappings{
 };
 
 Method code_methods[]={{NULL,NULL}};
-GetSets code_getsets[]={{"co_names", (getsetfunc)code_co_names}, {"co_consts", (getsetfunc)code_co_consts}, \
-{"co_code", (getsetfunc)code_co_code}, {"co_file", (getsetfunc)code_co_file}, {"co_lines", (getsetfunc)code_co_lines}, \
+GetSets code_getsets[]={{"co_names", (getter)code_co_names}, {"co_consts", (getter)code_co_consts}, \
+{"co_code", (getter)code_co_code}, {"co_file", (getter)code_co_file}, {"co_lines", (getter)code_co_lines}, \
 {NULL,NULL}};
 OffsetMember code_offsets[]={{NULL}};
 
@@ -749,7 +749,7 @@ void setup_func_type(){
 }
 
 
-object* none_new( object* args, object* kwargs);
+
 void none_del(object* self);
 object* none_repr(object* self);
 object* none_bool(object* self);
@@ -799,7 +799,7 @@ TypeObject NoneType={
     0, //slot_setattr
 
     0, //slot_init
-    (newfunc)none_new, //slot_new
+    0, //slot_new
     (delfunc)none_del, //slot_del
 
     0, //slot_next
@@ -934,8 +934,8 @@ static NumberMethods object_num_methods{
 };
 
 Method object_methods[]={{NULL,NULL}};
-GetSets object_getsets[]={{"__dict__", (getsetfunc)type_dict},{NULL,NULL}};
-OffsetMember object_offsets[]={{"__bases__",offsetof(TypeObject, bases)}, {NULL}};
+GetSets object_getsets[]={{"__dict__", (getter)type_dict},{NULL,NULL}};
+OffsetMember object_offsets[]={{"__bases__",offsetof(TypeObject, bases), true}, {NULL}};
 
 static Mappings object_mappings{
     0, //slot_get
@@ -1291,6 +1291,9 @@ TypeObject CWrapperType={
     cwrapper_offsets, //slot_offsests
 
     0, //slot_cmp
+
+    0, //slot_offsetget
+    0, //slot_offsetset
 };
 
 void setup_cwrapper_type(){
@@ -1299,7 +1302,7 @@ void setup_cwrapper_type(){
     fplbases.push_back(&CWrapperType);
 }
 
-object* slotwrapper_new_fromfunc(getsetfunc func,string name, TypeObject* basetype);
+object* slotwrapper_new_fromfunc(getter get, string name, TypeObject* basetype);
 object* slotwrapper_new(object* type, object* args, object* kwargs);
 object* slotwrapper_repr(object* self);
 object* slotwrapper_str(object* self);
@@ -1307,7 +1310,7 @@ object* slotwrapper_iter(object* self);
 
 typedef struct SlotWrapperObject{
     OBJHEAD_EXTRA
-    getsetfunc function;
+    getter function;
     string* name;
     TypeObject* basetype;
 }SlotWrapperObject;
@@ -1345,15 +1348,12 @@ TypeObject SlotWrapperType={
 
     0, //slot_methods
     0, //slot_getsets
+    0, //slot_offsets
 
     0, //slot_cmp
 };
 
 void setup_slotwrapper_type(){
-    SlotWrapperType.bases=new_list();
-    list_append(SlotWrapperType.bases, INCREF((object*)&CWrapperType));
-    list_append(SlotWrapperType.bases, INCREF((object*)&ObjectType));
-
     SlotWrapperType=(*(TypeObject*)finalize_type(&SlotWrapperType));
     SlotWrapperType.slot_new=NULL;
     fplbases.push_back(&SlotWrapperType);
@@ -1788,6 +1788,7 @@ void module_del(object* self);
 object* module_repr(object* self);
 object* module_cmp(object* self, object* other, uint8_t type);
 object* module_new_fromdict(object* dict, object* name);
+object* module_dict(object* self);
 
 typedef struct ModuleObject{
     OBJHEAD_EXTRA
@@ -1810,7 +1811,7 @@ static NumberMethods module_num_methods{
 
 Method module_methods[]={{NULL,NULL}};
 GetSets module_getsets[]={{NULL,NULL}};
-OffsetMember module_offsets[]={{NULL}};
+OffsetMember module_offsets[]={{"__dict__", offsetof(ModuleObject, dict), true}, {NULL}};
 
 static Mappings module_mappings{
     0, //slot_get
@@ -2170,6 +2171,110 @@ void setup_zip_type(){
     fplbases.push_back(&ZipType);
 }
 
+object* offsetwrapper_new_fromoffset(string name, size_t offset, bool readonly);
+object* offsetwrapper_repr(object* self);
+object* offsetwrapper_offsetget(object* obj, object* self);
+object* offsetwrapper_offsetset(object* obj, object* self, object* val);
+
+typedef struct OffsetWrapperObject{
+    OBJHEAD_EXTRA
+    size_t offset;
+    string* name;
+}OffsetWrapperObject;
+
+TypeObject OffsetWrapperType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("OffsetWrapperType"), //name
+    sizeof(OffsetWrapperObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    (reprfunc)offsetwrapper_repr, //slot_repr
+    (reprfunc)offsetwrapper_repr, //slot_str
+    0, //slot_call
+
+    0, //slot_number
+    0, //slot_mapping
+
+    0, //slot_methods
+    0, //slot_getsets
+    0, //slot_offsets
+
+    0, //slot_cmp
+
+    offsetwrapper_offsetget, //slot_offsetget
+    offsetwrapper_offsetset, //slot_offsetset
+};
+
+
+TypeObject OffsetWrapperReadonlyType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("OffsetWrapperReadonlyType"), //name
+    sizeof(OffsetWrapperObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    (reprfunc)offsetwrapper_repr, //slot_repr
+    (reprfunc)offsetwrapper_repr, //slot_str
+    0, //slot_call
+
+    0, //slot_number
+    0, //slot_mapping
+
+    0, //slot_methods
+    0, //slot_getsets
+    0, //slot_offsets
+
+    0, //slot_cmp
+
+    offsetwrapper_offsetget, //slot_offsetget
+    0, //slot_offsetset
+};
+
+void setup_offsetwrapper_type(){
+    OffsetWrapperType=(*(TypeObject*)finalize_type(&OffsetWrapperType));
+    OffsetWrapperType.slot_new=NULL;
+    fplbases.push_back(&OffsetWrapperType);
+}
+
+void setup_offsetwrapperreadonly_type(){
+    OffsetWrapperReadonlyType=(*(TypeObject*)finalize_type(&OffsetWrapperReadonlyType));
+    OffsetWrapperReadonlyType.slot_new=NULL;
+    fplbases.push_back(&OffsetWrapperReadonlyType);
+}
+
 
 
 object* new_type(string* name, object* bases, object* dict);
@@ -2486,7 +2591,7 @@ object* setup_type_methods(TypeObject* tp){
 
     //Inherit methods
     uint32_t idx=0;
-    while (tp_tp->slot_methods[idx].name!=NULL){
+    while (tp_tp->slot_methods!=NULL && tp_tp->slot_methods[idx].name!=NULL){
         dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name));
         idx++;
     }
@@ -2499,8 +2604,8 @@ object* setup_type_getsets(TypeObject* tp){
 
     //Inherit methods
     uint32_t idx=0;
-    while (tp_tp->slot_getsets[idx].name!=NULL){
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getsetfunc)tp_tp->slot_getsets[idx].function, tp_tp->slot_getsets[idx].name, tp_tp));
+    while (tp_tp->slot_getsets!=NULL && tp_tp->slot_getsets[idx].name!=NULL){
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, tp_tp->slot_getsets[idx].name, tp_tp));
         idx++;
     }
 
@@ -2513,8 +2618,7 @@ object* setup_type_offsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_offsets!=NULL && tp_tp->slot_offsets[idx].name!=NULL){
-        object* ob= (*(object**)((char*)tp + tp_tp->slot_offsets[idx].offset));
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_offsets[idx].name), ob);
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_offsets[idx].name), offsetwrapper_new_fromoffset(tp_tp->slot_offsets[idx].name, tp_tp->slot_offsets[idx].offset, tp_tp->slot_offsets[idx].readonly));
         idx++;
     }
 
@@ -2544,6 +2648,8 @@ object* new_type(string* name, object* bases, object* dict){
     unaryfunc iter_func=NULL;
     reprfunc str_func=NULL;
     callfunc call_func=NULL;
+    getattrfunc getattr_func=NULL;
+    setattrfunc setattr_func=NULL;
 
     NumberMethods number=(*(NumberMethods*)fpl_malloc(sizeof(NumberMethods)));
     memset(&number, 0, sizeof(NumberMethods));
@@ -2618,6 +2724,30 @@ object* new_type(string* name, object* bases, object* dict){
         }
         else{
             call_func=(callfunc)newtp_call;
+        }
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__getattr__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+            getattr_func=object_genericgetattr;
+        }
+        else{
+            getattr_func=(getattrfunc)newtp_getattr;
+        }
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__setattr__"));
+        object* dela=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__delattr__"));
+        if (n==NULL && dela!=NULL){
+            n=dela;
+        }
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+            setattr_func=object_genericsetattr;
+        }
+        else{
+            setattr_func=(setattrfunc)newtp_setattr;
         }
     }
     if (NEWTP_NUMBER_COPY){
@@ -2764,8 +2894,8 @@ object* new_type(string* name, object* bases, object* dict){
         bases, //bases
         size, //dict_offset
         dict, //dict
-        object_genericgetattr, //slot_getattr
-        object_genericsetattr, //slot_setattr
+        getattr_func, //slot_getattr
+        setattr_func, //slot_setattr
 
         init_func, //slot_init
         new_func, //slot_new
@@ -2786,6 +2916,10 @@ object* new_type(string* name, object* bases, object* dict){
         newtp_offsets, //slot_offsests
         
         (compfunc)newtp_cmp, //slot_cmp
+        
+        0, //slot_offsetget
+        0, //slot_offsetset
+
         newtp_post_tpcall, //slot_post_tpcall
     };
     

@@ -248,3 +248,29 @@ object* newtp_iter(object* self){
 void newtp_post_tpcall(object* ob){
     (*(object**)((char*)ob + ob->type->dict_offset))=new_dict();
 }
+
+object* newtp_getattr(object* self, object* attr){
+    object* n=object_getattr(self, str_new_fromstr("__getattr__"));
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    args->type->slot_mappings->slot_append(args, attr);
+    object* val=object_call(n, args, new_dict());
+    return val;
+}
+
+object* newtp_setattr(object* self, object* attr, object* val){
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    args->type->slot_mappings->slot_append(args, attr);
+    
+    object* n;
+    n=object_getattr(self, str_new_fromstr("__setattr__"));
+    if (n==NULL){
+        n=object_getattr(self, str_new_fromstr("__delattr__"));
+    }
+    else{
+        args->type->slot_mappings->slot_append(args, val);
+    }
+    
+    return object_call(n, args, new_dict());
+}
