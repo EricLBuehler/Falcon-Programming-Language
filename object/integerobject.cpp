@@ -108,14 +108,13 @@ object* int_new(object* type, object* args, object* kwargs){
 
 object* int_pow(object* self, object* other){
     if (object_istype(other->type, &IntType)){
-        double selfv =(double)CAST_INT(self)->val->to_int();
-        double otherv=(double)CAST_INT(other)->val->to_int();
-        double res=pow(selfv,otherv);
-        int ires=(int)res;
-        if (res-ires==0){
-            return new_int_fromint(ires);
+        BigInt selfv =*CAST_INT(self)->val;
+        BigInt otherv=*CAST_INT(other)->val;
+        BigInt out=selfv;
+        for (BigInt i=0; i<otherv; i++){
+            out*=selfv;
         }
-        return new_float_fromdouble(res);
+        return new_int_frombigint(new BigInt(out));
     }
     object* otherv=object_float(other);
     if (otherv==NULL){
@@ -134,14 +133,9 @@ object* int_pow(object* self, object* other){
 
 object* int_mod(object* self, object* other){
     if (object_istype(other->type, &IntType)){
-        double selfv =(double)CAST_INT(self)->val->to_int();
-        double otherv=(double)CAST_INT(other)->val->to_int();
-        double res=fmod(selfv,otherv);
-        int ires=(int)res;
-        if (res-ires==0){
-            return new_int_fromint(ires);
-        }
-        return new_float_fromdouble(res);
+        BigInt selfv =*CAST_INT(self)->val;
+        BigInt otherv=*CAST_INT(other)->val;
+        return new_int_frombigint(new BigInt(selfv%otherv));
     }
     object* otherv=object_float(other);
     if (otherv==NULL){
@@ -160,14 +154,9 @@ object* int_mod(object* self, object* other){
 
 object* int_add(object* self, object* other){
     if (object_istype(other->type, &IntType)){
-        double selfv =(double)CAST_INT(self)->val->to_int();
-        double otherv=(double)CAST_INT(other)->val->to_int();
-        double res=selfv+otherv;
-        int ires=(int)res;
-        if (res-ires==0){
-            return new_int_fromint(ires);
-        }
-        return new_float_fromdouble(res);
+        BigInt selfv =*CAST_INT(self)->val;
+        BigInt otherv=*CAST_INT(other)->val;
+        return new_int_frombigint(new BigInt(selfv+otherv));
     }
     
     object* otherv=object_float(other);
@@ -187,14 +176,9 @@ object* int_add(object* self, object* other){
 
 object* int_sub(object* self, object* other){
     if (object_istype(other->type, &IntType)){
-        double selfv =(double)CAST_INT(self)->val->to_int();
-        double otherv=(double)CAST_INT(other)->val->to_int();
-        double res=selfv-otherv;
-        int ires=(int)res;
-        if (res-ires==0){
-            return new_int_fromint(ires);
-        }
-        return new_float_fromdouble(res);
+        BigInt selfv =*CAST_INT(self)->val;
+        BigInt otherv=*CAST_INT(other)->val;
+        return new_int_frombigint(new BigInt(selfv-otherv));
     }
     object* otherv=object_float(other);
     if (otherv==NULL){
@@ -213,14 +197,9 @@ object* int_sub(object* self, object* other){
 
 object* int_mul(object* self, object* other){
     if (object_istype(other->type, &IntType)){
-        double selfv =(double)CAST_INT(self)->val->to_int();
-        double otherv=(double)CAST_INT(other)->val->to_int();
-        double res=selfv*otherv;
-        int ires=(int)res;
-        if (res-ires==0){
-            return new_int_fromint(ires);
-        }
-        return new_float_fromdouble(res);
+        BigInt selfv =*CAST_INT(self)->val;
+        BigInt otherv=*CAST_INT(other)->val;
+        return new_int_frombigint(new BigInt(selfv*otherv));
     }
     object* otherv=object_float(other);
     if (otherv==NULL){
@@ -239,14 +218,9 @@ object* int_mul(object* self, object* other){
 
 object* int_div(object* self, object* other){
     if (object_istype(other->type, &IntType)){
-        double selfv =(double)CAST_INT(self)->val->to_int();
-        double otherv=(double)CAST_INT(other)->val->to_int();
-        double res=selfv/otherv;
-        int ires=(int)res;
-        if (res-ires==0){
-            return new_int_fromint(ires);
-        }
-        return new_float_fromdouble(res);
+        BigInt selfv =*CAST_INT(self)->val;
+        BigInt otherv=*CAST_INT(other)->val;
+        return new_int_frombigint(new BigInt(selfv/otherv));
     }
     object* otherv=object_float(other);
     if (otherv==NULL){

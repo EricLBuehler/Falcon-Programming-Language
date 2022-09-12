@@ -128,7 +128,7 @@ static Mappings newtp_mappings{
 
 Method newtp_methods[]={{NULL,NULL}};
 GetSets newtp_getsets[]={{NULL,NULL}};
-OffsetMember newtp_offsets[]={{"__dict__", offsetof(ModuleObject, dict), true}, {"__bases__",offsetof(TypeObject, bases)}, {NULL}};
+OffsetMember newtp_offsets[]={{"__dict__", 0, true}, {"__bases__",offsetof(TypeObject, bases)}, {NULL}};
 
 #define CAST_NEWTYPE(obj) ((NewTypeObject*)(obj))
 

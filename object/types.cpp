@@ -2937,6 +2937,9 @@ object* new_type(string* name, object* bases, object* dict){
             }
         }
     }
+    
+    object* n=object_getattr(tp, str_new_fromstr("__dict__"));
+    CAST_OFFSETWRAPPER(n)->offset=size;
 
     return tp;
 }

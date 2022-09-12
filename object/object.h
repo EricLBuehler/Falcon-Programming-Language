@@ -58,7 +58,7 @@ typedef struct{
 typedef struct{
     const char* name;
     getter get;
-    setter get;
+    setter set;
 }GetSets;
 
 typedef struct{    
