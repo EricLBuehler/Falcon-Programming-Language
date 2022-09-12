@@ -20,6 +20,7 @@ typedef void (*posttpcallfunc)(object*);
 
 typedef object* (*cwrapperfunc)(object*, object*);
 typedef object* (*getter)(object*);
+typedef object* (*setter)(object*, object*);
 
 typedef object* (*offsetgetfunc)(object*, object*);
 typedef object* (*offsetsetfunc)(object*, object*, object*);
@@ -57,6 +58,7 @@ typedef struct{
 typedef struct{
     const char* name;
     getter get;
+    setter get;
 }GetSets;
 
 typedef struct{    
