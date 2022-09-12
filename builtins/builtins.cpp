@@ -170,3 +170,5 @@ object* builtin_issubclass(object* self, object* args){
     }
     return new_bool_false();
 }
+
+object* builtin_eval(object* self, object* args);
