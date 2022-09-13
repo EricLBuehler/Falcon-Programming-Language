@@ -304,6 +304,7 @@ object* tuple_add(object* self, object* other){
 
     object* tup=new_tuple();
     CAST_TUPLE(tup)->size=CAST_TUPLE(self)->size+CAST_TUPLE(other)->size;
+    tuple_resize(CAST_TUPLE(tup), CAST_TUPLE(tup)->size);
 
     for (size_t i=0; i<CAST_TUPLE(self)->size; i++){
         CAST_TUPLE(tup)->array[i]=INCREF(CAST_TUPLE(self)->array[i]);

@@ -467,6 +467,7 @@ object* list_add(object* self, object* other){
 
     object* list=new_list();
     CAST_LIST(list)->size=CAST_LIST(self)->size+CAST_LIST(other)->size;
+    list_resize(CAST_LIST(list), CAST_LIST(list)->size);
 
     for (size_t i=0; i<CAST_LIST(self)->size; i++){
         CAST_LIST(list)->array[i]=INCREF(CAST_LIST(self)->array[i]);
