@@ -570,6 +570,28 @@ object* math_tanh(object* args, object* kwargs){
     return new_float_fromdouble(res);
 }
 
+object* math_factorial(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+    object* val=list_index_int(args, 0);
+    if (!object_istype(val->type, &IntType)){
+        vm_add_err(&ValueError, vm, "Expected int, got '%s'", val->type->name->c_str());
+        return NULL; 
+    }
+    BigInt n=*CAST_INT(val)->val;
+    if (n<0){
+        vm_add_err(&ValueError, vm, "Expected argument to be greater than 0");
+    }
+
+    BigInt fact=1;
+    for (BigInt i=1; i<n+1; i++){
+        fact=fact*i;
+    }
+    return new_int_frombigint(new BigInt(fact));
+}
 
 
 object* new_math_module(){
@@ -643,6 +665,10 @@ object* new_math_module(){
 
     object* tanh=cwrapper_new_fromfunc((cwrapperfunc)math_tanh, "tanh");
     dict_set(dict, str_new_fromstr("tanh"), tanh);
+
+    object* factorial=cwrapper_new_fromfunc((cwrapperfunc)math_factorial, "factorial");
+    dict_set(dict, str_new_fromstr("factorial"), factorial);
+
 
     dict_set(dict, str_new_fromstr("pi"), new_float_fromdouble(M_PI));
     dict_set(dict, str_new_fromstr("tau"), new_float_fromdouble(M_PI*2));
