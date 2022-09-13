@@ -128,6 +128,7 @@ object* str_wrapper_eq(object* args, object* kwargs);
 
 object* str_add(object* self, object* other);
 object* str_get(object* self, object* idx);
+object* str_mul(object* self, object* other);
 
 object* str_new_fromstr(string val);
 object* string_join_meth(object* args, object* kwargs);
@@ -140,7 +141,7 @@ typedef struct StrObject{
 static NumberMethods str_num_methods{
     (binopfunc)str_add, //slot_add
     0, //slot_sub
-    0, //slot_mul
+    (binopfunc)str_mul, //slot_mul
     0, //slot_div
     0, //slot_mod
     0, //slot_pow
@@ -222,6 +223,9 @@ object* list_iter(object* self);
 object* list_pop(object* self);
 object* list_pop_meth(object* args, object* kwargs);
 
+object* list_add(object* self, object* other);
+object* list_mul(object* self, object* other);
+
 typedef struct ListObject{
     OBJHEAD_VAR
     object** array; //Pointer to array
@@ -234,9 +238,9 @@ GetSets list_getsets[]={{NULL,NULL}};
 OffsetMember list_offsets[]={{NULL}};
 
 static NumberMethods list_num_methods{
-    0, //slot_add
+    (binopfunc)list_add, //slot_add
     0, //slot_sub
-    0, //slot_mul
+    (binopfunc)list_mul, //slot_mul
     0, //slot_div
     0, //slot_mod
     0, //slot_pow
@@ -309,7 +313,6 @@ object* dict_bool(object* self);
 object* dict_iter(object* self);
 object* dict_keys_meth(object* args, object* kwargs);
 object* dict_values_meth(object* args, object* kwargs);
-
 
 typedef struct DictObject{
     OBJHEAD_VAR
@@ -589,6 +592,9 @@ object* tuple_cmp(object* self, object* other, uint8_t type);
 object* tuple_bool(object* self);
 object* tuple_iter(object* self);
 
+object* tuple_mul(object* self, object* other);
+object* tuple_add(object* self, object* other);
+
 typedef struct TupleObject{
     OBJHEAD_VAR
     object** array; //Pointer to array
@@ -598,9 +604,9 @@ typedef struct TupleObject{
 }TupleObject;
 
 static NumberMethods tuple_num_methods{
-    0, //slot_add
+    (binopfunc)tuple_add, //slot_add
     0, //slot_sub
-    0, //slot_mul
+    (binopfunc)tuple_mul, //slot_mul
     0, //slot_div
     0, //slot_mod
     0, //slot_pow

@@ -252,3 +252,21 @@ object* string_join_meth(object* args, object* kwargs){
     vm->exception=NULL;
     return str_new_fromstr(s);
 }
+
+string repeat(string input, unsigned num){
+    std::string ret;
+    ret.reserve(input.size() * num);
+    while (num--)
+        ret += input;
+    return ret;
+}
+
+object* str_mul(object* self, object* other){
+    if (other->type!=&IntType){
+        vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
+        return NULL;
+    }
+        
+    return str_new_fromstr(repeat(*CAST_STRING(self)->val,(CAST_INT(other)->val->to_long())));
+}
+

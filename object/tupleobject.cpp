@@ -275,3 +275,41 @@ object* tuple_iter_bool(object* self){
     }
     return new_bool_true();
 }
+
+
+object* tuple_mul(object* self, object* other){
+    if (other->type!=&IntType){
+        vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
+        return NULL;
+    }
+    long nrepeat=CAST_INT(other)->val->to_long();
+    size_t orig_size=CAST_TUPLE(self)->size;
+    CAST_TUPLE(self)->size*=nrepeat;
+    
+    tuple_resize(CAST_TUPLE(self), CAST_TUPLE(self)->size);
+        
+    for (int i=1; i<nrepeat; i++){
+        for (int a=0; a<orig_size; a++){
+            CAST_TUPLE(self)->array[a+(i*orig_size)]=INCREF(CAST_TUPLE(self)->array[a]);
+        }
+    }
+    return self;
+}
+
+object* tuple_add(object* self, object* other){
+    if (other->type!=&TupleType){
+        vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
+        return NULL;
+    }
+
+    object* tup=new_tuple();
+    CAST_TUPLE(tup)->size=CAST_TUPLE(self)->size*CAST_TUPLE(other)->size;
+
+    for (size_t i=0; i<CAST_TUPLE(self)->size; i++){
+        CAST_TUPLE(tup)->array[i]=INCREF(CAST_TUPLE(self)->array[i]);
+    }
+    for (size_t i=CAST_TUPLE(self)->size; i<CAST_TUPLE(tup)->size; i++){
+        CAST_TUPLE(tup)->array[i]=INCREF(CAST_TUPLE(other)->array[i-CAST_TUPLE(self)->size]);
+    }
+    return tup;
+}

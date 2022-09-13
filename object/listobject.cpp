@@ -437,3 +437,42 @@ object* list_pop_meth(object* args, object* kwargs){
     list_resize(CAST_LIST(self), CAST_LIST(self)->size--);
     return ob;
 }
+
+
+object* list_mul(object* self, object* other){
+    if (other->type!=&IntType){
+        vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
+        return NULL;
+    }
+    long nrepeat=CAST_INT(other)->val->to_long();
+    size_t orig_size=CAST_LIST(self)->size;
+    CAST_LIST(self)->size*=nrepeat;
+    
+    list_resize(CAST_LIST(self), CAST_LIST(self)->size);
+        
+    for (int i=1; i<nrepeat; i++){
+        for (int a=0; a<orig_size; a++){
+            CAST_LIST(self)->array[a+(i*orig_size)]=INCREF(CAST_LIST(self)->array[a]);
+        }
+    }
+    return self;
+}
+
+object* list_add(object* self, object* other){
+    if (other->type!=&ListType){
+        vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
+        return NULL;
+    }
+    
+
+    object* list=new_list();
+    CAST_LIST(list)->size=CAST_LIST(self)->size*CAST_LIST(other)->size;
+
+    for (size_t i=0; i<CAST_LIST(self)->size; i++){
+        CAST_LIST(list)->array[i]=INCREF(CAST_LIST(self)->array[i]);
+    }
+    for (size_t i=CAST_LIST(self)->size; i<CAST_LIST(list)->size; i++){
+        CAST_LIST(list)->array[i]=INCREF(CAST_LIST(other)->array[i-CAST_LIST(self)->size]);
+    }
+    return list;
+}
