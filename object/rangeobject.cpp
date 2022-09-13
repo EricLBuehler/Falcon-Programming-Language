@@ -28,7 +28,7 @@ object* range_new(object* type, object* args, object* kwargs){
         CAST_RANGE(range)->start=0;
     }
 
-    CAST_RANGE(range)->idx=0;
+    CAST_RANGE(range)->idx=CAST_RANGE(range)->start;
     return range;
 }
 
