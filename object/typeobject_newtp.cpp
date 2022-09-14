@@ -62,10 +62,11 @@ object* newtp_set(object* self, object* idx, object* val){
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, idx);
-    args->type->slot_mappings->slot_append(args, val);
     
     object* n=object_getattr(self, str_new_fromstr("__setitem__"));
     if (n==NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
         n=object_getattr(self, str_new_fromstr("__delitem__"));
     }
     else{
@@ -74,6 +75,7 @@ object* newtp_set(object* self, object* idx, object* val){
     
     return object_call_nokwargs(n, args);
 }
+
 object* newtp_repr(object* self){
     object* n=object_getattr(self, str_new_fromstr("__repr__"));
     object* args=new_tuple();
@@ -273,6 +275,8 @@ object* newtp_setattr(object* self, object* attr, object* val){
     object* n;
     n=object_getattr(self, str_new_fromstr("__setattr__"));
     if (n==NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
         n=object_getattr(self, str_new_fromstr("__delattr__"));
     }
     else{
