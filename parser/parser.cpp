@@ -137,7 +137,7 @@ class Parser{
         }
         
         bool isname(nodetype type){
-            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_MULTIIDENT || type==N_DOT){
+            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_MULTIIDENT || type==N_DOT || type==N_CALL || type==N_SUBSCR){
                 return true;
             }
             return false;
@@ -1049,7 +1049,7 @@ class Parser{
                         break;
 
                     case T_DOTIDENT: {
-                        if (!isname(left->type) && (left->type!=N_CALL && this->next_tok_is(T_DOTIDENT))){
+                        if (!isname(left->type) && this->next_tok_is(T_DOTIDENT)){
                             this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                             this->advance();
                             return NULL;
