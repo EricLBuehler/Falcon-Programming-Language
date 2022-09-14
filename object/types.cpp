@@ -2659,6 +2659,10 @@ object* new_type(string* name, object* bases, object* dict){
 
     NumberMethods number=(*(NumberMethods*)fpl_malloc(sizeof(NumberMethods)));
     memset(&number, 0, sizeof(NumberMethods));
+
+    Mappings mappings=(*(Mappings*)fpl_malloc(sizeof(Mappings)));
+    memset(&mappings, 0, sizeof(Mappings));
+
     if (NEWTP_PRIMARY_COPY){
         object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__repr__"));
         if (n==NULL){
@@ -2846,6 +2850,38 @@ object* new_type(string* name, object* bases, object* dict){
         else{
             number.slot_float=(unaryfunc)newtp_float;
         }       
+    }
+    if (NEWTP_MAPPINGS_COPY){
+        object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__getitem__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            mappings.slot_get=(getfunc)newtp_get;
+        }
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__setitem__"));
+        object* deli=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__delitem__"));
+        if (n==NULL && deli!=NULL){
+            n=deli;
+        }
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            mappings.slot_set=(setfunc)newtp_set;
+        }
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__len__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            mappings.slot_len=(lenfunc)newtp_len;
+        }
     }
 
     uint32_t maxsize=0;

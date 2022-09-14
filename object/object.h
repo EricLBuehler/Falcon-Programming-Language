@@ -188,6 +188,8 @@ object* builtin___build_class__(object* self, object* args);
 
 const bool NEWTP_PRIMARY_COPY=true;
 const bool NEWTP_NUMBER_COPY=true;
+const bool NEWTP_MAPPINGS_COPY=true;
+
 
 vector<TypeObject*> fplbases;
 
