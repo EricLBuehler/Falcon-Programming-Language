@@ -765,8 +765,6 @@ class Parser{
             s->expr=expr;
             
             node->node=s;
-            
-            this->advance();
             return node;
         }
 
@@ -783,8 +781,6 @@ class Parser{
             s->expr=expr;
             
             node->node=s;
-            
-            this->advance();
             return node;
         }
 
