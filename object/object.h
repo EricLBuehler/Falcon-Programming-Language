@@ -15,7 +15,6 @@ typedef struct object*(*compfunc)(struct object*, struct object*, uint8_t type);
 typedef object* (*callfunc)(object*, object*, object*);
 typedef object* (*getattrfunc)(object*, object*);
 typedef void (*setattrfunc)(object*, object*, object*);
-typedef void (*posttpcallfunc)(object*);
 
 
 typedef object* (*cwrapperfunc)(object*, object*);
@@ -108,8 +107,6 @@ typedef struct object_type{
 
     offsetgetfunc slot_offsetget;
     offsetsetfunc slot_offsetset;
-
-    posttpcallfunc slot_post_tpcall;
 }TypeObject;
 
 #define OBJHEAD size_t refcnt; struct object* ob_prev; struct object* ob_next; uint32_t gen;
@@ -449,6 +446,7 @@ void setup_types_consts(){
     setup_zip_type();  
     setup_offsetwrapper_type();
     setup_offsetwrapperreadonly_type();
+    setup_slotwrapperreadoly_type();
 
     setup_builtins();
     
@@ -559,4 +557,8 @@ void setup_types_consts(){
     inherit_type_dict(&OffsetWrapperReadonlyType);
     setup_type_offsets(&OffsetWrapperReadonlyType);
     setup_type_getsets(&OffsetWrapperReadonlyType);
+
+    inherit_type_dict(&SlotWrapperReadonlyType);
+    setup_type_offsets(&SlotWrapperReadonlyType);
+    setup_type_getsets(&SlotWrapperReadonlyType);
 }

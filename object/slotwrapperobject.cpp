@@ -1,35 +1,15 @@
-object* slotwrapper_new_fromfunc(getter func, string name, TypeObject* basetype){
+object* slotwrapper_new_fromfunc(getter get, setter set, string name, TypeObject* basetype){
     object* o=new_object(&SlotWrapperType);
-    CAST_SLOTWRAPPER(o)->function=func;
+    CAST_SLOTWRAPPER(o)->get=get;
+    CAST_SLOTWRAPPER(o)->set=set;
     CAST_SLOTWRAPPER(o)->name=new string(name);
     CAST_SLOTWRAPPER(o)->basetype=basetype;
-    return o;
-}
-
-object* slotwrapper_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (len>0){
-        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
-        return NULL;
-    }
-    object* o=new_object(CAST_TYPE(type));
-    CAST_SLOTWRAPPER(o)->function=NULL;
-    CAST_SLOTWRAPPER(o)->name=NULL;
-    CAST_SLOTWRAPPER(o)->basetype=NULL;
     return o;
 }
 
 object* slotwrapper_repr(object* self){
     char buf[32];
     sprintf(buf, "0x%x", self);
-    if (CAST_SLOTWRAPPER(self)->function==NULL){
-        string s="<";
-        s+=self->type->name->c_str();
-        s+="' @ ";
-        s+=buf;
-        s+=">";
-        return str_new_fromstr(s);
-    }
     string s="<";
     s+=self->type->name->c_str();
     s+=" '";
@@ -43,9 +23,11 @@ object* slotwrapper_repr(object* self){
 object* slotwrapper_str(object* self){
     char buf[32];
     sprintf(buf, "0x%x", self);
-    if (CAST_SLOTWRAPPER(self)->function==NULL){
+    if (CAST_SLOTWRAPPER(self)->get==NULL){
         string s="<";
         s+=self->type->name->c_str();
+        s+=" '";
+        s+=(*CAST_SLOTWRAPPER(self)->name);
         s+="' @ ";
         s+=buf;
         s+=">";
@@ -58,12 +40,15 @@ object* slotwrapper_str(object* self){
     s+="' @ ";
     s+=buf;
     s+=":\n";
-    s+=object_crepr(CAST_SLOTWRAPPER(self)->function(self));
+    s+=object_crepr(CAST_SLOTWRAPPER(self)->get(self));
     s+=">";
     return str_new_fromstr(s);
 }
 
-object* slotwrapper_iter(object* self){
-    object* o=CAST_SLOTWRAPPER(self)->function(self);
-    return o->type->slot_iter(o);
+object* slotwrapper_offsetget(object* obj, object* self){
+    return CAST_SLOTWRAPPER(self)->get(self);
+}
+
+object* slotwrapper_offsetset(object* obj, object* self, object* val){
+    return CAST_SLOTWRAPPER(self)->set(self, val);
 }

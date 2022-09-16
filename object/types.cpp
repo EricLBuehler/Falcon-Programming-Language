@@ -515,7 +515,9 @@ bool istrue(object* boolean){
         DECREF(boolean);
         return true;
     }
-    DECREF(boolean);
+    if (boolean!=NULL){
+        DECREF(boolean);
+    }
     return false;
 }
 
@@ -949,8 +951,8 @@ static NumberMethods object_num_methods{
 };
 
 Method object_methods[]={{NULL,NULL}};
-GetSets object_getsets[]={{"__dict__", (getter)type_dict},{NULL,NULL}};
-OffsetMember object_offsets[]={{"__bases__",offsetof(TypeObject, bases), true}, {NULL}};
+GetSets object_getsets[]={{"__dict__", (getter)type_dict, 0}, {"__bases__", (getter)type_bases_get, 0},{NULL,NULL}};
+OffsetMember object_offsets[]={{NULL}};
 
 static Mappings object_mappings{
     0, //slot_get
@@ -1317,15 +1319,17 @@ void setup_cwrapper_type(){
     fplbases.push_back(&CWrapperType);
 }
 
-object* slotwrapper_new_fromfunc(getter get, string name, TypeObject* basetype);
-object* slotwrapper_new(object* type, object* args, object* kwargs);
+object* slotwrapper_new_fromfunc(getter get, setter set, string name, TypeObject* basetype);
+object* slotwrapper_new(object* type, object* args, object* kwargs);    
 object* slotwrapper_repr(object* self);
 object* slotwrapper_str(object* self);
-object* slotwrapper_iter(object* self);
+object* slotwrapper_offsetget(object* obj, object* self);
+object* slotwrapper_offsetset(object* obj, object* self, object* val);
 
 typedef struct SlotWrapperObject{
     OBJHEAD_EXTRA
-    getter function;
+    getter get;
+    setter set;
     string* name;
     TypeObject* basetype;
 }SlotWrapperObject;
@@ -1348,11 +1352,11 @@ TypeObject SlotWrapperType={
     0, //slot_setattr
 
     0, //slot_init
-    (newfunc)slotwrapper_new, //slot_new
+    0, //slot_new
     0, //slot_del
 
     0, //slot_next
-    (unaryfunc)slotwrapper_iter, //slot_iter
+    0, //slot_iter
 
     (reprfunc)slotwrapper_repr, //slot_repr
     (reprfunc)slotwrapper_str, //slot_str
@@ -1366,11 +1370,13 @@ TypeObject SlotWrapperType={
     0, //slot_offsets
 
     0, //slot_cmp
+
+    (offsetgetfunc)slotwrapper_offsetget, //slot_offsetget
+    (offsetsetfunc)slotwrapper_offsetset, //slot_offsetget
 };
 
 void setup_slotwrapper_type(){
     SlotWrapperType=(*(TypeObject*)finalize_type(&SlotWrapperType));
-    SlotWrapperType.slot_new=NULL;
     fplbases.push_back(&SlotWrapperType);
 }
 
@@ -2291,6 +2297,52 @@ void setup_offsetwrapperreadonly_type(){
 }
 
 
+TypeObject SlotWrapperReadonlyType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("SlotWrapperReadonlyType"), //name
+    sizeof(SlotWrapperObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    (reprfunc)slotwrapper_repr, //slot_repr
+    (reprfunc)slotwrapper_str, //slot_str
+    0, //slot_call
+
+    0, //slot_number
+    0, //slot_mapping
+
+    0, //slot_methods
+    0, //slot_getsets
+    0, //slot_offsets
+
+    0, //slot_cmp
+
+    (offsetgetfunc)slotwrapper_offsetget, //slot_offsetget
+    0, //slot_offsetget
+};
+
+void setup_slotwrapperreadoly_type(){
+    SlotWrapperReadonlyType=(*(TypeObject*)finalize_type(&SlotWrapperReadonlyType));
+    fplbases.push_back(&SlotWrapperReadonlyType);
+}
+
+
 
 object* new_type(string* name, object* bases, object* dict);
 
@@ -2351,9 +2403,6 @@ object* type_call(object* self, object* args, object* kwargs){
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
     if (o != NULL && o->type->slot_init!=NULL){
         o->type->slot_init(o, args, kwargs);
-    }
-    if (o != NULL && o->type->slot_post_tpcall!=NULL){
-        o->type->slot_post_tpcall(o);
     }
     return o;
 }
@@ -2620,7 +2669,7 @@ object* setup_type_getsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_getsets!=NULL && tp_tp->slot_getsets[idx].name!=NULL){
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, tp_tp->slot_getsets[idx].name, tp_tp));
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, (setter)tp_tp->slot_getsets[idx].set, tp_tp->slot_getsets[idx].name, tp_tp));
         idx++;
     }
 
@@ -2653,10 +2702,13 @@ object* type_dict(object* type){
     return CAST_SLOTWRAPPER(type)->basetype->dict;
 }
 
+object* type_bases_get(object* type){
+    return CAST_SLOTWRAPPER(type)->basetype->bases;
+}
 
 object* new_type(string* name, object* bases, object* dict){
     reprfunc repr_func=NULL;
-    newfunc new_func=NULL;
+    newfunc new_func=(newfunc)newtp_new;
     initfunc init_func=NULL;
     delfunc del_func=NULL;
     iternextfunc next_func=NULL;
@@ -2680,15 +2732,6 @@ object* new_type(string* name, object* bases, object* dict){
         }
         else{
             repr_func=(reprfunc)newtp_repr;
-        }
-
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__new__"));
-        if (n==NULL){
-            DECREF(vm->exception);
-            vm->exception=NULL;
-        }
-        else{
-            new_func=(newfunc)newtp_new;
         }
 
         n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__init__"));
@@ -2970,8 +3013,6 @@ object* new_type(string* name, object* bases, object* dict){
         
         0, //slot_offsetget
         0, //slot_offsetset
-
-        newtp_post_tpcall, //slot_post_tpcall
     };
     
     object* tp=finalize_type(&newtype);

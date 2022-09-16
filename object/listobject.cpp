@@ -28,7 +28,7 @@ object* list_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
-    if (CAST_INT(args->type->slot_mappings->slot_len(kwargs))->val->to_int()>0){
+    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()>0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
         return NULL;
     }

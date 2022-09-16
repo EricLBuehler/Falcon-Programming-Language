@@ -11,21 +11,27 @@ object* newtp_init(object* self, object* args, object* kwargs){
     return val;
 }
 object* newtp_new(object* self, object* args, object* kwargs){
+    if (!object_istype(self->type, &TypeType)){
+        return self;
+    }
+    
     object* o=new_object((TypeObject*)self);
     (*(object**)((char*)o + o->type->dict_offset))=new_dict();
 
     //Setup dunder attributes
     object_setattr(o, str_new_fromstr("__class__"), self);
-
+    
     //Try to call __new__
     object* n=object_getattr(o, str_new_fromstr("__new__"));
+    if (n==NULL){
+        return o;
+    }
     
     object* args_=new_tuple();
     args_->type->slot_mappings->slot_append(args_, o);
     for (int i=0; i<CAST_LIST(args)->size; i++){
         args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
     }
-    
     object* val=object_call(n, args_, kwargs);
     return val;
 }
@@ -252,10 +258,6 @@ object* newtp_iter(object* self){
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
     return val;
-}
-
-void newtp_post_tpcall(object* ob){
-    (*(object**)((char*)ob + ob->type->dict_offset))=new_dict();
 }
 
 object* newtp_getattr(object* self, object* attr){

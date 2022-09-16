@@ -376,6 +376,7 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
 
 object* object_genericgetattr(object* obj, object* attr){
     object* res=NULL;
+    
     //Check dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
@@ -436,20 +437,17 @@ object* object_getattr(object* obj, object* attr){
 void object_genericsetattr(object* obj, object* attr, object* val){
     object* d=NULL;
     
-    
     //Try instance dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
-        if (object_find_bool_dict_keys(dict, attr)){
-            d=dict;
-        }
+        
+        d=dict;
     }
+    
     //Check type dict 
     if (d==NULL && obj->type->dict!=0){
         object* dict = obj->type->dict;
-        if (object_find_bool_dict_keys(dict, attr)){
-            d=dict;
-        }
+        d=dict;
     }
 
     if (d==NULL){
@@ -461,9 +459,7 @@ void object_genericsetattr(object* obj, object* attr, object* val){
             //Check type dict
             if (base_tp->dict!=0){
                 object* dict = base_tp->dict;
-                if (object_find_bool_dict_keys(dict, attr)){
-                    d=dict;
-                }
+                d=dict;
             }
         }
     }
@@ -485,7 +481,12 @@ void object_genericsetattr(object* obj, object* attr, object* val){
                 return;
             }
         }
-        DECREF(res);
+        else{
+            if (vm!=NULL){
+                DECREF(vm->exception);
+                vm->exception=NULL;
+            }
+        }
     }
     
     dict_set(d, attr, val);

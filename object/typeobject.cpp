@@ -27,6 +27,7 @@ static Mappings type_mappings{
 };
 
 object* type_dict(object* type);
+object* type_bases_get(object* type);
 
 Method type_methods[]={{NULL,NULL}};
 GetSets type_getsets[]={{NULL,NULL}};
@@ -128,7 +129,7 @@ static Mappings newtp_mappings{
 
 Method newtp_methods[]={{NULL,NULL}};
 GetSets newtp_getsets[]={{NULL,NULL}};
-OffsetMember newtp_offsets[]={{"__dict__", 0, true}, {"__bases__",offsetof(TypeObject, bases)}, {NULL}};
+OffsetMember newtp_offsets[]={{"__dict__", 0, true}, {NULL}};
 
 #define CAST_NEWTYPE(obj) ((NewTypeObject*)(obj))
 
