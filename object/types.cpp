@@ -132,6 +132,8 @@ object* str_mul(object* self, object* other);
 
 object* str_new_fromstr(string val);
 object* string_join_meth(object* args, object* kwargs);
+object* string_replace_meth(object* args, object* kwargs);
+object* string_find_meth(object* args, object* kwargs);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA
@@ -159,7 +161,7 @@ static Mappings str_mappings{
     str_len, //slot_len
 };
 
-Method str_methods[]={{"join", (cwrapperfunc)string_join_meth}, {NULL,NULL}};
+Method str_methods[]={{"find", (cwrapperfunc)string_find_meth}, {"replace", (cwrapperfunc)string_replace_meth}, {"join", (cwrapperfunc)string_join_meth}, {NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 OffsetMember str_offsets[]={{NULL}};
 
@@ -222,6 +224,8 @@ object* list_append_meth(object* args, object* kwargs);
 object* list_iter(object* self);
 object* list_pop(object* self);
 object* list_pop_meth(object* args, object* kwargs);
+object* list_replace_meth(object* args, object* kwargs);
+object* list_find_meth(object* args, object* kwargs);
 
 object* list_add(object* self, object* other);
 object* list_mul(object* self, object* other);
@@ -233,7 +237,8 @@ typedef struct ListObject{
     size_t size;
 }ListObject;
 
-Method list_methods[]={{"append", (cwrapperfunc)list_append_meth}, {"pop", (cwrapperfunc)list_pop_meth}, {NULL,NULL}};
+Method list_methods[]={{"find", (cwrapperfunc)list_find_meth}, {"replace", (cwrapperfunc)list_replace_meth}, {"append", (cwrapperfunc)list_append_meth},\
+                    {"pop", (cwrapperfunc)list_pop_meth}, {NULL,NULL}};
 GetSets list_getsets[]={{NULL,NULL}};
 OffsetMember list_offsets[]={{NULL}};
 
@@ -507,8 +512,10 @@ typedef struct BoolObject{
 
 bool istrue(object* boolean){
     if (boolean!=NULL && CAST_BOOL(boolean)->val==1){
+        DECREF(boolean);
         return true;
     }
+    DECREF(boolean);
     return false;
 }
 
@@ -595,6 +602,8 @@ object* tuple_iter(object* self);
 object* tuple_mul(object* self, object* other);
 object* tuple_add(object* self, object* other);
 
+object* tuple_find_meth(object* args, object* kwargs);
+
 typedef struct TupleObject{
     OBJHEAD_VAR
     object** array; //Pointer to array
@@ -624,7 +633,7 @@ static Mappings tuple_mappings{
     list_append, //slot_append
 };
 
-Method tuple_methods[]={{NULL,NULL}};
+Method tuple_methods[]={{"find", (cwrapperfunc)tuple_find_meth}, {NULL,NULL}};
 GetSets tuple_getsets[]={{NULL,NULL}};
 OffsetMember tuple_offsets[]={{NULL}};
 

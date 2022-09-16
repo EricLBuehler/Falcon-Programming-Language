@@ -340,8 +340,8 @@ object* list_cmp(object* self, object* other, uint8_t type){
 }
 
 object* list_append_meth(object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
-    if (len!=2 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() == 0){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -417,8 +417,8 @@ object* list_iter_bool(object* self){
 }
 
 object* list_pop_meth(object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
-    if (len!=1){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
@@ -476,4 +476,44 @@ object* list_add(object* self, object* other){
         CAST_LIST(list)->array[i]=INCREF(CAST_LIST(other)->array[i-CAST_LIST(self)->size]);
     }
     return list;
+}
+
+object* list_replace_meth(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);
+    object* replace=tuple_index_int(args, 1);
+    object* replacewi=tuple_index_int(args, 2);
+
+    for (size_t i=0; i<CAST_LIST(self)->size; i++){
+        if (istrue(object_cmp(CAST_LIST(self)->array[i], replace, CMP_EQ))){
+            DECREF(CAST_LIST(self)->array[i]);
+            CAST_LIST(self)->array[i]=INCREF(replacewi);
+            return self;
+        }
+    }
+    
+    vm_add_err(&ValueError, vm, "Cannot find object '%s'", object_cstr(replace).c_str());
+    return NULL; 
+}
+
+object* list_find_meth(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* val=tuple_index_int(args, 1);  
+
+    for (size_t i=0; i<CAST_LIST(self)->size; i++){
+        if (istrue(object_cmp(CAST_LIST(self)->array[i], val, CMP_EQ))){
+            return new_int_fromint(i);
+        }
+    }
+
+    return new_int_fromint(-1);
 }

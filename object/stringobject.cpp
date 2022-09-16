@@ -217,8 +217,8 @@ object* str_add(object* self, object* other){
 
 
 object* string_join_meth(object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
-    if (len!=2 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() == 0){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -270,3 +270,67 @@ object* str_mul(object* self, object* other){
     return str_new_fromstr(repeat(*CAST_STRING(self)->val,(CAST_INT(other)->val->to_long())));
 }
 
+
+
+object* string_replace_meth(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);
+    object* replace_=tuple_index_int(args, 1);
+    object* substr_=tuple_index_int(args, 2);
+
+    if (!object_istype(replace_->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", replace_->type->name->c_str());
+        return NULL; 
+    }  
+    if (!object_istype(substr_->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", substr_->type->name->c_str());
+        return NULL; 
+    }  
+    
+
+    string s=*CAST_STRING(self)->val;
+    string substr=*CAST_STRING(substr_)->val;
+    string replace=*CAST_STRING(replace_)->val;
+
+    string newstr(s);
+    
+    if (replace.size()==0 || substr.size()==0){
+        return self;
+    }
+
+    size_t pos=newstr.find(replace);
+
+    while (pos != std::string::npos){
+        newstr.replace(pos, replace.size(), substr);
+
+        pos=newstr.find(replace, pos+substr.size());
+    }
+    
+    return str_new_fromstr(newstr);
+}
+
+object* string_find_meth(object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* val=tuple_index_int(args, 1);   
+
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", val->type->name->c_str());
+        return NULL; 
+    }  
+
+    string s=*CAST_STRING(self)->val;
+    string v=*CAST_STRING(val)->val;
+    
+    size_t idx=s.find(v);
+    
+    return new_int_fromint(idx);
+}
