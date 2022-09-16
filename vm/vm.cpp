@@ -652,9 +652,11 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         }
 
         case BUILD_DICT: {
+            
             object* dict=new_dict();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 object* name=pop_dataframe(vm->objstack);
+                
                 dict_set(dict, name, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, dict);
