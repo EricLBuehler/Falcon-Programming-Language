@@ -142,6 +142,13 @@ class Parser{
             }
             return false;
         }
+
+        bool isname_literal(nodetype type){
+            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_MULTIIDENT || type==N_DOT || type==N_SUBSCR){
+                return true;
+            }
+            return false;
+        }
         
         bool isname_tok(token_type type){
             if (type==T_IDENTIFIER || type==T_DOTIDENT){
@@ -346,7 +353,7 @@ class Parser{
         }
 
         Node* make_assignment(parse_ret* ret, Node* left){
-            if (!isname(left->type) && left->type!=N_ASSIGN){
+            if (!isname_literal(left->type) && left->type!=N_ASSIGN){
                 this->add_parsing_error(ret, "SyntaxError: Cannot assign to literal, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 return NULL;
@@ -1781,16 +1788,16 @@ class Parser{
                 node->start=n->start;
                 node->end=n->end;
 
-                Except* i=(Except*)fpl_malloc(sizeof(Except));
-                i->code=new vector<Node*>;
-                i->code->clear();
+                Except* e=(Except*)fpl_malloc(sizeof(Except));
+                e->code=new vector<Node*>;
+                e->code->clear();
                 for (Node* n: except_code.nodes){
-                    i->code->push_back(n);
+                    e->code->push_back(n);
                 }
-                i->type=type;
-                i->name=name;
+                e->type=type;
+                e->name=name;
 
-                node->node=i;
+                node->node=e;
 
                 bases->push_back(node);
 
@@ -1849,6 +1856,7 @@ class Parser{
             else{
                 reverse_non_newline;
             }
+
 
             f->bases=bases;
 
