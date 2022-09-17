@@ -628,7 +628,6 @@ class Parser{
             args->clear();
             vector<Node*>* kwargs=new vector<Node*>;
             kwargs->clear();
-            
             if (this->current_tok_is(T_RPAREN)){
                 Node* node;
                 if (left->type==N_DOT){
