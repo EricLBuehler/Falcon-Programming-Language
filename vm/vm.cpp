@@ -695,7 +695,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
         case POP_JMP_TOS_FALSE: {
             object* o=pop_dataframe(vm->objstack);
-            DECREF(o);
             object* val=object_istruthy(o);
             if (!istrue(val)){
                 DECREF(val);
@@ -1235,7 +1234,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
         case POP_JMP_TOS_TRUE: {
             object* o=pop_dataframe(vm->objstack);
-            DECREF(o);
             object* val=object_istruthy(o);
             if (istrue(val)){
                 DECREF(val);
