@@ -715,10 +715,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_DOT: {
             vector<Node*>* names=DOT(expr->node)->names;
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
             compile_expr(compiler, names->at(0));
+            compiler->keep_return=ret;
 
             for (size_t i=1; i<names->size(); i++){
-                
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
@@ -742,6 +744,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
             vector<Node*>* names=DOT(DOTASSIGN(expr->node)->dot->node)->names;
+            
             compile_expr(compiler, names->at(0));
             
             for (size_t i=1; i<names->size(); i++){
@@ -769,8 +772,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_DOTCALL: {
             vector<Node*>* names=DOT(DOTCALL(expr->node)->dot->node)->names;
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+            compile_expr(compiler, names->at(0));
+            compiler->keep_return=ret;
             
-            for (size_t i=0; i<names->size(); i++){
+            for (size_t i=1; i<names->size(); i++){
                 if (names->at(i)->type!=N_IDENT){
                     int cmpexpr=compile_expr(compiler, names->at(i));
                     if (cmpexpr==0x100){
@@ -1306,11 +1313,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     continue;
                 }
-                cout<<"AA";
                 Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(i);
                 instrs+=num_instructions(EXCEPT(tryn->node)->code, compiler->scope)*2;
-                
-                cout<<"BB";
                 if (EXCEPT(tryn->node)->name!=NULL){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->name->node)->literal)){
@@ -1902,7 +1906,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             else if (DEL(expr->node)->expr->type==N_DOT){
                 vector<Node*>* names=DOT(DEL(expr->node)->expr->node)->names;
+                bool ret=compiler->keep_return;
+                compiler->keep_return=true;
                 compile_expr(compiler, names->at(0));
+                compiler->keep_return=ret;
 
                 for (size_t i=1; i<names->size(); i++){
                     uint32_t idx;
