@@ -30,6 +30,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```file```
 - ```isinstance```
 - ```eval```
+- ```super```
 
 ### Builtin libraries ###
 - ```time```
