@@ -128,7 +128,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=45;
+const size_t nbuiltins=46;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -353,6 +353,7 @@ struct vm{
 #define CAST_RANGE(obj) ((RangeObject*)obj)
 #define CAST_ZIP(obj) ((ZipObject*)obj)
 #define CAST_OFFSETWRAPPER(obj) ((OffsetWrapperObject*)obj)
+#define CAST_SUPER(obj) ((SuperObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -409,6 +410,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "rangeobject.cpp"
 #include "zipobject.cpp"
 #include "offsetwrapperobject.cpp"
+#include "superobject.cpp"
 
 void setup_types_consts(){
     fplbases.clear();
@@ -447,6 +449,7 @@ void setup_types_consts(){
     setup_offsetwrapper_type();
     setup_offsetwrapperreadonly_type();
     setup_slotwrapperreadoly_type();
+    setup_super_type();
 
     setup_builtins();
     
@@ -561,4 +564,8 @@ void setup_types_consts(){
     inherit_type_dict(&SlotWrapperReadonlyType);
     setup_type_offsets(&SlotWrapperReadonlyType);
     setup_type_getsets(&SlotWrapperReadonlyType);
+
+    inherit_type_dict(&SuperType);
+    setup_type_offsets(&SuperType);
+    setup_type_getsets(&SuperType);
 }

@@ -127,6 +127,8 @@ void setup_builtins(){
     evalkwargs->type->slot_mappings->slot_append(evalkwargs, new_dict());
     evalkwargs->type->slot_mappings->slot_append(evalkwargs, new_dict());
     builtins[44]=new_builtin((builtinfunc)builtin_eval, str_new_fromstr("eval"), evalargs, evalkwargs, 3, false);
+
+    builtins[45]=(object*)&SuperType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

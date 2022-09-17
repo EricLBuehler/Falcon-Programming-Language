@@ -1,6 +1,11 @@
 object* object_new(object* type, object* args, object* kwargs){
-    return new_object(CAST_TYPE(type));
+    object* ob=new_object(CAST_TYPE(type));
+    if (ob->type->dict_offset!=0){
+        (*(object**)((char*)ob + ob->type->dict_offset))=new_dict();
+    }
+    return ob;
 }
+
 object* object_repr_(object* self){
     char buf[32];
     sprintf(buf, "0x%x", self);

@@ -2342,6 +2342,82 @@ void setup_slotwrapperreadoly_type(){
     fplbases.push_back(&SlotWrapperReadonlyType);
 }
 
+void super_del(object* self);
+object* super_new(object* type, object* args, object* kwargs);
+object* super_cmp(object* self, object* other, uint8_t type);
+object* super_getattr(object* self, object* attr);
+
+
+typedef struct SuperObject{
+    OBJHEAD_VAR
+    object* ob;
+}SuperObjects;
+
+Method super_methods[]={{NULL,NULL}};
+GetSets super_getsets[]={{NULL,NULL}};
+
+static NumberMethods super_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+
+    0, //slot_neg
+
+    0, //slot_bool
+};
+
+static Mappings super_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject SuperType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("super"), //name
+    sizeof(SuperObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    super_getattr, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    super_new, //slot_new
+    super_del, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &super_num_methods, //slot_number
+    &super_mappings, //slot_mapping
+
+    super_methods, //slot_methods
+    super_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)super_cmp, //slot_cmp
+};
+
+void setup_super_type(){
+    SuperType=(*(TypeObject*)finalize_type(&SuperType));
+    fplbases.push_back(&SuperType);
+}
+
 
 
 object* new_type(string* name, object* bases, object* dict);

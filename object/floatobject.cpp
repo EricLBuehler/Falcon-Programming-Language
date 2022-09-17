@@ -33,7 +33,10 @@ object* new_float_fromstr(string v){
 
 
 object* float_int(object* self){
-    return new_int_fromint(round(CAST_FLOAT(self)->val));
+    char buf[to_string(round(CAST_FLOAT(self)->val)).size()];
+    sprintf(buf, "%g", round(CAST_FLOAT(self)->val));
+    string s(buf);
+    return new_int_fromstr(s);
 }
 
 object* float_float(object* self){
@@ -54,7 +57,7 @@ object* float_new(object* type, object* args, object* kwargs){
         DECREF((struct object*)obj);
         return o;
     }
-    if (len!=1 || CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }

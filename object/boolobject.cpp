@@ -1,7 +1,7 @@
 object* bool_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (len!=1 || CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got '%d'",len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %ds",len);
         return NULL;
     }
     object* boolv=list_index_int(args,0)->type->slot_number->slot_bool(list_index_int(args,0));
