@@ -778,14 +778,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler->keep_return=ret;
             
             for (size_t i=1; i<names->size(); i++){
-                if (names->at(i)->type!=N_IDENT){
-                    int cmpexpr=compile_expr(compiler, names->at(i));
-                    if (cmpexpr==0x100){
-                        return cmpexpr;
-                    }
-                    continue;
-                }
-
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
