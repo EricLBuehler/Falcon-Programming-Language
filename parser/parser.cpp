@@ -878,9 +878,23 @@ class Parser{
             return node;
         }
 
+        Node* make_nonlocal(parse_ret* ret){
+            if (!this->current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
+                this->advance();
+                return NULL;
+            }
+            Node* name=this->atom(ret);
+            name->type=N_NONLOCAL;
+            return name;
+        }
+
         Node* make_colon(parse_ret* ret){
             this->advance();
-
+            if (this->current_tok_is(T_COLON)){
+                this->advance();
+                return make_nonlocal(ret);
+            }
             if (!this->current_tok_is(T_IDENTIFIER)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
@@ -1304,15 +1318,17 @@ class Parser{
             if (this->current_tok_is(T_LPAREN)){
                 this->advance();
 
-                bool b=this->multi;
-                this->multi=false;
-                Node* expr=this->expr(ret, LOWEST);
-                if (expr==NULL){
-                    return NULL;
-                }
-                this->multi=b;
+                if (!this->current_tok_is(T_RPAREN)){
+                    bool b=this->multi;
+                    this->multi=false;
+                    Node* expr=this->expr(ret, LOWEST);
+                    if (expr==NULL){
+                        return NULL;
+                    }
+                    this->multi=b;
 
-                bases->push_back(expr);
+                    bases->push_back(expr);
+                }
                 while (this->current_tok_is(T_COMMA)){
                     this->advance();
 

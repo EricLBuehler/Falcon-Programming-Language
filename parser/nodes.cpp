@@ -42,6 +42,7 @@ enum nodetype{
     N_GLBL_IDENT,
     N_FSTRING,
     N_ASSERT,
+    N_NONLOCAL, //No data struct
 };
 
 enum precedence {
@@ -283,8 +284,6 @@ struct GlblIdent{
 struct Assert{
     Node* expr;
 };
-
-
 
 void destroy_node(struct Node* node){
     if (node->type==N_INT){
