@@ -478,7 +478,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
 
             //Create callable
-            add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
+            if (compiler->scope!=SCOPE_GLOBAL){
+                add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
+            }
+            else{
+                add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
+            }
 
             //Store function
             uint32_t nameidxstore;
@@ -2070,6 +2075,21 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,POP_JMP_TOS_TRUE, 2, expr->start, expr->end);
             add_instruction(compiler->instructions,RAISE_ASSERTIONERR, 0, expr->start, expr->end);
             break;            
+        }
+
+        case N_NONLOCAL: {
+            uint32_t idx;
+            if (!_list_contains(compiler->names, IDENTI(expr->node)->name)){
+                //Create object
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(expr->node)->name));
+                idx = NAMEIDX(compiler->names);
+            }
+            else{
+                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(expr->node)->name));
+            }
+            
+            add_instruction(compiler->instructions,LOAD_NONLOCAL, idx, expr->start, expr->end);
+            break;
         }
 
     }

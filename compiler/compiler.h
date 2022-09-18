@@ -65,6 +65,8 @@ enum opcode{
     RAISE_ASSERTIONERR,
     DEL_GLBL,
     DEL_ATTR,
+    MAKE_CLOSURE,
+    LOAD_NONLOCAL,
 };
 
 enum scope{

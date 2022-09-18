@@ -134,3 +134,7 @@ RAISE_ASSERTIONERR - Raises AssertionError
 DEL_GLBL(idx) - Implements del co_names[idx]
 
 DEL_ATTR(idx) - del TOS.names[idx]
+
+MAKE_CLOSURE(argc) - Same as MAKE_FUNCTION, but uses current namespace as a closure
+
+LOAD_NONLOCAL(idx) - Similar to LOAD_LOCAL, bug for closures
