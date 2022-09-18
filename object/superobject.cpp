@@ -7,6 +7,11 @@ object* super_new(object* type, object* args, object* kwargs){
 
     object* ob=tuple_index_int(args, 0);
 
+    if (!object_istype(ob->type, &TypeType)){
+        vm_add_err(&ValueError, vm, "Expected type, got '%s'",ob->type->name->c_str());
+        return NULL;
+    }
+
     object* super=new_object(CAST_TYPE(type));
     CAST_SUPER(super)->ob=INCREF(ob);
 
@@ -19,6 +24,8 @@ object* super_getattr(object* self, object* attr){
     for (long i=0; i<len; i++){
         object* ob=object_getattr_self(tuple_index_int(bases, i), attr);
         if (ob!=NULL){
+            pop_dataframe(vm->objstack);
+            add_dataframe(vm, vm->objstack, tuple_index_int(bases, i));
             return ob;
         }
 

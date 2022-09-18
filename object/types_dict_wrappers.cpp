@@ -447,11 +447,9 @@ object* type_wrapper_new(object* args, object* kwargs){
         return NULL;
     }
     object* self=list_index_int(args, 0);
-    
     if (object_istype(self->type, &TypeType)){
         return CAST_TYPE(self)->slot_new(self, args, kwargs);
     }
-    
     return self->type->slot_new(self, args, kwargs);
 }
 

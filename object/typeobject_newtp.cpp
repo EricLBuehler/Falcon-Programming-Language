@@ -22,7 +22,7 @@ object* newtp_new(object* self, object* args, object* kwargs){
     }
     object* val=object_call(n, args_, kwargs);
 
-    if (object_istype(val->type, &TypeType)){
+    if (val!=NULL && object_istype(val->type, &TypeType)){
         return object_new(val, args_, kwargs);
     }
     return val;
