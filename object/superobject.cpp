@@ -26,6 +26,9 @@ object* super_getattr(object* self, object* attr){
         if (ob!=NULL){
             pop_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, tuple_index_int(bases, i));
+            if (ob->type->slot_offsetget!=NULL){
+                return ob->type->slot_offsetget(tuple_index_int(bases, i), ob);
+            }
             return ob;
         }
 
