@@ -1245,9 +1245,10 @@ class Parser{
             }
 
             this->advance();
+            bool inloop=this->inloop;
+            this->inloop=false;
             skip_newline;
             parse_ret code;
-            
             if (!this->current_tok_is(T_RCURLY)){
                 code=this->statements();
             }
@@ -1258,7 +1259,9 @@ class Parser{
             if (code.errornum>0){
                 (*ret)=code;
             }
+            this->inloop=inloop;
             
+
             if (!this->current_tok_is(T_RCURLY)){
                 this->backadvance();
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -1333,6 +1336,8 @@ class Parser{
                 return NULL;
             }
             this->advance();
+            bool inloop=this->inloop;
+            this->inloop=false;
             skip_newline;
             parse_ret code;
             if (!this->current_tok_is(T_RCURLY)){
@@ -1342,10 +1347,10 @@ class Parser{
                 code.errornum=0;
                 code.nodes.clear();
             }
-            
             if (code.errornum>0){
                 (*ret)=code;
             }
+            this->inloop=inloop;
 
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
