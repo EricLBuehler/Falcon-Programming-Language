@@ -200,7 +200,7 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
 
 inline void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
 inline object* pop_dataframe(struct datastack* stack);
-inline void add_callframe(struct callstack* stack, object* line, string* name, object* code);
+inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable);
 inline void pop_callframe(struct callstack* stack);
 void print_traceback();
 
@@ -281,6 +281,7 @@ struct callframe{
     struct object* locals;
     object* code;
     string* filedata;
+    object* callable;
 };
 
 struct blockframe{

@@ -1,4 +1,4 @@
-object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name){
+object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
     CAST_FUNC(obj)->dict=new_dict();
@@ -6,6 +6,7 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->kwargs=kwargs;
     CAST_FUNC(obj)->argc=argc;
     CAST_FUNC(obj)->name=name;
+    CAST_FUNC(obj)->closure=closure;
     
     return obj;
 }
@@ -15,7 +16,7 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     uint32_t kwargc=argc-posargc;
     
-    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code);
+    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self);
     vm->callstack->head->locals=new_dict();
 
     if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
@@ -98,4 +99,10 @@ object* func_bool(object* self){
 void func_del(object* obj){
     DECREF(CAST_FUNC(obj)->code);
     DECREF(CAST_FUNC(obj)->name);
+    DECREF(CAST_FUNC(obj)->args);
+    DECREF(CAST_FUNC(obj)->kwargs);
+    DECREF(CAST_FUNC(obj)->dict);
+    if (CAST_FUNC(obj)->closure!=NULL){
+        DECREF(CAST_FUNC(obj)->closure);
+    }
 }

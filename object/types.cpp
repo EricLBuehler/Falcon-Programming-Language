@@ -698,6 +698,7 @@ typedef struct FuncObject{
     object* kwargs; //Tuple
     uint32_t argc;
     object* name;
+    object* closure;
 }FuncObject;
 
 static NumberMethods func_num_methods{
