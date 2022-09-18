@@ -374,23 +374,28 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
     return dict;
 }
 
-object* object_genericgetattr(object* obj, object* attr){
-    object* res=NULL;
-    
+object* object_getattr_self(object* obj, object* attr){
     //Check dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
         if (object_find_bool_dict_keys(dict, attr)){
-            res=dict_get(dict, attr);
+            return dict_get(dict, attr);
         }
     }
     //Check type dict
-    if (res==NULL && obj->type->dict!=0){
+    if (obj->type->dict!=0){
         object* dict = obj->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
-            res=dict_get(dict, attr);
+            return dict_get(dict, attr);
         }
     }
+
+    return NULL;
+}
+
+object* object_genericgetattr(object* obj, object* attr){
+    object* res=object_getattr_self(obj, attr);
+
     if (res==NULL){
         //Check bases
         uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
