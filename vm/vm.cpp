@@ -77,7 +77,7 @@ struct object* peek_dataframe(struct datastack* stack){
     return stack->head->obj;
 }
 
-inline void add_callframe(struct callstack* stack, object* line, string* name, object* code){
+inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable){
     struct callframe* frame=(struct callframe*)fpl_malloc(sizeof(struct callframe));
     frame->name=name;
     frame->next=stack->head;
@@ -85,6 +85,7 @@ inline void add_callframe(struct callstack* stack, object* line, string* name, o
     frame->code=code;
     frame->locals=NULL;
     frame->filedata=vm->filedata;
+    frame->callable=callable;
 
     stack->size++;
     stack->head=frame;
@@ -174,7 +175,7 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
         ::vm=vm;
     }
 
-    add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code);
+    add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL);
     
     return vm;
 }
@@ -237,10 +238,18 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
         if (object_istype(builtins[i]->type, &TypeType)){
             if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
                 return builtins[i];
-            }
+            } 
         }
     }
     
+    if (vm->callstack->head->callable!=NULL && object_istype(vm->callstack->head->callable->type, &FuncType)\
+    && CAST_FUNC(vm->callstack->head->callable)->closure!=NULL){
+        object* closure=CAST_FUNC(vm->callstack->head->callable)->closure;
+        //Check if name in closure
+        if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+            return CAST_DICT(closure)->val->at(name);
+        }
+    }
     vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
     return NULL;
 }
@@ -255,6 +264,26 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
         ((object_var*)value)->gc_ref++;
     }
     dict_set(vm->globals, name, value); //If globals is same obj as locals then this will still update both
+}
+
+object* vm_get_var_nonlocal(struct vm* vm, object* name){
+    struct callframe* frame=vm->callstack->head;
+    while (frame){
+        if (frame->next==NULL){
+            break;
+        }
+        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
+        && CAST_FUNC(frame->callable)->closure!=NULL){
+            object* closure=CAST_FUNC(frame->callable)->closure;
+            //Check if name in closure
+            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                return CAST_DICT(closure)->val->at(name);
+            }
+        }
+    }
+
+    vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
+    return NULL;
 }
 
 struct object* vm_get_var_globals(struct vm* vm, object* name){
@@ -536,7 +565,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -1261,6 +1290,22 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* obj=pop_dataframe(vm->objstack);
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object_setattr(obj, attr, NULL);
+            break;
+        }
+
+        case MAKE_CLOSURE:{
+            object* code=pop_dataframe(vm->objstack); //<- Code
+            object* args=pop_dataframe(vm->objstack); //<- Args
+            object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
+            object* name=pop_dataframe(vm->objstack); //<- Name
+            
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals));
+            add_dataframe(vm, vm->objstack, func);
+            break;
+        }
+
+        case LOAD_NONLOCAL:{
+            add_dataframe(vm, vm->objstack, vm_get_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
             break;
         }
         
