@@ -401,6 +401,7 @@ object* object_genericgetattr(object* obj, object* attr){
                 object* dict = base_tp->dict;
                 if (object_find_bool_dict_keys(dict, attr)){
                     res=dict_get(dict, attr);
+                    break;
                 }
             }
         }

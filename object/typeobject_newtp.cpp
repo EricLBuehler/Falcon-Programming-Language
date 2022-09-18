@@ -1,5 +1,5 @@
 object* newtp_init(object* self, object* args, object* kwargs){
-    //Try to call __new__
+    //Try to call __init__
     object* n=object_getattr(self, str_new_fromstr("__init__"));
 
     object* args_=new_tuple();
@@ -7,34 +7,27 @@ object* newtp_init(object* self, object* args, object* kwargs){
     for (int i=0; i<CAST_LIST(args)->size; i++){
         args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
     }
+    
     object* val=object_call(n, args_, kwargs);
     return val;
 }
 object* newtp_new(object* self, object* args, object* kwargs){
-    if (!object_istype(self->type, &TypeType)){
-        return self;
-    }
-    
-    object* o=new_object((TypeObject*)self);
-    (*(object**)((char*)o + o->type->dict_offset))=new_dict();
-
-    //Setup dunder attributes
-    object_setattr(o, str_new_fromstr("__class__"), self);
-    
     //Try to call __new__
-    object* n=object_getattr(o, str_new_fromstr("__new__"));
-    if (n==NULL){
-        return o;
-    }
+    object* n=object_getattr(self, str_new_fromstr("__new__"));
     
     object* args_=new_tuple();
-    args_->type->slot_mappings->slot_append(args_, o);
+    args_->type->slot_mappings->slot_append(args_, self);
     for (int i=0; i<CAST_LIST(args)->size; i++){
         args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
     }
     object* val=object_call(n, args_, kwargs);
+
+    if (object_istype(val->type, &TypeType)){
+        return object_new(val, args_, kwargs);
+    }
     return val;
 }
+
 void newtp_del(object* self){
     object* n=object_getattr(self, str_new_fromstr("__del__"));
     object* args=new_tuple();

@@ -2476,6 +2476,7 @@ object* type_call(object* self, object* args, object* kwargs){
         vm_add_err(&TypeError, vm, "Cannot create instances of type '%s'", CAST_TYPE(self)->name);
         return NULL;
     }
+    
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
     if (o != NULL && o->type->slot_init!=NULL){
         o->type->slot_init(o, args, kwargs);
@@ -2626,6 +2627,32 @@ object* finalize_type(TypeObject* newtype){
     tp_tp->refcnt=1;
     
     return tp;
+}
+
+void inherit_type_dict_nofill(TypeObject* tp){
+    TypeObject* tp_tp=CAST_TYPE(tp);
+
+    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
+
+    
+    //Setup type dict
+    if (tp_tp->dict==NULL){
+        tp_tp->dict=new_dict();
+    }
+
+    //This is a slower method than could theoritically be done.
+    //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
+    //also breaks fewer rules.
+    
+    for (uint32_t i=total_bases; i>0; i--){
+        TypeObject* base_tp=CAST_TYPE(list_index_int(tp_tp->bases, i-1));
+        object* dict=base_tp->dict;
+
+        for (auto k: (*CAST_DICT(dict)->val)){
+            dict_set(tp_tp->dict, k.first, k.second);
+        }  
+    }
+
 }
 
 void inherit_type_dict(TypeObject* tp){
@@ -2784,7 +2811,7 @@ object* type_bases_get(object* type){
 
 object* new_type(string* name, object* bases, object* dict){
     reprfunc repr_func=NULL;
-    newfunc new_func=(newfunc)newtp_new;
+    newfunc new_func=NULL;
     initfunc init_func=NULL;
     delfunc del_func=NULL;
     iternextfunc next_func=NULL;
@@ -2817,6 +2844,15 @@ object* new_type(string* name, object* bases, object* dict){
         }
         else{
             init_func=(initfunc)newtp_init;
+        }
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__new__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            new_func=(newfunc)newtp_new;
         }
 
         n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__del__"));
@@ -3092,7 +3128,7 @@ object* new_type(string* name, object* bases, object* dict){
     };
     
     object* tp=finalize_type(&newtype);
-    inherit_type_dict((TypeObject*)tp);
+    inherit_type_dict_nofill((TypeObject*)tp);
     setup_type_getsets((TypeObject*)tp);
     setup_type_methods((TypeObject*)tp);
     setup_type_offsets((TypeObject*)tp);

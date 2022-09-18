@@ -14,9 +14,8 @@ object* super_new(object* type, object* args, object* kwargs){
 }
 
 object* super_getattr(object* self, object* attr){
-    object* bases=self->type->bases;
+    object* bases=CAST_SUPER(self)->ob->type->bases;
     long len=CAST_TUPLE(bases)->size;
-
     for (long i=0; i<len; i++){
         object* ob=object_genericgetattr(tuple_index_int(bases, i), attr);
         if (ob!=NULL){

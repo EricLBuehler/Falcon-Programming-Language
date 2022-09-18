@@ -22,8 +22,10 @@ void exception_del(object* self){
 object* exception_repr(object* self){
     string s="";
     s+=self->type->name->c_str();
-    s+="(";
-    s+=object_crepr(CAST_EXCEPTION(self)->err)+")";
+    if (CAST_EXCEPTION(self)->err!=NULL){
+        s+="(";
+        s+=object_crepr(CAST_EXCEPTION(self)->err)+")";
+    }
     return str_new_fromstr(s);
 }
 
