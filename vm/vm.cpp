@@ -205,7 +205,10 @@ void vm_del(struct vm* vm){
 void vm_add_var_locals(struct vm* vm, object* name, object* value){
     for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
+            if (CAST_DICT(vm->callstack->head->locals)->val->at(k.first)->type->size==0){
+                ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
+            }
+            DECREF(CAST_DICT(vm->callstack->head->locals)->val->at(k.first));
         }
     }
     
@@ -257,7 +260,10 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
 void vm_add_var_globals(struct vm* vm, object* name, object* value){
     for (auto k: (*CAST_DICT(vm->globals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
+            if (CAST_DICT(vm->globals)->val->at(k.first)->type->size==0){
+                ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
+            }
+            DECREF(CAST_DICT(vm->globals)->val->at(k.first));
         }
     }
     if (value->type->size==0){
@@ -284,6 +290,59 @@ object* vm_get_var_nonlocal(struct vm* vm, object* name){
 
     vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
     return NULL;
+}
+
+void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
+    struct callframe* frame=vm->callstack->head;
+    while (frame){
+        if (frame->next==NULL){
+            break;
+        }
+        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
+        && CAST_FUNC(frame->callable)->closure!=NULL){
+            object* closure=CAST_FUNC(frame->callable)->closure;
+            //Check if name in closure
+            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                if (CAST_DICT(closure)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
+                }
+                DECREF(CAST_DICT(closure)->val->at(name));
+                
+                if (val->type->size==0){
+                    ((object_var*)val)->gc_ref++;
+                }
+                dict_set(closure, name, val);
+
+                return;
+            }
+        }
+    }
+
+    vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
+}
+
+void vm_del_var_nonlocal(struct vm* vm, object* name){
+    struct callframe* frame=vm->callstack->head;
+    while (frame){
+        if (frame->next==NULL){
+            break;
+        }
+        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
+        && CAST_FUNC(frame->callable)->closure!=NULL){
+            object* closure=CAST_FUNC(frame->callable)->closure;
+            //Check if name in closure
+            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                if (CAST_DICT(closure)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
+                }
+                dict_set(closure, name, NULL);
+
+                return;
+            }
+        }
+    }
+
+    vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
 }
 
 struct object* vm_get_var_globals(struct vm* vm, object* name){
@@ -1304,6 +1363,16 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
         case LOAD_NONLOCAL:{
             add_dataframe(vm, vm->objstack, vm_get_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            break;
+        }
+
+        case STORE_NONLOCAL:{
+            vm_add_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            break;
+        }
+
+        case DEL_NONLOCAL:{
+            vm_del_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
             break;
         }
         
