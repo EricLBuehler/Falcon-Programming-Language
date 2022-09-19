@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <sstream>
 
-object* time_sleep(object* args, object* kwargs){
+object* time_sleep(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
@@ -28,7 +28,7 @@ object* time_sleep(object* args, object* kwargs){
 }
 
 
-object* time_sleep_ms(object* args, object* kwargs){
+object* time_sleep_ms(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
@@ -52,7 +52,7 @@ object* time_sleep_ms(object* args, object* kwargs){
     return new_none();
 }
 
-object* time_time(object* args, object* kwargs){
+object* time_time(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=0 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
         vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
@@ -65,7 +65,7 @@ object* time_time(object* args, object* kwargs){
     return new_int_frombigint(new BigInt(time));
 }
 
-object* time_strftime(object* args, object* kwargs){
+object* time_strftime(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
@@ -88,16 +88,16 @@ object* time_strftime(object* args, object* kwargs){
 object* new_time_module(){
     object* dict=new_dict();
 
-    object* sleep=cwrapper_new_fromfunc((cwrapperfunc)time_sleep, "sleep");
+    object* sleep=cwrapper_new_fromfunc_null((cwrapperfunc)time_sleep, "sleep");
     dict_set(dict, str_new_fromstr("sleep"), sleep);
 
-    object* sleep_ms=cwrapper_new_fromfunc((cwrapperfunc)time_sleep_ms, "sleep_ms");
+    object* sleep_ms=cwrapper_new_fromfunc_null((cwrapperfunc)time_sleep_ms, "sleep_ms");
     dict_set(dict, str_new_fromstr("sleep_ms"), sleep_ms);
 
-    object* time=cwrapper_new_fromfunc((cwrapperfunc)time_time, "time");
+    object* time=cwrapper_new_fromfunc_null((cwrapperfunc)time_time, "time");
     dict_set(dict, str_new_fromstr("time"), time);
 
-    object* strftime=cwrapper_new_fromfunc((cwrapperfunc)time_strftime, "strftime");
+    object* strftime=cwrapper_new_fromfunc_null((cwrapperfunc)time_strftime, "strftime");
     dict_set(dict, str_new_fromstr("strftime"), strftime);
 
     return module_new_fromdict(dict, str_new_fromstr("time"));
