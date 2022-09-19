@@ -103,6 +103,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
+            else if (ASSIGN(expr->node)->name->type==N_NONLOCAL){
+                if (!_list_contains(compiler->names, IDENTI(ASSIGN(expr->node)->name->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
+                    idx=NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
+                }
+                add_instruction(compiler->instructions,STORE_NONLOCAL, idx, expr->start, expr->end);
+            }
             break;
         }
 
@@ -1907,6 +1918,18 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     idx=object_find(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(DEL(expr->node)->expr->node)->name->node)->name));
                 }
                 add_instruction(compiler->instructions, DEL_GLBL, idx, expr->start, expr->end);
+            }
+            else if (DEL(expr->node)->expr->type==N_NONLOCAL){
+                uint32_t idx;
+                if (!_list_contains(compiler->names, IDENTI(DEL(expr->node)->expr->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(DEL(expr->node)->expr->node)->name));
+                    idx = NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(*IDENTI(DEL(expr->node)->expr->node)->name));
+                }
+                add_instruction(compiler->instructions, DEL_NONLOCAL, idx, expr->start, expr->end);
             }
             else if (DEL(expr->node)->expr->type==N_DOT){
                 vector<Node*>* names=DOT(DEL(expr->node)->expr->node)->names;

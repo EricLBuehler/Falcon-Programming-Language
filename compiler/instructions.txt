@@ -137,4 +137,8 @@ DEL_ATTR(idx) - del TOS.names[idx]
 
 MAKE_CLOSURE(argc) - Same as MAKE_FUNCTION, but uses current namespace as a closure
 
-LOAD_NONLOCAL(idx) - Similar to LOAD_LOCAL, bug for closures
+LOAD_NONLOCAL(idx) - Similar to LOAD_NAME, but for closures
+
+STORE_NONLOCAL(idx) - Similar to STORE_NAME, but for closures
+
+DEL_NONLOCAL(idx) - Similar to DELNAME, but for closures

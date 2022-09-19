@@ -67,6 +67,8 @@ enum opcode{
     DEL_ATTR,
     MAKE_CLOSURE,
     LOAD_NONLOCAL,
+    STORE_NONLOCAL,
+    DEL_NONLOCAL,
 };
 
 enum scope{
