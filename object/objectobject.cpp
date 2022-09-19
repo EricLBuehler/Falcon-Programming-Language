@@ -1,8 +1,5 @@
 object* object_new(object* type, object* args, object* kwargs){
     object* ob=new_object(CAST_TYPE(type));
-    if (ob->type->dict_offset!=0){
-        (*(object**)((char*)ob + ob->type->dict_offset))=new_dict();
-    }
     return ob;
 }
 

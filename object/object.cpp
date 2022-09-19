@@ -374,6 +374,18 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
     return dict;
 }
 
+object* object_getattr_type(object* obj, object* attr){
+    //Check type dict
+    if (CAST_TYPE(obj)->dict!=0){
+        object* dict = CAST_TYPE(obj)->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            return dict_get(dict, attr);
+        }
+    }
+
+    return NULL;
+}
+
 object* object_getattr_self(object* obj, object* attr){
     //Check dict
     if (obj->type->dict_offset!=0){

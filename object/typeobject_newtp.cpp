@@ -280,3 +280,7 @@ object* newtp_setattr(object* self, object* attr, object* val){
     
     return object_call_nokwargs(n, args);
 }
+
+void newtp_post_tpcall(object* ob){
+    (*(object**)((char*)ob + ob->type->dict_offset))=new_dict();
+}

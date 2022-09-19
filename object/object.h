@@ -17,12 +17,14 @@ typedef object* (*getattrfunc)(object*, object*);
 typedef void (*setattrfunc)(object*, object*, object*);
 
 
-typedef object* (*cwrapperfunc)(object*, object*);
+typedef object* (*cwrapperfunc)(object*, object*, object*);
 typedef object* (*getter)(object*);
 typedef object* (*setter)(object*, object*);
 
 typedef object* (*offsetgetfunc)(object*, object*);
 typedef object* (*offsetsetfunc)(object*, object*, object*);
+
+typedef void (*posttpcall)(object*);
 
 
 typedef struct{    
@@ -107,6 +109,8 @@ typedef struct object_type{
 
     offsetgetfunc slot_offsetget;
     offsetsetfunc slot_offsetset;
+
+    posttpcall slot_posttpcall;
 }TypeObject;
 
 #define OBJHEAD size_t refcnt; struct object* ob_prev; struct object* ob_next; uint32_t gen;
@@ -224,40 +228,40 @@ object* setup_type_methods(TypeObject* tp);
 object* setup_type_getsets(TypeObject* tp);
 object* setup_type_offsets(TypeObject* tp);
 
-object* type_wrapper_add(object* args, object* kwargs);
-object* type_wrapper_sub(object* args, object* kwargs);
-object* type_wrapper_mul(object* args, object* kwargs);
-object* type_wrapper_div(object* args, object* kwargs);
-object* type_wrapper_pow(object* args, object* kwargs);
-object* type_wrapper_mod(object* args, object* kwargs);
+object* type_wrapper_add(object* self, object* args, object* kwargs);
+object* type_wrapper_sub(object* self, object* args, object* kwargs);
+object* type_wrapper_mul(object* self, object* args, object* kwargs);
+object* type_wrapper_div(object* self, object* args, object* kwargs);
+object* type_wrapper_pow(object* self, object* args, object* kwargs);
+object* type_wrapper_mod(object* self, object* args, object* kwargs);
 
-object* type_wrapper_bool(object* args, object* kwargs);
-object* type_wrapper_neg(object* args, object* kwargs);
-object* type_wrapper_int(object* args, object* kwargs);
-object* type_wrapper_float(object* args, object* kwargs);
+object* type_wrapper_bool(object* self, object* args, object* kwargs);
+object* type_wrapper_neg(object* self, object* args, object* kwargs);
+object* type_wrapper_int(object* self, object* args, object* kwargs);
+object* type_wrapper_float(object* self, object* args, object* kwargs);
 
-object* type_wrapper_del(object* args, object* kwargs);
-object* type_wrapper_init(object* args, object* kwargs);
-object* type_wrapper_new(object* args, object* kwargs);
-object* type_wrapper_iter(object* args, object* kwargs);
-object* type_wrapper_next(object* args, object* kwargs);
-object* type_wrapper_str(object* args, object* kwargs);
-object* type_wrapper_repr(object* args, object* kwargs);
-object* type_wrapper_call(object* args, object* kwargs);
+object* type_wrapper_del(object* self, object* args, object* kwargs);
+object* type_wrapper_init(object* self, object* args, object* kwargs);
+object* type_wrapper_new(object* self, object* args, object* kwargs);
+object* type_wrapper_iter(object* self, object* args, object* kwargs);
+object* type_wrapper_next(object* self, object* args, object* kwargs);
+object* type_wrapper_str(object* self, object* args, object* kwargs);
+object* type_wrapper_repr(object* self, object* args, object* kwargs);
+object* type_wrapper_call(object* self, object* args, object* kwargs);
 
-object* type_wrapper_eq(object* args, object* kwargs);
-object* type_wrapper_ne(object* args, object* kwargs);
-object* type_wrapper_gt(object* args, object* kwargs);
-object* type_wrapper_lt(object* args, object* kwargs);
-object* type_wrapper_gte(object* args, object* kwargs);
-object* type_wrapper_lte(object* args, object* kwargs);
+object* type_wrapper_eq(object* self, object* args, object* kwargs);
+object* type_wrapper_ne(object* self, object* args, object* kwargs);
+object* type_wrapper_gt(object* self, object* args, object* kwargs);
+object* type_wrapper_lt(object* self, object* args, object* kwargs);
+object* type_wrapper_gte(object* self, object* args, object* kwargs);
+object* type_wrapper_lte(object* self, object* args, object* kwargs);
 
-object* newtp_wrapper_eq(object* args, object* kwargs);
-object* newtp_wrapper_ne(object* args, object* kwargs);
-object* newtp_wrapper_gt(object* args, object* kwargs);
-object* newtp_wrapper_lt(object* args, object* kwargs);
-object* newtp_wrapper_gte(object* args, object* kwargs);
-object* newtp_wrapper_lte(object* args, object* kwargs);
+object* newtp_wrapper_eq(object* self, object* args, object* kwargs);
+object* newtp_wrapper_ne(object* self, object* args, object* kwargs);
+object* newtp_wrapper_gt(object* self, object* args, object* kwargs);
+object* newtp_wrapper_lt(object* self, object* args, object* kwargs);
+object* newtp_wrapper_gte(object* self, object* args, object* kwargs);
+object* newtp_wrapper_lte(object* self, object* args, object* kwargs);
 
 struct vm* vm=NULL;
 

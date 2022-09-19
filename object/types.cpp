@@ -1261,13 +1261,16 @@ void setup_file_type(){
 }
 
 object* cwrapper_call(object* self, object* args, object* kwargs);
-object* cwrapper_new_fromfunc(cwrapperfunc func, string name);
+object* cwrapper_new_fromfunc(cwrapperfunc func, string name, object* tp);
 object* cwrapper_repr(object* self);
+void cwrapper_del(object* self);
+object* cwrapper_new_fromfunc_null(cwrapperfunc func, string name);
 
 typedef struct CWrapperObject{
     OBJHEAD_EXTRA
     cwrapperfunc function;
     string* name;
+    object* tp;
 }CWrapperObject;
 
 Method cwrapper_methods[]={{NULL,NULL}};
@@ -1292,7 +1295,7 @@ TypeObject CWrapperType={
 
     0, //slot_init
     0, //slot_new
-    0, //slot_del
+    cwrapper_del, //slot_del
 
     0, //slot_next
     0, //slot_iter
@@ -2347,11 +2350,13 @@ void super_del(object* self);
 object* super_new(object* type, object* args, object* kwargs);
 object* super_cmp(object* self, object* other, uint8_t type);
 object* super_getattr(object* self, object* attr);
+object* super_call(object* self, object* args, object* kwargs);
 
 
 typedef struct SuperObject{
     OBJHEAD_VAR
     object* ob;
+    object* attr;
 }SuperObjects;
 
 Method super_methods[]={{NULL,NULL}};
@@ -2402,7 +2407,7 @@ TypeObject SuperType={
 
     0, //slot_repr
     0, //slot_str
-    0, //slot_call
+    super_call, //slot_call
 
     &super_num_methods, //slot_number
     &super_mappings, //slot_mapping
@@ -2479,6 +2484,9 @@ object* type_call(object* self, object* args, object* kwargs){
     }
     
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
+    if (o != NULL && o->type->slot_posttpcall!=NULL){
+        o->type->slot_posttpcall(o);
+    }
     if (o != NULL && o->type->slot_init!=NULL){
         o->type->slot_init(o, args, kwargs);
     }
@@ -2645,7 +2653,7 @@ void inherit_type_dict_nofill(TypeObject* tp){
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
     //also breaks fewer rules.
     
-    for (uint32_t i=total_bases; i>0; i--){
+    for (uint32_t i=total_bases; i>1; i--){
         TypeObject* base_tp=CAST_TYPE(list_index_int(tp_tp->bases, i-1));
         object* dict=base_tp->dict;
 
@@ -2760,7 +2768,7 @@ object* setup_type_methods(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_methods!=NULL && tp_tp->slot_methods[idx].name!=NULL){
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name));
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name, (object*)tp_tp));
         idx++;
     }
 
@@ -2794,7 +2802,7 @@ object* setup_type_offsets(TypeObject* tp){
 }
 
 void type_set_cwrapper(TypeObject* tp, cwrapperfunc func, string name){
-    object* f=cwrapper_new_fromfunc(func, name);
+    object* f=cwrapper_new_fromfunc(func, name, (object*)tp);
     dict_set(tp->dict, str_new_fromstr(*CAST_CWRAPPER(f)->name), f);
 }
 
@@ -3126,10 +3134,12 @@ object* new_type(string* name, object* bases, object* dict){
         
         0, //slot_offsetget
         0, //slot_offsetset
+
+        newtp_post_tpcall, //slot_posttpcall
     };
     
     object* tp=finalize_type(&newtype);
-    inherit_type_dict_nofill((TypeObject*)tp);
+    //inherit_type_dict_nofill((TypeObject*)tp);
     setup_type_getsets((TypeObject*)tp);
     setup_type_methods((TypeObject*)tp);
     setup_type_offsets((TypeObject*)tp);
