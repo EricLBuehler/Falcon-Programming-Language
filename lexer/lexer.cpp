@@ -140,7 +140,7 @@ class Lexer{
                     Token t("",T_NEWLINE,start,end);
                     tokens.push_back(t);
                 }
-                if (this->chr=='"'){
+                if (this->chr=='"' || this->chr=='\''){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_string();
                     Position end=this->pos.copy();
@@ -506,7 +506,7 @@ class Lexer{
                     { 't', '\t' }
             };
 
-            while (this->chr!='\0' && (this->chr!='"' || escape) ) {
+            while (this->chr!='\0' && ((this->chr!='"' && this->chr!='\'') || escape) ) {
                 if (escape){
                     output.push_back(escape_chars[this->chr]);
                     escape=false;
