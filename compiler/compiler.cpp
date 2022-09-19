@@ -854,7 +854,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
 
                     add_instruction(compiler->instructions,READ_REGISTER_PUSH, 0, expr->start, expr->end);
-                    add_instruction(compiler->instructions,READ_REGISTER_PUSH, 0, expr->start, expr->end);
+                    if (names->at(0)->type!=N_CALL){
+                        add_instruction(compiler->instructions,READ_REGISTER_PUSH, 0, expr->start, expr->end);
+                    }
                     
                     //Object
                     if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
@@ -869,7 +871,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                     add_instruction(compiler->instructions,LOAD_ATTR, idx, expr->start, expr->end);
 
-                    add_instruction(compiler->instructions,CALL_METHOD, argc, expr->start, expr->end);
+                    if (names->at(0)->type!=N_CALL){
+                        add_instruction(compiler->instructions,CALL_METHOD, argc, expr->start, expr->end);
+                    }
+                    else{
+                        add_instruction(compiler->instructions,CALL_FUNCTION, argc, expr->start, expr->end);
+                    }
 
                     if (!compiler->keep_return){
                         add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
