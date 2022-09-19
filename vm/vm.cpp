@@ -605,7 +605,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             for (uint32_t i=0; i<posargc-1; i++){
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
-            
             //
 
             //Call
@@ -1153,7 +1152,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         case BINOP_POW:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            
             object* ret=object_pow(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
