@@ -110,7 +110,7 @@ object* int_pow(object* self, object* other){
     if (object_istype(other->type, &IntType)){
         BigInt selfv =*CAST_INT(self)->val;
         BigInt otherv=*CAST_INT(other)->val;
-        BigInt out=selfv;
+        BigInt out=1;
         for (BigInt i=0; i<otherv; i++){
             out*=selfv;
         }
