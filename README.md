@@ -94,6 +94,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 
 ### Other syntax ###
 - ```:``` - Global variable access
+- ```::``` - Nonlocal variable access
 
 ### Sample Program ###
 
