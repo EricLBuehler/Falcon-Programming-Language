@@ -273,11 +273,18 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
 }
 
 object* vm_get_var_nonlocal(struct vm* vm, object* name){
+    int i=0;
     struct callframe* frame=vm->callstack->head;
     while (frame){
         if (frame->next==NULL){
             break;
         }
+        if (i==0){
+            if (find(CAST_DICT(frame->locals)->keys->begin(), CAST_DICT(frame->locals)->keys->end(), name) != CAST_DICT(frame->locals)->keys->end()){
+                return CAST_DICT(frame->locals)->val->at(name);
+            }
+        }
+        i+=1;
         if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
         && CAST_FUNC(frame->callable)->closure!=NULL){
             object* closure=CAST_FUNC(frame->callable)->closure;
@@ -286,6 +293,7 @@ object* vm_get_var_nonlocal(struct vm* vm, object* name){
                 return CAST_DICT(closure)->val->at(name);
             }
         }
+        frame=frame->next;
     }
 
     vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
@@ -293,11 +301,28 @@ object* vm_get_var_nonlocal(struct vm* vm, object* name){
 }
 
 void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
+    int i=0;
     struct callframe* frame=vm->callstack->head;
     while (frame){
         if (frame->next==NULL){
             break;
         }
+        if (i==0){
+            if (find(CAST_DICT(frame->locals)->keys->begin(), CAST_DICT(frame->locals)->keys->end(), name) != CAST_DICT(frame->locals)->keys->end()){
+                if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
+                }
+                DECREF(CAST_DICT(frame->locals)->val->at(name));
+                
+                if (val->type->size==0){
+                    ((object_var*)val)->gc_ref++;
+                }
+                dict_set(frame->locals, name, val);
+
+                return;
+            }
+        }
+        i+=1;
         if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
         && CAST_FUNC(frame->callable)->closure!=NULL){
             object* closure=CAST_FUNC(frame->callable)->closure;
@@ -316,17 +341,29 @@ void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
                 return;
             }
         }
+        frame=frame->next;
     }
 
     vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
 }
 
 void vm_del_var_nonlocal(struct vm* vm, object* name){
+    int i=0;
     struct callframe* frame=vm->callstack->head;
     while (frame){
         if (frame->next==NULL){
             break;
         }
+        if (i==0){
+            if (find(CAST_DICT(frame->locals)->keys->begin(), CAST_DICT(frame->locals)->keys->end(), name) != CAST_DICT(frame->locals)->keys->end()){
+                if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
+                }
+                dict_set(frame->locals, name, NULL);
+                return;
+            }
+        }
+        i+=1;
         if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
         && CAST_FUNC(frame->callable)->closure!=NULL){
             object* closure=CAST_FUNC(frame->callable)->closure;
@@ -340,6 +377,7 @@ void vm_del_var_nonlocal(struct vm* vm, object* name){
                 return;
             }
         }
+        frame=frame->next;
     }
 
     vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
