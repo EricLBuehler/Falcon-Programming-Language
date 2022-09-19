@@ -137,14 +137,14 @@ class Parser{
         }
         
         bool isname(nodetype type){
-            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_MULTIIDENT || type==N_DOT || type==N_CALL || type==N_SUBSCR){
+            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_NONLOCAL || type==N_MULTIIDENT || type==N_DOT || type==N_CALL || type==N_SUBSCR){
                 return true;
             }
             return false;
         }
 
         bool isname_literal(nodetype type){
-            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_MULTIIDENT || type==N_DOT || type==N_SUBSCR){
+            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_NONLOCAL  || type==N_MULTIIDENT || type==N_DOT || type==N_SUBSCR){
                 return true;
             }
             return false;
