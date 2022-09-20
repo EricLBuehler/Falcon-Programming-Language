@@ -339,7 +339,7 @@ object* list_cmp(object* self, object* other, uint8_t type){
     return NULL;
 }
 
-object* list_append_meth(object* args, object* kwargs){
+object* list_append_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
@@ -416,7 +416,7 @@ object* list_iter_bool(object* self){
     return new_bool_true();
 }
 
-object* list_pop_meth(object* args, object* kwargs){
+object* list_pop_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
@@ -478,7 +478,7 @@ object* list_add(object* self, object* other){
     return list;
 }
 
-object* list_replace_meth(object* args, object* kwargs){
+object* list_replace_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
@@ -500,7 +500,7 @@ object* list_replace_meth(object* args, object* kwargs){
     return NULL; 
 }
 
-object* list_find_meth(object* args, object* kwargs){
+object* list_find_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);

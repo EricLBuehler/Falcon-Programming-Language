@@ -131,9 +131,10 @@ object* str_get(object* self, object* idx);
 object* str_mul(object* self, object* other);
 
 object* str_new_fromstr(string val);
-object* string_join_meth(object* args, object* kwargs);
-object* string_replace_meth(object* args, object* kwargs);
-object* string_find_meth(object* args, object* kwargs);
+object* string_join_meth(object* selftp, object* args, object* kwargs);
+object* string_replace_meth(object* selftp, object* args, object* kwargs);
+object* string_find_meth(object* selftp, object* args, object* kwargs);
+object* string_split_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA
@@ -161,7 +162,8 @@ static Mappings str_mappings{
     str_len, //slot_len
 };
 
-Method str_methods[]={{"find", (cwrapperfunc)string_find_meth}, {"replace", (cwrapperfunc)string_replace_meth}, {"join", (cwrapperfunc)string_join_meth}, {NULL,NULL}};
+Method str_methods[]={{"find", (cwrapperfunc)string_find_meth}, {"replace", (cwrapperfunc)string_replace_meth}\
+                    , {"join", (cwrapperfunc)string_join_meth}, {"split", (cwrapperfunc)string_split_meth}, {NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 OffsetMember str_offsets[]={{NULL}};
 
@@ -220,12 +222,12 @@ object* list_repr(object* self);
 object* list_next(object* self);
 object* list_cmp(object* self, object* other, uint8_t type);
 object* list_bool(object* self);
-object* list_append_meth(object* args, object* kwargs);
+object* list_append_meth(object* selftp, object* args, object* kwargs);
 object* list_iter(object* self);
 object* list_pop(object* self);
-object* list_pop_meth(object* args, object* kwargs);
-object* list_replace_meth(object* args, object* kwargs);
-object* list_find_meth(object* args, object* kwargs);
+object* list_pop_meth(object* selftp, object* args, object* kwargs);
+object* list_replace_meth(object* selftp, object* args, object* kwargs);
+object* list_find_meth(object* selftp, object* args, object* kwargs);
 
 object* list_add(object* self, object* other);
 object* list_mul(object* self, object* other);
@@ -316,8 +318,8 @@ object* dict_str(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
 object* dict_bool(object* self);
 object* dict_iter(object* self);
-object* dict_keys_meth(object* args, object* kwargs);
-object* dict_values_meth(object* args, object* kwargs);
+object* dict_keys_meth(object* selftp, object* args, object* kwargs);
+object* dict_values_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct DictObject{
     OBJHEAD_VAR
@@ -604,7 +606,7 @@ object* tuple_iter(object* self);
 object* tuple_mul(object* self, object* other);
 object* tuple_add(object* self, object* other);
 
-object* tuple_find_meth(object* args, object* kwargs);
+object* tuple_find_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct TupleObject{
     OBJHEAD_VAR
@@ -1208,10 +1210,10 @@ object* file_new(object* type, object* args, object* kwargs);
 void file_del(object* self);
 object* file_repr(object* self);
 object* file_new_fromfile(object* name, char* mode);
-object* file_read_meth(object* args, object* kwargs);
-object* file_close_meth(object* args, object* kwargs);
-object* file_write_meth(object* args, object* kwargs);
-object* file_seek_meth(object* args, object* kwargs);
+object* file_read_meth(object* selftp, object* args, object* kwargs);
+object* file_close_meth(object* selftp, object* args, object* kwargs);
+object* file_write_meth(object* selftp, object* args, object* kwargs);
+object* file_seek_meth(object* selftp, object* args, object* kwargs);
 
 Method file_methods[]={{"read", (cwrapperfunc)file_read_meth}, {"close", (cwrapperfunc)file_close_meth}\
                     , {"write", (cwrapperfunc)file_write_meth}, {"seek", (cwrapperfunc)file_seek_meth}, {NULL,NULL}};
@@ -2500,40 +2502,48 @@ object* type_get(object* self, object* attr){
     
     //Check us and then our bases
 
-    //Check instance dict
-    if ( self->type->dict_offset!=0){
-        object* dict= (*(object**)((char*)self + self->type->dict_offset));
-        if (object_find_bool_dict_keys(dict, attr)){
-            return dict_get(dict, attr);
-        }
-    }
+    object* res=NULL;
+    
     //Check type dict
-    if (self->type->dict!=0){
-        object* dict = self->type->dict;
+    if (CAST_TYPE(self)->dict!=0){
+        object* dict = CAST_TYPE(self)->dict;
         if (object_find_bool_dict_keys(dict, attr)){
-            return dict_get(dict, attr);
+            res=dict_get(dict, attr);
         }
     }
 
-    uint32_t total_bases = CAST_INT(list_len(self->type->bases))->val->to_long_long();
-    for (uint32_t i=total_bases; i>0; i--){
-        TypeObject* base_tp=CAST_TYPE(list_index_int(self->type->bases, i-1));
+    if (res==NULL){
+        uint32_t total_bases = CAST_INT(list_len(CAST_TYPE(self)->bases))->val->to_long_long();
+        for (uint32_t i=total_bases; i>0; i--){
+            TypeObject* base_tp=CAST_TYPE(list_index_int(CAST_TYPE(self)->bases, i-1));
 
-        //Check type dict
-        if (base_tp->dict!=0){
-            object* dict = base_tp->dict;
-            if (object_find_bool_dict_keys(dict, attr)){
-                return dict_get(dict, attr);
+            //Check type dict
+            if (base_tp->dict!=0){
+                object* dict = base_tp->dict;
+                if (object_find_bool_dict_keys(dict, attr)){
+                    res=dict_get(dict, attr);
+                    break;
+                }
             }
         }
     }
 
-    vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",self->type->name->c_str(), object_cstr(attr).c_str());
-    return NULL;
+    if (res==NULL){
+        vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",CAST_TYPE(self)->name->c_str(), object_cstr(attr).c_str());
+    }
+    else{
+        if (res->type->slot_offsetget!=NULL){
+            object* r=res->type->slot_offsetget(self, res);
+            DECREF(res);
+            return r;
+        }
+    }
+    return res;
 }
 
 void type_set(object* obj, object* attr, object* val){
     //Check dict
+    
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
         dict_set(dict, attr, val);
@@ -2777,6 +2787,18 @@ object* setup_type_methods(TypeObject* tp){
 
 object* setup_type_getsets(TypeObject* tp){
     TypeObject* tp_tp=CAST_TYPE(tp);
+
+    uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
+    
+    for (uint32_t i=total_bases; i>0; i--){
+        TypeObject* base_tp=CAST_TYPE(list_index_int(tp_tp->bases, i-1));
+        //Inherit methods
+        uint32_t idx=0;
+        while (base_tp->slot_getsets!=NULL && base_tp->slot_getsets[idx].name!=NULL){
+            dict_set(base_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)base_tp->slot_getsets[idx].get, (setter)base_tp->slot_getsets[idx].set, base_tp->slot_getsets[idx].name, tp_tp));
+            idx++;
+        }
+    }
 
     //Inherit methods
     uint32_t idx=0;

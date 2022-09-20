@@ -129,6 +129,20 @@ void setup_builtins(){
     builtins[44]=new_builtin((builtinfunc)builtin_eval, str_new_fromstr("eval"), evalargs, evalkwargs, 3, false);
 
     builtins[45]=(object*)&SuperType;
+    
+    object* getattrargs=new_tuple();
+    getattrargs->type->slot_mappings->slot_append(getattrargs, str_new_fromstr("object"));
+    getattrargs->type->slot_mappings->slot_append(getattrargs, str_new_fromstr("attr"));
+    object* getattrkwargs=new_tuple();
+    builtins[46]=new_builtin((builtinfunc)builtin_getattr, str_new_fromstr("getattr"), getattrargs, getattrkwargs, 2, false);
+    
+    object* setattrargs=new_tuple();
+    setattrargs->type->slot_mappings->slot_append(setattrargs, str_new_fromstr("object"));
+    setattrargs->type->slot_mappings->slot_append(setattrargs, str_new_fromstr("attr"));
+    setattrargs->type->slot_mappings->slot_append(setattrargs, str_new_fromstr("val"));
+    object* setattrkwargs=new_tuple();
+    builtins[47]=new_builtin((builtinfunc)builtin_setattr, str_new_fromstr("setattr"), setattrargs, setattrkwargs, 3, false);
+
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

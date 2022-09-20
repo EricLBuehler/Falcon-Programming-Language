@@ -465,7 +465,6 @@ void object_genericsetattr(object* obj, object* attr, object* val){
     //Check type dict 
     if (d==NULL && obj->type->dict!=0){
         object* dict = obj->type->dict;
-        d=dict;
     }
 
     if (d==NULL){

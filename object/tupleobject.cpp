@@ -315,7 +315,7 @@ object* tuple_add(object* self, object* other){
     return tup;
 }
 
-object* tuple_find_meth(object* args, object* kwargs){
+object* tuple_find_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);

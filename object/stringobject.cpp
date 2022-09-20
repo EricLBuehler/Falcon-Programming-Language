@@ -216,7 +216,7 @@ object* str_add(object* self, object* other){
 }
 
 
-object* string_join_meth(object* args, object* kwargs){
+object* string_join_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
@@ -272,7 +272,7 @@ object* str_mul(object* self, object* other){
 
 
 
-object* string_replace_meth(object* args, object* kwargs){
+object* string_replace_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
@@ -313,7 +313,7 @@ object* string_replace_meth(object* args, object* kwargs){
     return str_new_fromstr(newstr);
 }
 
-object* string_find_meth(object* args, object* kwargs){
+object* string_find_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
@@ -333,4 +333,51 @@ object* string_find_meth(object* args, object* kwargs){
     size_t idx=s.find(v);
     
     return new_int_fromint(idx);
+}
+
+
+vector<string> split (string s, string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+
+object* string_split_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* val=tuple_index_int(args, 1);   
+
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", val->type->name->c_str());
+        return NULL; 
+    }  
+
+    string s(*CAST_STRING(self)->val);
+    string delimiter=*CAST_STRING(val)->val;
+
+    object* list=new_list();
+    
+        
+    size_t pos = 0;
+    std::string token;
+    while ((pos = s.find(delimiter)) != std::string::npos) {
+        token = s.substr(0, pos);
+        list_append(list, str_new_fromstr(token));
+        s.erase(0, pos + delimiter.length());
+    }
+        
+    return list;
 }
