@@ -28,7 +28,7 @@ object* builtin___build_class__(object* self, object* args){
         return NULL;
     }
     
-    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, INCREF(CAST_FUNC(function)->code));
+    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, INCREF(CAST_FUNC(function)->code), function);
     vm->callstack->head->locals=new_dict();
     
     object* kwargs=new_dict();
@@ -172,3 +172,30 @@ object* builtin_issubclass(object* self, object* args){
 }
 
 object* builtin_eval(object* self, object* args);
+
+object* builtin_getattr(object* self, object* args){
+    object* ob=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* attr=args->type->slot_mappings->slot_get(args, str_new_fromstr("attr"));
+    
+    if (!object_istype(attr->type, &StrType)){
+        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", attr->type->name->c_str());
+        return NULL;
+    }
+
+    return object_getattr(ob, attr);
+}
+
+object* builtin_setattr(object* self, object* args){
+    object* ob=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* attr=args->type->slot_mappings->slot_get(args, str_new_fromstr("attr"));
+    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("val"));
+
+    if (!object_istype(attr->type, &StrType)){
+        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", attr->type->name->c_str());
+        return NULL;
+    }
+    
+    object_setattr(ob, attr, val);
+
+    return new_none();
+}
