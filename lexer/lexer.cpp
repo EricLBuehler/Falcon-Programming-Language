@@ -140,9 +140,16 @@ class Lexer{
                     Token t("",T_NEWLINE,start,end);
                     tokens.push_back(t);
                 }
-                if (this->chr=='"' || this->chr=='\''){
+                if (this->chr=='"'){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_string();
+                    Position end=this->pos.copy();
+                    Token t(res.data,res.type,start,end);
+                    tokens.push_back(t);
+                }
+                if (this->chr=='\''){
+                    Position start=this->pos.copy();
+                    struct _tok_data res = make_string_single();
                     Position end=this->pos.copy();
                     Token t(res.data,res.type,start,end);
                     tokens.push_back(t);
@@ -503,10 +510,52 @@ class Lexer{
 
             unordered_map<char, char> escape_chars = {
                     { 'n', '\n' },
-                    { 't', '\t' }
+                    { 't', '\t' },
+                    { '"', '"' },
+                    { ''', ''' },
             };
 
-            while (this->chr!='\0' && ((this->chr!='"' && this->chr!='\'') || escape) ) {
+            while (this->chr!='\0' && (this->chr!='"' || escape) ) {
+                if (escape){
+                    output.push_back(escape_chars[this->chr]);
+                    escape=false;
+                }
+                else{
+                    if (this->chr=='\\'){
+                        escape=true;
+                    }
+                    else{
+                        output.push_back(this->chr);
+                    }
+                }
+
+                this->advance();
+            }
+            _tok_data res;
+            res.data=output;
+            res.type=T_STR;
+            if (this->chr=='\0'){
+                res.type=T_ERROR_EOF;
+            }
+            
+            return res;
+
+            
+        }
+
+        _tok_data make_string_single(){
+            string output;
+            this->advance();
+            bool escape=false;
+
+            unordered_map<char, char> escape_chars = {
+                    { 'n', '\n' },
+                    { 't', '\t' },
+                    { '\'', '\'' },
+                    { ''', ''' },
+            };
+
+            while (this->chr!='\0' && (this->chr!='\'' || escape) ) {
                 if (escape){
                     output.push_back(escape_chars[this->chr]);
                     escape=false;
