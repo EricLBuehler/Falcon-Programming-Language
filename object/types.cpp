@@ -2503,7 +2503,6 @@ object* type_get(object* self, object* attr){
     //Check us and then our bases
 
     object* res=NULL;
-    
     //Check type dict
     if (CAST_TYPE(self)->dict!=0){
         object* dict = CAST_TYPE(self)->dict;
@@ -2531,13 +2530,7 @@ object* type_get(object* self, object* attr){
     if (res==NULL){
         vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",CAST_TYPE(self)->name->c_str(), object_cstr(attr).c_str());
     }
-    else{
-        if (res->type->slot_offsetget!=NULL){
-            object* r=res->type->slot_offsetget(self, res);
-            DECREF(res);
-            return r;
-        }
-    }
+    
     return res;
 }
 
@@ -3159,7 +3152,6 @@ object* new_type(string* name, object* bases, object* dict){
 
         newtp_post_tpcall, //slot_posttpcall
     };
-    
     object* tp=finalize_type(&newtype);
     //inherit_type_dict_nofill((TypeObject*)tp);
     setup_type_getsets((TypeObject*)tp);
@@ -3177,7 +3169,6 @@ object* new_type(string* name, object* bases, object* dict){
     
     object* n=object_getattr(tp, str_new_fromstr("__dict__"));
     CAST_OFFSETWRAPPER(n)->offset=size;
-
     return tp;
 }
 
