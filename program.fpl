@@ -12,7 +12,7 @@ class Peregrine(Falcon){
     var=m
     func __new__(self){
         print("__new__ called")
-        return self
+        return super(self).__new__(self)
     }
     func __init__(self){
         print(self)
