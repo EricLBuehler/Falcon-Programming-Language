@@ -822,11 +822,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* o=pop_dataframe(vm->objstack);
             object* val=object_istruthy(o);
             if (!istrue(val)){
-                DECREF(val);
                 (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
                 break;
             }
-            DECREF(val);
             break;
         }
 
@@ -1360,11 +1358,9 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* o=pop_dataframe(vm->objstack);
             object* val=object_istruthy(o);
             if (istrue(val)){
-                DECREF(val);
                 (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
                 break;
             }
-            DECREF(val);
             break;
         }
 
