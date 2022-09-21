@@ -1,0 +1,6 @@
+while True{
+    val=input(">>> ")
+    x=None
+    eval("x="+val, globals(), locals())
+    print(x)
+}
