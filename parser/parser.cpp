@@ -448,7 +448,6 @@ class Parser{
             vector<Node*>* list=new vector<Node*>;
 
             if (this->current_tok_is(T_RSQUARE)){
-                this->advance();
                 Node* node=make_node(N_LIST);
                 node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
                 node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
@@ -488,6 +487,7 @@ class Parser{
             l->list=list;
             
             node->node=l;
+            this->backadvance();
             return node;
         }
 
@@ -497,7 +497,6 @@ class Parser{
             list->push_back(base);
 
             if (this->current_tok_is(T_RPAREN)){
-                this->advance();
                 Node* node=make_node(N_TUPLE);
                 node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
                 node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
@@ -537,6 +536,7 @@ class Parser{
             l->list=list;
             
             node->node=l;
+            this->backadvance();
             return node;
         }
 
@@ -546,7 +546,6 @@ class Parser{
             vector<Node*>* vals=new vector<Node*>;
 
             if (this->current_tok_is(T_RCURLY)){
-                this->advance();
                 Node* node=make_node(N_DICT);
                 node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
                 node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
@@ -558,7 +557,7 @@ class Parser{
                 node->node=d;
                 return node;
             }
-            
+
             Node* key=this->expr(ret, LOWEST);
             if (ret->errornum>0){
                 delete vals;
@@ -619,6 +618,7 @@ class Parser{
             d->vals=vals;
             
             node->node=d;
+            this->backadvance();
             return node;
         }
 
