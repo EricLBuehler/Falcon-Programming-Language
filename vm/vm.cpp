@@ -521,7 +521,21 @@ void vm_del_var_globals(struct vm* vm, object* name){
     return;
 }
 
-object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
+void calculate_new_line(uint32_t* ip, uint32_t* linecounter, object** linetup){
+    object* lines=CAST_CODE(vm->callstack->head->code)->co_lines;
+    
+    for (uint32_t linecntr=0; linecntr<CAST_LIST(lines)->size; linecntr++){
+        object* line=list_index_int(lines, linecntr);
+        if ((*ip)>=(*CAST_INT(tuple_index_int(line, 0))->val) && (*ip)<=(*CAST_INT(tuple_index_int(line, 1))->val)){
+            (*linecounter)=linecntr;
+            (*linetup)=line;
+            vm->callstack->head->line=tuple_index_int(line, 2);
+            break;
+        }
+    }
+}
+
+object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, uint32_t* linecounter, object* linetuple){
     //Run one instruction
     switch (CAST_INT(instruction)->val->to_int()){
         case LOAD_CONST:{
@@ -822,6 +836,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* val=object_istruthy(o);
             if (!istrue(val)){
                 (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
+                calculate_new_line(ip, linecounter, &linetuple);
                 break;
             }
             break;
@@ -829,6 +844,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
         case JUMP_DELTA: {
             (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
+            calculate_new_line(ip, linecounter, &linetuple);
             break;
         }
 
@@ -964,6 +980,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 DECREF(vm->exception);
                 vm->exception=NULL;
                 (*ip)=CAST_INT(arg)->val->to_long();
+                calculate_new_line(ip, linecounter, &linetuple);
                 pop_blockframe(vm->blockstack);
             }
             break;
@@ -971,6 +988,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
 
         case JUMP_TO: {
             (*ip)=CAST_INT(arg)->val->to_long();
+            calculate_new_line(ip, linecounter, &linetuple);
             break;
         }
 
@@ -982,6 +1000,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 break;
             }
             (*ip)=vm->blockstack->head->arg;
+            calculate_new_line(ip, linecounter, &linetuple);
             pop_blockframe(vm->blockstack);
             break;
         }
@@ -994,6 +1013,8 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
                 break;
             }
             (*ip)=vm->blockstack->head->start_ip;
+            calculate_new_line(ip, linecounter, &linetuple);
+            pop_blockframe(vm->blockstack);
             break;
         }
 
@@ -1364,6 +1385,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
             object* val=object_istruthy(o);
             if (istrue(val)){
                 (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
+                calculate_new_line(ip, linecounter, &linetuple);
                 break;
             }
             break;
@@ -1431,17 +1453,20 @@ object* run_vm(object* codeobj, uint32_t* ip){
     object* instruction;
     uint32_t instructions=CAST_CODE(codeobj)->co_instructions;
     object* linetup=list_index_int(lines, linetup_cntr++);
+    size_t len=CAST_LIST(lines)->size-1;
     
     vm->callstack->head->line=list_index_int(linetup, 2);
     while ((*ip)<instructions){
         instruction=list_index_int(code, (*ip)++);
+        if (linetup_cntr==len){
+            linetup_cntr=0;
+        }
         if (((*ip)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
         }
-        
-        //cout<<instruction<<","<<list_index_int(code, *ip)<<endl;
-        object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip);
+
+        object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip, &linetup_cntr, linetup);
         if (obj==TERM_PROGRAM){
             return TERM_PROGRAM;
         }
@@ -1461,6 +1486,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 frame->other=linetup_cntr;
                 
                 (*ip)=frame->arg+4; //skip jump
+                calculate_new_line(ip, &linetup_cntr, &linetup);
                 frame->arg=1;
                 continue;
             }
@@ -1502,6 +1528,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 frame->other=linetup_cntr;
                 
                 (*ip)=frame->arg+4; //skip jump
+                calculate_new_line(ip, &linetup_cntr, &linetup);
                 frame->arg=1;
                 continue;
             }
