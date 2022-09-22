@@ -521,7 +521,6 @@ void vm_del_var_globals(struct vm* vm, object* name){
     return;
 }
 
-
 object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
     //Run one instruction
     switch (CAST_INT(instruction)->val->to_int()){
@@ -976,7 +975,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         }
 
         case BREAK_LOOP: {
-            if (vm->blockstack->head->type!=FOR_BLOCK){
+            if (vm->blockstack->head==NULL){
+                break;
+            }
+            if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK){
                 break;
             }
             (*ip)=vm->blockstack->head->arg;
@@ -985,7 +987,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
         }
 
         case CONTINUE_LOOP: {
-            if (vm->blockstack->head->type!=FOR_BLOCK){
+            if (vm->blockstack->head==NULL){
+                break;
+            }
+            if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK){
                 break;
             }
             (*ip)=vm->blockstack->head->start_ip;
@@ -1417,6 +1422,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip){
     return NULL;
 }
 
+
 object* run_vm(object* codeobj, uint32_t* ip){
     object* code=CAST_CODE(codeobj)->co_code;
     object* lines=CAST_CODE(codeobj)->co_lines;
@@ -1436,7 +1442,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         
         //cout<<instruction<<","<<list_index_int(code, *ip)<<endl;
         object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip);
-
         if (obj==TERM_PROGRAM){
             return TERM_PROGRAM;
         }
