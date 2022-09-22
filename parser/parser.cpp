@@ -487,7 +487,6 @@ class Parser{
             l->list=list;
             
             node->node=l;
-            this->backadvance();
             return node;
         }
 
@@ -536,7 +535,6 @@ class Parser{
             l->list=list;
             
             node->node=l;
-            this->backadvance();
             return node;
         }
 
@@ -618,7 +616,6 @@ class Parser{
             d->vals=vals;
             
             node->node=d;
-            this->backadvance();
             return node;
         }
 
