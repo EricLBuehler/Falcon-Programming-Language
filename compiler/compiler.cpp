@@ -1528,17 +1528,31 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_WHILE: {
             //Checks here
             uint32_t start=compiler->instructions->count*2;
+            uint32_t start_=start;
             int cmpexpr=compile_expr(compiler, WHILE(expr->node)->expr);
             if (cmpexpr==0x100){
                 return cmpexpr;
             }
             add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(WHILE(expr->node)->code, compiler->scope)*2+2, expr->start, expr->end); 
             
+            size_t idx=0;
             //Code
             for (Node* n: (*WHILE(expr->node)->code)){
                 uint32_t start=compiler->instructions->count;
                 long line=n->start->line;
-                int i=compile_expr(compiler, n);
+                int i=0;
+                
+                if (n->type==N_BREAK){
+                    vector<Node*>* n_=new vector<Node*>(WHILE(expr->node)->code->begin()+idx, WHILE(expr->node)->code->end());
+                    add_instruction(compiler->instructions,JUMP_DELTA,num_instructions(n_, compiler->scope)*2, expr->start, expr->end);
+                    delete n_;
+                }
+                else if (n->type==N_CONTINUE){
+                    add_instruction(compiler->instructions,JUMP_TO,start_, expr->start, expr->end);
+                }
+                else{
+                    i=compile_expr(compiler, n);
+                }
                 if (i==0x100){
                     return 0x100;
                 }
@@ -1549,10 +1563,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
                     compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
-                }            
+                }     
+                idx++;       
             }
-
-            add_instruction(compiler->instructions,JUMP_TO,start, expr->start, expr->end); 
+            
+            add_instruction(compiler->instructions,JUMP_TO,start, expr->start, expr->end);
+            
             break;
         }
 
