@@ -971,7 +971,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return 0x100;
                 }
                 uint32_t end=compiler->instructions->count;
-                if (compiler->lines!=NULL){
+                if (compiler->lines!=NULL && i!=0x200){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -980,7 +980,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
 
-            add_instruction(compiler->instructions,JUMP_DELTA,100, expr->start, expr->end);
+            add_instruction(compiler->instructions,JUMP_DELTA,0, expr->start, expr->end);
             
             break;
         }
@@ -1002,7 +1002,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return 0x100;
                 }
                 uint32_t end=compiler->instructions->count;
-                if (compiler->lines!=NULL){
+                if (compiler->lines!=NULL && i!=0x200){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1037,7 +1037,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             return 0x100;
                         }
                         uint32_t end=compiler->instructions->count;
-                        if (compiler->lines!=NULL){
+                        if (compiler->lines!=NULL && i!=0x200){
                             object* tuple=new_tuple();
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1059,7 +1059,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             return 0x100;
                         }
                         uint32_t end=compiler->instructions->count;
-                        if (compiler->lines!=NULL){
+                        if (compiler->lines!=NULL && i!=0x200){
                             object* tuple=new_tuple();
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1150,7 +1150,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return 0x100;
                 }
                 uint32_t end=compiler->instructions->count;
-                if (compiler->lines!=NULL){
+                if (compiler->lines!=NULL && i!=0x200){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1170,7 +1170,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return 0x100;
                 }
                 uint32_t end=compiler->instructions->count;
-                if (compiler->lines!=NULL){
+                if (compiler->lines!=NULL && i!=0x200){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1253,7 +1253,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return 0x100;
                 }
                 uint32_t end=compiler->instructions->count;
-                if (compiler->lines!=NULL){
+                if (compiler->lines!=NULL && i!=0x200){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1291,7 +1291,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             return 0x100;
                         }
                         uint32_t end=compiler->instructions->count;
-                        if (compiler->lines!=NULL){
+                        if (compiler->lines!=NULL && i!=0x200){
                             object* tuple=new_tuple();
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1318,7 +1318,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             return 0x100;
                         }
                         uint32_t end=compiler->instructions->count;
-                        if (compiler->lines!=NULL){
+                        if (compiler->lines!=NULL && i!=0x200){
                             object* tuple=new_tuple();
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1419,7 +1419,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return 0x100;
                     }
                     uint32_t end=compiler->instructions->count;
-                    if (compiler->lines!=NULL){
+                    if (compiler->lines!=NULL && i!=0x200){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1502,7 +1502,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return 0x100;
                 }
                 uint32_t end=compiler->instructions->count;
-                if (compiler->lines!=NULL){
+                if (compiler->lines!=NULL && i!=0x200){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1512,7 +1512,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
 
             add_instruction(compiler->instructions,JUMP_TO,start, expr->start, expr->end); 
-            break;
+            return 0x200;
         }
 
         case N_BREAK: {
@@ -1557,7 +1557,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return 0x100;
                 }
                 uint32_t end=compiler->instructions->count;
-                if (compiler->lines!=NULL){
+                if (compiler->lines!=NULL && i!=0x200){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1569,7 +1569,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             add_instruction(compiler->instructions,JUMP_TO,start, expr->start, expr->end);
             
-            break;
+            return 0x200;
         }
 
         case N_IMPORT: {
@@ -2196,12 +2196,13 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
             return NULL;
         }
         uint32_t end=compiler->instructions->count;
-        
-        object* tuple=new_tuple();
-        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-        lines->type->slot_mappings->slot_append(lines, tuple);
+        if (i!=0x200){
+            object* tuple=new_tuple();
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+            lines->type->slot_mappings->slot_append(lines, tuple);
+        }
     }
         
     
