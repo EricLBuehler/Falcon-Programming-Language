@@ -1271,8 +1271,6 @@ class Parser{
                 (*ret)=code;
             }
             this->inloop=inloop;
-            
-
             if (!this->current_tok_is(T_RCURLY)){
                 this->backadvance();
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -1410,8 +1408,6 @@ class Parser{
             r->node=n;
 
             node->node=r;
-            
-            this->advance();
             return node;
         }
 
@@ -1664,10 +1660,10 @@ class Parser{
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="else"){
                 return this->make_else(ret, node);
             }
-            if (this->current_tok_is(T_KWD) && this->current_tok.data=="elif"){
+            else if (this->current_tok_is(T_KWD) && this->current_tok.data=="elif"){
                 return this->make_elif(ret, node);
             }
-            else{
+            else if (!this->current_tok_is(T_EOF)){
                 reverse_non_newline;
             }
 
@@ -1870,7 +1866,7 @@ class Parser{
 
                 bases->push_back(node);
             }
-            else{
+            else if (!this->current_tok_is(T_EOF)){
                 reverse_non_newline;
             }
 
