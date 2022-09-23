@@ -119,7 +119,7 @@ class Lexer{
                     continue;
                 }
 
-                if (isdigit(this->chr)){
+                else if (isdigit(this->chr)){
                     Position start=this->pos.copy();
                     struct _tok_data res =make_number();
                     Position end=this->pos.copy();
@@ -128,26 +128,26 @@ class Lexer{
                     continue;
                 }
 
-                if (this->chr=='#'){
+                else if (this->chr=='#'){
                     make_comment();
                     continue;
                 }
 
-                if (this->chr=='\n' || this->chr==';'){
+                else if (this->chr=='\n' || this->chr==';'){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
                     Token t("",T_NEWLINE,start,end);
                     tokens.push_back(t);
                 }
-                if (this->chr=='"'){
+                else if (this->chr=='"'){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_string();
                     Position end=this->pos.copy();
                     Token t(res.data,res.type,start,end);
                     tokens.push_back(t);
                 }
-                if (this->chr=='\''){
+                else if (this->chr=='\''){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_string_single();
                     Position end=this->pos.copy();
@@ -155,7 +155,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='='){
+                else if (this->chr=='='){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_equals();
                     Position end=this->pos.copy();
@@ -164,7 +164,7 @@ class Lexer{
                     continue;
                 }
 
-                if (this->chr=='.'){
+                else if (this->chr=='.'){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_dot();
                     Position end=this->pos.copy();
@@ -173,7 +173,7 @@ class Lexer{
                     continue;
                 }
 
-                if (this->chr==':'){
+                else if (this->chr==':'){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
@@ -181,7 +181,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='+'){
+                else if (this->chr=='+'){
                     Position start=this->pos.copy();
                     struct _tok_data res =make_plus();
                     Position end=this->pos.copy();
@@ -189,7 +189,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='-'){
+                else if (this->chr=='-'){
                     Position start=this->pos.copy();
                     struct _tok_data res =make_sub();
                     Position end=this->pos.copy();
@@ -197,7 +197,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='*'){
+                else if (this->chr=='*'){
                     Position start=this->pos.copy();
                     struct _tok_data res =make_mul();
                     Position end=this->pos.copy();
@@ -205,7 +205,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='/'){
+                else if (this->chr=='/'){
                     Position start=this->pos.copy();
                     struct _tok_data res =make_div();
                     Position end=this->pos.copy();
@@ -213,7 +213,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='%'){
+                else if (this->chr=='%'){
                     Position start=this->pos.copy();
                     struct _tok_data res =make_percent();
                     Position end=this->pos.copy();
@@ -221,7 +221,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='('){
+                else if (this->chr=='('){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
@@ -229,7 +229,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr==')'){
+                else if (this->chr==')'){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
@@ -237,7 +237,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='>'){
+                else if (this->chr=='>'){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_greater();
                     Position end=this->pos.copy();
@@ -245,7 +245,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
                 
-                if (this->chr=='<'){
+                else if (this->chr=='<'){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_less();
                     Position end=this->pos.copy();
@@ -253,7 +253,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='!'){
+                else if (this->chr=='!'){
                     Position start=this->pos.copy();
                     struct _tok_data res = make_notequals();
                     Position end=this->pos.copy();
@@ -261,7 +261,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='{'){
+                else if (this->chr=='{'){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
@@ -269,7 +269,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='}'){
+                else if (this->chr=='}'){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
@@ -277,7 +277,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr==','){
+                else if (this->chr==','){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
@@ -285,7 +285,7 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr=='['){
+                else if (this->chr=='['){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
@@ -293,11 +293,19 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
-                if (this->chr==']'){
+                else if (this->chr==']'){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
                     Token t("]",T_RSQUARE,start,end);
+                    tokens.push_back(t);
+                }
+
+                else{
+                    Position start=this->pos.copy();
+                    Position end=this->pos.copy();
+                    end.advance();
+                    Token t("ERR",T_ERR,start,end);
                     tokens.push_back(t);
                 }
 
