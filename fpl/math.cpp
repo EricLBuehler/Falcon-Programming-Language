@@ -621,6 +621,29 @@ object* math_fib(object* self, object* args, object* kwargs){
 }
 
 
+object* math_todeg(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+    object* val=object_float(list_index_int(args, 0));
+    
+    if (val==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }
+
+    double otherval=CAST_FLOAT(val)->val;
+    double res=otherval*(180/M_PI);
+    DECREF(val);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
+}
+
 object* new_math_module(){
     object* dict=new_dict();
 
@@ -698,6 +721,9 @@ object* new_math_module(){
 
     object* fib=cwrapper_new_fromfunc_null((cwrapperfunc)math_fib, "fib");
     dict_set(dict, str_new_fromstr("fib"), fib);
+
+    object* deg=cwrapper_new_fromfunc_null((cwrapperfunc)math_todeg, "todeg");
+    dict_set(dict, str_new_fromstr("todeg"), deg);
 
 
     dict_set(dict, str_new_fromstr("pi"), new_float_fromdouble(M_PI));
