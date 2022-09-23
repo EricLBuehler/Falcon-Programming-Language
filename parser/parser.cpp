@@ -2041,7 +2041,7 @@ class Parser{
             bool m=this->multi;
             this->multi=false;
             if (!this->current_tok_is(T_IDENTIFIER)){
-                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
                 return NULL;
             }
             Node* libname=this->atom(ret);
@@ -2065,7 +2065,7 @@ class Parser{
                 bool m=this->multi;
                 this->multi=false;
                 if (!this->current_tok_is(T_IDENTIFIER)){
-                    this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type));
+                    this->add_parsing_error(ret, "Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
                     return NULL;
                 }
                 Node* libname=this->atom(ret);
