@@ -217,11 +217,6 @@ object* int_mul(object* self, object* other){
 }
 
 object* int_div(object* self, object* other){
-    if (object_istype(other->type, &IntType)){
-        BigInt selfv =*CAST_INT(self)->val;
-        BigInt otherv=*CAST_INT(other)->val;
-        return new_int_frombigint(new BigInt(selfv/otherv));
-    }
     object* otherv=object_float(other);
     if (otherv==NULL){
         return NULL;
