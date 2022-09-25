@@ -91,11 +91,13 @@ object* builtin_round(object* self, object* args){
     
     object* floatval=object_float(obj);
     if (floatval==NULL){
-        return NULL;
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", obj->type->name->c_str());
+        return NULL; 
     }
     object* ndigits=object_int(digits);
     if (ndigits==NULL){
-        return NULL;
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", digits->type->name->c_str());
+        return NULL; 
     }
 
     char buf[to_string(CAST_FLOAT(floatval)->val).size()];
@@ -110,9 +112,13 @@ object* builtin_round(object* self, object* args){
     }
     if (CAST_INT(ndigits)->val->to_int()==0){
         substr=orig_val.substr(0, pos+2);
+        DECREF(ndigits);
+        DECREF(floatval);
         return new_int_fromint(round(stod(substr)));
     }
     substr=orig_val.substr(0, pos+2+CAST_INT(ndigits)->val->to_int());
+    DECREF(ndigits);
+    DECREF(floatval);
     
     return new_float_fromdouble(round_double(stod(substr), CAST_INT(ndigits)->val->to_int()));
 }
@@ -198,4 +204,23 @@ object* builtin_setattr(object* self, object* args){
     object_setattr(ob, attr, val);
 
     return new_none();
+}
+
+object* builtin_abs(object* self, object* args){
+    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("self")); 
+    
+    object* flval=object_float(val);
+    if (flval==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
+        return NULL; 
+    }
+    
+    double otherval=CAST_FLOAT(flval)->val;
+    double res=fabs(otherval);
+    DECREF(flval);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
 }
