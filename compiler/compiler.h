@@ -69,6 +69,15 @@ enum opcode{
     LOAD_NONLOCAL,
     STORE_NONLOCAL,
     DEL_NONLOCAL,
+    BITWISE_NOT,
+    BITWISE_AND,
+    BITWISE_OR,
+    BITWISE_LSHIFT,
+    BITWISE_RSHIFT,
+    BINOP_IAND,
+    BINOP_IOR,
+    BINOP_ILSH,
+    BINOP_IRSH,
 };
 
 enum scope{

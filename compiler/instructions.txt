@@ -142,3 +142,13 @@ LOAD_NONLOCAL(idx) - Similar to LOAD_NAME, but for closures
 STORE_NONLOCAL(idx) - Similar to STORE_NAME, but for closures
 
 DEL_NONLOCAL(idx) - Similar to DELNAME, but for closures
+
+BITWISE_NOT - Implements ~TOS
+
+BITWISE_AND - Implements TOS & TOS-1
+
+BITWISE_OR - Implements TOS | TOS-1
+
+BITWISE_LSHIFT - Implements TOS << TOS-1
+
+BITWISE_RSHIFT - Implements TOS >> TOS-1
