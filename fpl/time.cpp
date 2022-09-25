@@ -20,6 +20,7 @@ object* time_sleep(object* self, object* args, object* kwargs){
             return NULL;
         }
         time=CAST_INT(otherint)->val->to_long();
+        DECREF(otherint);
     }
     
     std::this_thread::sleep_for(std::chrono::milliseconds(time*1000));
@@ -45,6 +46,7 @@ object* time_sleep_ms(object* self, object* args, object* kwargs){
             return NULL;
         }
         time=CAST_INT(otherint)->val->to_long();
+        DECREF(otherint);
     }
     
     std::this_thread::sleep_for(std::chrono::milliseconds(time));

@@ -11,7 +11,8 @@ object* math_sin(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to floa", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
     }
     
     double otherval=CAST_FLOAT(flval)->val;
@@ -35,8 +36,9 @@ object* math_cos(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=cos(otherval);
@@ -59,8 +61,9 @@ object* math_tan(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=tan(otherval);
@@ -83,8 +86,9 @@ object* math_acos(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=acos(otherval);
@@ -107,8 +111,9 @@ object* math_acosh(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=acosh(otherval);
@@ -131,8 +136,9 @@ object* math_asin(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=asin(otherval);
@@ -155,8 +161,9 @@ object* math_asinh(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=asinh(otherval);
@@ -179,8 +186,9 @@ object* math_atan(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=atan(otherval);
@@ -203,8 +211,9 @@ object* math_atanh(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=atanh(otherval);
@@ -228,8 +237,9 @@ object* math_atan2(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     object* flval2=object_float(val2);
     if (flval2==NULL){
         return NULL;
@@ -257,8 +267,9 @@ object* math_cbrt(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=cbrt(otherval);
@@ -281,8 +292,9 @@ object* math_ceil(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=ceil(otherval);
@@ -305,8 +317,9 @@ object* math_cosh(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=cosh(otherval);
@@ -329,8 +342,9 @@ object* math_exp(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=exp(otherval);
@@ -353,8 +367,9 @@ object* math_abs(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=fabs(otherval);
@@ -377,8 +392,9 @@ object* math_floor(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=floor(otherval);
@@ -402,8 +418,9 @@ object* math_hypot(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     object* flval2=object_float(val2);
     if (flval2==NULL){
         return NULL;
@@ -431,8 +448,9 @@ object* math_log(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=log(otherval);
@@ -455,8 +473,9 @@ object* math_log10(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=log10(otherval);
@@ -480,8 +499,9 @@ object* math_pow(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     object* flval2=object_float(val2);
     if (flval2==NULL){
         return NULL;
@@ -491,6 +511,7 @@ object* math_pow(object* self, object* args, object* kwargs){
     double otherval2=CAST_FLOAT(flval2)->val;
     double res=pow(otherval,otherval2);
     DECREF(flval);
+    DECREF(flval2);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -509,8 +530,9 @@ object* math_sinh(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=sinh(otherval);
@@ -533,8 +555,9 @@ object* math_sqrt(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=sqrt(otherval);
@@ -557,8 +580,9 @@ object* math_tanh(object* self, object* args, object* kwargs){
     
     object* flval=object_float(val);
     if (flval==NULL){
-        return NULL;
-    }
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=tanh(otherval);

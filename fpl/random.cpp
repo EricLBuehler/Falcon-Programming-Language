@@ -21,7 +21,20 @@ object* random_randint(object* self, object* args, object* kwargs){
     object* low=object_int(list_index_int(args, 0));
     object* high=object_int(list_index_int(args, 1));
 
-    return new_int_fromint(iRand(CAST_INT(low)->val->to_int(), CAST_INT(low)->val->to_int()));
+    if (low==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
+        return NULL; 
+    }
+    if (high==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
+        return NULL; 
+    }
+    object* res=new_int_fromint(iRand(CAST_INT(low)->val->to_int(), CAST_INT(low)->val->to_int()));
+    
+    DECREF(low);
+    DECREF(high);
+
+    return res;
 }
 
 object* random_random(object* self, object* args, object* kwargs){
@@ -36,9 +49,21 @@ object* random_random(object* self, object* args, object* kwargs){
     if (len==2){
         object* low=object_int(list_index_int(args, 0));
         object* high=object_int(list_index_int(args, 1));
+
+        if (low==NULL){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
+            return NULL; 
+        }
+        if (high==NULL){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
+            return NULL; 
+        }
         
         lo=CAST_FLOAT(low)->val;
         hi=CAST_FLOAT(high)->val;
+
+        DECREF(low);
+        DECREF(high);
     }
 
     return new_float_fromdouble(fRand(lo, hi));
