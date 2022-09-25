@@ -1437,6 +1437,126 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             break;
         }
         
+        case BITWISE_NOT:{
+            struct object* right=pop_dataframe(vm->objstack);
+            
+            object* ret=object_not(right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand ~: '%s'.", right->type->name->c_str());
+            }
+            break;
+        }
+
+        case BITWISE_AND:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_and(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            break;
+        }
+
+        case BITWISE_OR:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_or(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            break;
+        }
+
+        case BITWISE_LSHIFT:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_lshift(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            break;
+        }
+
+        case BITWISE_RSHIFT:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_rshift(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            break;
+        }
+
+        case BINOP_IAND:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_and(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            break;
+        }
+
+        case BINOP_IOR:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_or(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            
+            break;
+        }
+
+        case BINOP_ILSH:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_lshift(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            
+            break;
+        }
+
+        case BINOP_IRSH:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_rshift(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            
+            break;
+        }
+        
         default:
             return NULL;
             
