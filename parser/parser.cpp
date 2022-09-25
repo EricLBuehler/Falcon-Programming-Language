@@ -325,7 +325,9 @@ class Parser{
         }
 
         Node* make_binop(parse_ret* ret, Node* left, enum token_type opr){
-            if ( (current_tok_is(T_IADD) || current_tok_is(T_IMUL) ||current_tok_is(T_ISUB) ||current_tok_is(T_IDIV) ||current_tok_is(T_IPOW) ||current_tok_is(T_IMOD) ) && !isname(left->type)){
+            if ( (current_tok_is(T_IADD) || current_tok_is(T_IMUL) || current_tok_is(T_ISUB) || current_tok_is(T_IDIV)\
+                || current_tok_is(T_IPOW) ||current_tok_is(T_IMOD) || current_tok_is(T_IAMP) || current_tok_is(T_IVBAR)\
+                || current_tok_is(T_ILSH) || current_tok_is(T_IRSH)) && !isname(left->type)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
                 return NULL;
@@ -954,6 +956,7 @@ class Parser{
 
                 case T_PLUS:
                 case T_MINUS:
+                case T_TILDE:
                     left=make_unary(ret);
                     break;
                     
@@ -987,7 +990,9 @@ class Parser{
                 case T_NONE:
                 case T_PLUS:
                 case T_MINUS:
+                case T_TILDE:
                 case T_NOT:
+                case T_COLON:
                     return true;
             }
             return false;
@@ -1050,6 +1055,14 @@ class Parser{
                     case T_IMOD:
                     case T_AND:
                     case T_OR:
+                    case T_AMPERSAND:
+                    case T_VBAR:
+                    case T_LSHIFT:
+                    case T_RSHIFT:
+                    case T_IAMP:
+                    case T_IVBAR:
+                    case T_ILSH:
+                    case T_IRSH:
                         left=make_binop(ret, left, this->current_tok.type);
                         break;
                     

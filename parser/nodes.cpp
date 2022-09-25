@@ -52,9 +52,12 @@ enum precedence {
     LOGICAL_AND,
     LOGICAL_NOT, 
     EQUALS,         
-    LESSGREATER, 
+    LESSGREATER,
+    BITWISE_OR_PREC,
+    BITWISE_AND_PREC,
+    BITWISE_SHIFT_PREC,
     SUM,          
-    PRODUCT, 
+    PRODUCT,
     EXP,
     UNARY,        
     CALL,         
@@ -70,6 +73,10 @@ enum precedence get_precedence(Token t){
         case T_IDIV:
         case T_IMOD:
         case T_IPOW:
+        case T_IAMP:
+        case T_IVBAR:
+        case T_ILSH:
+        case T_IRSH:
             return ASSIGN;
         case T_OR:
             return LOGICAL_OR;
@@ -88,6 +95,7 @@ enum precedence get_precedence(Token t){
             return LESSGREATER;
         case T_PLUS:
         case T_MINUS:
+        case T_TILDE:
             return SUM;
         case T_MUL:
         case T_DIV:
@@ -99,6 +107,13 @@ enum precedence get_precedence(Token t){
             return CALL;
         case T_LSQUARE:
             return INDEX;
+        case T_AMPERSAND:
+            return BITWISE_AND_PREC;
+        case T_VBAR:
+            return BITWISE_OR_PREC;
+        case T_LSHIFT:
+        case T_RSHIFT:
+            return BITWISE_SHIFT_PREC;
         default:
             return LOWEST;
     }
