@@ -45,6 +45,15 @@ enum token_type{
     T_IPOW,
     T_IMOD,
     T_ERR,
+    T_TILDE,
+    T_AMPERSAND,
+    T_VBAR,
+    T_LSHIFT,
+    T_RSHIFT,
+    T_IAMP,
+    T_IVBAR,
+    T_ILSH,
+    T_IRSH,
 };
 
 string token_type_to_str(enum token_type type){
@@ -94,6 +103,11 @@ string token_type_to_str(enum token_type type){
     case T_IPOW:return "IPOW";
     case T_IMOD:return "IMOD";
     case T_ERR:return "ERR";
+    case T_TILDE:return "TILDE";
+    case T_AMPERSAND:return "AMPERSAND";
+    case T_VBAR:return "VBAR";
+    case T_LSHIFT:return "LSHIFT";
+    case T_RSHIFT:return "RSHIFT";
     }
     return "";
 }

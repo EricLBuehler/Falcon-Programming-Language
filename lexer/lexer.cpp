@@ -301,6 +301,30 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
+                else if (this->chr=='~'){
+                    Position start=this->pos.copy();
+                    Position end=this->pos.copy();
+                    end.advance();
+                    Token t("~",T_TILDE,start,end);
+                    tokens.push_back(t);
+                }
+
+                else if (this->chr=='&'){
+                    Position start=this->pos.copy();
+                    struct _tok_data res = make_amp();
+                    Position end=this->pos.copy();
+                    Token t(res.data,res.type,start,end);
+                    tokens.push_back(t);
+                }
+
+                else if (this->chr=='|'){
+                    Position start=this->pos.copy();
+                    struct _tok_data res = make_vbar();
+                    Position end=this->pos.copy();
+                    Token t(res.data,res.type,start,end);
+                    tokens.push_back(t);
+                }
+
                 else if (!isspace(this->chr)){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
@@ -332,6 +356,16 @@ class Lexer{
                 res.data=">=";
                 res.type=T_GTE;
             }
+            if (this->get_next()=='>'){
+                this->advance();
+                res.data=">>";
+                res.type=T_RSHIFT;
+                if (this->get_next()=='='){
+                    this->advance();
+                    res.data=">>=";
+                    res.type=T_IRSH;
+                }
+            }
             return res;
         }
 
@@ -343,6 +377,16 @@ class Lexer{
                 this->advance();
                 res.data="<=";
                 res.type=T_LTE;
+            }
+            if (this->get_next()=='<'){
+                this->advance();
+                res.data="<<";
+                res.type=T_LSHIFT;
+                if (this->get_next()=='='){
+                    this->advance();
+                    res.data="<<=";
+                    res.type=T_ILSH;
+                }
             }
             return res;
         }
@@ -707,6 +751,30 @@ class Lexer{
             }
             _tok_data res;
             res.type=T_ERR;
+            return res;
+        }
+
+        _tok_data make_amp(){
+            _tok_data res;
+            res.data=this->chr;
+            res.type=T_AMPERSAND;
+            if (this->get_next()=='='){
+                this->advance();
+                res.data="&=";
+                res.type=T_IAMP;
+            }
+            return res;
+        }
+
+        _tok_data make_vbar(){
+            _tok_data res;
+            res.data=this->chr;
+            res.type=T_VBAR;
+            if (this->get_next()=='='){
+                this->advance();
+                res.data="|=";
+                res.type=T_IVBAR;
+            }
             return res;
         }
 
