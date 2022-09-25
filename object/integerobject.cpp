@@ -93,8 +93,12 @@ object* int_new(object* type, object* args, object* kwargs){
     }
     
     object* obj=object_int(val);
-    if (obj==NULL){
-        vm_add_err(&ValueError, vm, "Invalid literal '%s'", object_cstr(val));
+    if (obj==NULL && !object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Float argument must be str or a number, not '%s'",val->type->name->c_str());
+        return NULL;
+    }
+    else{
+        vm_add_err(&ValueError, vm, "Could not convert string '%s' to float",object_cstr(val));
         return NULL;
     }
 
@@ -231,8 +235,77 @@ object* int_div(object* self, object* other){
     return new_float_fromdouble(res);
 }
 
+object* int_and(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    object* res=new_int_fromint(CAST_INT(self)->val->to_int() & CAST_INT(otherv)->val->to_int());
+    DECREF(otherv);
+    return res;
+}
+
+object* int_or(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    object* res=new_int_fromint(CAST_INT(self)->val->to_int() | CAST_INT(otherv)->val->to_int());
+    DECREF(otherv);
+    return res;
+}
+
+object* int_lshift(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    
+    int val=CAST_INT(otherv)->val->to_int();
+    DECREF(otherv);
+    if (val<0){
+        vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
+        return NULL;
+    }
+    
+    return new_int_fromint(CAST_INT(self)->val->to_int() << val);
+}
+
+object* int_rshift(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    
+    int val=CAST_INT(otherv)->val->to_int();
+    DECREF(otherv);
+    if (val<0){
+        vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
+        return NULL;
+    }
+    
+    return new_int_fromint(CAST_INT(self)->val->to_int() >> val);
+}
+
 object* int_neg(object* self){
     return new_int_frombigint(new BigInt((*CAST_INT(self)->val)*-1));
+}
+
+object* int_not(object* self){
+    long val=CAST_INT(self)->val->to_long();
+    return new_int_frombigint(new BigInt(~val));
 }
 
 object* int_repr(object* self){
@@ -247,32 +320,42 @@ object* int_cmp(object* self, object* other, uint8_t type){
     //Other type is int
     if (type==CMP_EQ){
         if (*CAST_INT(self)->val==*CAST_INT(otherint)->val){
+            DECREF(otherint);
             return new_bool_true();
         }
+            DECREF(otherint);
         return new_bool_false();
     }
     else if (type==CMP_GT){
         if (*CAST_INT(self)->val>*CAST_INT(otherint)->val){
+            DECREF(otherint);
             return new_bool_true();
         }
+        DECREF(otherint);
         return new_bool_false();
     }
     else if (type==CMP_GTE){
         if (*CAST_INT(self)->val>=*CAST_INT(otherint)->val){
+            DECREF(otherint);
             return new_bool_true();
         }
+        DECREF(otherint);
         return new_bool_false();
     }
     else if (type==CMP_LT){
         if (*CAST_INT(self)->val<*CAST_INT(otherint)->val){
+            DECREF(otherint);
             return new_bool_true();
         }
+        DECREF(otherint);
         return new_bool_false();
     }
     else if (type==CMP_LTE){
         if (*CAST_INT(self)->val<=*CAST_INT(otherint)->val){
+            DECREF(otherint);
             return new_bool_true();
         }
+        DECREF(otherint);
         return new_bool_false();
     }
 

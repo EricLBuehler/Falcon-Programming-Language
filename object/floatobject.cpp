@@ -69,6 +69,14 @@ object* float_new(object* type, object* args, object* kwargs){
     }
     
     object* obj=object_float(val);
+    if (obj==NULL && !object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Float argument must be str or a number, not '%s'",val->type->name->c_str());
+        return NULL;
+    }
+    else{
+        vm_add_err(&ValueError, vm, "Could not convert string '%s' to float",object_cstr(val));
+        return NULL;
+    }
 
     object* o = in_immutables((struct object*)obj);
     if (o==NULL){
@@ -180,32 +188,42 @@ object* float_cmp(object* self, object* other, uint8_t type){
     
     if (type==CMP_EQ){
         if (CAST_FLOAT(self)->val==CAST_FLOAT(otherfloat)->val){
+            DECREF(otherfloat);
             return new_bool_true();
         }
+        DECREF(otherfloat);
         return new_bool_false();
     }
     else if (type==CMP_GT){
         if (CAST_FLOAT(self)->val>CAST_FLOAT(otherfloat)->val){
+            DECREF(otherfloat);
             return new_bool_true();
         }
+        DECREF(otherfloat);
         return new_bool_false();
     }
     else if (type==CMP_GTE){
         if (CAST_FLOAT(self)->val>=CAST_FLOAT(otherfloat)->val){
+            DECREF(otherfloat);
             return new_bool_true();
         }
+        DECREF(otherfloat);
         return new_bool_false();
     }
     else if (type==CMP_LT){
         if (CAST_FLOAT(self)->val<CAST_FLOAT(otherfloat)->val){
+            DECREF(otherfloat);
             return new_bool_true();
         }
+        DECREF(otherfloat);
         return new_bool_false();
     }
     else if (type==CMP_LTE){
         if (CAST_FLOAT(self)->val<=CAST_FLOAT(otherfloat)->val){
+            DECREF(otherfloat);
             return new_bool_true();
         }
+        DECREF(otherfloat);
         return new_bool_false();
     }
 

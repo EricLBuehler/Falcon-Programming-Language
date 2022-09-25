@@ -189,11 +189,11 @@ object* list_get(object* self, object* idx){
     }
     if (!object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
-        return (object*)0x1;
+        return NULL;
     }
     if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long() || CAST_INT(idx)->val->to_long_long()<0){
         vm_add_err(&IndexError, vm, "List index out of range");
-        return (object*)0x1;
+        return NULL;
     }
     
     return CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()];

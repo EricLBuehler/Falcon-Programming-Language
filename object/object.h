@@ -35,9 +35,14 @@ typedef struct{
     binopfunc slot_div;
     binopfunc slot_mod;
     binopfunc slot_pow;
+    binopfunc slot_and;
+    binopfunc slot_or;
+    binopfunc slot_lshift;
+    binopfunc slot_rshift;
 
     //unaryops
     unaryfunc slot_neg;
+    unaryfunc slot_not;
 
     //other
     unaryfunc slot_bool;
@@ -132,7 +137,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=48;
+const size_t nbuiltins=49;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;

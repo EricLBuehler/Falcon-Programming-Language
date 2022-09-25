@@ -18,9 +18,6 @@ object* str_int(object* self){
         b=new BigInt(CAST_STRING(self)->val->c_str());
     }
     catch (std::invalid_argument){
-        if (vm!=NULL){
-            vm_add_err(&ValueError, vm, "Invalid literal '%s'", CAST_STRING(self)->val->c_str());
-        }
         return NULL;
     }
     return new_int_frombigint(b);
@@ -32,9 +29,6 @@ object* str_float(object* self){
         d=stod(CAST_STRING(self)->val->c_str());
     }
     catch (std::invalid_argument){
-        if (vm!=NULL){
-            vm_add_err(&ValueError, vm, "Invalid literal '%s'", CAST_STRING(self)->val->c_str());
-        }
         return NULL;
     }
     return new_float_fromdouble(d);
@@ -110,11 +104,11 @@ object* str_get(object* self, object* idx){
     }
     if (!object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "String must be indexed by int not '%s'",idx->type->name->c_str());
-        return (object*)0x1;
+        return NULL;
     }
     if (CAST_STRING(self)->val->size()<=CAST_INT(idx)->val->to_long_long()){
         vm_add_err(&IndexError, vm, "String index out of range");
-        return (object*)0x1;
+        return NULL;
     }
     
     return str_new_fromstr(string(1,CAST_STRING(self)->val->at(CAST_INT(idx)->val->to_long_long())));

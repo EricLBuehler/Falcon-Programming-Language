@@ -232,6 +232,41 @@ object* object_neg(object* right){
     return right->type->slot_number->slot_neg(right);
 }
 
+object* object_not(object* right){
+    if (right->type->slot_number==NULL || right->type->slot_number->slot_not==NULL){
+        return NULL;
+    }
+    return right->type->slot_number->slot_not(right);
+}
+
+object* object_and(object* left, object* right){
+    if (right->type->slot_number==NULL || right->type->slot_number->slot_and==NULL || left->type->slot_number==NULL || left->type->slot_number->slot_and==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_and(left, right);
+}
+
+object* object_or(object* left, object* right){
+    if (right->type->slot_number==NULL || right->type->slot_number->slot_or==NULL || left->type->slot_number==NULL || left->type->slot_number->slot_or==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_or(left, right);
+}
+
+object* object_lshift(object* left, object* right){
+    if (right->type->slot_number==NULL || right->type->slot_number->slot_lshift==NULL || left->type->slot_number==NULL || left->type->slot_number->slot_lshift==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_lshift(left, right);
+}
+
+object* object_rshift(object* left, object* right){
+    if (right->type->slot_number==NULL || right->type->slot_number->slot_rshift==NULL || left->type->slot_number==NULL || left->type->slot_number->slot_rshift==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_rshift(left, right);
+}
+
 object* object_str(object* obj){
     return obj->type->slot_str(obj);
 }

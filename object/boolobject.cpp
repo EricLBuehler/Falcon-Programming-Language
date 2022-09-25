@@ -1,7 +1,7 @@
 object* bool_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %ds",len);
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",len);
         return NULL;
     }
     object* boolv=list_index_int(args,0)->type->slot_number->slot_bool(list_index_int(args,0));
@@ -130,8 +130,75 @@ object* bool_div(object* self, object* other){
     return new_float_fromdouble(res);   
 }
 
+object* bool_and(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    object* res=new_int_fromint(CAST_BOOL(self)->val & CAST_INT(otherv)->val->to_int());
+    DECREF(otherv);
+    return res;
+}
+
+object* bool_or(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    object* res=new_int_fromint(CAST_BOOL(self)->val | CAST_INT(otherv)->val->to_int());
+    DECREF(otherv);
+    return res;
+}
+
+object* bool_lshift(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    
+    int val=CAST_INT(otherv)->val->to_int();
+    DECREF(otherv);
+    if (val<0){
+        vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
+        return NULL;
+    }
+    
+    return new_int_fromint(CAST_BOOL(self)->val << val);
+}
+
+object* bool_rshift(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL){
+        return NULL;
+    }
+    int val=CAST_INT(otherv)->val->to_int();
+    DECREF(otherv);
+    if (val<0){
+        vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
+        return NULL;
+    }
+    
+    return new_int_fromint(CAST_BOOL(self)->val >> val);
+}
+
 object* bool_neg(object* self){
     return new_int_frombigint(new BigInt(CAST_BOOL(self)->val*-1));
+}
+
+object* bool_not(object* self){
+    return new_float_fromdouble(~CAST_BOOL(self)->val);
 }
 
 object* bool_repr(object* self){
