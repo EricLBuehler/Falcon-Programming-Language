@@ -1575,9 +1575,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
     vm->callstack->head->line=list_index_int(linetup, 2);
     while ((*ip)<instructions){
         instruction=list_index_int(code, (*ip)++);
-        if (linetup_cntr==len){
-            linetup_cntr=0;
-        }
         if (((*ip)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
