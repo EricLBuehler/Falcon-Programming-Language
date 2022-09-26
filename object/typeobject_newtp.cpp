@@ -316,10 +316,6 @@ object* newtp_getattr(object* self, object* attr){
         DECREF(vm->exception);
         vm->exception=NULL;
         object* n=object_genericgetattr(self, attr);
-        if (n!=NULL && object_istype(n->type, &FuncType)){
-            //Create bound
-            return method_new_impl(n, self);
-        }
         return n;
     }
 }

@@ -37,3 +37,7 @@ void cwrapper_del(object* self){
         DECREF(CAST_CWRAPPER(self)->tp);
     }
 }
+
+object* cwrapper_descrget(object* obj, object* self){
+    return wrappermethod_new_impl(self, obj);
+}

@@ -424,6 +424,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "offsetwrapperobject.cpp"
 #include "superobject.cpp"
 #include "methodobject.cpp"
+#include "wrappermethodobject.cpp"
 
 void setup_types_consts(){
     fplbases.clear();
@@ -464,6 +465,7 @@ void setup_types_consts(){
     setup_slotwrapperreadoly_type();
     setup_super_type();
     setup_method_type();
+    setup_wrappermethod_type();
 
     setup_builtins();
     
@@ -586,4 +588,8 @@ void setup_types_consts(){
     inherit_type_dict(&MethodType);
     setup_type_offsets(&MethodType);
     setup_type_getsets(&MethodType);
+    
+    inherit_type_dict(&WrapperMethodType);
+    setup_type_offsets(&WrapperMethodType);
+    setup_type_getsets(&WrapperMethodType);
 }

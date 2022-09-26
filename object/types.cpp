@@ -713,6 +713,7 @@ object* func_call(object* self, object* args, object* callfunc);
 object* func_bool(object* self);
 object* func_call_nostack(object* self, object* args, object* kwargs);
 object* func_run(object* self, object* args, object* kwargs);
+object* func_descrget(object* obj, object* self);
 
 typedef struct FuncObject{
     OBJHEAD_EXTRA
@@ -788,6 +789,8 @@ TypeObject FuncType={
     func_offsets, //slot_offsests
 
     (compfunc)func_cmp, //slot_cmp
+
+    func_descrget, //slot_descrget
 };
 
 void setup_func_type(){
@@ -1319,6 +1322,7 @@ object* cwrapper_new_fromfunc(cwrapperfunc func, string name, object* tp);
 object* cwrapper_repr(object* self);
 void cwrapper_del(object* self);
 object* cwrapper_new_fromfunc_null(cwrapperfunc func, string name);
+object* cwrapper_descrget(object* obj, object* self);
 
 typedef struct CWrapperObject{
     OBJHEAD_EXTRA
@@ -1367,7 +1371,7 @@ TypeObject CWrapperType={
 
     0, //slot_cmp
 
-    0, //slot_descrget
+    (descrgetfunc)cwrapper_descrget, //slot_descrget
     0, //slot_descrset
 };
 
@@ -2602,6 +2606,85 @@ void setup_method_type(){
 }
 
 
+
+Method wrappermethod_methods[]={{NULL,NULL}};
+GetSets wrappermethod_getsets[]={{NULL,NULL}};
+
+static NumberMethods wrappermethod_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+
+    0, //slot_neg
+    0, //slot_not
+
+    0, //slot_bool
+};
+
+static Mappings wrappermethod_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+object* wrappermethod_call(object* self, object* args, object* kwargs);
+object* wrappermethod_new_impl(object* func, object* instance);
+object* wrappermethod_repr(object* self);
+
+TypeObject WrapperMethodType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("wrapper_method"), //name
+    sizeof(MethodObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    wrappermethod_repr, //slot_repr
+    0, //slot_str
+    wrappermethod_call, //slot_call
+
+    &method_num_methods, //slot_number
+    &method_mappings, //slot_mapping
+
+    method_methods, //slot_methods
+    method_getsets, //slot_getsets
+    0, //slot_offsets
+
+    0, //slot_cmp
+};
+
+void setup_wrappermethod_type(){
+    WrapperMethodType.bases=new_tuple();
+    tuple_append(WrapperMethodType.bases, (object*)(&MethodType));
+    WrapperMethodType=(*(TypeObject*)finalize_type(&WrapperMethodType));
+    fplbases.push_back(&WrapperMethodType);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////
 
 object* new_type(string* name, object* bases, object* dict);
 

@@ -106,3 +106,7 @@ void func_del(object* obj){
         DECREF(CAST_FUNC(obj)->closure);
     }
 }
+
+object* func_descrget(object* obj, object* self){
+    return method_new_impl(obj, self);
+}

@@ -25,7 +25,7 @@ void method_del(object* self){
 
 object* method_repr(object* self){
     string s="<method ";
-    s+=object_cstr(self);
+    s+=object_cstr(CAST_METHOD(self)->function);
     s+=">";
     return str_new_fromstr(s);
 }
