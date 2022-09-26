@@ -462,8 +462,8 @@ object* object_genericgetattr(object* obj, object* attr){
         vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
     }
     else{
-        if (res->type->slot_offsetget!=NULL){
-            object* r=res->type->slot_offsetget(obj, res);
+        if (res->type->slot_descrget!=NULL){
+            object* r=res->type->slot_descrget(obj, res);
             DECREF(res);
             return r;
         }
@@ -522,13 +522,13 @@ void object_genericsetattr(object* obj, object* attr, object* val){
     }
     else{
         object* res=dict_get(d, attr);
-        if (res!=NULL && !(res->type->slot_offsetset==NULL && res->type->slot_offsetget==NULL) ){
-            if (res!=NULL && res->type->slot_offsetset!=NULL){
-                res->type->slot_offsetset(obj, res, val);
+        if (res!=NULL && !(res->type->slot_descrset==NULL && res->type->slot_descrget==NULL) ){
+            if (res!=NULL && res->type->slot_descrset!=NULL){
+                res->type->slot_descrset(obj, res, val);
                 DECREF(res);
                 return;
             }
-            if (res!=NULL && res->type->slot_offsetget==NULL){
+            if (res!=NULL && res->type->slot_descrget==NULL){
                 vm_add_err(&AttributeError, vm, "%s is read only",res->type->name->c_str());
                 return;
             }

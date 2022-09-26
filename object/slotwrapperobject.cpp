@@ -45,10 +45,10 @@ object* slotwrapper_str(object* self){
     return str_new_fromstr(s);
 }
 
-object* slotwrapper_offsetget(object* obj, object* self){
+object* slotwrapper_descrget(object* obj, object* self){
     return CAST_SLOTWRAPPER(self)->get(self);
 }
 
-object* slotwrapper_offsetset(object* obj, object* self, object* val){
+object* slotwrapper_descrset(object* obj, object* self, object* val){
     return CAST_SLOTWRAPPER(self)->set(self, val);
 }

@@ -30,8 +30,8 @@ object* super_getattr(object* self, object* attr){
     for (long i=0; i<len; i++){
         object* ob=object_getattr_type(tuple_index_int(bases, i), attr);
         if (ob!=NULL){
-            if (ob->type->slot_offsetget!=NULL){
-                ob=ob->type->slot_offsetget(tuple_index_int(bases, i), ob);
+            if (ob->type->slot_descrget!=NULL){
+                ob=ob->type->slot_descrget(tuple_index_int(bases, i), ob);
             }
             CAST_SUPER(self)->attr=INCREF(ob);
             return self;

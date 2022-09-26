@@ -21,8 +21,8 @@ typedef object* (*cwrapperfunc)(object*, object*, object*);
 typedef object* (*getter)(object*);
 typedef object* (*setter)(object*, object*);
 
-typedef object* (*offsetgetfunc)(object*, object*);
-typedef object* (*offsetsetfunc)(object*, object*, object*);
+typedef object* (*descrgetfunc)(object*, object*);
+typedef object* (*descrsetfunc)(object*, object*, object*);
 
 typedef void (*posttpcall)(object*);
 
@@ -112,8 +112,8 @@ typedef struct object_type{
 
     compfunc slot_cmp;
 
-    offsetgetfunc slot_offsetget;
-    offsetsetfunc slot_offsetset;
+    descrgetfunc slot_descrget;
+    descrsetfunc slot_descrset;
 
     posttpcall slot_posttpcall;
 }TypeObject;

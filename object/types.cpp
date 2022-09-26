@@ -1367,8 +1367,8 @@ TypeObject CWrapperType={
 
     0, //slot_cmp
 
-    0, //slot_offsetget
-    0, //slot_offsetset
+    0, //slot_descrget
+    0, //slot_descrset
 };
 
 void setup_cwrapper_type(){
@@ -1381,8 +1381,8 @@ object* slotwrapper_new_fromfunc(getter get, setter set, string name, TypeObject
 object* slotwrapper_new(object* type, object* args, object* kwargs);    
 object* slotwrapper_repr(object* self);
 object* slotwrapper_str(object* self);
-object* slotwrapper_offsetget(object* obj, object* self);
-object* slotwrapper_offsetset(object* obj, object* self, object* val);
+object* slotwrapper_descrget(object* obj, object* self);
+object* slotwrapper_descrset(object* obj, object* self, object* val);
 
 typedef struct SlotWrapperObject{
     OBJHEAD_EXTRA
@@ -1429,8 +1429,8 @@ TypeObject SlotWrapperType={
 
     0, //slot_cmp
 
-    (offsetgetfunc)slotwrapper_offsetget, //slot_offsetget
-    (offsetsetfunc)slotwrapper_offsetset, //slot_offsetget
+    (descrgetfunc)slotwrapper_descrget, //slot_descrget
+    (descrsetfunc)slotwrapper_descrset, //slot_descrget
 };
 
 void setup_slotwrapper_type(){
@@ -2287,8 +2287,8 @@ void setup_zip_type(){
 
 object* offsetwrapper_new_fromoffset(string name, size_t offset, bool readonly);
 object* offsetwrapper_repr(object* self);
-object* offsetwrapper_offsetget(object* obj, object* self);
-object* offsetwrapper_offsetset(object* obj, object* self, object* val);
+object* offsetwrapper_descrget(object* obj, object* self);
+object* offsetwrapper_descrset(object* obj, object* self, object* val);
 
 typedef struct OffsetWrapperObject{
     OBJHEAD_EXTRA
@@ -2332,8 +2332,8 @@ TypeObject OffsetWrapperType={
 
     0, //slot_cmp
 
-    offsetwrapper_offsetget, //slot_offsetget
-    offsetwrapper_offsetset, //slot_offsetset
+    offsetwrapper_descrget, //slot_descrget
+    offsetwrapper_descrset, //slot_descrset
 };
 
 
@@ -2373,8 +2373,8 @@ TypeObject OffsetWrapperReadonlyType={
 
     0, //slot_cmp
 
-    offsetwrapper_offsetget, //slot_offsetget
-    0, //slot_offsetset
+    offsetwrapper_descrget, //slot_descrget
+    0, //slot_descrset
 };
 
 void setup_offsetwrapper_type(){
@@ -2426,8 +2426,8 @@ TypeObject SlotWrapperReadonlyType={
 
     0, //slot_cmp
 
-    (offsetgetfunc)slotwrapper_offsetget, //slot_offsetget
-    0, //slot_offsetget
+    (descrgetfunc)slotwrapper_descrget, //slot_descrget
+    0, //slot_descrget
 };
 
 void setup_slotwrapperreadoly_type(){
@@ -3289,8 +3289,8 @@ object* new_type(string* name, object* bases, object* dict){
         
         (compfunc)newtp_cmp, //slot_cmp
         
-        0, //slot_offsetget
-        0, //slot_offsetset
+        0, //slot_descrget
+        0, //slot_descrset
 
         newtp_post_tpcall, //slot_posttpcall
     };
