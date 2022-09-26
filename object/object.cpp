@@ -440,6 +440,45 @@ object* object_getattr_self(object* obj, object* attr){
     return NULL;
 }
 
+object* object_genericgetattr_notype(object* obj, object* attr){
+    object* res=NULL;
+    //Check dict
+    if (obj->type->dict_offset!=0){
+        object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
+        if (object_find_bool_dict_keys(dict, attr)){
+            res=dict_get(dict, attr);
+        }
+    }
+
+    if (res==NULL){
+        //Check bases
+        uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
+        for (uint32_t i=0; i<total_bases; i++){
+            TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i));
+            //Check type dict
+            if (base_tp->dict!=0){
+                object* dict = base_tp->dict;
+                if (object_find_bool_dict_keys(dict, attr)){
+                    res=dict_get(dict, attr);
+                    break;
+                }
+            }
+        }
+    }
+    if (res==NULL){
+        vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
+    }
+    else{
+        if (res->type->slot_descrget!=NULL){
+            object* r=res->type->slot_descrget(obj, res);
+            DECREF(res);
+            return r;
+        }
+    }
+    return res;
+}
+
+
 object* object_genericgetattr(object* obj, object* attr){
     object* res=object_getattr_self(obj, attr);
 

@@ -2518,6 +2518,89 @@ void setup_super_type(){
     fplbases.push_back(&SuperType);
 }
 
+void method_del(object* self);
+object* method_new(object* type, object* args, object* kwargs);
+object* method_cmp(object* self, object* other, uint8_t type);
+object* method_call(object* self, object* args, object* kwargs);
+object* method_repr(object* self);
+object* method_new_impl(object* func, object* instance);
+
+typedef struct MethodObject{
+    OBJHEAD_VAR
+    object* function;
+    object* instance;
+}MethodObject;
+
+Method method_methods[]={{NULL,NULL}};
+GetSets method_getsets[]={{NULL,NULL}};
+
+static NumberMethods method_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+
+    0, //slot_neg
+    0, //slot_not
+
+    0, //slot_bool
+};
+
+static Mappings method_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject MethodType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("method"), //name
+    sizeof(MethodObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    method_new, //slot_new
+    method_del, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    method_repr, //slot_repr
+    0, //slot_str
+    method_call, //slot_call
+
+    &method_num_methods, //slot_number
+    &method_mappings, //slot_mapping
+
+    method_methods, //slot_methods
+    method_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)method_cmp, //slot_cmp
+};
+
+void setup_method_type(){
+    MethodType=(*(TypeObject*)finalize_type(&MethodType));
+    fplbases.push_back(&MethodType);
+}
+
 
 
 object* new_type(string* name, object* bases, object* dict);
@@ -3020,30 +3103,6 @@ object* new_type(string* name, object* bases, object* dict){
         else{
             call_func=(callfunc)newtp_call;
         }
-
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__getattr__"));
-        if (n==NULL){
-            DECREF(vm->exception);
-            vm->exception=NULL;
-            getattr_func=object_genericgetattr;
-        }
-        else{
-            getattr_func=(getattrfunc)newtp_getattr;
-        }
-
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__setattr__"));
-        object* dela=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__delattr__"));
-        if (n==NULL && dela!=NULL){
-            n=dela;
-        }
-        if (n==NULL){
-            DECREF(vm->exception);
-            vm->exception=NULL;
-            setattr_func=object_genericsetattr;
-        }
-        else{
-            setattr_func=(setattrfunc)newtp_setattr;
-        }
     }
     if (NEWTP_NUMBER_COPY){
         object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__add__"));
@@ -3266,8 +3325,8 @@ object* new_type(string* name, object* bases, object* dict){
         bases, //bases
         size, //dict_offset
         dict, //dict
-        getattr_func, //slot_getattr
-        setattr_func, //slot_setattr
+        newtp_getattr, //slot_getattr
+        newtp_setattr, //slot_setattr
 
         init_func, //slot_init
         new_func, //slot_new

@@ -304,31 +304,56 @@ object* newtp_iter(object* self){
 }
 
 object* newtp_getattr(object* self, object* attr){
-    object* n=object_getattr(self, str_new_fromstr("__getattr__"));
-    object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
-    args->type->slot_mappings->slot_append(args, attr);
-    object* val=object_call_nokwargs(n, args);
-    return val;
+    object* n=object_genericgetattr_notype(self, str_new_fromstr("__getattr__"));
+    if (n!=NULL){
+        object* args=new_tuple();
+        args->type->slot_mappings->slot_append(args, self);
+        args->type->slot_mappings->slot_append(args, attr);
+        object* val=object_call_nokwargs(n, args);
+        return val;
+    }
+    else{
+        DECREF(vm->exception);
+        vm->exception=NULL;
+        object* n=object_genericgetattr(self, attr);
+        if (n!=NULL && object_istype(n->type, &FuncType)){
+            //Create bound
+            return method_new_impl(n, self);
+        }
+        return n;
+    }
 }
 
-object* newtp_setattr(object* self, object* attr, object* val){
+void newtp_setattr(object* self, object* attr, object* val){
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, attr);
     
     object* n;
-    n=object_getattr(self, str_new_fromstr("__setattr__"));
+    n=object_genericgetattr_notype(self, str_new_fromstr("__setattr__"));
     if (n==NULL){
         DECREF(vm->exception);
         vm->exception=NULL;
-        n=object_getattr(self, str_new_fromstr("__delattr__"));
+        if (val!=NULL){
+            object_genericsetattr(self, attr, val);
+            return;
+        }
+        n=object_genericgetattr_notype(self, str_new_fromstr("__delattr__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+            object_genericsetattr(self, attr, val);
+            return;
+        }
     }
     else{
         args->type->slot_mappings->slot_append(args, val);
     }
+
+    object* res=object_call_nokwargs(n, args);
+    DECREF(res);
     
-    return object_call_nokwargs(n, args);
+    return;
 }
 
 void newtp_post_tpcall(object* ob){

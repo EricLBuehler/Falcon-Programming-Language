@@ -186,6 +186,7 @@ object* generic_iter_iter(object* self);
 object* object_getattr_noerror(object* obj, object* attr);
 object* object_cmp(object* self, object* other, uint8_t type);
 object* object_call_nokwargs(object* obj, object* args);
+object* object_genericgetattr_notype(object* obj, object* attr);
 
 object* builtin___build_class__(object* self, object* args);
 
@@ -364,6 +365,7 @@ struct vm{
 #define CAST_ZIP(obj) ((ZipObject*)obj)
 #define CAST_OFFSETWRAPPER(obj) ((OffsetWrapperObject*)obj)
 #define CAST_SUPER(obj) ((SuperObject*)obj)
+#define CAST_METHOD(obj) ((MethodObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -421,6 +423,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "zipobject.cpp"
 #include "offsetwrapperobject.cpp"
 #include "superobject.cpp"
+#include "methodobject.cpp"
 
 void setup_types_consts(){
     fplbases.clear();
@@ -460,6 +463,7 @@ void setup_types_consts(){
     setup_offsetwrapperreadonly_type();
     setup_slotwrapperreadoly_type();
     setup_super_type();
+    setup_method_type();
 
     setup_builtins();
     
@@ -578,4 +582,8 @@ void setup_types_consts(){
     inherit_type_dict(&SuperType);
     setup_type_offsets(&SuperType);
     setup_type_getsets(&SuperType);
+    
+    inherit_type_dict(&MethodType);
+    setup_type_offsets(&MethodType);
+    setup_type_getsets(&MethodType);
 }
