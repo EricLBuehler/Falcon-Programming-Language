@@ -709,9 +709,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
             //Setup args
             object* args=new_tuple();
-            if (!object_istype(head->type, &ModuleType)){
-                tuple_append(args, head);
-            }
             for (uint32_t i=0; i<posargc-1; i++){
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
