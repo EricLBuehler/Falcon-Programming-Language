@@ -252,7 +252,7 @@ class Parser{
         }
 
         Node* make_identifier(parse_ret* ret){
-            if (this->current_tok.data=="f" && this->isname_tok(this->get_next().type)){
+            if (this->current_tok.data=="f" && this->get_next().type==T_STR){
                 return make_fstring(ret);
             }
             Node* node=make_node(N_IDENT);
