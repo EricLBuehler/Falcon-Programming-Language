@@ -2443,13 +2443,11 @@ void super_del(object* self);
 object* super_new(object* type, object* args, object* kwargs);
 object* super_cmp(object* self, object* other, uint8_t type);
 object* super_getattr(object* self, object* attr);
-object* super_call(object* self, object* args, object* kwargs);
 
 
 typedef struct SuperObject{
     OBJHEAD_VAR
     object* ob;
-    object* attr;
 }SuperObjects;
 
 Method super_methods[]={{NULL,NULL}};
@@ -2505,7 +2503,7 @@ TypeObject SuperType={
 
     0, //slot_repr
     0, //slot_str
-    super_call, //slot_call
+    0, //slot_call
 
     &super_num_methods, //slot_number
     &super_mappings, //slot_mapping
@@ -2587,7 +2585,7 @@ TypeObject MethodType={
     0, //slot_iter
 
     method_repr, //slot_repr
-    0, //slot_str
+    method_repr, //slot_str
     method_call, //slot_call
 
     &method_num_methods, //slot_number
@@ -2663,7 +2661,7 @@ TypeObject WrapperMethodType={
     0, //slot_iter
 
     wrappermethod_repr, //slot_repr
-    0, //slot_str
+    wrappermethod_repr, //slot_str
     wrappermethod_call, //slot_call
 
     &method_num_methods, //slot_number

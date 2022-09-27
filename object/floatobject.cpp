@@ -40,7 +40,7 @@ object* float_int(object* self){
 }
 
 object* float_float(object* self){
-    return self;
+    return INCREF(self);
 }
 
 

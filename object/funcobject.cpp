@@ -108,5 +108,5 @@ void func_del(object* obj){
 }
 
 object* func_descrget(object* obj, object* self){
-    return method_new_impl(obj, self);
+    return method_new_impl(self, obj);
 }

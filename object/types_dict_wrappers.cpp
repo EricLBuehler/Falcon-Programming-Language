@@ -3,7 +3,6 @@ object* type_wrapper_add(object* self, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
         return NULL;
     }
-    
     object* ret=CAST_TYPE(self)->slot_number->slot_add(list_index_int(args, 0), list_index_int(args, 1));
     if (ret==NULL){
         vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());

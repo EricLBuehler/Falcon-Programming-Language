@@ -61,7 +61,7 @@ object* new_int_frombigint(BigInt* v){
 }
 
 object* int_int(object* self){
-    return self;
+    return INCREF(self);
 }
 
 object* int_float(object* self){
