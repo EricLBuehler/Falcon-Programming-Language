@@ -35,6 +35,14 @@ object* func_call(object* self, object* args, object* kwargs){
     
     object* ret=run_vm(CAST_FUNC(self)->code, &ip);
 
+    for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
+        DECREF(k.first);
+        if (k.second->type->size==0){
+            ((object_var*)k.second)->gc_ref--;
+        }
+        DECREF(k.second);
+    }
+
     pop_callframe(vm->callstack);
     return ret;
 }
