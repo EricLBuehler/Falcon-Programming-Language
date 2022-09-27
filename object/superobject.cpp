@@ -7,10 +7,6 @@ object* super_new(object* type, object* args, object* kwargs){
 
     object* ob=tuple_index_int(args, 0);
 
-    if (!object_istype(ob->type, &TypeType)){
-        ob=(object*)ob->type;
-    }
-
     object* super=new_object(CAST_TYPE(type));
     CAST_SUPER(super)->ob=INCREF(ob);
     
@@ -18,7 +14,11 @@ object* super_new(object* type, object* args, object* kwargs){
 }
 
 object* super_getattr(object* self, object* attr){
-    object* bases=CAST_TYPE(CAST_SUPER(self)->ob)->bases;
+    object* obj=CAST_SUPER(self)->ob;
+    if (!object_istype(obj->type, &TypeType)){
+        obj=(object*)obj->type;
+    }
+    object* bases=CAST_TYPE(obj)->bases;
     long len=CAST_TUPLE(bases)->size;
     for (long i=0; i<len; i++){
         object* ob=object_getattr_type(tuple_index_int(bases, i), attr);
