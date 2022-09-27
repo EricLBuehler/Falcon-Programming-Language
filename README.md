@@ -37,6 +37,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 ### Builtin libraries ###
 - ```time```
 - ```math```
+- ```random```
 
 <details>
 <summary>Exceptions</summary>
