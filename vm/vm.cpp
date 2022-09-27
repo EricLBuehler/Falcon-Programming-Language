@@ -1584,7 +1584,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip, &linetup_cntr, linetup);
         
-        if (obj==NULL){
+        if (obj==NULL && vm->exception==NULL){
             continue;
         }
 
