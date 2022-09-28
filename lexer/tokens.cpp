@@ -54,6 +54,7 @@ enum token_type{
     T_IVBAR,
     T_ILSH,
     T_IRSH,
+    T_UNKNOWN,
 };
 
 string token_type_to_str(enum token_type type){
@@ -108,6 +109,7 @@ string token_type_to_str(enum token_type type){
     case T_VBAR:return "VBAR";
     case T_LSHIFT:return "LSHIFT";
     case T_RSHIFT:return "RSHIFT";
+    case T_UNKNOWN:return "UNKNOWN";
     }
     return "";
 }

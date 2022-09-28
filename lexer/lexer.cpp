@@ -329,7 +329,7 @@ class Lexer{
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
                     end.advance();
-                    Token t("ERR",T_ERR,start,end);
+                    Token t(string(1,this->chr),T_UNKNOWN,start,end);
                     tokens.push_back(t);
                 }
 
