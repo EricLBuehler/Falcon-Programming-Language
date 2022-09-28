@@ -57,9 +57,9 @@ enum precedence {
     BITWISE_AND_PREC,
     BITWISE_SHIFT_PREC,
     SUM,          
-    PRODUCT,
-    EXP,
-    UNARY,        
+    PRODUCT, 
+    EXP,     
+    UNARY,  
     CALL,         
     INDEX,         
 };

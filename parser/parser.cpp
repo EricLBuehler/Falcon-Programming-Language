@@ -1016,6 +1016,11 @@ class Parser{
                     this->backadvance();
                     return left;
                 }
+                if (this->current_tok.type==T_UNKNOWN){
+                    this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
+                    this->backadvance();
+                    return left;
+                }
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 return left;
@@ -1315,7 +1320,7 @@ class Parser{
         Node* make_class(parse_ret* ret){
             this->advance();
             Node* name=this->atom(ret);
-            if (name->type!=N_IDENT){
+            if (name==NULL || name->type!=N_IDENT){
                 this->add_parsing_error(ret, "SyntaxError: Expected identifier, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 return NULL;
