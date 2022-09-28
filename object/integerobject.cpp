@@ -115,6 +115,12 @@ object* int_pow(object* self, object* other){
         BigInt selfv =*CAST_INT(self)->val;
         BigInt otherv=*CAST_INT(other)->val;
         BigInt out=1;
+        if (otherv<0){
+            for (BigInt i=0; i>otherv; i--){
+                out/=selfv;
+            }
+            return new_int_frombigint(new BigInt(out));
+        }
         for (BigInt i=0; i<otherv; i++){
             out*=selfv;
         }
