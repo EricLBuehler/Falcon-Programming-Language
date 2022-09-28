@@ -233,6 +233,11 @@ object* int_div(object* self, object* other){
     }
     double selfv =(double)CAST_INT(self)->val->to_int();
     double otherval=CAST_FLOAT(otherv)->val;
+    DECREF(otherv);
+    if (otherval==0){
+        vm_add_err(&ZeroDivisionError, vm, "Divison by zero");
+        return NULL;
+    }
     double res=selfv/otherval;
     int ires=(int)res;
     if (res-ires==0){
@@ -298,7 +303,7 @@ object* int_rshift(object* self, object* other){
     int val=CAST_INT(otherv)->val->to_int();
     DECREF(otherv);
     if (val<0){
-        vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
+        vm_add_err(&ValueError, vm, "Cannot right shift by negative number of bits");
         return NULL;
     }
     

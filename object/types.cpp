@@ -1226,6 +1226,11 @@ void setup_exception_type(){
 
     AssertionError=(*(TypeObject*)new_type_exception(new string("AssertionError"), new_tuple(), new_dict()));
     fplbases.push_back(&AssertionError);
+
+    object* zerodiv_bases=new_tuple();
+    zerodiv_bases->type->slot_mappings->slot_append(zerodiv_bases, (object*)&ValueError);
+    ZeroDivisionError=(*(TypeObject*)new_type_exception(new string("ZeroDivisionError"), zerodiv_bases, new_dict()));
+    fplbases.push_back(&ZeroDivisionError);
 }
 
 

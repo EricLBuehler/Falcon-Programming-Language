@@ -161,6 +161,11 @@ object* float_div(object* self, object* other){
     if (otherfloat==NULL){
         return NULL;
     }
+    if (CAST_FLOAT(otherfloat)->val==0){
+        DECREF(otherfloat);
+        vm_add_err(&ZeroDivisionError, vm, "Divison by zero");
+        return NULL;
+    }
     double res=CAST_FLOAT(self)->val/CAST_FLOAT(otherfloat)->val;
     DECREF(otherfloat);
     int ires=(int)res;

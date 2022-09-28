@@ -147,6 +147,8 @@ void setup_builtins(){
     absargs->type->slot_mappings->slot_append(absargs, str_new_fromstr("self"));
     object* abskwargs=new_tuple();
     builtins[48]=new_builtin((builtinfunc)builtin_abs, str_new_fromstr("abs"), absargs, abskwargs, 1, false);
+    
+    builtins[49]=(object*)&ZeroDivisionError;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

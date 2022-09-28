@@ -137,7 +137,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=49;
+const size_t nbuiltins=50;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -154,6 +154,7 @@ TypeObject InvalidOperationError;
 TypeObject ImportError;
 TypeObject KeyboardInterrupt;
 TypeObject AssertionError;
+TypeObject ZeroDivisionError;
 
 bool setup_memory_error=false;
 bool hit_memory_error=false;
