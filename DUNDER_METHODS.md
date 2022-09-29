@@ -1,4 +1,4 @@
-# Falcon Programming Lanugages Dunder Methods
+# Falcon Programming Lanugage Dunder Methods
 
 ## Constructors
 - ```__init__(self, ...)```
