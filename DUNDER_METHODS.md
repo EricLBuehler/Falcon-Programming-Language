@@ -43,3 +43,8 @@
 - ```__get__(self, instance)```
 - ```__set__(self, instance, val)```
 - ```__delete__(self, instance)```
+
+## Attribute Lookup
+- ```__getattr__(self, attr)```
+- ```__setattr__(self, attr, val)```
+- ```__delattr__(self, attr)```
