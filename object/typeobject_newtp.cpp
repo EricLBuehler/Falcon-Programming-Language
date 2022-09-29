@@ -345,12 +345,9 @@ void newtp_setattr(object* self, object* attr, object* val){
     return;
 }
 
-object* newtp_descrget(object* obj, object* self){
-    cout<<obj<<self;
-
-    
+object* newtp_descrget(object* obj, object* self){    
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    args->type->slot_mappings->slot_append(args, obj);
     
     object* n;
     n=object_getattr(self, str_new_fromstr("__get__"));
