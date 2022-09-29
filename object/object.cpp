@@ -524,7 +524,7 @@ object* object_getattr(object* obj, object* attr){
     return NULL;
 }
 
-void object_genericsetattr(object* obj, object* attr, object* val){
+object* object_genericsetattr(object* obj, object* attr, object* val){
     object* d=NULL;
     
     //Try instance dict
@@ -562,21 +562,22 @@ void object_genericsetattr(object* obj, object* attr, object* val){
 
     if (d==NULL){
         vm_add_err(&AttributeError, vm, "%s object is read only",obj->type->name->c_str());
-        return;
+        return NULL;
     }
     else{
         object* res=dict_get(d, attr);
         if (res!=NULL && !(res->type->slot_descrset==NULL && res->type->slot_descrget==NULL) ){
             if (res!=NULL && res->type->slot_descrset!=NULL){
                 object* v=res->type->slot_descrset(obj, res, val);
-                if (v!=NULL){
+                if (v!=NULL && v!=TERM_PROGRAM){
                     DECREF(v);
+                    return SUCCESS;
                 }
-                return;
+                return v;
             }
             if (res!=NULL && res->type->slot_descrget==NULL){
                 vm_add_err(&AttributeError, vm, "%s object is read only",res->type->name->c_str());
-                return;
+                return NULL;
             }
         }
         else{
@@ -588,16 +589,15 @@ void object_genericsetattr(object* obj, object* attr, object* val){
     }
     
     dict_set(d, attr, val);
-    return;
+    return SUCCESS;
 }
 
-void object_setattr(object* obj, object* attr, object* val){
+object* object_setattr(object* obj, object* attr, object* val){
     if (obj->type->slot_setattr!=NULL){
-        obj->type->slot_setattr(obj, attr,val);
-        return;
+        return obj->type->slot_setattr(obj, attr,val);
     }
     vm_add_err(&AttributeError, vm, "%s object is read only",obj->type->name->c_str());
-    return;
+    return NULL;
 }
 
 object* object_call(object* obj, object* args, object* kwargs){

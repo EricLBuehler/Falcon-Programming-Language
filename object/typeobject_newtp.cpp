@@ -1,6 +1,7 @@
 object* newtp_init(object* self, object* args, object* kwargs){
     //Try to call __init__
     object* n=object_getattr(self, str_new_fromstr("__init__"));
+    ERROR_RET(n);
     
     object* val=object_call(n, args, kwargs);
     return val;
@@ -8,6 +9,7 @@ object* newtp_init(object* self, object* args, object* kwargs){
 object* newtp_new(object* self, object* args, object* kwargs){
     //Try to call __new__
     object* n=object_getattr(self, str_new_fromstr("__new__"));
+    ERROR_RET(n);
     
     object* args_=new_tuple();
     args_->type->slot_mappings->slot_append(args_, self);
@@ -22,13 +24,21 @@ object* newtp_new(object* self, object* args, object* kwargs){
 }
 
 void newtp_del(object* self){
+    cout<<(void*)vm->exception<<self;
     object* n=object_getattr(self, str_new_fromstr("__del__"));
+    cout<<(void*)vm->exception;
+    if (n==NULL || n==TERM_PROGRAM || n==CALL_ERR){
+        return;
+    }
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object_call_nokwargs(n, args);
 }
+
 object* newtp_next(object* self){
     object* n=object_getattr(self, str_new_fromstr("__next__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -36,6 +46,8 @@ object* newtp_next(object* self){
 }
 object* newtp_get(object* self, object* idx){
     object* n=object_getattr(self, str_new_fromstr("__getitem__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, idx);
@@ -44,6 +56,8 @@ object* newtp_get(object* self, object* idx){
 }
 object* newtp_len(object* self){
     object* n=object_getattr(self, str_new_fromstr("__len__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -56,10 +70,14 @@ object* newtp_set(object* self, object* idx, object* val){
     args->type->slot_mappings->slot_append(args, idx);
     
     object* n=object_getattr(self, str_new_fromstr("__setitem__"));
+    ERROR_RET(n);
+    
     if (n==NULL){
         DECREF(vm->exception);
         vm->exception=NULL;
         n=object_getattr(self, str_new_fromstr("__delitem__"));
+        ERROR_RET(n);
+    
     }
     else{
         args->type->slot_mappings->slot_append(args, val);
@@ -70,6 +88,8 @@ object* newtp_set(object* self, object* idx, object* val){
 
 object* newtp_repr(object* self){
     object* n=object_getattr(self, str_new_fromstr("__repr__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -77,6 +97,8 @@ object* newtp_repr(object* self){
 }
 object* newtp_str(object* self){
     object* n=object_getattr(self, str_new_fromstr("__str__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -85,6 +107,8 @@ object* newtp_str(object* self){
 object* newtp_call(object* self, object* args, object* kwargs){
     //Try to call __call__
     object* function=object_getattr(self, str_new_fromstr("__call__"));
+    ERROR_RET(function);
+    
     uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->operator+((*CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val)).to_int()+1;
     uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+1;
     uint32_t kwargc=argc-posargc;     
@@ -102,6 +126,8 @@ object* newtp_call(object* self, object* args, object* kwargs){
 object* newtp_cmp(object* self, object* other, uint8_t type){
     if (type==CMP_EQ){
         object* n=object_getattr(self, str_new_fromstr("__eq__"));
+        ERROR_RET(n);
+    
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
@@ -112,6 +138,8 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
 
     if (type==CMP_NE){
         object* n=object_getattr(self, str_new_fromstr("__ne__"));
+        ERROR_RET(n);
+    
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
@@ -122,6 +150,8 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
 
     if (type==CMP_LT){
         object* n=object_getattr(self, str_new_fromstr("__lt__"));
+        ERROR_RET(n);
+    
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
@@ -133,6 +163,8 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
 
     if (type==CMP_GT){
         object* n=object_getattr(self, str_new_fromstr("__gt__"));
+        ERROR_RET(n);
+    
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
@@ -143,6 +175,8 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
 
     if (type==CMP_LTE){
         object* n=object_getattr(self, str_new_fromstr("__lte__"));
+        ERROR_RET(n);
+    
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
@@ -153,6 +187,8 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
 
     if (type==CMP_GTE){
         object* n=object_getattr(self, str_new_fromstr("__gte__"));
+        ERROR_RET(n);
+    
         if (n!=NULL){
             object* args=new_tuple();
             args->type->slot_mappings->slot_append(args, self);
@@ -165,6 +201,8 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
 
 object* newtp_pow(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__pow__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -173,6 +211,8 @@ object* newtp_pow(object* self, object* other){
 }
 object* newtp_mod(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__mod__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -181,6 +221,8 @@ object* newtp_mod(object* self, object* other){
 }
 object* newtp_add(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__add__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -189,6 +231,8 @@ object* newtp_add(object* self, object* other){
 }
 object* newtp_sub(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__sub__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -197,6 +241,8 @@ object* newtp_sub(object* self, object* other){
 }
 object* newtp_mul(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__mul__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -205,6 +251,8 @@ object* newtp_mul(object* self, object* other){
 }
 object* newtp_div(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__div__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -214,6 +262,8 @@ object* newtp_div(object* self, object* other){
 
 object* newtp_and(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__and__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -223,6 +273,8 @@ object* newtp_and(object* self, object* other){
 
 object* newtp_or(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__or__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -232,6 +284,8 @@ object* newtp_or(object* self, object* other){
 
 object* newtp_lshift(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__lshift__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -241,6 +295,8 @@ object* newtp_lshift(object* self, object* other){
 
 object* newtp_rshift(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__rshift__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, other);
@@ -250,6 +306,8 @@ object* newtp_rshift(object* self, object* other){
 
 object* newtp_neg(object* self){
     object* n=object_getattr(self, str_new_fromstr("__neg__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -258,6 +316,8 @@ object* newtp_neg(object* self){
 
 object* newtp_not(object* self){
     object* n=object_getattr(self, str_new_fromstr("__not__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -266,6 +326,8 @@ object* newtp_not(object* self){
 
 object* newtp_bool(object* self){
     object* n=object_getattr(self, str_new_fromstr("__bool__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -274,6 +336,8 @@ object* newtp_bool(object* self){
 
 object* newtp_int(object* self){
     object* n=object_getattr(self, str_new_fromstr("__int__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -282,6 +346,8 @@ object* newtp_int(object* self){
 
 object* newtp_float(object* self){
     object* n=object_getattr(self, str_new_fromstr("__float__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -290,6 +356,8 @@ object* newtp_float(object* self){
 
 object* newtp_iter(object* self){
     object* n=object_getattr(self, str_new_fromstr("__iter__"));
+    ERROR_RET(n);
+    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     object* val=object_call_nokwargs(n, args);
@@ -298,6 +366,7 @@ object* newtp_iter(object* self){
 
 object* newtp_getattr(object* self, object* attr){
     object* n=object_genericgetattr_notype(self, str_new_fromstr("__getattr__"));
+    
     if (n!=NULL){
         object* args=new_tuple();
         args->type->slot_mappings->slot_append(args, self);
@@ -313,36 +382,34 @@ object* newtp_getattr(object* self, object* attr){
     }
 }
 
-void newtp_setattr(object* self, object* attr, object* val){
+object* newtp_setattr(object* self, object* attr, object* val){
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, self);
     args->type->slot_mappings->slot_append(args, attr);
     
     object* n;
     n=object_genericgetattr_notype(self, str_new_fromstr("__setattr__"));
+    
     if (n==NULL){
         DECREF(vm->exception);
         vm->exception=NULL;
         if (val!=NULL){
-            object_genericsetattr(self, attr, val);
-            return;
+            return object_genericsetattr(self, attr, val);;
         }
         n=object_genericgetattr_notype(self, str_new_fromstr("__delattr__"));
+    
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;
-            object_genericsetattr(self, attr, val);
-            return;
+            return object_genericsetattr(self, attr, val);;
         }
     }
     else{
         args->type->slot_mappings->slot_append(args, val);
     }
 
-    object* res=object_call_nokwargs(n, args);
-    DECREF(res);
-    
-    return;
+    object* res=object_call_nokwargs(n, args);    
+    return res;
 }
 
 object* newtp_descrget(object* obj, object* self){    
@@ -351,6 +418,8 @@ object* newtp_descrget(object* obj, object* self){
     
     object* n;
     n=object_getattr(self, str_new_fromstr("__get__"));
+    ERROR_RET(n);
+    
     if (n==NULL){
         DECREF(vm->exception);
         vm->exception=NULL;
@@ -367,11 +436,15 @@ object* newtp_descrset(object* obj, object* self, object* val){
     
     object* n;
     n=object_getattr(self, str_new_fromstr("__set__"));
+    ERROR_RET(n);
+    
     if (n==NULL){
         DECREF(vm->exception);
         vm->exception=NULL;
         
         n=object_getattr(self, str_new_fromstr("__delete__"));
+        ERROR_RET(n);
+    
         if (n==NULL){
             DECREF(vm->exception);
             vm->exception=NULL;

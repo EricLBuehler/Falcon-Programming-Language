@@ -120,7 +120,6 @@ object* float_add(object* self, object* other){
         return NULL;
     }
     double res=CAST_FLOAT(self)->val+CAST_FLOAT(otherfloat)->val;
-    cout<<res;
     DECREF(otherfloat);
     int ires=(int)res;
     if (res-ires==0){

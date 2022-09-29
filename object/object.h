@@ -14,7 +14,7 @@ typedef void (*appendfunc)(object*, object*);
 typedef struct object*(*compfunc)(struct object*, struct object*, uint8_t type);
 typedef object* (*callfunc)(object*, object*, object*);
 typedef object* (*getattrfunc)(object*, object*);
-typedef void (*setattrfunc)(object*, object*, object*);
+typedef object* (*setattrfunc)(object*, object*, object*);
 
 
 typedef object* (*cwrapperfunc)(object*, object*, object*);
@@ -176,9 +176,9 @@ object* object_repr(object* obj);
 void object_print(object* obj);
 string object_cstr(object* obj);
 object* object_getattr(object* obj, object* attr);
-void object_setattr(object* obj, object* attr, object* val);
+object* object_setattr(object* obj, object* attr, object* val);
 object* object_genericgetattr(object* obj, object* attr);
-void object_genericsetattr(object* obj, object* attr, object* val);
+object* object_genericsetattr(object* obj, object* attr, object* val);
 bool object_find_bool_dict_keys(object* dict, object* needle);
 object* object_call(object* obj, object* args, object* kwargs);
 string object_crepr(object* obj);
