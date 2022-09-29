@@ -31,7 +31,7 @@ void newtp_del(object* self){
         return;
     }
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object_call_nokwargs(n, args);
 }
 
@@ -40,7 +40,7 @@ object* newtp_next(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -49,7 +49,7 @@ object* newtp_get(object* self, object* idx){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, idx);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -59,14 +59,14 @@ object* newtp_len(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
 
 object* newtp_set(object* self, object* idx, object* val){
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, idx);
     
     object* n=object_getattr(self, str_new_fromstr("__setitem__"));
@@ -91,7 +91,7 @@ object* newtp_repr(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -100,7 +100,7 @@ object* newtp_str(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -118,7 +118,7 @@ object* newtp_call(object* self, object* args, object* kwargs){
         return NULL;
     }
     
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call(function, args, kwargs);
     return val;
 }
@@ -130,7 +130,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
     
         if (n!=NULL){
             object* args=new_tuple();
-            args->type->slot_mappings->slot_append(args, self);
+            
             object* val=object_call_nokwargs(n, args);
             return val;
         }
@@ -142,7 +142,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
     
         if (n!=NULL){
             object* args=new_tuple();
-            args->type->slot_mappings->slot_append(args, self);
+            
             object* val=object_call_nokwargs(n, args);
             return val;
         }
@@ -154,7 +154,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
     
         if (n!=NULL){
             object* args=new_tuple();
-            args->type->slot_mappings->slot_append(args, self);
+            
             object* val=object_call_nokwargs(n, args);
             return val;
         }
@@ -167,7 +167,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
     
         if (n!=NULL){
             object* args=new_tuple();
-            args->type->slot_mappings->slot_append(args, self);
+            
             object* val=object_call_nokwargs(n, args);
             return val;
         }
@@ -179,7 +179,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
     
         if (n!=NULL){
             object* args=new_tuple();
-            args->type->slot_mappings->slot_append(args, self);
+            
             object* val=object_call_nokwargs(n, args);
             return val;
         }
@@ -191,7 +191,7 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
     
         if (n!=NULL){
             object* args=new_tuple();
-            args->type->slot_mappings->slot_append(args, self);
+            
             object* val=object_call_nokwargs(n, args);
             return val;
         }
@@ -204,7 +204,7 @@ object* newtp_pow(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -214,7 +214,7 @@ object* newtp_mod(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -224,7 +224,7 @@ object* newtp_add(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -234,7 +234,7 @@ object* newtp_sub(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -244,7 +244,7 @@ object* newtp_mul(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -254,7 +254,7 @@ object* newtp_div(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -265,7 +265,7 @@ object* newtp_and(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -276,7 +276,7 @@ object* newtp_or(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -287,7 +287,7 @@ object* newtp_lshift(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -298,7 +298,7 @@ object* newtp_rshift(object* self, object* other){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, other);
     object* val=object_call_nokwargs(n, args);
     return val;
@@ -309,7 +309,7 @@ object* newtp_neg(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -319,7 +319,7 @@ object* newtp_not(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -329,7 +329,7 @@ object* newtp_bool(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -339,7 +339,7 @@ object* newtp_int(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -349,7 +349,7 @@ object* newtp_float(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -359,7 +359,7 @@ object* newtp_iter(object* self){
     ERROR_RET(n);
     
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     object* val=object_call_nokwargs(n, args);
     return val;
 }
@@ -369,7 +369,7 @@ object* newtp_getattr(object* self, object* attr){
     
     if (n!=NULL){
         object* args=new_tuple();
-        args->type->slot_mappings->slot_append(args, self);
+        
         args->type->slot_mappings->slot_append(args, attr);
         object* val=object_call_nokwargs(n, args);
         return val;
@@ -384,7 +384,7 @@ object* newtp_getattr(object* self, object* attr){
 
 object* newtp_setattr(object* self, object* attr, object* val){
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, self);
+    
     args->type->slot_mappings->slot_append(args, attr);
     
     object* n;
