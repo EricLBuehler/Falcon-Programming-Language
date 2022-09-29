@@ -120,6 +120,7 @@ object* float_add(object* self, object* other){
         return NULL;
     }
     double res=CAST_FLOAT(self)->val+CAST_FLOAT(otherfloat)->val;
+    cout<<res;
     DECREF(otherfloat);
     int ires=(int)res;
     if (res-ires==0){
@@ -181,7 +182,7 @@ object* float_neg(object* self){
 
 object* float_repr(object* self){
     char buf[to_string(CAST_FLOAT(self)->val).size()];
-    sprintf(buf, "%.17g", CAST_FLOAT(self)->val);
+    sprintf(buf, "%#.17g", CAST_FLOAT(self)->val);
     return str_new_fromstr(string(buf));
 }
 

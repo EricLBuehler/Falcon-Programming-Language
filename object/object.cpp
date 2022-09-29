@@ -471,7 +471,6 @@ object* object_genericgetattr_notype(object* obj, object* attr){
     else{
         if (res->type->slot_descrget!=NULL){
             object* r=res->type->slot_descrget(obj, res);
-            DECREF(res);
             return r;
         }
     }
@@ -503,7 +502,6 @@ object* object_genericgetattr(object* obj, object* attr){
     else{
         if (res->type->slot_descrget!=NULL){
             object* r=res->type->slot_descrget(obj, res);
-            DECREF(res);
             return r;
         }
     }
@@ -532,13 +530,17 @@ void object_genericsetattr(object* obj, object* attr, object* val){
     //Try instance dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
-        
-        d=dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            d=dict;
+        }
     }
     
     //Check type dict 
     if (d==NULL && obj->type->dict!=0){
         object* dict = obj->type->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            d=dict;
+        }
     }
 
     if (d==NULL){
@@ -550,30 +552,35 @@ void object_genericsetattr(object* obj, object* attr, object* val){
             //Check type dict
             if (base_tp->dict!=0){
                 object* dict = base_tp->dict;
-                d=dict;
+                if (object_find_bool_dict_keys(dict, attr)){
+                    d=dict;
+                    break;
+                }
             }
         }
     }
 
     if (d==NULL){
-        vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
+        vm_add_err(&AttributeError, vm, "%s object is read only",obj->type->name->c_str());
         return;
     }
     else{
         object* res=dict_get(d, attr);
         if (res!=NULL && !(res->type->slot_descrset==NULL && res->type->slot_descrget==NULL) ){
             if (res!=NULL && res->type->slot_descrset!=NULL){
-                res->type->slot_descrset(obj, res, val);
-                DECREF(res);
+                object* v=res->type->slot_descrset(obj, res, val);
+                if (v!=NULL){
+                    DECREF(v);
+                }
                 return;
             }
             if (res!=NULL && res->type->slot_descrget==NULL){
-                vm_add_err(&AttributeError, vm, "%s is read only",res->type->name->c_str());
+                vm_add_err(&AttributeError, vm, "%s object is read only",res->type->name->c_str());
                 return;
             }
         }
         else{
-            if (vm!=NULL){
+            if (vm!=NULL && vm->exception!=NULL){
                 DECREF(vm->exception);
                 vm->exception=NULL;
             }
@@ -589,7 +596,7 @@ void object_setattr(object* obj, object* attr, object* val){
         obj->type->slot_setattr(obj, attr,val);
         return;
     }
-    vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
+    vm_add_err(&AttributeError, vm, "%s object is read only",obj->type->name->c_str());
     return;
 }
 

@@ -345,6 +345,52 @@ void newtp_setattr(object* self, object* attr, object* val){
     return;
 }
 
+object* newtp_descrget(object* obj, object* self){
+    cout<<obj<<self;
+
+    
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    
+    object* n;
+    n=object_getattr(self, str_new_fromstr("__get__"));
+    if (n==NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+        return NULL;
+    }
+
+    object* res=object_call_nokwargs(n, args);
+    return res;
+}
+
+object* newtp_descrset(object* obj, object* self, object* val){    
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, obj);
+    
+    object* n;
+    n=object_getattr(self, str_new_fromstr("__set__"));
+    if (n==NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+        
+        n=object_getattr(self, str_new_fromstr("__delete__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+            return NULL;
+        }
+    }
+    else{
+        args->type->slot_mappings->slot_append(args, val);
+    }
+
+    object* res=object_call_nokwargs(n, args);
+    return res;
+}
+
+
+
 void newtp_post_tpcall(object* ob){
     (*(object**)((char*)ob + ob->type->dict_offset))=new_dict();
 }

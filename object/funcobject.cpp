@@ -34,7 +34,6 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t ip=0;
     
     object* ret=run_vm(CAST_FUNC(self)->code, &ip);
-
     for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
         DECREF(k.first);
         if (k.second->type->size==0){

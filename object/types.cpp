@@ -2751,7 +2751,10 @@ object* type_call(object* self, object* args, object* kwargs){
         o->type->slot_posttpcall(o);
     }
     if (o != NULL && o->type->slot_init!=NULL){
-        o->type->slot_init(o, args, kwargs);
+        object* v=o->type->slot_init(o, args, kwargs);
+        if (v==NULL){
+            return v;
+        }
     }
     return o;
 }
@@ -2803,7 +2806,7 @@ void type_set(object* obj, object* attr, object* val){
         dict_set(dict, attr, val);
         return;
     }
-    vm_add_err(&AttributeError, vm, "%s is read only",obj->type->name->c_str());
+    vm_add_err(&AttributeError, vm, "%s object is read only",obj->type->name->c_str());
     return;
 }
 
@@ -3110,6 +3113,8 @@ object* new_type(string* name, object* bases, object* dict){
     callfunc call_func=NULL;
     getattrfunc getattr_func=NULL;
     setattrfunc setattr_func=NULL;
+    descrgetfunc get_func=NULL;
+    descrsetfunc set_func=NULL;
 
     NumberMethods number=(*(NumberMethods*)fpl_malloc(sizeof(NumberMethods)));
     memset(&number, 0, sizeof(NumberMethods));
@@ -3188,6 +3193,33 @@ object* new_type(string* name, object* bases, object* dict){
         }
         else{
             call_func=(callfunc)newtp_call;
+        }
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__get__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            get_func=(descrgetfunc)newtp_descrget;
+        }
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__set__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+
+            n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__delete__"));
+            if (n==NULL){
+                DECREF(vm->exception);
+                vm->exception=NULL;
+            }
+            else{
+                set_func=(descrsetfunc)newtp_descrset;
+            }
+        }
+        else{
+            set_func=(descrsetfunc)newtp_descrset;
         }
     }
     if (NEWTP_NUMBER_COPY){
@@ -3434,8 +3466,8 @@ object* new_type(string* name, object* bases, object* dict){
         
         (compfunc)newtp_cmp, //slot_cmp
         
-        0, //slot_descrget
-        0, //slot_descrset
+        get_func, //slot_descrget
+        set_func, //slot_descrset
 
         newtp_post_tpcall, //slot_posttpcall
     };
