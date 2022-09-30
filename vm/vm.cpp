@@ -488,6 +488,7 @@ object* import_name(string data, object* name){
     ::vm->callstack->head->locals=INCREF(::vm->globals);
     object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
+    vm_del(::vm);
     ::vm=vm_;
 
     object* o=module_new_fromdict(dict, name);
@@ -1561,7 +1562,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
     return NULL;
 }
 
-
 object* run_vm(object* codeobj, uint32_t* ip){
     object* code=CAST_CODE(codeobj)->co_code;
     object* lines=CAST_CODE(codeobj)->co_lines;
@@ -1574,12 +1574,24 @@ object* run_vm(object* codeobj, uint32_t* ip){
     
     vm->callstack->head->line=list_index_int(linetup, 2);
 
+    uint32_t i=0;
     while ((*ip)<instructions){
         instruction=list_index_int(code, (*ip)++);
 
         if (((*ip)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
+        }
+
+        i++;
+        if (i==GIL_MAX_SWITCH){
+            //Free GIL
+            GIL.unlock();
+            //
+            i=0;
+            //Aquire GIL
+            GIL.lock();
+            //
         }
 
         object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip, &linetup_cntr, linetup);
@@ -1589,6 +1601,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         if (obj==TERM_PROGRAM){
+            //Free GIL
+            GIL.unlock();
+            //
             return TERM_PROGRAM;
         }
 
@@ -1596,6 +1611,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
             if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){// && frame->callstack_size==vm->callstack->size){
                 if (vm->callstack->size-frame->callstack_size!=0){
+                    //Free GIL
+                    GIL.unlock();
+                    //
                     return NULL;
                 }
                 add_dataframe(vm, vm->objstack, vm->exception);
@@ -1613,6 +1631,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
 
             if (vm->exception==NULL){
+                //Free GIL
+                GIL.unlock();
+                //
                 return NULL;
             }
             
@@ -1628,16 +1649,26 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 DECREF(vm->exception);
             }
             vm->exception=NULL;
+            
+            //Free GIL
+            GIL.unlock();
+            //
             return NULL;
         }  
 
         if (obj!=NULL){
+            //Free GIL
+            GIL.unlock();
+            //
             return obj;
         }
         else if (vm->exception!=NULL){
             struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
             if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
                 if (vm->callstack->size-frame->callstack_size!=0){
+                    //Free GIL
+                    GIL.unlock();
+                    //
                     return NULL;
                 }
                 add_dataframe(vm, vm->objstack, vm->exception);
@@ -1662,6 +1693,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 }
                 cout<<endl;
                 if ((void*)frame->obj==(void*)vm->exception){ //Reraised
+                    //Free GIL
+                    GIL.unlock();
+                    //
                     return NULL;
                 }
                 cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
@@ -1679,8 +1713,16 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 DECREF(vm->exception);
             }
             vm->exception=NULL;
+            
+            //Free GIL
+            GIL.unlock();
+            //
             return NULL;
         }
     }
+    
+    //Free GIL
+    GIL.unlock();
+    //
     return new_none();
 }
