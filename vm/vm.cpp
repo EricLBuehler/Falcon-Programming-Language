@@ -676,7 +676,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -1415,7 +1415,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals));
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -1552,6 +1552,28 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
+            break;
+        }
+
+        case MAKE_STATICMETH:{
+            object* code=pop_dataframe(vm->objstack); //<- Code
+            object* args=pop_dataframe(vm->objstack); //<- Args
+            object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
+            object* name=pop_dataframe(vm->objstack); //<- Name
+            
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_STATIC);
+            add_dataframe(vm, vm->objstack, func);
+            break;
+        }
+
+        case MAKE_CLASSMETH:{
+            object* code=pop_dataframe(vm->objstack); //<- Code
+            object* args=pop_dataframe(vm->objstack); //<- Args
+            object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
+            object* name=pop_dataframe(vm->objstack); //<- Name
+            
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_CLASS);
+            add_dataframe(vm, vm->objstack, func);
             break;
         }
         
