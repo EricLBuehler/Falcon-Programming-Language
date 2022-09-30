@@ -137,7 +137,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=50;
+const size_t nbuiltins=51;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -214,6 +214,8 @@ inline object* pop_dataframe(struct datastack* stack);
 inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable);
 inline void pop_callframe(struct callstack* stack);
 void print_traceback();
+
+void finalize_threads();
 
 parse_ret parseretglbl;
 struct compiler* new_compiler();

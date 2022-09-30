@@ -149,6 +149,11 @@ void setup_builtins(){
     builtins[48]=new_builtin((builtinfunc)builtin_abs, str_new_fromstr("abs"), absargs, abskwargs, 1, false);
     
     builtins[49]=(object*)&ZeroDivisionError;
+    
+    object* iscallableargs=new_tuple();
+    iscallableargs->type->slot_mappings->slot_append(iscallableargs, str_new_fromstr("object"));
+    object* iscallablekwargs=new_tuple();
+    builtins[50]=new_builtin((builtinfunc)builtin_iscallable, str_new_fromstr("iscallable"), iscallableargs, iscallablekwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

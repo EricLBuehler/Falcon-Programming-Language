@@ -698,6 +698,13 @@ void object_del_item(object* base, object* idx){
     base->type->slot_mappings->slot_set(base, idx, NULL);
 }
 
+object* object_iscallable(object* obj){
+    if (obj->type->slot_call==NULL){
+        return new_bool_false();
+    }
+    return new_bool_true();
+}
+
 //I have setup memory_error to be a fatal exception
 void memory_error(){
     object* exception=NULL;
@@ -753,5 +760,6 @@ void memory_error(){
     cout<<"Fatal memory error before necessary initialization.";
 
     done:
+    finalize_threads();
     exit(0);
 }
