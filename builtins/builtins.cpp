@@ -224,3 +224,7 @@ object* builtin_abs(object* self, object* args){
     }
     return new_float_fromdouble(res);
 }
+    
+object* builtin_iscallable(object* self, object* args){
+    return object_iscallable(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
+}
