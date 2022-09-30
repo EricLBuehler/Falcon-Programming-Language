@@ -428,6 +428,9 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "superobject.cpp"
 #include "methodobject.cpp"
 #include "wrappermethodobject.cpp"
+#include "staticmethodobject.cpp"
+#include "classmethodobject.cpp"
+
 
 void setup_types_consts(){
     fplbases.clear();
@@ -469,6 +472,8 @@ void setup_types_consts(){
     setup_super_type();
     setup_method_type();
     setup_wrappermethod_type();
+    setup_staticmethod_type();
+    setup_classmethod_type();
 
     setup_builtins();
     
@@ -595,4 +600,12 @@ void setup_types_consts(){
     inherit_type_dict(&WrapperMethodType);
     setup_type_offsets(&WrapperMethodType);
     setup_type_getsets(&WrapperMethodType);
+    
+    inherit_type_dict(&StaticMethodType);
+    setup_type_offsets(&StaticMethodType);
+    setup_type_getsets(&StaticMethodType);
+    
+    inherit_type_dict(&ClassMethodType);
+    setup_type_offsets(&ClassMethodType);
+    setup_type_getsets(&ClassMethodType);
 }

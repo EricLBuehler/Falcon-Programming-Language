@@ -724,6 +724,7 @@ typedef struct FuncObject{
     uint32_t argc;
     object* name;
     object* closure;
+    int functype;
 }FuncObject;
 
 static NumberMethods func_num_methods{
@@ -2685,6 +2686,107 @@ void setup_wrappermethod_type(){
     WrapperMethodType=(*(TypeObject*)finalize_type(&WrapperMethodType));
     fplbases.push_back(&WrapperMethodType);
 }
+
+
+object* staticmethod_call(object* self, object* args, object* kwargs);
+object* staticmethod_repr(object* self);
+object* staticmethod_new_impl(object* func, object* instance);
+
+TypeObject StaticMethodType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("staticmethod"), //name
+    sizeof(MethodObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    staticmethod_repr, //slot_repr
+    staticmethod_repr, //slot_str
+    staticmethod_call, //slot_call
+
+    &method_num_methods, //slot_number
+    &method_mappings, //slot_mapping
+
+    method_methods, //slot_methods
+    method_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)method_cmp, //slot_cmp
+};
+
+void setup_staticmethod_type(){
+    StaticMethodType.bases=new_tuple();
+    tuple_append(StaticMethodType.bases, (object*)(&MethodType));
+    StaticMethodType=(*(TypeObject*)finalize_type(&StaticMethodType));
+    fplbases.push_back(&StaticMethodType);
+}
+
+
+object* classmethod_call(object* self, object* args, object* kwargs);
+object* classmethod_repr(object* self);
+object* classmethod_new_impl(object* func, object* instance);
+
+TypeObject ClassMethodType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("classmethod"), //name
+    sizeof(MethodObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    classmethod_repr, //slot_repr
+    classmethod_repr, //slot_str
+    classmethod_call, //slot_call
+
+    &method_num_methods, //slot_number
+    &method_mappings, //slot_mapping
+
+    method_methods, //slot_methods
+    method_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)method_cmp, //slot_cmp
+};
+
+void setup_classmethod_type(){
+    ClassMethodType.bases=new_tuple();
+    tuple_append(ClassMethodType.bases, (object*)(&MethodType));
+    ClassMethodType=(*(TypeObject*)finalize_type(&ClassMethodType));
+    fplbases.push_back(&ClassMethodType);
+}
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////

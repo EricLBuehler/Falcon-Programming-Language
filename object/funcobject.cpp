@@ -1,4 +1,4 @@
-object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure){
+object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure, int type){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
     CAST_FUNC(obj)->dict=new_dict();
@@ -7,7 +7,8 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->argc=argc;
     CAST_FUNC(obj)->name=name;
     CAST_FUNC(obj)->closure=closure;
-    
+    CAST_FUNC(obj)->functype=type;
+
     return obj;
 }
 
@@ -115,5 +116,11 @@ void func_del(object* obj){
 }
 
 object* func_descrget(object* obj, object* self){
+    switch (CAST_FUNC(self)->functype){
+        case FUNCTION_STATIC:
+            return staticmethod_new_impl(self, obj);
+        case FUNCTION_CLASS:
+            return classmethod_new_impl(self, obj);
+    }
     return method_new_impl(self, obj);
 }
