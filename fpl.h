@@ -8,6 +8,14 @@ using namespace std;
 #define DEBUG
 #define CALL_ERR (object*)0x1000
 #define TERM_PROGRAM (object*)0x2000
+#define SUCCESS (object*)0x3000
+
+#define ERROR_RET(v) if (v==NULL){return CALL_ERR;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
+#define LIST_TUP_LEN(l) CAST_TUPLE(l)->size
+
+#define GIL_MAX_SWITCH 128
+
+std::mutex GIL;
 
 string program;
 
@@ -45,6 +53,7 @@ bool hit_sigint=false;
 #include "object/object.h"
 #include "compiler/compiler.h"
 #include "vm/vm.h"
+#include "builtins/lateincludebuiltins.cpp"
 
 #include <signal.h>
 
@@ -136,6 +145,8 @@ int execute(string data, bool objdump, bool verbose){
     auto a=time_nanoseconds();
     object* returned=run_vm(code, &vm->ip);
     auto b=time_nanoseconds();
+
+    finalize_threads();
 
     if (verbose){
         cout<<"--------";
