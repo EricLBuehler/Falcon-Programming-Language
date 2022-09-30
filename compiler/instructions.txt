@@ -152,3 +152,7 @@ BITWISE_OR - Implements TOS | TOS-1
 BITWISE_LSHIFT - Implements TOS << TOS-1
 
 BITWISE_RSHIFT - Implements TOS >> TOS-1
+
+MAKE_STATICMETH(argc) - Creates a staticmethod
+
+MAKE_CLASSMETH(argc) - Creates a classmethod

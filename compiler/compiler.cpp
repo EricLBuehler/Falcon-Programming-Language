@@ -576,7 +576,15 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             //Create callable
             if (compiler->scope!=SCOPE_GLOBAL){
-                add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
+                if (FUNCT(expr->node)->type==FUNCTION_NORMAL){
+                    add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
+                }
+                if (FUNCT(expr->node)->type==FUNCTION_STATIC){
+                    add_instruction(compiler->instructions,MAKE_STATICMETH, argc, expr->start, expr->end);
+                }
+                if (FUNCT(expr->node)->type==FUNCTION_CLASS){
+                    add_instruction(compiler->instructions,MAKE_CLASSMETH, argc, expr->start, expr->end);
+                }
             }
             else{
                 add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
