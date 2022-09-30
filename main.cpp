@@ -13,6 +13,7 @@
 #include <float.h>
 #include <stdlib.h>
 #include <chrono>
+#include <mutex>
 
 
 #include <sys/stat.h>
@@ -49,6 +50,8 @@ int main(int argc, char** argv) {
     kwds.push_back("del");
     kwds.push_back("assert");
     kwds.push_back("continue");
+    kwds.push_back("staticmethod");
+    kwds.push_back("classmethod");
     
     if (argc==1){
         try{
@@ -132,6 +135,8 @@ int main(int argc, char** argv) {
                     DECREF(returned);
                 }
             }
+
+            finalize_threads();
             return 0;
         }
         catch (std::bad_alloc){
