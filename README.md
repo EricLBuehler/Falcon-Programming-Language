@@ -97,6 +97,8 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```del```
 - ```assert```
 - ```continue```
+- ```classmethod```
+- ```staticmethod```
 
 ### Other syntax ###
 - ```:``` - Global variable access
