@@ -17,7 +17,7 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     uint32_t kwargc=argc-posargc;
 
-    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self);
+    add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self);
     vm->callstack->head->locals=new_dict();
 
     if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
