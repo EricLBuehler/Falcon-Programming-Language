@@ -557,8 +557,23 @@ int compile_expr(struct compiler* compiler, Node* expr){
             comp->scope=SCOPE_LOCAL;
             struct compiler* compiler_=compiler;
             compiler=comp;
-            object* code=compile(comp, c);
+            object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
+
+            cout<<expr->start->line;
+            object* lines=new_list();
+            
+            object* tuple=new_tuple();
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(expr->start->line));
+            
+            lines->type->slot_mappings->slot_append(lines, tuple);
+            for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_lines)->size; i++){
+                lines->type->slot_mappings->slot_append(lines, list_index_int(lines, i));
+            }
+            DECREF(CAST_CODE(code)->co_lines);
+            CAST_CODE(code)->co_lines=lines; //No incref necessary
 
             DECREF(CAST_CODE(code)->co_file);
             CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
@@ -754,7 +769,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             comp->scope=SCOPE_LOCAL;
             struct compiler* compiler_=compiler;
             compiler=comp;
-            object* code=compile(comp, c);
+            object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
 
             DECREF(CAST_CODE(code)->co_file);
@@ -2268,7 +2283,7 @@ uint32_t num_instructions(Node* node, scope s){
     return comp->instructions->count;
 }
 
-struct object* compile(struct compiler* compiler, parse_ret ast){
+struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_line){
     compiler->lines=new_list();
     object* lines=compiler->lines;
     int i=0;
@@ -2321,7 +2336,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast){
         object* tuple=new_tuple();
         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(2));
-        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
+        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(fallback_line));
         lines->type->slot_mappings->slot_append(lines, tuple);
     }
     

@@ -149,7 +149,7 @@ struct compiler{
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 
 
-struct object* compile(struct compiler* compiler, parse_ret ast);
+struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_line);
 uint32_t num_instructions(vector<Node*>* nodes, scope s);
 uint32_t num_instructions(Node* node, scope s);
 uint32_t num_instructions(vector<Node*>* nodes, scope s);
