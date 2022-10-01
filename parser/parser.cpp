@@ -16,6 +16,7 @@ class Parser{
         bool multi=true;
         bool noassign=false;
         bool inloop=false;
+        bool inclass=false;
 
         Parser(){}
 
@@ -1128,7 +1129,7 @@ class Parser{
             this->noassign=true;
             Node* n;
             if (this->current_tok.data=="func"){
-                n=make_function(ret);
+                n=make_function(ret, FUNCTION_NORMAL);
             }
             else if (this->current_tok.data=="class"){
                 n= make_class(ret);
@@ -1169,6 +1170,12 @@ class Parser{
             else if (this->current_tok.data=="assert"){
                 n= make_assert(ret);
             }
+            else if (this->current_tok.data=="staticmethod"){
+                n=make_function(ret, FUNCTION_STATIC);
+            }
+            else if (this->current_tok.data=="classmethod"){
+                n=make_function(ret, FUNCTION_CLASS);
+            }
             else{
                 this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
                 this->advance();
@@ -1178,13 +1185,24 @@ class Parser{
             return n;
         }
 
-        Node* make_function(parse_ret* ret){
+        Node* make_function(parse_ret* ret, int type){
+            if (type==FUNCTION_STATIC && !this->inclass){
+                this->add_parsing_error(ret, "SyntaxError: staticmethod outside of class");
+                return NULL;
+            }
+
+            if (type==FUNCTION_CLASS && !this->inclass){
+                this->add_parsing_error(ret, "SyntaxError: classmethod outside of class");
+                return NULL;
+            }
+
             vector<Node*>* args=new vector<Node*>;
             args->clear();
             vector<Node*>* kwargs=new vector<Node*>;
             kwargs->clear();
 
             this->advance();
+            
             if (!this->current_tok_is(T_IDENTIFIER)){
                 this->add_parsing_error(ret, "SyntaxError: Expected identifier, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -1311,6 +1329,7 @@ class Parser{
             }
             f->args=args;
             f->kwargs=kwargs;
+            f->type=type;
 
             node->node=f;
             this->advance();
@@ -1365,8 +1384,11 @@ class Parser{
                 return NULL;
             }
             this->advance();
+
             bool inloop=this->inloop;
+            bool inclass=this->inclass;
             this->inloop=false;
+            this->inclass=true;
             skip_newline;
             parse_ret code;
             if (!this->current_tok_is(T_RCURLY)){
@@ -1380,6 +1402,7 @@ class Parser{
                 (*ret)=code;
             }
             this->inloop=inloop;
+            this->inclass=inclass;
 
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
