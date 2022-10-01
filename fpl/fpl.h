@@ -3,10 +3,12 @@ object** modules=NULL;
 #include "time.cpp"
 #include "math.cpp"
 #include "random.cpp"
+#include "thread/thread.cpp"
 
 typedef object* (*newmodulefunc)(void);
-const size_t nmodules=3;
-newmodulefunc newmodules[] = {(newmodulefunc)new_random_module, (newmodulefunc)new_time_module, (newmodulefunc)new_math_module, NULL};
+const size_t nmodules=4;
+newmodulefunc newmodules[] = {(newmodulefunc)new_random_module, (newmodulefunc)new_time_module,\
+                            (newmodulefunc)new_math_module, (newmodulefunc)new_thread_module, NULL};
 
 void setup_modules(){
     int i=0;

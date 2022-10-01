@@ -2,16 +2,16 @@
 
 object* math_sin(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to floa", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to floa", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }
     
@@ -27,16 +27,16 @@ object* math_sin(object* self, object* args, object* kwargs){
 
 object* math_cos(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -52,16 +52,16 @@ object* math_cos(object* self, object* args, object* kwargs){
 
 object* math_tan(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -77,16 +77,16 @@ object* math_tan(object* self, object* args, object* kwargs){
 
 object* math_acos(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -102,16 +102,16 @@ object* math_acos(object* self, object* args, object* kwargs){
 
 object* math_acosh(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -127,16 +127,16 @@ object* math_acosh(object* self, object* args, object* kwargs){
 
 object* math_asin(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -152,16 +152,16 @@ object* math_asin(object* self, object* args, object* kwargs){
 
 object* math_asinh(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -177,16 +177,16 @@ object* math_asinh(object* self, object* args, object* kwargs){
 
 object* math_atan(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -202,16 +202,16 @@ object* math_atan(object* self, object* args, object* kwargs){
 
 object* math_atanh(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -227,21 +227,21 @@ object* math_atanh(object* self, object* args, object* kwargs){
 
 object* math_atan2(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
-    object* val2=list_index_int(args, 1);
+    object* val=list_index_int(args, 1);
+    object* val2=list_index_int(args, 2);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     object* flval2=object_float(val2);
-    if (flval2==NULL){
+    if (flval2==NULL || !object_istype(flval->type, &IntType)){
         return NULL;
     }
     
@@ -258,16 +258,16 @@ object* math_atan2(object* self, object* args, object* kwargs){
 
 object* math_cbrt(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -283,16 +283,16 @@ object* math_cbrt(object* self, object* args, object* kwargs){
 
 object* math_ceil(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -308,16 +308,16 @@ object* math_ceil(object* self, object* args, object* kwargs){
 
 object* math_cosh(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -333,16 +333,16 @@ object* math_cosh(object* self, object* args, object* kwargs){
 
 object* math_exp(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -358,16 +358,16 @@ object* math_exp(object* self, object* args, object* kwargs){
 
 object* math_abs(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -383,16 +383,16 @@ object* math_abs(object* self, object* args, object* kwargs){
 
 object* math_floor(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -408,21 +408,21 @@ object* math_floor(object* self, object* args, object* kwargs){
 
 object* math_hypot(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
-    object* val2=list_index_int(args, 1);
+    object* val=list_index_int(args, 1);
+    object* val2=list_index_int(args, 2);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     object* flval2=object_float(val2);
-    if (flval2==NULL){
+    if (flval2==NULL || !object_istype(flval2->type, &IntType)){
         return NULL;
     }
     
@@ -439,16 +439,16 @@ object* math_hypot(object* self, object* args, object* kwargs){
 
 object* math_log(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -464,16 +464,16 @@ object* math_log(object* self, object* args, object* kwargs){
 
 object* math_log10(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -489,21 +489,21 @@ object* math_log10(object* self, object* args, object* kwargs){
 
 object* math_pow(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
-    object* val2=list_index_int(args, 1);
+    object* val=list_index_int(args, 1);
+    object* val2=list_index_int(args, 2);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     object* flval2=object_float(val2);
-    if (flval2==NULL){
+    if (flval2==NULL || !object_istype(flval2->type, &IntType)){
         return NULL;
     }
     
@@ -521,16 +521,16 @@ object* math_pow(object* self, object* args, object* kwargs){
 
 object* math_sinh(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -546,16 +546,16 @@ object* math_sinh(object* self, object* args, object* kwargs){
 
 object* math_sqrt(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -571,16 +571,16 @@ object* math_sqrt(object* self, object* args, object* kwargs){
 
 object* math_tanh(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     
     object* flval=object_float(val);
-    if (flval==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 0)->type->name->c_str());
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }        
     
@@ -596,11 +596,11 @@ object* math_tanh(object* self, object* args, object* kwargs){
 
 object* math_factorial(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     if (!object_istype(val->type, &IntType)){
         vm_add_err(&ValueError, vm, "Expected int, got '%s'", val->type->name->c_str());
         return NULL; 
@@ -627,11 +627,11 @@ BigInt fib(BigInt n){
 
 object* math_fib(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     if (!object_istype(val->type, &IntType)){
         vm_add_err(&ValueError, vm, "Expected int, got '%s'", val->type->name->c_str());
         return NULL; 
@@ -647,14 +647,14 @@ object* math_fib(object* self, object* args, object* kwargs){
 
 object* math_todeg(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
-    object* val=object_float(list_index_int(args, 0));
+    object* val=object_float(list_index_int(args, 1));
     
-    if (val==NULL){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
+    if (val==NULL || !object_istype(val->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
         return NULL; 
     }
 

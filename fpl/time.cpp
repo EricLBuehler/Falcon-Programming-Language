@@ -5,18 +5,18 @@
 
 object* time_sleep(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     long time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
     }
     else{
         object* otherint=object_int(val);
-        if (otherint==NULL){
+        if (otherint==NULL || !object_istype(otherint->type, &IntType)){
             return NULL;
         }
         time=CAST_INT(otherint)->val->to_long();
@@ -31,18 +31,18 @@ object* time_sleep(object* self, object* args, object* kwargs){
 
 object* time_sleep_ms(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 0);
+    object* val=list_index_int(args, 1);
     long time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
     }
     else{
         object* otherint=object_int(val);
-        if (otherint==NULL){
+        if (otherint==NULL || !object_istype(otherint->type, &IntType)){
             return NULL;
         }
         time=CAST_INT(otherint)->val->to_long();
@@ -56,8 +56,8 @@ object* time_sleep_ms(object* self, object* args, object* kwargs){
 
 object* time_time(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=0 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
     
@@ -69,8 +69,8 @@ object* time_time(object* self, object* args, object* kwargs){
 
 object* time_strftime(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
     
