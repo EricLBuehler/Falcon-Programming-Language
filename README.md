@@ -7,8 +7,6 @@ Falcon is a multithreaded, multi-paradigm interpreted programming language, with
 
 Falcon is implemented in C++. However, although the compiler and interpreter do not use object oriented features and could mostly be compiled in C, the lexer and parser make heavy use of such features.
 
-**Note: Falcon has only been tested on Windows**
-
 ### Builtins ###
 - ```print```
 - ```__build_class__```
