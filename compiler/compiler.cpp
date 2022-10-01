@@ -569,7 +569,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             lines->type->slot_mappings->slot_append(lines, tuple);
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_lines)->size; i++){
-                lines->type->slot_mappings->slot_append(lines, list_index_int(lines, i));
+                lines->type->slot_mappings->slot_append(lines, list_index_int(CAST_CODE(code)->co_lines, i));
             }
             DECREF(CAST_CODE(code)->co_lines);
             CAST_CODE(code)->co_lines=lines; //No incref necessary
