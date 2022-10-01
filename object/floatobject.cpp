@@ -31,14 +31,6 @@ object* new_float_fromstr(string v){
     return o;
 }
 
-
-object* float_int(object* self){
-    char buf[to_string(round(CAST_FLOAT(self)->val)).size()];
-    sprintf(buf, "%g", round(CAST_FLOAT(self)->val));
-    string s(buf);
-    return new_int_fromstr(s);
-}
-
 object* float_float(object* self){
     return INCREF(self);
 }

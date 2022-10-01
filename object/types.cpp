@@ -1459,7 +1459,6 @@ object* float_neg(object* self);
 object* float_repr(object* self);
 object* float_cmp(object* self, object* other, uint8_t type);
 object* float_bool(object* self);
-object* float_int(object* self);
 object* float_float(object* self);
 object* float_mod(object* self, object* other);
 object* float_pow(object* self, object* other);
@@ -1491,7 +1490,7 @@ static NumberMethods float_num_methods{
     0, //slot_not
 
     (unaryfunc)float_bool, //slot_bool
-    (unaryfunc)float_int, //slot_int
+    0, //slot_int
     (unaryfunc)float_float, //slot_float
 };
 
