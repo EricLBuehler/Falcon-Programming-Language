@@ -3208,7 +3208,7 @@ object* new_type(string* name, object* bases, object* dict){
     reprfunc repr_func=NULL;
     newfunc new_func=NULL;
     initfunc init_func=NULL;
-    delfunc del_func=NULL;
+    delfunc del_func=_newtp_del;
     iternextfunc next_func=NULL;
     unaryfunc iter_func=NULL;
     reprfunc str_func=NULL;

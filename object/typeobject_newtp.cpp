@@ -23,16 +23,21 @@ object* newtp_new(object* self, object* args, object* kwargs){
     return val;
 }
 
+void _newtp_del(object* self){
+    object* dict= (*(object**)((char*)self + self->type->dict_offset));
+    DECREF(dict);
+}
+
 void newtp_del(object* self){
-    cout<<(void*)vm->exception<<self;
     object* n=object_getattr(self, str_new_fromstr("__del__"));
-    cout<<(void*)vm->exception;
     if (n==NULL || n==TERM_PROGRAM || n==CALL_ERR){
         return;
     }
     object* args=new_tuple();
     
     object_call_nokwargs(n, args);
+
+    _newtp_del(self);
 }
 
 object* newtp_next(object* self){

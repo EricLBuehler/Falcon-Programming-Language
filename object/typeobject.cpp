@@ -79,6 +79,7 @@ TypeObject TypeType={
 object* newtp_init(object* self, object* args, object* kwargs);
 object* newtp_new(object* self, object* args, object* kwargs);
 void newtp_del(object* self);
+void _newtp_del(object* self);
 object* newtp_next(object* self);
 object* newtp_get(object* self, object* idx);
 object* newtp_len(object* self);
