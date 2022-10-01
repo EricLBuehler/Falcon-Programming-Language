@@ -58,13 +58,13 @@ TypeObject ThreadType={
 
     0, //slot_init
     thread_new, //slot_new
-    0, //slot_del
+    thread_del, //slot_del
 
     0, //slot_next
     0, //slot_iter
 
     thread_repr, //slot_repr
-    0, //slot_str
+    thread_repr, //slot_str
     0, //slot_call
 
     &thread_num_methods, //slot_number
