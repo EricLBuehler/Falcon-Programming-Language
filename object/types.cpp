@@ -64,7 +64,7 @@ TypeObject IntType={
     0, //gen
     &TypeType, //type
     new string("int"), //name
-    sizeof(IntObject)+sizeof(BigInt), //size
+    sizeof(IntObject), //size
     0, //var_base_size
     false, //gc_trackable
     NULL, //bases
