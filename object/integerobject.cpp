@@ -97,7 +97,7 @@ object* int_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Float argument must be str or a number, not '%s'",val->type->name->c_str());
         return NULL;
     }
-    else if(obj==NULL){
+    else if(obj==NULL || !object_istype(obj->type, &IntType)){
         vm_add_err(&ValueError, vm, "Could not convert string '%s' to float",object_cstr(val).c_str());
         return NULL;
     }
@@ -123,7 +123,7 @@ object* int_pow(object* self, object* other){
         }
     }
     object* otherv=object_float(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     double selfv =(double)CAST_INT(self)->val->to_int();
@@ -144,7 +144,7 @@ object* int_mod(object* self, object* other){
         return new_int_frombigint(new BigInt(selfv%otherv));
     }
     object* otherv=object_float(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     double selfv =(double)CAST_INT(self)->val->to_int();
@@ -166,7 +166,7 @@ object* int_add(object* self, object* other){
     }
     
     object* otherv=object_float(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     double selfv =(double)CAST_INT(self)->val->to_int();
@@ -187,7 +187,7 @@ object* int_sub(object* self, object* other){
         return new_int_frombigint(new BigInt(selfv-otherv));
     }
     object* otherv=object_float(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     double selfv =(double)CAST_INT(self)->val->to_int();
@@ -208,7 +208,7 @@ object* int_mul(object* self, object* other){
         return new_int_frombigint(new BigInt(selfv*otherv));
     }
     object* otherv=object_float(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     double selfv =(double)CAST_INT(self)->val->to_int();
@@ -224,7 +224,7 @@ object* int_mul(object* self, object* other){
 
 object* int_div(object* self, object* other){
     object* otherv=object_float(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     double selfv =(double)CAST_INT(self)->val->to_int();
@@ -247,7 +247,7 @@ object* int_and(object* self, object* other){
         return NULL;
     }
     object* otherv=object_int(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     object* res=new_int_fromint(CAST_INT(self)->val->to_int() & CAST_INT(otherv)->val->to_int());
@@ -260,7 +260,7 @@ object* int_or(object* self, object* other){
         return NULL;
     }
     object* otherv=object_int(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     object* res=new_int_fromint(CAST_INT(self)->val->to_int() | CAST_INT(otherv)->val->to_int());
@@ -273,7 +273,7 @@ object* int_lshift(object* self, object* other){
         return NULL;
     }
     object* otherv=object_int(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     
@@ -292,7 +292,7 @@ object* int_rshift(object* self, object* other){
         return NULL;
     }
     object* otherv=object_int(other);
-    if (otherv==NULL){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     
@@ -321,7 +321,7 @@ object* int_repr(object* self){
 
 object* int_cmp(object* self, object* other, uint8_t type){
     object* otherint=object_int(other);
-    if (otherint==NULL){
+    if (otherint==NULL || !object_istype(otherint->type, &IntType)){
         return NULL;
     }
     //Other type is int
