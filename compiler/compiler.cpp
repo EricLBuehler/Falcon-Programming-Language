@@ -559,8 +559,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
-
-            cout<<expr->start->line;
+            
             object* lines=new_list();
             
             object* tuple=new_tuple();
