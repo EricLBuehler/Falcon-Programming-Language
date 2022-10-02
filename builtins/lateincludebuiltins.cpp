@@ -28,7 +28,7 @@ object* builtin_eval(object* self, object* args){
 
     string* g=glblfildata;
     glblfildata=new string(data);
-    object* code=compile(compiler, ast);
+    object* code=compile(compiler, ast, 0);
     glblfildata=g;
     
     if (code==NULL){
@@ -44,6 +44,8 @@ object* builtin_eval(object* self, object* args){
     ::vm->callstack->head->locals=locals;
     object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
+    
+    vm_del(::vm);
     ::vm=vm_;
 
     return new_none();
