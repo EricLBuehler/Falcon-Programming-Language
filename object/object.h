@@ -513,6 +513,7 @@ void setup_types_consts(){
     setup_type_getsets(&BoolType);
 
     inherit_type_dict(&TupleType);
+    setup_type_methods(&TupleType);
     setup_type_offsets(&TupleType);
     setup_type_getsets(&TupleType);
 
