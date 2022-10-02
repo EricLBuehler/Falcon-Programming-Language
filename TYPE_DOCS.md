@@ -127,3 +127,56 @@ New boolean - ```bool```
 ```"abc".islower() == True == True```
 #### Returns
 New boolean - ```bool```
+
+
+
+## ```list```
+
+### ```list.find```
+```list.find(self, needle)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle     |
+### Example
+```[1,2,3].find(2) == 1 == True```
+#### Returns
+Index - ```int```
+
+### ```list.replace```
+```list.replace(self, needle, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle to be replace     |
+| ```val```  | value to replace     |
+### Example
+```[1,2,3].replace(2,3) == [1,3,3] == True```
+#### Returns
+Same object, altered - ```list```
+
+### ```list.append```
+```list.append(self, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```val```  | value to append     |
+### Example
+```[1,2,3].append(4) == [1,2,3,4] == True```
+#### Returns
+New list - ```list```
+
+### ```list.pop```
+```list.pop(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```[1,2,3].pop() == 3 == True```
+#### Returns
+Popped value
+
