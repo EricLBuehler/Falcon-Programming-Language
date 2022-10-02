@@ -407,3 +407,103 @@ object* string_lower_meth(object* selftp, object* args, object* kwargs){
     object* self=tuple_index_int(args, 0);  
     return str_new_fromstr(to_lower_((*CAST_STRING(self)->val)));
 }
+
+bool is_number(const std::string& s){
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+bool is_alpha(const std::string& s){
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isalpha(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+bool is_space(const std::string& s){
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isspace(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+bool is_lower(const std::string& s){
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::islower(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+bool is_upper(const std::string& s){
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isupper(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+    
+object* string_isalpha_meth(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(list_index_int(args, 0))->val);
+    if (is_alpha(s)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+    
+object* string_isnumeric_meth(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(list_index_int(args, 0))->val);
+    if (is_number(s)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+    
+object* string_isspace_meth(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(list_index_int(args, 0))->val);
+    if (is_space(s)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+    
+object* string_islower_meth(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(list_index_int(args, 0))->val);
+    if (is_lower(s)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+    
+object* string_isupper_meth(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(list_index_int(args, 0))->val);
+    if (is_upper(s)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}

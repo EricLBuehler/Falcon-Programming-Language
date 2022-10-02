@@ -154,21 +154,6 @@ void setup_builtins(){
     iscallableargs->type->slot_mappings->slot_append(iscallableargs, str_new_fromstr("object"));
     object* iscallablekwargs=new_tuple();
     builtins[50]=new_builtin((builtinfunc)builtin_iscallable, str_new_fromstr("iscallable"), iscallableargs, iscallablekwargs, 1, false);
-    
-    object* isalphaargs=new_tuple();
-    isalphaargs->type->slot_mappings->slot_append(isalphaargs, str_new_fromstr("object"));
-    object* isalphakwargs=new_tuple();
-    builtins[51]=new_builtin((builtinfunc)builtin_isalpha, str_new_fromstr("isalpha"), isalphaargs, isalphakwargs, 1, false);
-    
-    object* isnumericargs=new_tuple();
-    isnumericargs->type->slot_mappings->slot_append(isnumericargs, str_new_fromstr("object"));
-    object* isnumerickwargs=new_tuple();
-    builtins[52]=new_builtin((builtinfunc)builtin_isnumeric, str_new_fromstr("isnumeric"), isnumericargs, isnumerickwargs, 1, false);
-    
-    object* isspaceargs=new_tuple();
-    isspaceargs->type->slot_mappings->slot_append(isspaceargs, str_new_fromstr("object"));
-    object* isspacekwargs=new_tuple();
-    builtins[53]=new_builtin((builtinfunc)builtin_isspace, str_new_fromstr("isspace"), isspaceargs, isspacekwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

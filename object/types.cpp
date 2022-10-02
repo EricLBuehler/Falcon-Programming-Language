@@ -124,6 +124,11 @@ object* string_find_meth(object* selftp, object* args, object* kwargs);
 object* string_split_meth(object* selftp, object* args, object* kwargs);
 object* string_upper_meth(object* selftp, object* args, object* kwargs);
 object* string_lower_meth(object* selftp, object* args, object* kwargs);
+object* string_isspace_meth(object* selftp, object* args, object* kwargs);
+object* string_isalpha_meth(object* selftp, object* args, object* kwargs);
+object* string_isnumeric_meth(object* selftp, object* args, object* kwargs);
+object* string_isupper_meth(object* selftp, object* args, object* kwargs);
+object* string_islower_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA
@@ -158,7 +163,10 @@ static Mappings str_mappings{
 
 Method str_methods[]={{"find", (cwrapperfunc)string_find_meth}, {"replace", (cwrapperfunc)string_replace_meth}\
                     , {"join", (cwrapperfunc)string_join_meth}, {"split", (cwrapperfunc)string_split_meth}\
-                    , {"upper", (cwrapperfunc)string_upper_meth}, {"lower", (cwrapperfunc)string_lower_meth}, {NULL,NULL}};
+                    , {"upper", (cwrapperfunc)string_upper_meth}, {"lower", (cwrapperfunc)string_lower_meth}\
+                    , {"isnumeric", (cwrapperfunc)string_isnumeric_meth}, {"isalpha", (cwrapperfunc)string_isalpha_meth}\
+                    , {"isspace", (cwrapperfunc)string_isspace_meth}, {"isupper", (cwrapperfunc)string_isupper_meth}\
+                    , {"islower", (cwrapperfunc)string_islower_meth}, {NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 OffsetMember str_offsets[]={{NULL}};
 
