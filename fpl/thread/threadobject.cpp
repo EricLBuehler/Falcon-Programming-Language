@@ -55,9 +55,25 @@ object* thread_repr(object* self){
 }
 
 void* _thread_start_wrap(void* args_){
-    object* args=(object*)args_;
-    
-    object* v=object_call_nokwargs(CAST_THREAD(tuple_index_int(args,0))->callable, new_tuple());
+    ThreadArgs* args=(ThreadArgs*)args_;
+    if (args->args==NULL && args->kwargs==NULL){
+        object* v=object_call_nokwargs(args->callable, new_tuple());
+        if (v!=NULL){
+            DECREF(v);
+        }
+    }
+    else if (args->args!=NULL && args->kwargs==NULL){
+        object* v=object_call_nokwargs(args->callable, args->args);
+        if (v!=NULL){
+            DECREF(v);
+        }
+    }
+    else{
+        object* v=object_call(args->callable, args->args, args->kwargs);
+        if (v!=NULL){
+            DECREF(v);
+        }
+    }
     
     pthread_exit(NULL);
     return NULL;
@@ -65,16 +81,36 @@ void* _thread_start_wrap(void* args_){
 
 object* thread_start_meth(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    if ((len!=3 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 2) &&\
+    (len!=2 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 1) &&\
+    (len!=1 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0)){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
     
     pthread_t* t=(pthread_t*)malloc(sizeof(pthread_t));
-    pthread_create(t, NULL, &_thread_start_wrap, (void*)args);
+    ThreadArgs* args_=(ThreadArgs*)malloc(sizeof(ThreadArgs));
+    memset(args_, 0, sizeof(ThreadArgs));
+
+    object* kw=str_new_fromstr("kwargs");
+    if (object_find_bool_dict_keys(kwargs, kw)){
+        args_->kwargs=kwargs->type->slot_mappings->slot_get(kwargs, kw);
+    }
+    
+    object* ar=str_new_fromstr("args");
+    if (object_find_bool_dict_keys(kwargs, ar)){
+        args_->args=kwargs->type->slot_mappings->slot_get(kwargs, ar);
+    }
+
+    args_->callable=CAST_THREAD(tuple_index_int(args,0))->callable;
+
+    pthread_create(t, NULL, &_thread_start_wrap, (void*)args_);
     fpl_threads.push_back(t);
     
     CAST_THREAD(self)->thread=t;
+    if (vm->exception!=NULL){
+        return NULL;
+    }
     return new_none();
 }
 

@@ -78,3 +78,9 @@ TypeObject ThreadType={
 };
 
 #define CAST_THREAD(obj) ((ThreadObject*)obj)
+
+typedef struct ThreadArgs{
+    object* callable;
+    object* args;
+    object* kwargs;
+}ThreadArgs;
