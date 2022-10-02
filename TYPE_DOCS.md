@@ -292,4 +292,4 @@ Writes val.__str__() to open, writeable file object.
 ### Example
 ```file("test.txt", "w").write(123).read() == "123" == True```
 #### Returns
-```None```
+File object - ```file```
