@@ -146,7 +146,7 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
         vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
         return NULL;
     }
-    return new_none();
+    return INCREF(self);
 }
 
 object* file_close_meth(object* selftp, object* args, object* kwargs){    
