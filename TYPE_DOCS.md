@@ -3,6 +3,7 @@
 ## ```str```
 
 ### ```str.find```
+Find and return index of first occurance of ```needle```, or -1 if not found.
 ```str.find(self, needle)```
 #### Arguments
 | Argument      | Information       |
@@ -15,6 +16,7 @@
 Index - ```int```
 
 ### ```str.replace```
+Replace all occurances in a string.
 ```str.replace(self, needle, val)```
 #### Arguments
 | Argument      | Information       |
@@ -28,6 +30,7 @@ Index - ```int```
 New string - ```str```
 
 ### ```str.join```
+Join an iterator with a string.
 ```str.join(self, iter)```
 #### Arguments
 | Argument      | Information       |
@@ -40,6 +43,7 @@ New string - ```str```
 New string - ```str```
 
 ### ```str.split```
+Split a string on string ```needle```.
 ```str.split(self, needle)```
 #### Arguments
 | Argument      | Information       |
@@ -52,6 +56,7 @@ New string - ```str```
 New list - ```list```
 
 ### ```str.upper```
+Return a new string with all characters uppercase.
 ```str.upper(self)```
 #### Arguments
 | Argument      | Information       |
@@ -63,6 +68,7 @@ New list - ```list```
 New string - ```str```
 
 ### ```str.lower```
+Return a new string with all characters lowercase.
 ```str.lower(self)```
 #### Arguments
 | Argument      | Information       |
@@ -74,6 +80,7 @@ New string - ```str```
 New string - ```str```
 
 ### ```str.isspace```
+Return ```True``` if string is only whitespace, otherwise, ```False```.
 ```str.isspace(self)```
 #### Arguments
 | Argument      | Information       |
@@ -85,6 +92,7 @@ New string - ```str```
 New boolean - ```bool```
 
 ### ```str.isalpha```
+Return```True``` if string is only alphabetic characters, otherwise, ```False```.
 ```str.isalpha(self)```
 #### Arguments
 | Argument      | Information       |
@@ -96,6 +104,7 @@ New boolean - ```bool```
 New boolean - ```bool```
 
 ### ```str.isnumeric```
+Returns ```True``` if string is only numbers, otherwise, ```False```.
 ```str.isnumeric(self)```
 #### Arguments
 | Argument      | Information       |
@@ -107,6 +116,7 @@ New boolean - ```bool```
 New boolean - ```bool```
 
 ### ```str.isupper```
+Return ```True``` if string is only uppercase characters, otherwise, ```False```.
 ```str.isupper(self)```
 #### Arguments
 | Argument      | Information       |
@@ -118,6 +128,7 @@ New boolean - ```bool```
 New boolean - ```bool```
 
 ### ```str.islower```
+Return ```True``` if string is only lowercase characters, otherwise, ```False```.
 ```str.islower(self)```
 #### Arguments
 | Argument      | Information       |
@@ -133,6 +144,7 @@ New boolean - ```bool```
 ## ```list```
 
 ### ```list.find```
+Find and return index of first occurance of argument ```needle```, or -1.
 ```list.find(self, needle)```
 #### Arguments
 | Argument      | Information       |
@@ -145,6 +157,7 @@ New boolean - ```bool```
 Index - ```int```
 
 ### ```list.replace```
+Replaces all occurances of argument ```needle``` with ```val```.
 ```list.replace(self, needle, val)```
 #### Arguments
 | Argument      | Information       |
@@ -158,6 +171,7 @@ Index - ```int```
 Same object, altered - ```list```
 
 ### ```list.append```
+Appends argument ```val``` to list.
 ```list.append(self, val)```
 #### Arguments
 | Argument      | Information       |
@@ -170,6 +184,7 @@ Same object, altered - ```list```
 New list - ```list```
 
 ### ```list.pop```
+Pops last element from list and returns item.
 ```list.pop(self)```
 #### Arguments
 | Argument      | Information       |
