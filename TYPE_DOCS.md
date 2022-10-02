@@ -240,3 +240,56 @@ Find and return index of first occurance of argument ```needle```, or -1.
 #### Returns
 Index - ```int```
 
+
+
+## ```file```
+
+### ```file.read```
+Returns contents of an open, readable file object.
+```file.read(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```file("test.txt"),"r".read() == "ABC" == True```
+#### Returns
+Contents of file - ```str```
+
+### ```file.close```
+Closes a file object.
+```file.close(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```file("test.txt","r").close() == None == True```
+#### Returns
+```None```
+
+### ```file.seek```
+Seeks to absolute position in an open file object.
+```file.seek(self, idx)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```idx```    | absolute index to seek to     |
+### Example
+```file("test.txt","r").seek(10) == None == True```
+#### Returns
+```None```
+
+### ```file.write```
+Writes val.__str__() to open, writeable file object.
+```file.seek(self, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```val```    | object to write     |
+### Example
+```file("test.txt", "w").write(123).read() == "123" == True```
+#### Returns
+```None```
