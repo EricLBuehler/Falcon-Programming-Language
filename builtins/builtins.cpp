@@ -90,12 +90,12 @@ object* builtin_round(object* self, object* args){
     object* digits=args->type->slot_mappings->slot_get(args, str_new_fromstr("digits"));
     
     object* floatval=object_float(obj);
-    if (floatval==NULL){
+    if (floatval==NULL || !object_istype(floatval->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", obj->type->name->c_str());
         return NULL; 
     }
     object* ndigits=object_int(digits);
-    if (ndigits==NULL){
+    if (ndigits==NULL || !object_istype(ndigits->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", digits->type->name->c_str());
         return NULL; 
     }
@@ -210,7 +210,7 @@ object* builtin_abs(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("self")); 
     
     object* flval=object_float(val);
-    if (flval==NULL){
+    if (flval==NULL || !object_istype(flval->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
     }
@@ -227,4 +227,65 @@ object* builtin_abs(object* self, object* args){
     
 object* builtin_iscallable(object* self, object* args){
     return object_iscallable(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
+}
+
+bool is_number(const std::string& s){
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+bool is_alpha(const std::string& s){
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isalpha(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+bool is_space(const std::string& s){
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isspace(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+    
+object* builtin_isalpha(object* self, object* args){
+    object* o=object_str(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
+    if (o==NULL || !object_istype(o->type, &StrType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to str", o->type->name->c_str());
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(o)->val);
+    if (is_alpha(s)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+    
+object* builtin_isnumeric(object* self, object* args){
+    object* o=object_str(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
+    if (o==NULL || !object_istype(o->type, &StrType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to str", o->type->name->c_str());
+        return NULL; 
+    }
+    
+    string s=(*CAST_STRING(o)->val);
+    if (is_number(s)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+    
+object* builtin_isspace(object* self, object* args){
+    object* o=object_str(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
+    if (o==NULL || !object_istype(o->type, &StrType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to str", o->type->name->c_str());
+        return NULL; 
+    }
+    
+    string s=(*CAST_STRING(o)->val);
+    if (is_space(s)){
+        return new_bool_true();
+    }
+    return new_bool_false();
+
 }
