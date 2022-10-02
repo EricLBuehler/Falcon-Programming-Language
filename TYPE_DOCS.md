@@ -195,3 +195,31 @@ Pops last element from list and returns item.
 #### Returns
 Popped value
 
+
+
+## ```dict```
+
+### ```dict.keys```
+Returns a list of keys.
+```dict.keys(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```{1:2}.keys() == [1] == True```
+#### Returns
+List of keys - ```list```
+
+### ```dict.values```
+Returns a list of values.
+```dict.values(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```{1:2}.values() == [2] == True```
+#### Returns
+List of values - ```list```
+
