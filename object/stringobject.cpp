@@ -372,6 +372,9 @@ object* string_split_meth(object* selftp, object* args, object* kwargs){
         list_append(list, str_new_fromstr(token));
         s.erase(0, pos + delimiter.length());
     }
+    if (s.length()>0){
+        list_append(list, str_new_fromstr(s));
+    }
         
     return list;
 }
