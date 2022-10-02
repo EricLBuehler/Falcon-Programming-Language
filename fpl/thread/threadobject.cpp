@@ -57,18 +57,21 @@ object* thread_repr(object* self){
 void* _thread_start_wrap(void* args_){
     ThreadArgs* args=(ThreadArgs*)args_;
     if (args->args==NULL && args->kwargs==NULL){
+        GIL.lock();
         object* v=object_call_nokwargs(args->callable, new_tuple());
         if (v!=NULL){
             DECREF(v);
         }
     }
     else if (args->args!=NULL && args->kwargs==NULL){
+        GIL.lock();
         object* v=object_call_nokwargs(args->callable, args->args);
         if (v!=NULL){
             DECREF(v);
         }
     }
     else{
+        GIL.lock();
         object* v=object_call(args->callable, args->args, args->kwargs);
         if (v!=NULL){
             DECREF(v);
