@@ -1,4 +1,4 @@
-# Type Documentation
+# Methods Documentation
 
 ## ```str```
 
