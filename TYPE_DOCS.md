@@ -223,3 +223,20 @@ Returns a list of values.
 #### Returns
 List of values - ```list```
 
+
+
+## ```tuple```
+
+### ```tuple.find```
+Find and return index of first occurance of argument ```needle```, or -1.
+```tuple.find(self, needle)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle     |
+### Example
+```(1,2,3).find(2) == 1 == True```
+#### Returns
+Index - ```int```
+
