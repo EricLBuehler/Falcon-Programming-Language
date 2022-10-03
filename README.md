@@ -299,7 +299,7 @@ False
 
 ### Usage ###
 Build entire Falcon programming language
-```build.bat```
+```./build.cmd```
 
 Run a script
 ```./fpl program```
