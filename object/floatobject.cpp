@@ -80,7 +80,7 @@ object* float_new(object* type, object* args, object* kwargs){
 
 object* float_pow(object* self, object* other){
     object* otherfloat=object_float(other);
-    if (otherfloat==NULL || !object_istype(otherfloat->type, &IntType)){
+    if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
         return NULL;
     }
     double res=pow(CAST_FLOAT(self)->val,CAST_FLOAT(otherfloat)->val);
@@ -94,7 +94,7 @@ object* float_pow(object* self, object* other){
 
 object* float_mod(object* self, object* other){
     object* otherfloat=object_float(other);
-    if (otherfloat==NULL || !object_istype(otherfloat->type, &IntType)){
+    if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
         return NULL;
     }
     double res=fmod(CAST_FLOAT(self)->val,CAST_FLOAT(otherfloat)->val);
@@ -108,7 +108,7 @@ object* float_mod(object* self, object* other){
 
 object* float_add(object* self, object* other){
     object* otherfloat=object_float(other);
-    if (otherfloat==NULL || !object_istype(otherfloat->type, &IntType)){
+    if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
         return NULL;
     }
     double res=CAST_FLOAT(self)->val+CAST_FLOAT(otherfloat)->val;
@@ -122,7 +122,7 @@ object* float_add(object* self, object* other){
 
 object* float_sub(object* self, object* other){
     object* otherfloat=object_float(other);
-    if (otherfloat==NULL || !object_istype(otherfloat->type, &IntType)){
+    if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
         return NULL;
     }
     double res=CAST_FLOAT(self)->val-CAST_FLOAT(otherfloat)->val;
@@ -136,7 +136,7 @@ object* float_sub(object* self, object* other){
 
 object* float_mul(object* self, object* other){
     object* otherfloat=object_float(other);
-    if (otherfloat==NULL || !object_istype(otherfloat->type, &IntType)){
+    if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
         return NULL;
     }
     double res=CAST_FLOAT(self)->val*CAST_FLOAT(otherfloat)->val;
@@ -150,7 +150,7 @@ object* float_mul(object* self, object* other){
 
 object* float_div(object* self, object* other){
     object* otherfloat=object_float(other);
-    if (otherfloat==NULL || !object_istype(otherfloat->type, &IntType)){
+    if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
         return NULL;
     }
     if (CAST_FLOAT(otherfloat)->val==0){
@@ -179,7 +179,7 @@ object* float_repr(object* self){
 
 object* float_cmp(object* self, object* other, uint8_t type){
     object* otherfloat=object_float(other);
-    if (otherfloat==NULL || !object_istype(otherfloat->type, &IntType)){
+    if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
         return NULL;
     }
     
