@@ -64,6 +64,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
             DECREF(vm->exception);
             vm->exception=NULL;
         }
+        DECREF(iter);
         return (object*)obj;
     }
 

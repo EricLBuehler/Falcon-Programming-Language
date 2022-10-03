@@ -243,7 +243,9 @@ object* string_join_meth(object* selftp, object* args, object* kwargs){
         }
         i++;
     }
+    DECREF(vm->exception);
     vm->exception=NULL;
+    DECREF(iter);
     return str_new_fromstr(s);
 }
 
