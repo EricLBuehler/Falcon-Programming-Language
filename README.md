@@ -105,6 +105,12 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```:``` - Global variable access
 - ```::``` - Nonlocal variable access
 
+## Documentation ##
+- [Dunder Methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/DUNDER_METHODS.md)
+- [Types of functions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/FUNCTIONS.md)
+- [Equivalent C++ Types to Falcon Types](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPES_CPPBASE.md)
+- [Builtin type methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPES_DOCS.md)
+
 ### Sample Program ###
 
 <details>
