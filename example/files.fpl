@@ -1,0 +1,6 @@
+fil=file("test.txt","w+")
+
+fil.write("Hello world!")
+print(fil.read()) #prints "Hello, world!"
+
+fil.close()
