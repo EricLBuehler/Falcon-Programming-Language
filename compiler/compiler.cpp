@@ -224,6 +224,15 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 case T_RSHIFT:
                     add_instruction(compiler->instructions,BITWISE_RSHIFT,0, expr->start, expr->end);
                     break;
+                case T_NOT:
+                    add_instruction(compiler->instructions,BINOP_NOTIN,0, expr->start, expr->end);
+                    break;
+                case T_IN:
+                    add_instruction(compiler->instructions,BINOP_IN,0, expr->start, expr->end);
+                    break;
+                case T_ISNOT:
+                    add_instruction(compiler->instructions,BINOP_ISNOT,0, expr->start, expr->end);
+                    break;
                 case T_IADD: {
                     uint32_t idx;
                     if (BINOP(expr->node)->left->type!=N_IDENT){

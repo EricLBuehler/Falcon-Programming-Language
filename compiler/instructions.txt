@@ -156,3 +156,7 @@ BITWISE_RSHIFT - Implements TOS >> TOS-1
 MAKE_STATICMETH(argc) - Creates a staticmethod
 
 MAKE_CLASSMETH(argc) - Creates a classmethod
+
+BITWISE_NOTIN - Implements TOS not in TOS-1
+
+BITWISE_IN - Implements TOS in TOS-1

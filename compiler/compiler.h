@@ -80,6 +80,9 @@ enum opcode{
     BINOP_IRSH,
     MAKE_CLASSMETH,
     MAKE_STATICMETH,
+    BINOP_NOTIN,
+    BINOP_IN,
+    BINOP_ISNOT,
 };
 
 enum scope{
