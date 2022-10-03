@@ -25,7 +25,6 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```len```
 - ```copyright```
 - ```exit```
-- ```file```
 - ```isinstance```
 - ```eval```
 - ```super```
@@ -76,6 +75,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```object```
 - ```float```
 - ```bool```  
+- ```file```
 
 </details>   
 
