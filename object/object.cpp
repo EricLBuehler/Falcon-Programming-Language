@@ -740,7 +740,7 @@ object* object_in_iter(object* left, object* right){
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
             return NULL;
         }
-        if (!istrue(object_cmp(o->type->slot_mappings->slot_get(o, one), left, CMP_EQ))){
+        if (istrue(object_cmp(o->type->slot_mappings->slot_get(o, one), left, CMP_EQ))){
             DECREF(one);
             DECREF(iter);
             res=new_bool_true();
