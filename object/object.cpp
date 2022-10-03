@@ -705,6 +705,52 @@ object* object_iscallable(object* obj){
     return new_bool_true();
 }
 
+object* object_in_iter(object* left, object* right){
+    if (right->type->slot_iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", right->type->name->c_str());
+        return NULL;
+    }
+    
+    object* iter=right->type->slot_iter(right);
+    object* one=new_int_fromint(0);
+    object* res=NULL;
+    object* len;
+    
+    object* o=o=iter->type->slot_next(iter);
+    while (vm->exception==NULL){
+        if (o->type->slot_mappings->slot_len==NULL){
+            if (istrue(object_cmp(o, left, CMP_EQ))){
+                DECREF(iter);
+                DECREF(one);
+                res=new_bool_true();
+                break;
+            }
+            goto cont;
+        }
+        len=o->type->slot_mappings->slot_len(o);
+        if (o->type->slot_mappings->slot_get==NULL){
+            DECREF(iter);
+            DECREF(one);
+            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
+            return NULL;
+        }
+        if (!istrue(object_cmp(o->type->slot_mappings->slot_get(o, one), left, CMP_EQ))){
+            DECREF(one);
+            DECREF(iter);
+            res=new_bool_true();
+            break;
+        }
+        
+        cont:
+        o=iter->type->slot_next(iter);
+    }
+    if (vm->exception!=NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+    }
+    return res;
+}
+
 //I have setup memory_error to be a fatal exception
 void memory_error(){
     object* exception=NULL;
