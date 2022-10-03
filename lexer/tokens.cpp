@@ -55,6 +55,7 @@ enum token_type{
     T_ILSH,
     T_IRSH,
     T_UNKNOWN,
+    T_ISNOT,
 };
 
 string token_type_to_str(enum token_type type){
