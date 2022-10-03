@@ -1,3 +1,29 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <ctype.h>
+#include <ostream>
+#include <cmath>
+#include <map>
+#include <unordered_map>
+#include <algorithm>
+#include <cstring>
+#include <sstream>
+#include <float.h>
+#include <stdlib.h>
+#include <chrono>
+#include <mutex>
+
+
+#include <sys/stat.h>
+#include <cstdio>
+#include <cstdlib>
+#include <dirent.h>
+#include <sys/types.h>
+
+#include <iostream>
+
 auto time_nanoseconds() {
     return std::chrono::steady_clock::now();//std::chrono::high_resolution_clock::now();
 }
@@ -47,6 +73,8 @@ vector<string> kwds;
 
 bool hit_sigint=false;
 
+
+
 #include "utilities/utils.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
@@ -56,6 +84,7 @@ bool hit_sigint=false;
 #include "builtins/lateincludebuiltins.cpp"
 
 #include <signal.h>
+
 
 void sigint(int sig) {
     signal(sig, SIG_IGN);
@@ -119,7 +148,7 @@ int execute(string data, bool objdump, bool verbose){
 
     glblfildata=new string(data);
     
-    object* code=compile(compiler, ast);
+    object* code=compile(compiler, ast, 0);
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;

@@ -1,30 +1,5 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <ctype.h>
-#include <ostream>
-#include <cmath>
-#include <map>
-#include <unordered_map>
-#include <algorithm>
-#include <cstring>
-#include <sstream>
-#include <float.h>
-#include <stdlib.h>
-#include <chrono>
-#include <mutex>
-
-
-#include <sys/stat.h>
-#include <cstdio>
-#include <cstdlib>
-#include <dirent.h>
-#include <sys/types.h>
-
-#include <iostream>
-
 #include "fpl.h"
+
 int main(int argc, char** argv) {
     signal(SIGINT, sigint);
     program="main.fpl";
@@ -106,7 +81,7 @@ int main(int argc, char** argv) {
                 glblfildata=new string(data);
                 vm_->filedata=&data;
                 
-                object* code=compile(compiler, ast);
+                object* code=compile(compiler, ast, 0);
                 if (code==NULL){
                     cout<<parseretglbl.header<<endl;
                     cout<<parseretglbl.snippet<<endl;
