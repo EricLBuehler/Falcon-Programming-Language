@@ -326,7 +326,7 @@ class Parser{
         }
 
         Node* make_binop(parse_ret* ret, Node* left, enum token_type opr){
-            if ( (current_tok_is(T_IADD) || current_tok_is(T_IMUL) || current_tok_is(T_ISUB) || current_tok_is(T_IDIV)\
+            if (!current_tok_is(T_NOT) && (current_tok_is(T_IADD) || current_tok_is(T_IMUL) || current_tok_is(T_ISUB) || current_tok_is(T_IDIV)\
                 || current_tok_is(T_IPOW) ||current_tok_is(T_IMOD) || current_tok_is(T_IAMP) || current_tok_is(T_IVBAR)\
                 || current_tok_is(T_ILSH) || current_tok_is(T_IRSH)) && !isname(left->type)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
@@ -343,6 +343,15 @@ class Parser{
             binop->opr=opr;
             int precedence=get_precedence(this->current_tok);
             this->advance();
+            if (this->current_tok_is(T_IN) && this->get_prev().type==T_NOT){
+                precedence=get_precedence(this->current_tok);
+                this->advance();
+            }
+            else if (this->get_prev().type==T_IS && this->current_tok_is(T_NOT)){
+                precedence=get_precedence(this->current_tok);
+                binop->opr=T_ISNOT;
+                this->advance();
+            }
             
             binop->right=this->expr(ret, precedence);
             if (ret->errornum>0){
@@ -428,6 +437,10 @@ class Parser{
         }
 
         Node* make_not(parse_ret* ret){
+            if (this->next_tok_is(T_IN)){
+                this->backadvance();
+                return (Node*)0x1;
+            }
             Node* node=make_node(N_UNARY);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
 
@@ -1069,6 +1082,8 @@ class Parser{
                     case T_IVBAR:
                     case T_ILSH:
                     case T_IRSH:
+                    case T_NOT:
+                    case T_IN:
                         left=make_binop(ret, left, this->current_tok.type);
                         break;
                     

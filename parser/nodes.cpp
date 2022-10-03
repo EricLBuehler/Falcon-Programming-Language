@@ -87,6 +87,7 @@ enum precedence get_precedence(Token t){
         case T_EE:
         case T_NE:
         case T_IS:
+        case T_IN:
             return EQUALS;
         case T_GT:
         case T_LT:
@@ -165,6 +166,7 @@ struct Func{
     vector<Node*>* code;
     vector<Node*>* args;
     vector<Node*>* kwargs;
+    int type;
 };
 
 struct Call{
