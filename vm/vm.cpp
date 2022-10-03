@@ -471,7 +471,7 @@ object* import_name(string data, object* name){
 
     string* g=glblfildata;
     glblfildata=new string(data);
-    object* code=compile(compiler, ast);
+    object* code=compile(compiler, ast, 0);
     glblfildata=g;
     
     if (code==NULL){
@@ -1574,6 +1574,42 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_CLASS);
             add_dataframe(vm, vm->objstack, func);
+            break;
+        }
+        
+        case BINOP_NOTIN:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            object* res=object_in_iter(left, right);
+
+            if (res!=NULL){
+                DECREF(res);
+                add_dataframe(vm, vm->objstack, new_bool_false());
+            }
+            add_dataframe(vm, vm->objstack, new_bool_true());
+            break;
+        }
+        
+        case BINOP_IN:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            object* res=object_in_iter(left, right);
+
+            if (res!=NULL){
+                add_dataframe(vm, vm->objstack, res);
+            }
+            else{
+                add_dataframe(vm, vm->objstack, new_bool_false());
+            }
+            break;
+        }
+
+        case BINOP_ISNOT:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=left==right ? new_bool_false() : new_bool_true();
+            add_dataframe(vm, vm->objstack, ret);
             break;
         }
         
