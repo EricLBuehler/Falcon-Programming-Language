@@ -10,6 +10,11 @@ object* enum_new(object* type, object* args, object* kwargs){
     if (CAST_ENUM(enumer)->iterator->type->slot_iter!=NULL){
         DECREF(CAST_ENUM(enumer)->iterator);
         CAST_ENUM(enumer)->iterator=INCREF(CAST_ENUM(enumer)->iterator->type->slot_iter(CAST_ENUM(enumer)->iterator));
+ 
+        if (CAST_ENUM(enumer)->iterator==NULL){
+            vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", CAST_ENUM(enumer)->iterator->type->name->c_str());
+            return NULL;
+        }
     }
     else{
         DECREF(enumer);

@@ -225,6 +225,11 @@ object* string_join_meth(object* selftp, object* args, object* kwargs){
     }
 
     object* iter=arg->type->slot_iter(arg);
+    
+    if (iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        return NULL;
+    }
 
     string selfstr=object_cstr(self);
     

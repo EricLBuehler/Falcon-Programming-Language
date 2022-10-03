@@ -712,6 +712,12 @@ object* object_in_iter(object* left, object* right){
     }
     
     object* iter=right->type->slot_iter(right);
+    
+    if (iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        return NULL;
+    }
+
     object* one=new_int_fromint(0);
     object* res=NULL;
     object* len;

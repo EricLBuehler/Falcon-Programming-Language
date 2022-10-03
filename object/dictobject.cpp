@@ -25,6 +25,11 @@ object* dict_new(object* type, object* args, object* kwargs){
     if (CAST_LIST(args)->size!=0 && list_index_int(args, 0)->type->slot_iter!=NULL){
         object* o=list_index_int(args, 0);
         object* iter=o->type->slot_iter(o);
+        
+        if (iter->type->slot_next==NULL){
+            vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+            return NULL;
+        }
 
         object_var* obj=new_object_var(CAST_TYPE(type), 0);
         CAST_DICT(obj)->val=new map<object*, object*>;

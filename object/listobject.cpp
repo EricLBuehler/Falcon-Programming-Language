@@ -38,6 +38,11 @@ object* list_new(object* type, object* args, object* kwargs){
     if (list_index_int(args, 0)->type->slot_iter!=NULL){
         object* o=list_index_int(args, 0);
         object* iter=o->type->slot_iter(o);
+        
+        if (iter==NULL){
+            vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+            return NULL;
+        }
 
         object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
         CAST_LIST(obj)->capacity=2; //Start with 2
