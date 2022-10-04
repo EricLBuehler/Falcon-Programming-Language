@@ -137,6 +137,16 @@ class Parser{
             return false;
         }
         
+        bool next_next_tok_is(token_type type){
+            if (this->tokens.size()<this->tok_idx+2){
+                return false;
+            }
+            if (this->tokens[this->tok_idx+2].type==type){
+                return true;
+            }
+            return false;
+        }
+        
         bool isname(nodetype type){
             if (type==N_IDENT || type==N_GLBL_IDENT || type==N_NONLOCAL || type==N_MULTIIDENT || type==N_DOT || type==N_CALL || type==N_SUBSCR){
                 return true;
@@ -261,7 +271,7 @@ class Parser{
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
 
-            if (this->next_tok_is(T_COMMA) && this->multi){
+            if (this->next_next_tok_is(T_IDENTIFIER) && this->next_tok_is(T_COMMA) && this->multi){
                 vector<string*>* names=new vector<string*>;
                 names->clear();
                 
@@ -311,6 +321,7 @@ class Parser{
         Node* make_grouped_expr(parse_ret* ret){
             this->advance();
             Node* node=this->expr(ret, LOWEST);
+            
             if (this->current_tok_is(T_COMMA)){
                 return make_tuple(ret, node);
             }
@@ -475,7 +486,15 @@ class Parser{
                 return node;
             }
             
+            
+            bool b=this->multi;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            if (expr==NULL){
+                return NULL;
+            }
+            this->multi=b;
+
             if (ret->errornum>0){
                 delete list;
                 return NULL;
@@ -484,7 +503,13 @@ class Parser{
 
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
+                bool b=this->multi;
+                this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                if (expr==NULL){
+                    return NULL;
+                }
+                this->multi=b;
                 if (ret->errornum>0){
                     delete list;
                     return NULL;
@@ -523,7 +548,11 @@ class Parser{
                 return node;
             }
             
+            
+            bool b=this->multi;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->multi=b;
             if (ret->errornum>0){
                 delete list;
                 return NULL;
@@ -532,7 +561,10 @@ class Parser{
 
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
+                b=this->multi;
+                this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                this->multi=b;
                 if (ret->errornum>0){
                     delete list;
                     return NULL;
@@ -572,7 +604,10 @@ class Parser{
                 return node;
             }
 
+            bool b=this->multi;
+            this->multi=false;
             Node* key=this->expr(ret, LOWEST);
+            this->multi=b;
             if (ret->errornum>0){
                 delete vals;
                 delete keys;
@@ -585,7 +620,10 @@ class Parser{
                 return NULL;
             }
             this->advance();
+            b=this->multi;
+            this->multi=false;
             Node* value=this->expr(ret, LOWEST);
+            this->multi=b;
             if (ret->errornum>0){
                 delete vals;
                 delete keys;
@@ -596,7 +634,10 @@ class Parser{
 
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
+                b=this->multi;
+                this->multi=false;
                 Node* key=this->expr(ret, LOWEST);
+                this->multi=b;
                 if (ret->errornum>0){
                     delete vals;
                     delete keys;
@@ -609,7 +650,10 @@ class Parser{
                     return NULL;
                 }
                 this->advance();
+                b=this->multi;
+                this->multi=false;
                 Node* value=this->expr(ret, LOWEST);
+                this->multi=b;
                 if (ret->errornum>0){
                     delete vals;
                     delete keys;
