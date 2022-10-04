@@ -71,9 +71,14 @@ object* func_call_nostack(object* self, object* args, object* kwargs){
 }
 
 object* func_repr(object* self){
+    char buf[32];
+    sprintf(buf, "0x%x", self);
+
     string s="";
     s+="<function ";
     s+=object_cstr(CAST_FUNC(self)->name);
+    s+=" @ ";
+    s+=buf;
     s+=">";
     return str_new_fromstr(s);
 }
