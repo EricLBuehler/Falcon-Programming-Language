@@ -115,6 +115,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 add_instruction(compiler->instructions,STORE_NONLOCAL, idx, expr->start, expr->end);
             }
+            else if (ASSIGN(expr->node)->name->type==N_GLBL_IDENT){
+                if (!_list_contains(compiler->names, IDENTI(GLBLIDENT(ASSIGN(expr->node)->name->node)->name->node)->name)){
+                    //Create object
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(ASSIGN(expr->node)->name->node)->name->node)->name));
+                    idx=NAMEIDX(compiler->names);
+                }
+                else{
+                    idx=object_find(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(ASSIGN(expr->node)->name->node)->name->node)->name));
+                }
+                add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+            }
             break;
         }
 
