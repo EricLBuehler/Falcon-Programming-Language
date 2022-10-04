@@ -675,9 +675,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return cmpexpr;
                 }
             }
-            if (!ret){
-                compiler->keep_return=false;
-            }
             
             //Num of pos args
             uint32_t idx;
@@ -696,6 +693,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
             //Object
             int cmpexpr=compile_expr(compiler, CALL(expr->node)->object);
+            if (!ret){
+                compiler->keep_return=false;
+            }
             if (cmpexpr==0x100){
                 return cmpexpr;
             }
