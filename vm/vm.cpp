@@ -538,6 +538,34 @@ void calculate_new_line(uint32_t* ip, uint32_t* linecounter, object** linetup){
     }
 }
 
+dataframe* reverse(dataframe* head, int k){
+    // base case
+    if (!head)
+        return NULL;
+    dataframe* current = head;
+    dataframe* next = NULL;
+    dataframe* prev = NULL;
+    int count = 0;
+  
+    /*reverse first k nodes of the linked list */
+    while (current != NULL && count < k) {
+        next = current->next;
+        current->next = prev;
+        prev = current;
+        current = next;
+        count++;
+    }
+  
+    /* next is now a pointer to (k+1)th node
+    Recursively call for the list starting from current.
+    And make rest of the list as next of first node */
+    if (next != NULL)
+        head->next = reverse(next, k);
+  
+    /* prev is new head of the input list */
+    return prev;
+}
+
 object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, uint32_t* linecounter, object* linetuple){
     //Run one instruction
     switch (CAST_INT(instruction)->val->to_int()){
@@ -1019,8 +1047,54 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         }
 
         case UNPACK_SEQ: {
-            object* o=peek_dataframe(vm->objstack);
-            uint32_t len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
+            object* o=peek_dataframe(vm->objstack);/*
+            for (uint32_t i=len; i>0; i--){
+                add_dataframe(vm, vm->objstack, list_index_int(o, i-1));
+            }*/
+
+            if (o->type->slot_iter==NULL){
+                vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", o->type->name->c_str());
+                return NULL;
+            }
+            
+            object* iter=o->type->slot_iter(o);
+            
+            if (iter==NULL){
+                vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+                return NULL;
+            }
+
+            object* one=new_int_fromint(0);
+            object* res=NULL;
+            
+            object* ob=iter->type->slot_next(iter);
+
+            uint32_t len=0;
+
+            while (vm->exception==NULL){
+                if (ob->type->slot_mappings->slot_len==NULL){
+                    add_dataframe(vm, vm->objstack, ob);
+                    goto cont;
+                }
+                
+                if (ob->type->slot_mappings->slot_get==NULL){
+                    DECREF(iter);
+                    DECREF(one);
+                    vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", ob->type->name->c_str());
+                    return NULL;
+                }
+                
+                add_dataframe(vm, vm->objstack, ob->type->slot_mappings->slot_get(ob, one));
+                
+                cont:
+                ob=iter->type->slot_next(iter);
+                len++;
+            }
+            if (vm->exception!=NULL){
+                DECREF(vm->exception);
+                vm->exception=NULL;
+            }
+            
             if (len>CAST_INT(arg)->val->to_int()){
                 vm_add_err(&ValueError, vm, "Too many values to unpack, expected %d", len, CAST_INT(arg)->val->to_int());
                 return NULL;
@@ -1029,9 +1103,8 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 vm_add_err(&ValueError, vm, "Not enough values to unpack, expected %d", len, CAST_INT(arg)->val->to_int());
                 return NULL;
             }
-            for (uint32_t i=len; i>0; i--){
-                add_dataframe(vm, vm->objstack, list_index_int(o, i-1));
-            }
+
+            vm->objstack->head=reverse(vm->objstack->head, len);
             break;
         }
 
