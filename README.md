@@ -63,22 +63,6 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
     
 </details>    
 
-
-<details>
-<summary>Builtin Accessible Types</summary>
-
-- ```str```
-- ```int```
-- ```list```
-- ```dict```
-- ```tuple```
-- ```object```
-- ```float```
-- ```bool```  
-- ```file```
-
-</details>   
-
 ### Keywords ###
 - ```func```
 - ```class```
