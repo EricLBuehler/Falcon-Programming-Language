@@ -211,15 +211,25 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
             DECREF(CAST_DICT(vm->callstack->head->locals)->val->at(k.first));
         }
     }
-    
+
     if (value->type->size==0){
         ((object_var*)value)->gc_ref++;
     }
+    
 
     dict_set(vm->callstack->head->locals, name, value); //If globals is same obj as locals then this will still update both
 }
 
 struct object* vm_get_var_locals(struct vm* vm, object* name){
+    if (vm->callstack->head->callable!=NULL && object_istype(vm->callstack->head->callable->type, &FuncType)\
+    && CAST_FUNC(vm->callstack->head->callable)->closure!=NULL){
+        object* closure=CAST_FUNC(vm->callstack->head->callable)->closure;
+        //Check if name in closure
+        if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+            return CAST_DICT(closure)->val->at(name);
+        }
+    }
+    
     struct callframe* frame=vm->callstack->head;
     
     while(frame){
@@ -244,15 +254,7 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
             } 
         }
     }
-    
-    if (vm->callstack->head->callable!=NULL && object_istype(vm->callstack->head->callable->type, &FuncType)\
-    && CAST_FUNC(vm->callstack->head->callable)->closure!=NULL){
-        object* closure=CAST_FUNC(vm->callstack->head->callable)->closure;
-        //Check if name in closure
-        if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-            return CAST_DICT(closure)->val->at(name);
-        }
-    }
+
     vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
     return NULL;
 }
