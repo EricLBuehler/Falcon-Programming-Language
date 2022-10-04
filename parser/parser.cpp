@@ -957,7 +957,7 @@ class Parser{
                 this->advance();
                 return NULL;
             }
-            Node* name=this->expr(ret, LOWEST);
+            Node* name=this->atom(ret);
             
             Node* node=make_node(N_GLBL_IDENT);
             node->start=name->start;
@@ -967,7 +967,7 @@ class Parser{
             g->name=name;
             
             node->node=g;
-            this->backadvance();
+            cout<<this->current_tok;
             return node;
         }
 
