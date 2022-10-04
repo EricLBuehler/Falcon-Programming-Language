@@ -2,14 +2,16 @@
 
 ## Non-methods
 ### Functions
-- ```func(...)```
+- ```func(...){...}```
+### Lambda Functions
+- ```lambda ... {...}```
 
 ## Methods
 ### Methods
-- ```func(self, ...)```
+- ```func(self, ...){...}```
 
 ### Staticmethods
-- ```staticmethod(...)```
+- ```staticmethod(...){...}```
 
 ### Classmethods
-- ```classmethod(cls, ...)```
+- ```classmethod(cls, ...){...}```
