@@ -1,9 +1,8 @@
-object* slotwrapper_new_fromfunc(getter get, setter set, string name, TypeObject* basetype){
+object* slotwrapper_new_fromfunc(getter get, setter set, string name){
     object* o=new_object(&SlotWrapperType);
     CAST_SLOTWRAPPER(o)->get=get;
     CAST_SLOTWRAPPER(o)->set=set;
     CAST_SLOTWRAPPER(o)->name=new string(name);
-    CAST_SLOTWRAPPER(o)->basetype=basetype;
     return o;
 }
 
@@ -46,9 +45,9 @@ object* slotwrapper_str(object* self){
 }
 
 object* slotwrapper_descrget(object* obj, object* self){
-    return CAST_SLOTWRAPPER(self)->get(self);
+    return CAST_SLOTWRAPPER(self)->get(obj);
 }
 
 object* slotwrapper_descrset(object* obj, object* self, object* val){
-    return CAST_SLOTWRAPPER(self)->set(self, val);
+    return CAST_SLOTWRAPPER(self)->set(obj, val);
 }

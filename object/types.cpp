@@ -1398,7 +1398,7 @@ void setup_cwrapper_type(){
     fplbases.push_back(&CWrapperType);
 }
 
-object* slotwrapper_new_fromfunc(getter get, setter set, string name, TypeObject* basetype);
+object* slotwrapper_new_fromfunc(getter get, setter set, string name);
 object* slotwrapper_new(object* type, object* args, object* kwargs);    
 object* slotwrapper_repr(object* self);
 object* slotwrapper_str(object* self);
@@ -1410,7 +1410,6 @@ typedef struct SlotWrapperObject{
     getter get;
     setter set;
     string* name;
-    TypeObject* basetype;
 }SlotWrapperObject;
 
 
@@ -2879,8 +2878,34 @@ object* type_get(object* self, object* attr){
     //Check us and then our bases
 
     object* res=NULL;
+    //First check metatype
+    
     //Check type dict
-    if (CAST_TYPE(self)->dict!=0){
+    if (self->type->dict!=0){
+        object* dict = self->type->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            res=dict_get(dict, attr);
+        }
+    }
+
+    if (res==NULL){
+        uint32_t total_bases = CAST_INT(list_len(self->type->bases))->val->to_long_long();
+        for (uint32_t i=total_bases; i>0; i--){
+            TypeObject* base_tp=CAST_TYPE(list_index_int(self->type->bases, i-1));
+
+            //Check type dict
+            if (base_tp->dict!=0){
+                object* dict = base_tp->dict;
+                if (object_find_bool_dict_keys(dict, attr)){
+                    res=dict_get(dict, attr);
+                    break;
+                }
+            }
+        }
+    }
+
+    //Check type dict
+    if (res==NULL && CAST_TYPE(self)->dict!=0){
         object* dict = CAST_TYPE(self)->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             res=dict_get(dict, attr);
@@ -2905,6 +2930,12 @@ object* type_get(object* self, object* attr){
 
     if (res==NULL){
         vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",CAST_TYPE(self)->name->c_str(), object_cstr(attr).c_str());
+    }
+    else{
+        if (res->type->slot_descrget!=NULL){
+            object* r=res->type->slot_descrget(self, res);
+            return r;
+        }
     }
     
     return res;
@@ -3169,7 +3200,7 @@ object* setup_type_getsets(TypeObject* tp){
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_getsets!=NULL && base_tp->slot_getsets[idx].name!=NULL){
-            dict_set(base_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)base_tp->slot_getsets[idx].get, (setter)base_tp->slot_getsets[idx].set, base_tp->slot_getsets[idx].name, tp_tp));
+            dict_set(base_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)base_tp->slot_getsets[idx].get, (setter)base_tp->slot_getsets[idx].set, base_tp->slot_getsets[idx].name));
             idx++;
         }
     }
@@ -3177,7 +3208,7 @@ object* setup_type_getsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_getsets!=NULL && tp_tp->slot_getsets[idx].name!=NULL){
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, (setter)tp_tp->slot_getsets[idx].set, tp_tp->slot_getsets[idx].name, tp_tp));
+        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, (setter)tp_tp->slot_getsets[idx].set, tp_tp->slot_getsets[idx].name));
         idx++;
     }
 
@@ -3207,11 +3238,11 @@ object* type_bool(object* self){
 }
 
 object* type_dict(object* type){
-    return CAST_SLOTWRAPPER(type)->basetype->dict;
+    return CAST_TYPE(type)->dict;
 }
 
 object* type_bases_get(object* type){
-    return CAST_SLOTWRAPPER(type)->basetype->bases;
+    return CAST_TYPE(type)->bases;
 }
 
 object* new_type(string* name, object* bases, object* dict){
