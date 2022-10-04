@@ -1,0 +1,8 @@
+func f(a,){
+    print(a)
+}
+
+f(1)
+
+x=(f,)
+print(x)
