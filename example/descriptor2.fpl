@@ -1,0 +1,19 @@
+class a{
+    func __get__(self, other){
+        print("GET")
+        return 100
+    }
+    func __set__(self, instance, val){
+        return 100
+    }
+    a=10
+}
+
+class b{
+    l=a()
+    func __init__(self){
+    }
+}
+
+x=b()
+print(type(x).__dict__["l"])
