@@ -1,0 +1,6 @@
+func f(){
+    x=10
+    return lambda {print(x)}
+}
+
+f()()
