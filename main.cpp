@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
     kwds.push_back("continue");
     kwds.push_back("staticmethod");
     kwds.push_back("classmethod");
+    kwds.push_back("lambda");
     
     if (argc==1){
         try{
