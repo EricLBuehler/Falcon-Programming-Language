@@ -6,6 +6,7 @@
 #define FUNCTION_NORMAL 1
 #define FUNCTION_STATIC 2
 #define FUNCTION_CLASS 3
+#define FUNCTION_LAMBDA 4
 
 #include "nodes.cpp"
 #include "parser.cpp"

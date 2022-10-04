@@ -971,6 +971,124 @@ class Parser{
             return node;
         }
 
+        Node* make_lambda(parse_ret* ret){
+            vector<Node*>* args=new vector<Node*>;
+            args->clear();
+            vector<Node*>* kwargs=new vector<Node*>;
+            kwargs->clear();
+
+            this->advance();
+            
+            if (!this->current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "SyntaxError: Expected identifier, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                delete args;
+                delete kwargs;
+                return NULL;
+            }
+            Node* name=make_node(N_IDENT);
+            
+            name->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            name->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+
+            Identifier* i=(Identifier*)fpl_malloc(sizeof(Identifier));
+            i->name=new string("<lambda>");
+            name->node=i;
+
+            //Parse arguments
+            this->advance();
+            while (!this->current_tok_is(T_LCURLY)){
+                if (this->next_tok_is(T_EQ)){
+                    this->add_parsing_error(ret, "SyntaxError: Got unexpected keyword argument");
+                    this->advance();
+                    delete args;
+                    delete kwargs;
+                    return NULL;
+                }
+                else{
+                    if (kwargs->size()>0){
+                        this->add_parsing_error(ret, "SyntaxError: Positional argument follows keyword argument");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }
+                    bool b=this->multi;
+                    this->multi=false;
+                    Node* base=this->atom(ret);
+                    if (base==NULL){
+                        return NULL;
+                    }
+                    this->multi=b;
+                    if (base->type!=N_IDENT){
+                        this->add_parsing_error(ret, "SyntaxError: Expected identifier");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }
+                    
+                    this->advance();
+                    args->push_back(base);
+                    if (this->current_tok_is(T_RPAREN)){
+                        break;
+                    }
+                    this->advance();
+                }
+            }
+            //
+            if (!this->current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                delete args;
+                delete kwargs;
+                return NULL;
+            }
+
+            this->advance();
+            bool inloop=this->inloop;
+            this->inloop=false;
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.errornum=0;
+                code.nodes.clear();
+            }
+            if (code.errornum>0){
+                (*ret)=code;
+            }
+            this->inloop=inloop;
+            if (!this->current_tok_is(T_RCURLY)){
+                this->backadvance();
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                delete args;
+                delete kwargs;
+                return NULL;
+            }
+
+            Node* node=make_node(N_FUNC);
+            node->start=name->start;
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            Func* f=(Func*)fpl_malloc(sizeof(Func));
+            f->name=name;
+            f->code=new vector<Node*>;
+            f->code->clear();
+            for (Node* n: code.nodes){
+                f->code->push_back(n);
+            }
+            f->args=args;
+            f->kwargs=kwargs;
+            f->type=FUNCTION_LAMBDA;
+
+            node->node=f;
+            return node;
+        }
+
         Node* atom(parse_ret* ret){
             Node* left;
             switch (this->current_tok.type){
@@ -1025,6 +1143,13 @@ class Parser{
                 case T_COLON:
                     left=make_colon(ret);
                     break;
+
+                case T_KWD:
+                    if (this->current_tok.data=="lambda"){
+                        left=make_lambda(ret);
+                    }
+                    break;
+                    
                     
 
                 default:
