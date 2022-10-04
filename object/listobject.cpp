@@ -48,13 +48,19 @@ object* list_new(object* type, object* args, object* kwargs){
         CAST_LIST(obj)->capacity=2; //Start with 2
         CAST_LIST(obj)->size=0;
         CAST_LIST(obj)->array=(object**)fpl_malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
+        object* one=new_int_fromint(0);
         
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
-            if (o->type->slot_mappings->slot_len!=NULL && *CAST_INT(o->type->slot_mappings->slot_len(o))->val!=1){
-                DECREF((object*)obj);
-                vm_add_err(&ValueError, vm, "Expected 1 value for list update, got '%d'",CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int());
-                return NULL;
+            if (o->type->slot_mappings->slot_len!=NULL){
+                if (o->type->slot_mappings->slot_get==NULL){
+                    vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
+                    return NULL;
+                }
+                list_append((object*)obj, o->type->slot_mappings->slot_get(o, one));
+                
+                o=iter->type->slot_next(iter);
+                continue;
             }
             list_append((object*)obj, o);
             
@@ -65,6 +71,7 @@ object* list_new(object* type, object* args, object* kwargs){
             vm->exception=NULL;
         }
         DECREF(iter);
+        DECREF(one);
         return (object*)obj;
     }
 
