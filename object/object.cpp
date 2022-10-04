@@ -720,7 +720,6 @@ object* object_in_iter(object* left, object* right){
 
     object* one=new_int_fromint(0);
     object* res=NULL;
-    object* len;
     
     object* o=o=iter->type->slot_next(iter);
     while (vm->exception==NULL){
@@ -733,7 +732,6 @@ object* object_in_iter(object* left, object* right){
             }
             goto cont;
         }
-        len=o->type->slot_mappings->slot_len(o);
         if (o->type->slot_mappings->slot_get==NULL){
             DECREF(iter);
             DECREF(one);
