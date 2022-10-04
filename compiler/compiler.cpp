@@ -610,7 +610,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             //Create callable
             if (compiler->scope!=SCOPE_GLOBAL){
-                if (FUNCT(expr->node)->type==FUNCTION_NORMAL){
+                if (FUNCT(expr->node)->type==FUNCTION_NORMAL || FUNCT(expr->node)->type==FUNCTION_LAMBDA){
                     add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
                 }
                 if (FUNCT(expr->node)->type==FUNCTION_STATIC){
@@ -624,24 +624,26 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
             }
 
-            //Store function
-            uint32_t nameidxstore;
-            if (!_list_contains(compiler->names, IDENTI(FUNCT(expr->node)->name->node)->name )){
-                //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
-                nameidxstore = NAMEIDX(compiler->names);
-            }
-            else{
-                nameidxstore=object_find(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
-            }
-            switch (compiler->scope){
-                case SCOPE_GLOBAL:
-                    add_instruction(compiler->instructions,STORE_GLOBAL, nameidxstore, expr->start, expr->end);
-                    break;
+            if (FUNCT(expr->node)->type!=FUNCTION_LAMBDA){
+                //Store function
+                uint32_t nameidxstore;
+                if (!_list_contains(compiler->names, IDENTI(FUNCT(expr->node)->name->node)->name )){
+                    //Create object
+                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                    nameidxstore = NAMEIDX(compiler->names);
+                }
+                else{
+                    nameidxstore=object_find(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                }
+                switch (compiler->scope){
+                    case SCOPE_GLOBAL:
+                        add_instruction(compiler->instructions,STORE_GLOBAL, nameidxstore, expr->start, expr->end);
+                        break;
 
-                case SCOPE_LOCAL:
-                    add_instruction(compiler->instructions,STORE_NAME, nameidxstore, expr->start, expr->end);
-                    break;
+                    case SCOPE_LOCAL:
+                        add_instruction(compiler->instructions,STORE_NAME, nameidxstore, expr->start, expr->end);
+                        break;
+                }
             }
             break;
         }
