@@ -201,7 +201,10 @@ object* builtin_setattr(object* self, object* args){
         return NULL;
     }
     
-    object_setattr(ob, attr, val);
+    object* v=object_setattr(ob, attr, val);
+    if (v!=SUCCESS){
+        return NULL;
+    }
 
     return new_none();
 }
