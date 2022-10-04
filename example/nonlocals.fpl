@@ -1,0 +1,15 @@
+func a(){
+    x=1
+    func b(){
+        print(x)
+        print(::x)
+        ::x=100
+    }
+    b()
+    print(x)
+    return b
+}
+
+x=a()
+print()
+x()
