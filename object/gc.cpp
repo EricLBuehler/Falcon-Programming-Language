@@ -40,6 +40,9 @@ void gc_collect(int gen){
             if (((object_var*)obj)->gc_ref - ((object*)obj)->refcnt<0){
                 if (obj->type->slot_del!=NULL){
                     obj->type->slot_del(obj);
+                    if (obj->refcnt>0){
+                        goto goaround;
+                    }
                 }
             }
             if (obj->gen!=2){                
@@ -113,6 +116,7 @@ void gc_collect(int gen){
             obj=next;
             continue;
         }
+        goaround:
         obj=obj->ob_next;
     }
 

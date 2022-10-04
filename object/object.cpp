@@ -3,6 +3,9 @@ inline bool DECREF(struct object* object){
     if (object->refcnt==0){
         if (object->type->slot_del!=NULL){
             object->type->slot_del(object);
+            if (object->refcnt>0){
+                return false;
+            }
         }
         
         //GC collect it later.... or...
@@ -27,6 +30,9 @@ inline bool DECREF(struct object* object){
             if (((object_var*)object)->gc_ref - ((struct object*)object)->refcnt<0){
                 if (object->type->slot_del!=NULL){
                     object->type->slot_del(object);
+                    if (object->refcnt>0){
+                        return false;
+                    }
                 }
             }
             if (object->gen!=2){                
