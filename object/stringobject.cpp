@@ -338,45 +338,37 @@ object* string_find_meth(object* selftp, object* args, object* kwargs){
     return new_int_fromint(idx);
 }
 
-
-vector<string> split (string s, string delimiter) {
-    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
-    string token;
-    vector<string> res;
-
-    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
-        token = s.substr (pos_start, pos_end - pos_start);
-        pos_start = pos_end + delim_len;
-        res.push_back (token);
-    }
-
-    res.push_back (s.substr (pos_start));
-    return res;
-}
-
 object* string_split_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if ((len!=2 && len!=1) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 or 2 arguments, got %d", len);
         return NULL; 
     }
-    object* self=tuple_index_int(args, 0);  
-    object* val=tuple_index_int(args, 1);   
+    object* self=tuple_index_int(args, 0); 
+    object* val;
+    if (len==2){ 
+        val=tuple_index_int(args, 1);   
+    }
+    if (len==1){ 
+        val=str_new_fromstr(""); 
+    }
 
-    if (!object_istype(val->type, &StrType)){
-        vm_add_err(&ValueError, vm, "Expected str, got '%s'", val->type->name->c_str());
+    object* v=object_str(val);
+
+    if (v==NULL || !object_istype(v->type, &StrType)){
+        vm_add_err(&ValueError, vm, "'%s' object cannot be coercerd to str", val->type->name->c_str());
         return NULL; 
     }  
 
     string s(*CAST_STRING(self)->val);
-    string delimiter=*CAST_STRING(val)->val;
+    string delimiter=*CAST_STRING(v)->val;
 
     object* list=new_list();
     
-        
+    
     size_t pos = 0;
     std::string token;
-    while ((pos = s.find(delimiter)) != std::string::npos) {
+    while ((pos = s.find(delimiter)) != std::string::npos && delimiter.size()!=0) {
         token = s.substr(0, pos);
         list_append(list, str_new_fromstr(token));
         s.erase(0, pos + delimiter.length());
