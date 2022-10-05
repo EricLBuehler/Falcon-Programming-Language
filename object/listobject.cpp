@@ -129,12 +129,20 @@ object* list_slice(object* self, object* idx){
 
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
+        if (start_v<0){
+            vm_add_err(&TypeError, vm, "List index out of range");
+            return;
+        }
     }
     if (start_v>=CAST_LIST(self)->size){
         start_v=CAST_LIST(self)->size-1;
     }
     if (end_v<0){
         end_v=CAST_LIST(self)->size+start_v;
+        if (end_v<0){
+            vm_add_err(&TypeError, vm, "List index out of range");
+            return;
+        }
     }
     if (end_v>=CAST_LIST(self)->size){
         end_v=CAST_LIST(self)->size-1;
@@ -179,12 +187,20 @@ void list_store_slice(object* self, object* idx, object* val){
 
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
+        if (start_v<0){
+            vm_add_err(&TypeError, vm, "List index out of range");
+            return;
+        }
     }
     if (start_v>=CAST_LIST(self)->size){
         start_v=CAST_LIST(self)->size-1;
     }
     if (end_v<0){
         end_v=CAST_LIST(self)->size+start_v;
+        if (end_v<0){
+            vm_add_err(&TypeError, vm, "List index out of range");
+            return;
+        }
     }
     if (end_v>=CAST_LIST(self)->size){
         end_v=CAST_LIST(self)->size-1;
@@ -281,12 +297,20 @@ void list_del_slice(object* self, object* index){
 
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
+        if (start_v<0){
+            vm_add_err(&TypeError, vm, "List index out of range");
+            return;
+        }
     }
     if (start_v>=CAST_LIST(self)->size){
         start_v=CAST_LIST(self)->size-1;
     }
     if (end_v<0){
         end_v=CAST_LIST(self)->size+start_v;
+        if (end_v<0){
+            vm_add_err(&TypeError, vm, "List index out of range");
+            return;
+        }
     }
     if (end_v>=CAST_LIST(self)->size){
         end_v=CAST_LIST(self)->size-1;
