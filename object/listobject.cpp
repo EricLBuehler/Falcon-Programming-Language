@@ -108,20 +108,38 @@ object* list_slice(object* self, object* idx){
         start_v=0;
     }
     else{
-        start_v=CAST_INT(start)->val->to_int();
+        object* start_=object_int(start);
+        if (start_==NULL || !object_istype(start_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
+            return NULL;
+        }
+        start_v=CAST_INT(start_)->val->to_int();
     }
     if (object_istype(end->type, &NoneType)){
         end_v=CAST_LIST(self)->size-1;
     }
     else{
-        end_v=CAST_INT(end)->val->to_int();
+        object* end_=object_int(end);
+        if (end_==NULL || !object_istype(end_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",end->type->name->c_str());
+            return NULL;
+        }
+        end_v=CAST_INT(end_)->val->to_int();
     }
-    if (start<0){
-        start_v=0;
+
+    if (start_v<0){
+        start_v=CAST_LIST(self)->size+start_v;
+    }
+    if (start_v>=CAST_LIST(self)->size){
+        start_v=CAST_LIST(self)->size-1;
+    }
+    if (end_v<0){
+        end_v=CAST_LIST(self)->size+start_v;
     }
     if (end_v>=CAST_LIST(self)->size){
         end_v=CAST_LIST(self)->size-1;
     }
+
     for (int i=start_v; i<=end_v; i++){
         list_append(result, list_index_int(self, i));
     }
@@ -140,20 +158,35 @@ void list_store_slice(object* self, object* idx, object* val){
         start_v=0;
     }
     else{
-        start_v=CAST_INT(start)->val->to_int();
+        object* start_=object_int(start);
+        if (start_==NULL || !object_istype(start_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
+            return;
+        }
+        start_v=CAST_INT(start_)->val->to_int();
     }
     if (object_istype(end->type, &NoneType)){
         end_v=CAST_LIST(self)->size-1;
     }
     else{
-        end_v=CAST_INT(end)->val->to_int();
+        object* end_=object_int(end);
+        if (end_==NULL || !object_istype(end_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",end->type->name->c_str());
+            return;
+        }
+        end_v=CAST_INT(end_)->val->to_int();
     }
-    
 
     if (start_v<0){
-        start_v=0;
+        start_v=CAST_LIST(self)->size+start_v;
     }
-    if (end_v>CAST_LIST(self)->size-1){
+    if (start_v>=CAST_LIST(self)->size){
+        start_v=CAST_LIST(self)->size-1;
+    }
+    if (end_v<0){
+        end_v=CAST_LIST(self)->size+start_v;
+    }
+    if (end_v>=CAST_LIST(self)->size){
         end_v=CAST_LIST(self)->size-1;
     }
     
@@ -200,26 +233,60 @@ object* list_get(object* self, object* idx){
     if (object_istype(idx->type, &SliceType)){
         return list_slice(self, idx);
     }
-    if (!object_istype(idx->type, &IntType)){
-        vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
+    object* idx_=object_int(idx);
+    if (idx_==NULL || !object_istype(idx->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx->type->name->c_str());
         return NULL;
     }
-    if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long() || CAST_INT(idx)->val->to_long_long()<0){
+    int lidx=CAST_INT(idx_)->val->to_int();
+    if (lidx<0){
+        lidx=lidx+CAST_LIST(self)->size;
+    }
+    if ((int)CAST_LIST(self)->size<=lidx){
         vm_add_err(&IndexError, vm, "List index out of range");
         return NULL;
     }
     
-    return CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()];
+    return CAST_LIST(self)->array[lidx];
 }
 
 void list_del_slice(object* self, object* index){
-    uint32_t start=CAST_INT(CAST_SLICE(index)->start)->val->to_int();
-    uint32_t end=CAST_INT(CAST_SLICE(index)->end)->val->to_int();
+    object* start=CAST_SLICE(index)->start;
+    object* end=CAST_SLICE(index)->end;
 
     int start_v;
     int end_v;
-    if (start<0){
+    if (object_istype(start->type, &NoneType)){
         start_v=0;
+    }
+    else{
+        object* start_=object_int(start);
+        if (start_==NULL || !object_istype(start_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
+            return;
+        }
+        start_v=CAST_INT(start_)->val->to_int();
+    }
+    if (object_istype(end->type, &NoneType)){
+        end_v=CAST_LIST(self)->size-1;
+    }
+    else{
+        object* end_=object_int(end);
+        if (end_==NULL || !object_istype(end_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",end->type->name->c_str());
+            return;
+        }
+        end_v=CAST_INT(end_)->val->to_int();
+    }
+
+    if (start_v<0){
+        start_v=CAST_LIST(self)->size+start_v;
+    }
+    if (start_v>=CAST_LIST(self)->size){
+        start_v=CAST_LIST(self)->size-1;
+    }
+    if (end_v<0){
+        end_v=CAST_LIST(self)->size+start_v;
     }
     if (end_v>=CAST_LIST(self)->size){
         end_v=CAST_LIST(self)->size-1;
