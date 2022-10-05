@@ -1170,6 +1170,10 @@ class Parser{
                 case T_NOT:
                 case T_COLON:
                     return true;
+                case T_KWD:
+                    if (this->current_tok.data=="lambda"){
+                        return true;
+                    }
             }
             return false;
         }
