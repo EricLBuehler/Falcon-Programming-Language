@@ -978,14 +978,7 @@ class Parser{
             kwargs->clear();
 
             this->advance();
-            
-            if (!this->current_tok_is(T_IDENTIFIER)){
-                this->add_parsing_error(ret, "SyntaxError: Expected identifier, got '%s'",token_type_to_str(this->current_tok.type).c_str());
-                this->advance();
-                delete args;
-                delete kwargs;
-                return NULL;
-            }
+
             Node* name=make_node(N_IDENT);
             
             name->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
@@ -996,7 +989,6 @@ class Parser{
             name->node=i;
 
             //Parse arguments
-            this->advance();
             while (!this->current_tok_is(T_LCURLY)){
                 if (this->next_tok_is(T_EQ)){
                     this->add_parsing_error(ret, "SyntaxError: Got unexpected keyword argument");
@@ -1030,7 +1022,7 @@ class Parser{
                     
                     this->advance();
                     args->push_back(base);
-                    if (this->current_tok_is(T_RPAREN)){
+                    if (this->current_tok_is(T_LCURLY)){
                         break;
                     }
                     this->advance();
@@ -1061,6 +1053,7 @@ class Parser{
                 (*ret)=code;
             }
             this->inloop=inloop;
+            
             if (!this->current_tok_is(T_RCURLY)){
                 this->backadvance();
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -1359,6 +1352,9 @@ class Parser{
             }
             else if (this->current_tok.data=="classmethod"){
                 n=make_function(ret, FUNCTION_CLASS);
+            }
+            else if (this->current_tok.data=="lambda"){
+                n=this->expr(ret,LOWEST);
             }
             else{
                 this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
