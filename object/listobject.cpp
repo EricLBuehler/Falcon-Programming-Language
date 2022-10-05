@@ -240,9 +240,9 @@ object* list_get(object* self, object* idx){
     }
     int lidx=CAST_INT(idx_)->val->to_int();
     if (lidx<0){
-        lidx=lidx+CAST_LIST(self)->size;
+        lidx=lidx+(int)CAST_LIST(self)->size;
     }
-    if ((int)CAST_LIST(self)->size<=lidx){
+    if ((int)CAST_LIST(self)->size<=lidx || lidx<0){
         vm_add_err(&IndexError, vm, "List index out of range");
         return NULL;
     }
