@@ -572,6 +572,10 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
     }
     else{
         object* res=dict_get(d, attr);
+        if (res!=NULL && res->type->slot_descrget!=NULL){
+            vm_add_err(&AttributeError, vm, "attribute '%s' of '%s' object is read only",object_cstr(attr).c_str() ,obj->type->name->c_str());
+            return NULL;
+        }
         if (res!=NULL && !(res->type->slot_descrset==NULL && res->type->slot_descrget==NULL) ){
             if (res!=NULL && res->type->slot_descrset!=NULL){
                 object* v=res->type->slot_descrset(obj, res, val);
@@ -580,10 +584,6 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
                     return SUCCESS;
                 }
                 return v;
-            }
-            if (res!=NULL && res->type->slot_descrget==NULL){
-                vm_add_err(&AttributeError, vm, "%s object is read only",res->type->name->c_str());
-                return NULL;
             }
         }
         else{

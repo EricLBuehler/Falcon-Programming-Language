@@ -131,7 +131,7 @@ object* list_slice(object* self, object* idx){
         start_v=CAST_LIST(self)->size+start_v;
         if (start_v<0){
             vm_add_err(&TypeError, vm, "List index out of range");
-            return;
+            return NULL;
         }
     }
     if (start_v>=CAST_LIST(self)->size){
@@ -141,7 +141,7 @@ object* list_slice(object* self, object* idx){
         end_v=CAST_LIST(self)->size+start_v;
         if (end_v<0){
             vm_add_err(&TypeError, vm, "List index out of range");
-            return;
+            return NULL;
         }
     }
     if (end_v>=CAST_LIST(self)->size){

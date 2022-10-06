@@ -336,6 +336,7 @@ struct vm{
 
     object* accumulator;
     object* globals;
+    object* path;
 };
 
 

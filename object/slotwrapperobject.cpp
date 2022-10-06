@@ -1,5 +1,11 @@
 object* slotwrapper_new_fromfunc(getter get, setter set, string name){
-    object* o=new_object(&SlotWrapperType);
+    object* o;
+    if (set==NULL){
+        o=new_object(&SlotWrapperReadonlyType);
+    }
+    else{
+        o=new_object(&SlotWrapperType);
+    }
     CAST_SLOTWRAPPER(o)->get=get;
     CAST_SLOTWRAPPER(o)->set=set;
     CAST_SLOTWRAPPER(o)->name=new string(name);
