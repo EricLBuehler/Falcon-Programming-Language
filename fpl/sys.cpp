@@ -23,11 +23,17 @@ object* sys_getrefcnt(object* self, object* args, object* kwargs){
     return new_int_fromint(val->refcnt);
 }
 
+object* sys_getpath(object* sys){
+    return vm->path;
+}
+
 object* new_sys_module(){
     object* dict=new_dict();
 
     dict_set(dict, str_new_fromstr("getsizeof"), cwrapper_new_fromfunc_null((cwrapperfunc)sys_getsizeof, "getsizeof"));
     dict_set(dict, str_new_fromstr("getrefcnt"), cwrapper_new_fromfunc_null((cwrapperfunc)sys_getrefcnt, "getrefcnt"));
+    object* getset=slotwrapper_new_fromfunc(sys_getpath, NULL, "path");
+    dict_set(dict, str_new_fromstr("path"), getset);
 
     return module_new_fromdict(dict, str_new_fromstr("sys"));
 }
