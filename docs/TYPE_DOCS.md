@@ -49,7 +49,7 @@ Split a string on string ```needle```.
 | Argument      | Information       |
 | ------------- | ----------------- |
 | ```self```    | self argument     |
-| ```needle```     | needle to split on, defaults to ""   |
+| ```needle```     | needle to split on, defaults to ```""```   |
 ### Example
 ```"abc".split("b") == ["a","c"] == True```
 #### Returns
