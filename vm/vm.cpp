@@ -172,7 +172,19 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->filedata=filedata;
 
     vm->path=new_list();
-    vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr("./"));
+    
+    fstream newfile;
+    newfile.open("fplpath.path",ios::in);
+    if (newfile.is_open()){
+        string tp;
+        while(getline(newfile, tp)){
+            vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr(tp));
+        }
+        newfile.close();
+    }
+    else{
+        vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr("./"));
+    }
     
     if (::vm==NULL){
         ::vm=vm;
