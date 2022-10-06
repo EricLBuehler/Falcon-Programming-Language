@@ -154,6 +154,11 @@ void setup_builtins(){
     iscallableargs->type->slot_mappings->slot_append(iscallableargs, str_new_fromstr("object"));
     object* iscallablekwargs=new_tuple();
     builtins[50]=new_builtin((builtinfunc)builtin_iscallable, str_new_fromstr("iscallable"), iscallableargs, iscallablekwargs, 1, false);
+    
+    object* reverseargs=new_tuple();
+    reverseargs->type->slot_mappings->slot_append(reverseargs, str_new_fromstr("object"));
+    object* reversekwargs=new_tuple();
+    builtins[51]=new_builtin((builtinfunc)builtin_reverse, str_new_fromstr("reverse"), reverseargs, reversekwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
