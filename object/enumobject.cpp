@@ -18,7 +18,7 @@ object* enum_new(object* type, object* args, object* kwargs){
     }
     else{
         DECREF(enumer);
-        vm_add_err(&TypeError, vm, "Expected iterator, got '%s'", CAST_ENUM(enumer)->iterator->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", CAST_ENUM(enumer)->iterator->type->name->c_str());
         DECREF(CAST_ENUM(enumer)->iterator);
         return NULL;
     }

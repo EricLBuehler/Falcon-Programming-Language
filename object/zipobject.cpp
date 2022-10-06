@@ -1,6 +1,6 @@
 object* zip_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (len!=0){
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }
@@ -17,7 +17,7 @@ object* zip_new(object* type, object* args, object* kwargs){
         }
         else{
             DECREF(zip);
-            vm_add_err(&TypeError, vm, "Expected iterator, got '%s'", CAST_ZIP(zip)->iterators[i]->type->name->c_str());
+            vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", CAST_ZIP(zip)->iterators[i]->type->name->c_str());
             DECREF(CAST_ZIP(zip)->iterators[i]);
             return NULL;
         }
