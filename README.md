@@ -31,7 +31,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```getattr```
 - ```setattr```
 - ```iscallable```
-- ```sys```
+- ```reverse```
 
 ### Builtin libraries ###
 - ```time```
