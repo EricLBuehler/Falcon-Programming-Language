@@ -1061,10 +1061,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         }
 
         case UNPACK_SEQ: {
-            object* o=peek_dataframe(vm->objstack);/*
-            for (uint32_t i=len; i>0; i--){
-                add_dataframe(vm, vm->objstack, list_index_int(o, i-1));
-            }*/
+            object* o=peek_dataframe(vm->objstack);
 
             if (o->type->slot_iter==NULL){
                 vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", o->type->name->c_str());
@@ -1118,7 +1115,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 return NULL;
             }
 
-            vm->objstack->head=reverse(vm->objstack->head, len);
+            vm->objstack->head=reverse(vm->objstack->head, len-1);
             break;
         }
 
