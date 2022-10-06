@@ -1,0 +1,102 @@
+object* os_chdir(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* val=list_index_int(args, 1);
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
+        return NULL; 
+    }
+
+    string dir=*CAST_STRING(val)->val;
+
+    int res=chdir(dir.c_str());
+    if (res==0){
+        return new_none();
+    }
+
+    vm_add_err(&FileNotFoundError, vm, "[ERRNO: %d]: Cannot find directory '%s'", errno, dir.c_str());
+    errno=0;
+    return NULL;
+}
+
+object* os_mkdir(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* val=list_index_int(args, 1);
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
+        return NULL; 
+    }
+
+    string dir=*CAST_STRING(val)->val;
+
+    int res=mkdir(dir.c_str());
+    if (res==0){
+        return new_none();
+    }
+
+    vm_add_err(&FileNotFoundError, vm, "[ERRNO: %d]: Cannot create directory '%s'", errno, dir.c_str());
+    errno=0;
+    return NULL;
+}
+
+
+object* os_getcwd(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    char buffer[PATH_MAX];
+    if (getcwd(buffer, sizeof(buffer)) != NULL) {
+        return str_new_fromstr(string(buffer));
+    }
+    else {
+        vm_add_err(&FileNotFoundError, vm, "[ERRNO: %d]: Cannot get current working directory", errno);
+        errno=0;
+        return NULL;
+    }    
+}
+
+
+object* os_rmdir(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* val=list_index_int(args, 1);
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
+        return NULL; 
+    }
+
+    string dir=*CAST_STRING(val)->val;
+
+    int res=rmdir(dir.c_str());
+    if (res==0){
+        return new_none();
+    }
+
+    vm_add_err(&FileNotFoundError, vm, "[ERRNO: %d]: Cannot remove directory '%s'", errno, dir.c_str());
+    errno=0;
+    return NULL;
+}
+
+object* new_os_module(){
+    object* dict=new_dict();
+    
+    dict_set(dict, str_new_fromstr("chdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_chdir, "chdir"));
+    dict_set(dict, str_new_fromstr("mkdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_mkdir, "mkdir"));
+    dict_set(dict, str_new_fromstr("getcwd"), cwrapper_new_fromfunc_null((cwrapperfunc)os_getcwd, "getcwd"));
+    dict_set(dict, str_new_fromstr("rmdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_rmdir, "rmdir"));
+
+    return module_new_fromdict(dict, str_new_fromstr("os"));
+}

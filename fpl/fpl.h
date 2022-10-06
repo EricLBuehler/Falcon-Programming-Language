@@ -5,12 +5,13 @@ object** modules=NULL;
 #include "random.cpp"
 #include "thread/thread.cpp"
 #include "sys.cpp"
+#include "os.cpp"
 
 typedef object* (*newmodulefunc)(void);
-const size_t nmodules=5;
+const size_t nmodules=6;
 newmodulefunc newmodules[] = {(newmodulefunc)new_random_module, (newmodulefunc)new_time_module,\
                             (newmodulefunc)new_math_module, (newmodulefunc)new_thread_module,\
-                            (newmodulefunc)new_sys_module, NULL};
+                            (newmodulefunc)new_sys_module, (newmodulefunc)new_os_module, NULL};
 
 void setup_modules(){
     int i=0;
