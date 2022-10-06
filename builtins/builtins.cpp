@@ -231,3 +231,29 @@ object* builtin_abs(object* self, object* args){
 object* builtin_iscallable(object* self, object* args){
     return object_iscallable(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
 }
+    
+object* builtin_reverse(object* self, object* args){
+    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    if (val->type->slot_mappings->slot_get==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", val->type->name->c_str());
+        return NULL;
+    }
+    if (val->type->slot_mappings->slot_len==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object has no __len__", val->type->name->c_str());
+        return NULL;
+    }
+    object* list=new_list();
+    object* len=val->type->slot_mappings->slot_len(val);
+    for (size_t i=CAST_INT(len)->val->to_long(); i>0; i--){
+        object* idx=new_int_fromint(i-1);
+        object* v=val->type->slot_mappings->slot_get(val, idx);
+        if (v==NULL){
+            return NULL;
+        }
+        DECREF(idx);
+        list_append(list,v);
+    }
+    DECREF(len);
+
+    return list;
+}
