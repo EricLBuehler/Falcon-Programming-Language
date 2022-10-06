@@ -39,6 +39,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```random```
 - ```threading```
 - ```sys```
+- ```os```
 
 <details>
 <summary>Exceptions</summary>
