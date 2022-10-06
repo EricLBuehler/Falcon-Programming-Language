@@ -1220,6 +1220,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
                                 //try en->d_name
                                 //Later try nm as folder
+                                
                                 FILE* f=fopen((nm+"/"+string(en->d_name)).c_str(), "rb");
                                 if (f==NULL){
                                     vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+string(en->d_name)).c_str());
@@ -1249,7 +1250,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                             closedir(dr);
                         }
                         
-                        object* o=module_new_fromdict(dict, str_new_fromstr(string(nm)));
+                        object* o=module_new_fromdict(dict, str_new_fromstr(string(nm_plain)));
                         add_dataframe(vm, vm->objstack, o);
 
                         return NULL;
