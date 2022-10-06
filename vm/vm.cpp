@@ -170,6 +170,9 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->exception=NULL;
 
     vm->filedata=filedata;
+
+    vm->path=new_list();
+    vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr("./"));
     
     if (::vm==NULL){
         ::vm=vm;
@@ -231,7 +234,6 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
     }
     
     struct callframe* frame=vm->callstack->head;
-    
     while(frame){
         for (auto k: (*CAST_DICT(frame->locals)->val)){
             if (istrue(object_cmp(name, k.first, CMP_EQ))){
@@ -1162,127 +1164,130 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
         case IMPORT_NAME: {
             object* name=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
-            string nm=*CAST_STRING(name)->val;
+            string nm_plain=*CAST_STRING(name)->val;
 
             string data="";
                     
-            string name_=nm+".fpl";
+            string name_plain=nm_plain+".fpl";
 
-            struct stat st;
-            if( stat(nm.c_str(),&st) == 0 || stat(name_.c_str(),&st) == 0 ){
-                if( st.st_mode & S_IFDIR ){//Directory
-                    object* dict=new_dict();
-                    
-                    DIR *dr;
-                    struct dirent *en;
-                    dr = opendir(nm.c_str());
-                    if (dr) {
-                        while ((en = readdir(dr)) != NULL) {
-                            if (string(en->d_name)==string(".") || string(en->d_name)==string("..")){
-                                continue;
-                            }
-
-                            
-                            string extension="";
-                            string filename="";
-                            bool extwr=true;
-                            for (int i=string(en->d_name).size(); i>0; i--){
-                                if (string(en->d_name).at(i-1)=='.' && extwr){
-                                    extwr=false;
+            for (size_t i=0; i<CAST_LIST(vm->path)->size; i++){
+                string name_=object_cstr(list_index_int(vm->path, i))+name_plain;
+                string nm=object_cstr(list_index_int(vm->path, i))+nm_plain;
+                struct stat st;
+                if( stat(nm.c_str(),&st) == 0 || stat(name_.c_str(),&st) == 0 ){
+                    if( st.st_mode & S_IFDIR ){//Directory
+                        object* dict=new_dict();
+                        
+                        DIR *dr;
+                        struct dirent *en;
+                        dr = opendir(nm.c_str());
+                        if (dr) {
+                            while ((en = readdir(dr)) != NULL) {
+                                if (string(en->d_name)==string(".") || string(en->d_name)==string("..")){
                                     continue;
                                 }
-                                if (!extwr){
-                                    filename+=string(en->d_name).at(i-1);
+
+                                
+                                string extension="";
+                                string filename="";
+                                bool extwr=true;
+                                for (int i=string(en->d_name).size(); i>0; i--){
+                                    if (string(en->d_name).at(i-1)=='.' && extwr){
+                                        extwr=false;
+                                        continue;
+                                    }
+                                    if (!extwr){
+                                        filename+=string(en->d_name).at(i-1);
+                                    }
+                                    if (extwr){
+                                        extension+=string(en->d_name).at(i-1);
+                                    }
                                 }
-                                if (extwr){
-                                    extension+=string(en->d_name).at(i-1);
+                                reverse(extension.begin(), extension.end());
+                                reverse(filename.begin(), filename.end());
+                                if (extension!="fpl"){
+                                    continue;
                                 }
-                            }
-                            reverse(extension.begin(), extension.end());
-                            reverse(filename.begin(), filename.end());
-                            if (extension!="fpl"){
-                                continue;
-                            }
 
-                            //try en->d_name
-                            //Later try nm as folder
-                            FILE* f=fopen((nm+"/"+string(en->d_name)).c_str(), "rb");
-                            if (f==NULL){
-                                vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+string(en->d_name)).c_str());
-                                return NULL;
-                            }
+                                //try en->d_name
+                                //Later try nm as folder
+                                FILE* f=fopen((nm+"/"+string(en->d_name)).c_str(), "rb");
+                                if (f==NULL){
+                                    vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+string(en->d_name)).c_str());
+                                    return NULL;
+                                }
 
 
-                            fseek(f, 0, SEEK_END);
-                            long fsize = ftell(f);
-                            fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+                                fseek(f, 0, SEEK_END);
+                                long fsize = ftell(f);
+                                fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
 
-                            char *s = (char*)fpl_malloc(fsize + 1);
-                            int i=fread(s, fsize, 1, f);
-                            if (i==0 && fsize>0){
-                                vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
-                                return NULL;
+                                char *s = (char*)fpl_malloc(fsize + 1);
+                                int i=fread(s, fsize, 1, f);
+                                if (i==0 && fsize>0){
+                                    vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
+                                    return NULL;
+                                }
+                                s[fsize] = 0;
+                                string str(s);
+                                
+                                object* o=import_name(str, str_new_fromstr(filename));
+                                if (o==TERM_PROGRAM){
+                                    return TERM_PROGRAM;
+                                }
+                                dict_set(dict, str_new_fromstr(filename), o);
                             }
-                            s[fsize] = 0;
-                            string str(s);
-                            
-                            object* o=import_name(str, str_new_fromstr(filename));
-                            if (o==TERM_PROGRAM){
-                                return TERM_PROGRAM;
-                            }
-                            dict_set(dict, str_new_fromstr(filename), o);
+                            closedir(dr);
                         }
-                        closedir(dr);
-                    }
-                    
-                    object* o=module_new_fromdict(dict, str_new_fromstr(string(nm)));
-                    add_dataframe(vm, vm->objstack, o);
+                        
+                        object* o=module_new_fromdict(dict, str_new_fromstr(string(nm)));
+                        add_dataframe(vm, vm->objstack, o);
 
-                    break;
-                    
-                }
-                else{ //File
-                    //try nm.fpl
-                    //Later try nm as folder
-                    FILE* f=fopen(name_.c_str(), "rb");
-
-                    fseek(f, 0, SEEK_END);
-                    long fsize = ftell(f);
-                    fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
-
-                    char *s = (char*)fpl_malloc(fsize + 1);
-                    int i=fread(s, fsize, 1, f);
-                    if (i==0 && fsize>0){
-                        vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
                         return NULL;
                     }
-                    s[fsize] = 0;
-                    string str(s);
-                    data=str;
-                }
-            }
-            else{
-                bool done=false;
-                for (int i=0; i<nmodules; i++){
-                    if (istrue(object_cmp(name, CAST_MODULE(modules[i])->name, CMP_EQ))){
-                        add_dataframe(vm, vm->objstack, modules[i]);
-                        done=true;
-                        break;
+                    else{ //File
+                        //try nm.fpl
+                        //Later try nm as folder
+                        FILE* f=fopen(name_.c_str(), "rb");
+
+                        fseek(f, 0, SEEK_END);
+                        long fsize = ftell(f);
+                        fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+
+                        char *s = (char*)fpl_malloc(fsize + 1);
+                        int i=fread(s, fsize, 1, f);
+                        if (i==0 && fsize>0){
+                            vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
+                            return NULL;
+                        }
+                        s[fsize] = 0;
+                        string str(s);
+                        data=str;
                     }
                 }
-                if (done){
-                    break;
-                }
+                else{
+                    bool done=false;
+                    for (int i=0; i<nmodules; i++){
+                        if (istrue(object_cmp(name, CAST_MODULE(modules[i])->name, CMP_EQ))){
+                            add_dataframe(vm, vm->objstack, modules[i]);
+                            done=true;
+                            return NULL;
+                        }
+                    }
 
-                vm_add_err(&ImportError, vm, "'%s' not found", nm.c_str());
+                    continue;
+                }
+                
+                object* o=import_name(data, name);
+                if (o==TERM_PROGRAM){
+                    return TERM_PROGRAM;
+                }
+                add_dataframe(vm, vm->objstack, o);
                 return NULL;
             }
-            
-            object* o=import_name(data, name);
-            if (o==TERM_PROGRAM){
-                return TERM_PROGRAM;
-            }
-            add_dataframe(vm, vm->objstack, o);
+
+            vm_add_err(&ImportError, vm, "'%s' not found", nm_plain.c_str());
+            return NULL;
 
             break;
         }
