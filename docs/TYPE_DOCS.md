@@ -44,12 +44,12 @@ New string - ```str```
 
 ### ```str.split```
 Split a string on string ```needle```.
-```str.split(self, needle)```
+```str.split(self, needle="")```
 #### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
 | ```self```    | self argument     |
-| ```needle```     | needle to split on   |
+| ```needle```     | needle to split on, defaults to ""   |
 ### Example
 ```"abc".split("b") == ["a","c"] == True```
 #### Returns
