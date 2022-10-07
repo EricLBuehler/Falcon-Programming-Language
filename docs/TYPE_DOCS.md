@@ -235,6 +235,18 @@ Returns a list of values.
 #### Returns
 List of values - ```list```
 
+### ```dict.flip```
+Create a new dictionary with the key-value pairs in the original dictionary flipped.
+```dict.flip(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```{1:2}.values() == [2] == True```
+#### Returns
+New dict - ```dict```
+
 
 
 ## ```tuple```
