@@ -33,6 +33,8 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```iscallable```
 - ```reverse```
 - ```isiter```
+- ```min```
+- ```max```
 
 ### Builtin libraries ###
 - ```time```
