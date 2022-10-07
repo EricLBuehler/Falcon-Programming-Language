@@ -1,0 +1,10 @@
+func f(x){
+    print(x, end=" ")
+    return x*10.2
+}
+
+print(map(f, [1,2]))
+
+for n in map(f, [1,2]){
+    print(n)
+}
