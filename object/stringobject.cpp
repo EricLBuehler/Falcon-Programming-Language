@@ -511,3 +511,22 @@ object* string_isupper_meth(object* self, object* args, object* kwargs){
     }
     return new_bool_false();
 }
+    
+object* string_count_meth(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(list_index_int(args, 0))->val);
+    string target=(*CAST_STRING(list_index_int(args, 1))->val);
+
+    int occurrences = 0;
+    std::string::size_type pos = 0;
+    while ((pos = s.find(target, pos )) != std::string::npos) {
+        occurrences++;
+        pos += target.length();
+    }
+    return new_int_fromint(occurrences);
+}
