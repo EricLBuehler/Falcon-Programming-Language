@@ -736,6 +736,7 @@ object* object_in_iter(object* left, object* right){
     object* res=NULL;
     
     object* o=o=iter->type->slot_next(iter);
+    object* v;
     while (vm->exception==NULL){
         if (o->type->slot_mappings->slot_len==NULL){
             if (istrue(object_cmp(o, left, CMP_EQ))){
@@ -752,7 +753,10 @@ object* object_in_iter(object* left, object* right){
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
             return NULL;
         }
-        if (istrue(object_cmp(o->type->slot_mappings->slot_get(o, one), left, CMP_EQ))){
+        v=o->type->slot_mappings->slot_get(o, one);
+        ERROR_RET(v);
+        
+        if (istrue(object_cmp(v, left, CMP_EQ))){
             DECREF(one);
             DECREF(iter);
             res=new_bool_true();
