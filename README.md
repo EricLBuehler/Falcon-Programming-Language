@@ -35,6 +35,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```isiter```
 - ```min```
 - ```max```
+- ```map```
 
 ### Builtin libraries ###
 - ```time```
