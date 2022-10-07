@@ -1703,6 +1703,33 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             break;
         }
         
+        case BINOP_FLDIV:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_fldiv(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
+            break;
+        }
+
+        case BINOP_IFLDIV:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_fldiv(left, right);
+            if (ret==NULL){
+                vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                return NULL;
+            }
+            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            break;
+        }
+        
         default:
             return NULL;
             
