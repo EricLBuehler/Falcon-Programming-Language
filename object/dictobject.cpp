@@ -369,3 +369,17 @@ object* dict_values_meth(object* selftp, object* args, object* kwargs){
     }
     return list;
 }
+
+object* dict_flip_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);
+    object* dict=new_dict();
+    for (object* o: *CAST_DICT(self)->keys){
+        dict_set(dict, CAST_DICT(self)->val->at(o), o);
+    }
+    return dict;
+}

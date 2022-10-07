@@ -334,6 +334,7 @@ object* dict_bool(object* self);
 object* dict_iter(object* self);
 object* dict_keys_meth(object* selftp, object* args, object* kwargs);
 object* dict_values_meth(object* selftp, object* args, object* kwargs);
+object* dict_flip_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct DictObject{
     OBJHEAD_VAR
@@ -366,7 +367,7 @@ static Mappings dict_mappings{
     dict_len, //slot_len
 };
 
-Method dict_methods[]={{"keys", (cwrapperfunc)dict_keys_meth}, {"values", (cwrapperfunc)dict_values_meth},{NULL,NULL}};
+Method dict_methods[]={{"flip", (cwrapperfunc)dict_flip_meth}, {"keys", (cwrapperfunc)dict_keys_meth}, {"values", (cwrapperfunc)dict_values_meth},{NULL,NULL}};
 GetSets dict_getsets[]={{NULL,NULL}};
 OffsetMember dict_offsets[]={{NULL}};
 
