@@ -77,6 +77,7 @@ enum precedence get_precedence(Token t){
         case T_IVBAR:
         case T_ILSH:
         case T_IRSH:
+        case T_IFLDIV:
             return ASSIGN;
         case T_OR:
             return LOGICAL_OR;
@@ -101,6 +102,7 @@ enum precedence get_precedence(Token t){
         case T_MUL:
         case T_DIV:
         case T_PERCENT:
+        case T_FLDIV:
             return PRODUCT;
         case T_POW:
             return EXP;

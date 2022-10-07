@@ -339,7 +339,7 @@ class Parser{
         Node* make_binop(parse_ret* ret, Node* left, enum token_type opr){
             if (!current_tok_is(T_NOT) && (current_tok_is(T_IADD) || current_tok_is(T_IMUL) || current_tok_is(T_ISUB) || current_tok_is(T_IDIV)\
                 || current_tok_is(T_IPOW) ||current_tok_is(T_IMOD) || current_tok_is(T_IAMP) || current_tok_is(T_IVBAR)\
-                || current_tok_is(T_ILSH) || current_tok_is(T_IRSH)) && !isname(left->type)){
+                || current_tok_is(T_ILSH) || current_tok_is(T_IRSH) || current_tok_is(T_IFLDIV)) && !isname(left->type)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
                 return NULL;
@@ -1250,6 +1250,8 @@ class Parser{
                     case T_IRSH:
                     case T_NOT:
                     case T_IN:
+                    case T_FLDIV:
+                    case T_IFLDIV:
                         left=make_binop(ret, left, this->current_tok.type);
                         break;
                     
