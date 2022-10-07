@@ -340,7 +340,6 @@ struct vm{
     object* exception;
     string* filedata;
 
-    object* accumulator;
     object* globals;
     object* path;
 };
