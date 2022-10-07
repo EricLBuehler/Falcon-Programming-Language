@@ -90,7 +90,7 @@ object* builtin_round(object* self, object* args){
     object* digits=args->type->slot_mappings->slot_get(args, str_new_fromstr("digits"));
     
     object* floatval=object_float(obj);
-    if (floatval==NULL || !object_istype(floatval->type, &IntType)){
+    if (floatval==NULL || !object_istype(floatval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", obj->type->name->c_str());
         return NULL; 
     }
