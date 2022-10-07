@@ -21,7 +21,7 @@ object* range_new(object* type, object* args, object* kwargs){
             DECREF(range);
             return arg;
         }
-        CAST_RANGE(range)->end=CAST_INT(arg)->val->to_int();
+        CAST_RANGE(range)->end=CAST_INT(arg)->val->to_long_long();
     }
     else{
         CAST_RANGE(range)->end=CAST_RANGE(range)->start;
