@@ -57,16 +57,6 @@ object* tuple_new(object* type, object* args, object* kwargs){
         
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
-            if (o->type->slot_mappings->slot_len!=NULL){
-                if (o->type->slot_mappings->slot_get==NULL){
-                    vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-                    return NULL;
-                }
-                list_append((object*)obj, o->type->slot_mappings->slot_get(o, one));
-                
-                o=iter->type->slot_next(iter);
-                continue;
-            }
             list_append((object*)obj, o);
             
             o=iter->type->slot_next(iter);
