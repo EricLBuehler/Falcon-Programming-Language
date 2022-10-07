@@ -257,3 +257,12 @@ object* builtin_reverse(object* self, object* args){
 
     return list;
 }
+    
+object* builtin_isiter(object* self, object* args){
+    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+
+    if (o->type->slot_iter==NULL){
+        return new_bool_false();
+    }
+    return new_bool_true();
+}
