@@ -730,19 +730,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         }
 
         case CALL_METHOD: {
-            object* function=pop_dataframe(vm->objstack);
-            object* head=pop_dataframe(vm->objstack);
-            
             uint32_t argc=CAST_INT(arg)->val->to_int()+1;
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int()+1;
             uint32_t kwargc=argc-posargc;
-
-            if (function->type->slot_call==NULL){
-                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                return NULL;
-            }
-                
-
+            
             //Setup kwargs
             object* kwargs=new_dict();
             object* val;
@@ -758,6 +749,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
             //
+
+            object* function=pop_dataframe(vm->objstack);
+            object* head=pop_dataframe(vm->objstack);
+
+            if (function->type->slot_call==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                return NULL;
+            }
 
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
@@ -848,18 +847,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             break;
         }
 
-        case LOAD_REGISTER_POP: {
-            vm->accumulator=pop_dataframe(vm->objstack);
-            break;
-        }
-
-        case READ_REGISTER_PUSH: {
-            add_dataframe(vm, vm->objstack, vm->accumulator);
-            break;
-        }      
-
         case LOAD_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
+            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            add_dataframe(vm, vm->objstack, object_getattr(obj, attr));
+            break;
+        }    
+
+        case LOAD_METHOD: {
+            object* obj=peek_dataframe(vm->objstack);
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             add_dataframe(vm, vm->objstack, object_getattr(obj, attr));
             break;
