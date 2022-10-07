@@ -967,7 +967,6 @@ class Parser{
             g->name=name;
             
             node->node=g;
-            cout<<this->current_tok;
             return node;
         }
 
