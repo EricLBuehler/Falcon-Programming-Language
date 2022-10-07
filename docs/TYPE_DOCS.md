@@ -139,6 +139,18 @@ Return ```True``` if string is only lowercase characters, otherwise, ```False```
 #### Returns
 New boolean - ```bool```
 
+### ```str.count```
+Get count of substring in a string
+```str.join(self, substr)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```substr```     | substring   |
+### Example
+```"abca".count("a") == 2 == True```
+#### Returns
+New int - ```int```
 
 
 ## ```list```
