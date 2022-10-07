@@ -104,6 +104,9 @@ object* os_listdir(object* self, object* args, object* kwargs){
     if (dr) {
         object* list=new_list();
         while ((en = readdir(dr)) != NULL) {
+            if (string(en->d_name)==string(".") || string(en->d_name)==string("..")){
+                continue;
+            }
             list_append(list, str_new_fromstr(string(en->d_name)));
         }
         closedir(dr);
