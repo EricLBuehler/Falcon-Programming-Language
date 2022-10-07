@@ -141,7 +141,7 @@ New boolean - ```bool```
 
 ### ```str.count```
 Get count of substring in a string
-```str.join(self, substr)```
+```str.count(self, substr)```
 #### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
@@ -151,6 +151,18 @@ Get count of substring in a string
 ```"abca".count("a") == 2 == True```
 #### Returns
 New int - ```int```
+
+### ```str.strip```
+Strips whitespace off a string
+```str.strip(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```len("12  ".strip() == 2 == True```
+#### Returns
+New string - ```str```
 
 
 ## ```list```
