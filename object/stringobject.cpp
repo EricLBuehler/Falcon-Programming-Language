@@ -531,22 +531,20 @@ object* string_count_meth(object* self, object* args, object* kwargs){
     return new_int_fromint(occurrences);
 }
 
-const std::string WHITESPACE = " \n\r\t\f\v";
+const string WHITESPACE = " \n\r\t\f\v";
  
-std::string ltrim(const std::string &s)
-{
+string lefttrim(string s){
     size_t start = s.find_first_not_of(WHITESPACE);
-    return (start == std::string::npos) ? "" : s.substr(start);
+    return (start == string::npos) ? "" : s.substr(start);
 }
- 
-std::string rtrim(const std::string &s)
-{
+
+string righttrim(string s){
     size_t end = s.find_last_not_of(WHITESPACE);
-    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+    return (end == string::npos) ? "" : s.substr(0, end + 1);
 }
  
-std::string trim(const std::string &s) {
-    return rtrim(ltrim(s));
+string trim(string s) {
+    return righttrim(lefttrim(s));
 }
     
 object* string_strip_meth(object* self, object* args, object* kwargs){
