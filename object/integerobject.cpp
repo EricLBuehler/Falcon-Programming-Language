@@ -126,7 +126,9 @@ object* int_pow(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
-    double selfv =(double)CAST_INT(self)->val->to_int();
+    object* selfv_=object_float(self);
+    double selfv =CAST_FLOAT(selfv_)->val;
+    DECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=pow(selfv,otherval);
     DECREF(otherv);
@@ -147,7 +149,9 @@ object* int_mod(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
-    double selfv =(double)CAST_INT(self)->val->to_int();
+    object* selfv_=object_float(self);
+    double selfv =CAST_FLOAT(selfv_)->val;
+    DECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=fmod(selfv,otherval);
     DECREF(otherv);
@@ -169,7 +173,9 @@ object* int_add(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
-    double selfv =(double)CAST_INT(self)->val->to_int();
+    object* selfv_=object_float(self);
+    double selfv =CAST_FLOAT(selfv_)->val;
+    DECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv+otherval;
     DECREF(otherv);
@@ -190,7 +196,9 @@ object* int_sub(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
-    double selfv =(double)CAST_INT(self)->val->to_int();
+    object* selfv_=object_float(self);
+    double selfv =CAST_FLOAT(selfv_)->val;
+    DECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv-otherval;
     DECREF(otherv);
@@ -211,7 +219,9 @@ object* int_mul(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
-    double selfv =(double)CAST_INT(self)->val->to_int();
+    object* selfv_=object_float(self);
+    double selfv =CAST_FLOAT(selfv_)->val;
+    DECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv*otherval;
     DECREF(otherv);
@@ -223,11 +233,20 @@ object* int_mul(object* self, object* other){
 }
 
 object* int_div(object* self, object* other){
+    if (object_istype(other->type, &IntType)){
+        BigInt selfv =*CAST_INT(self)->val;
+        BigInt otherv=*CAST_INT(other)->val;
+        if (selfv%otherv==0){
+            return new_int_frombigint(new BigInt(selfv/otherv));
+        }
+    }
     object* otherv=object_float(other);
     if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
-    double selfv =(double)CAST_INT(self)->val->to_int();
+    object* selfv_=object_float(self);
+    double selfv =CAST_FLOAT(selfv_)->val;
+    DECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     DECREF(otherv);
     if (otherval==0){
