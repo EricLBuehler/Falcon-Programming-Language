@@ -704,6 +704,16 @@ class Lexer{
                 res.data="/=";
                 res.type=T_IDIV;
             }
+            if (this->get_next()=='/'){
+                this->advance();
+                res.data="//";
+                res.type=T_FLDIV;
+                if (this->get_next()=='='){
+                    this->advance();
+                    res.data="//=";
+                    res.type=T_IFLDIV;
+                }
+            }
             return res;
         }
 

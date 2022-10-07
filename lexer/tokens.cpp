@@ -56,6 +56,8 @@ enum token_type{
     T_IRSH,
     T_UNKNOWN,
     T_ISNOT,
+    T_FLDIV,
+    T_IFLDIV,
 };
 
 string token_type_to_str(enum token_type type){
@@ -111,6 +113,9 @@ string token_type_to_str(enum token_type type){
     case T_LSHIFT:return "LSHIFT";
     case T_RSHIFT:return "RSHIFT";
     case T_UNKNOWN:return "UNKNOWN";
+    case T_ISNOT:return "ISNOT";
+    case T_FLDIV:return "FLDIV";
+    case T_IFLDIV:return "IFLDIV";
     }
     return "";
 }
