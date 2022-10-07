@@ -243,7 +243,7 @@ Create a new dictionary with the key-value pairs in the original dictionary flip
 | ------------- | ----------------- |
 | ```self```    | self argument     |
 ### Example
-```{1:2}.values() == [2] == True```
+```{1:2}.flip() == {2:1} == True```
 #### Returns
 New dict - ```dict```
 
