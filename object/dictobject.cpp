@@ -125,7 +125,7 @@ object* dict_set(object* self, object* key, object* val){
         if ((*CAST_DICT(self)->val)[key]==val){ //Same val
             //Do not incref val!
             return new_none();
-        }
+        } 
         (*CAST_DICT(self)->val)[key]=INCREF(val);
         CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
         return new_none();

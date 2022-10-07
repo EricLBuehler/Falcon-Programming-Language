@@ -344,7 +344,7 @@ object* object_find_dict_keys(object* dict, object* needle){
 
 object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
     uint32_t argn=0;
-    uint32_t argsnum=argc-CAST_INT(selfargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
+    uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
 
     //Positional
     object* names=new_list();
@@ -389,12 +389,10 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
 
 object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
     uint32_t argn=0;
-    uint32_t argsnum=argc-CAST_INT(selfargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
+    uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
 
     //Positional
-
     dict->type->slot_mappings->slot_set(dict, str_new_fromstr("args"), args);
-    
     //
 
     
