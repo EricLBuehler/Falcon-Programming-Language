@@ -1269,12 +1269,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             compiler->keep_return=ret;
             add_instruction(compiler->instructions,STORE_SUBSCR, 0, expr->start, expr->end);
-
-            
-
-            if (!compiler->keep_return){
-                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
-            }
             break;
         }
 
