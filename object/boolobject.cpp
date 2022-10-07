@@ -151,7 +151,7 @@ object* bool_and(object* self, object* other){
         return NULL;
     }
     object* otherv=object_int(other);
-    if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     object* res=new_int_fromint(CAST_BOOL(self)->val & CAST_INT(otherv)->val->to_int());
@@ -164,7 +164,7 @@ object* bool_or(object* self, object* other){
         return NULL;
     }
     object* otherv=object_int(other);
-    if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     object* res=new_int_fromint(CAST_BOOL(self)->val | CAST_INT(otherv)->val->to_int());
@@ -177,7 +177,7 @@ object* bool_lshift(object* self, object* other){
         return NULL;
     }
     object* otherv=object_int(other);
-    if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     
@@ -196,7 +196,7 @@ object* bool_rshift(object* self, object* other){
         return NULL;
     }
     object* otherv=object_int(other);
-    if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
     int val=CAST_INT(otherv)->val->to_int();
