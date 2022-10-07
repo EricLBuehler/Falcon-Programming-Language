@@ -90,6 +90,30 @@ object* os_rmdir(object* self, object* args, object* kwargs){
     return NULL;
 }
 
+object* os_listdir(object* self, object* args, object* kwargs){
+    char buffer[PATH_MAX];
+    if (getcwd(buffer, sizeof(buffer)) == NULL) {
+        vm_add_err(&FileNotFoundError, vm, "[ERRNO: %d]: Cannot get current working directory", errno);
+        errno=0;
+        return NULL;
+    }  
+
+    DIR *dr;
+    struct dirent *en;
+    dr = opendir(buffer);
+    if (dr) {
+        object* list=new_list();
+        while ((en = readdir(dr)) != NULL) {
+            list_append(list, str_new_fromstr(string(en->d_name)));
+        }
+        closedir(dr);
+        return list;
+    }
+    vm_add_err(&FileNotFoundError, vm, "[ERRNO: %d]: Cannot open directory '%s'", errno, buffer);
+    errno=0;
+    return NULL;
+}
+
 object* new_os_module(){
     object* dict=new_dict();
     
@@ -97,6 +121,7 @@ object* new_os_module(){
     dict_set(dict, str_new_fromstr("mkdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_mkdir, "mkdir"));
     dict_set(dict, str_new_fromstr("getcwd"), cwrapper_new_fromfunc_null((cwrapperfunc)os_getcwd, "getcwd"));
     dict_set(dict, str_new_fromstr("rmdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_rmdir, "rmdir"));
+    dict_set(dict, str_new_fromstr("listdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_listdir, "listdir"));
 
     return module_new_fromdict(dict, str_new_fromstr("os"));
 }
