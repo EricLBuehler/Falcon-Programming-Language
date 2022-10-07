@@ -203,6 +203,14 @@ object* object_mod(object* left, object* right){
     return left->type->slot_number->slot_mod(left, right);
 }
 
+object* object_fldiv(object* left, object* right){
+    if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_fldiv==NULL || right->type->slot_number->slot_fldiv==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_fldiv(left, right);
+}
+
+
 object* object_add(object* left, object* right){
     if (left->type->slot_number==NULL || right->type->slot_number==NULL || left->type->slot_number->slot_add==NULL || right->type->slot_number->slot_add==NULL){
         return NULL;

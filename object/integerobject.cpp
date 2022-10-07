@@ -261,6 +261,35 @@ object* int_div(object* self, object* other){
     return new_float_fromdouble(res);
 }
 
+object* int_fldiv(object* self, object* other){
+    if (object_istype(other->type, &IntType)){
+        BigInt selfv =*CAST_INT(self)->val;
+        BigInt otherv=*CAST_INT(other)->val;
+        if (selfv%otherv==0){
+            return new_int_frombigint(new BigInt(selfv/otherv));
+        }
+    }
+    object* otherv=object_float(other);
+    if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
+        return NULL;
+    }
+    object* selfv_=object_float(self);
+    double selfv =CAST_FLOAT(selfv_)->val;
+    DECREF(selfv_);
+    double otherval=CAST_FLOAT(otherv)->val;
+    DECREF(otherv);
+    if (otherval==0){
+        vm_add_err(&ZeroDivisionError, vm, "Divison by zero");
+        return NULL;
+    }
+    double res=floor(selfv/otherval);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
+}
+
 object* int_and(object* self, object* other){
     if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
         return NULL;

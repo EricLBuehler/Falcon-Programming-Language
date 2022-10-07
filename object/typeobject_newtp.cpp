@@ -264,6 +264,16 @@ object* newtp_div(object* self, object* other){
     object* val=object_call_nokwargs(n, args);
     return val;
 }
+object* newtp_fldiv(object* self, object* other){
+    object* n=object_getattr(self, str_new_fromstr("__floordiv__"));
+    ERROR_RET(n);
+    
+    object* args=new_tuple();
+    
+    args->type->slot_mappings->slot_append(args, other);
+    object* val=object_call_nokwargs(n, args);
+    return val;
+}
 
 object* newtp_and(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__and__"));

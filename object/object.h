@@ -39,6 +39,7 @@ typedef struct{
     binopfunc slot_or;
     binopfunc slot_lshift;
     binopfunc slot_rshift;
+    binopfunc slot_fldiv;
 
     //unaryops
     unaryfunc slot_neg;
@@ -243,6 +244,11 @@ object* type_wrapper_mul(object* self, object* args, object* kwargs);
 object* type_wrapper_div(object* self, object* args, object* kwargs);
 object* type_wrapper_pow(object* self, object* args, object* kwargs);
 object* type_wrapper_mod(object* self, object* args, object* kwargs);
+object* type_wrapper_and(object* self, object* args, object* kwargs);
+object* type_wrapper_or(object* self, object* args, object* kwargs);
+object* type_wrapper_lshift(object* self, object* args, object* kwargs);
+object* type_wrapper_rshift(object* self, object* args, object* kwargs);
+object* type_wrapper_fldiv(object* self, object* args, object* kwargs);
 
 object* type_wrapper_bool(object* self, object* args, object* kwargs);
 object* type_wrapper_neg(object* self, object* args, object* kwargs);

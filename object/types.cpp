@@ -17,6 +17,7 @@ object* int_and(object* self, object* other);
 object* int_or(object* self, object* other);
 object* int_lshift(object* self, object* other);
 object* int_rshift(object* self, object* other);
+object* int_fldiv(object* self, object* other);
 
 object* new_int_fromint(int v);
 object* new_int_fromstr(string* v);
@@ -38,6 +39,7 @@ static NumberMethods int_num_methods{
     (binopfunc)int_or, //slot_or
     (binopfunc)int_lshift, //slot_lshift
     (binopfunc)int_rshift, //slot_rshift
+    (binopfunc)int_fldiv, //slot_fldiv
 
     (unaryfunc)int_neg, //slot_neg
     (unaryfunc)int_not, //slot_not
@@ -146,6 +148,7 @@ static NumberMethods str_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -258,6 +261,7 @@ static NumberMethods list_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -346,6 +350,7 @@ static NumberMethods dict_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -442,6 +447,7 @@ static NumberMethods code_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -525,6 +531,7 @@ object* bool_or(object* self, object* other);
 object* bool_not(object* self);
 object* bool_lshift(object* self, object* other);
 object* bool_rshift(object* self, object* other);
+object* bool_fldiv(object* self, object* other);
 
 object* new_bool_true();
 object* new_bool_false();
@@ -557,6 +564,7 @@ static NumberMethods bool_num_methods{
     (binopfunc)bool_or, //slot_or
     (binopfunc)bool_lshift, //slot_lshift
     (binopfunc)bool_rshift, //slot_rshift
+    (binopfunc)bool_fldiv, //slot_fldiv
 
     (unaryfunc)bool_neg, //slot_neg
     (unaryfunc)bool_not, //slot_not
@@ -655,6 +663,7 @@ static NumberMethods tuple_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -749,6 +758,7 @@ static NumberMethods func_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -832,6 +842,7 @@ static NumberMethods none_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -920,6 +931,7 @@ static NumberMethods builtin_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1003,6 +1015,7 @@ static NumberMethods object_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1083,6 +1096,7 @@ static NumberMethods exception_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1265,6 +1279,7 @@ static NumberMethods file_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1472,6 +1487,7 @@ object* float_bool(object* self);
 object* float_float(object* self);
 object* float_mod(object* self, object* other);
 object* float_pow(object* self, object* other);
+object* float_fldiv(object* self, object* other);
 
 object* new_float_fromdouble(double v);
 object* new_float_fromstr(string* v);
@@ -1494,6 +1510,7 @@ static NumberMethods float_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    (binopfunc)float_fldiv, //slot_fldiv
 
 
     (unaryfunc)float_neg, //slot_neg
@@ -1584,6 +1601,7 @@ static NumberMethods list_iter_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1669,6 +1687,7 @@ static NumberMethods tuple_iter_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1753,6 +1772,7 @@ static NumberMethods dict_iter_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1835,6 +1855,7 @@ static NumberMethods str_iter_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1915,6 +1936,7 @@ static NumberMethods module_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -1998,6 +2020,7 @@ static NumberMethods slice_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -2082,6 +2105,7 @@ static NumberMethods enum_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -2165,6 +2189,7 @@ static NumberMethods range_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -2248,6 +2273,7 @@ static NumberMethods zip_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -2479,6 +2505,7 @@ static NumberMethods super_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -2562,6 +2589,7 @@ static NumberMethods method_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -2634,6 +2662,7 @@ static NumberMethods wrappermethod_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
@@ -2971,6 +3000,7 @@ void _inherit_number_slots(NumberMethods* m, TypeObject* base_tp){
     m->slot_or=base_tp->slot_number->slot_or;
     m->slot_lshift=base_tp->slot_number->slot_lshift;
     m->slot_rshift=base_tp->slot_number->slot_rshift;
+    m->slot_fldiv=base_tp->slot_number->slot_fldiv;
 
     m->slot_bool=base_tp->slot_number->slot_bool;
     m->slot_int=base_tp->slot_number->slot_int;
@@ -3123,6 +3153,21 @@ void inherit_type_dict(TypeObject* tp){
         }
         if (tp_tp->slot_number->slot_pow){
             type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_pow, "__pow__");
+        }
+        if (tp_tp->slot_number->slot_and){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_and, "__and__");
+        }
+        if (tp_tp->slot_number->slot_or){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_or, "__or__");
+        }
+        if (tp_tp->slot_number->slot_lshift){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_lshift, "__lshift__");
+        }
+        if (tp_tp->slot_number->slot_rshift){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_rshift, "__rshift__");
+        }
+        if (tp_tp->slot_number->slot_fldiv){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_fldiv, "__floordiv__");
         }
 
         
@@ -3499,6 +3544,15 @@ object* new_type(string* name, object* bases, object* dict){
         }
         else{
             number.slot_rshift=(binopfunc)newtp_rshift;
+        }   
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__floordiv__"));
+        if (n==NULL){
+            DECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_fldiv=(binopfunc)newtp_fldiv;
         }    
     }
     if (NEWTP_MAPPINGS_COPY){

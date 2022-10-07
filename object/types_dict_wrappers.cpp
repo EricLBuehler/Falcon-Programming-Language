@@ -137,6 +137,76 @@ object* type_wrapper_mod(object* self, object* args, object* kwargs){
     return ret;
 }
 
+object* type_wrapper_and(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    object* ret=CAST_TYPE(self)->slot_number->slot_and(list_index_int(args, 0), list_index_int(args, 1));
+    if (ret==NULL){
+        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        return NULL;
+    }
+    return ret;
+}
+
+object* type_wrapper_or(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    object* ret=CAST_TYPE(self)->slot_number->slot_or(list_index_int(args, 0), list_index_int(args, 1));
+    if (ret==NULL){
+        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        return NULL;
+    }
+    return ret;
+}
+
+object* type_wrapper_lshift(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    object* ret=CAST_TYPE(self)->slot_number->slot_lshift(list_index_int(args, 0), list_index_int(args, 1));
+    if (ret==NULL){
+        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        return NULL;
+    }
+    return ret;
+}
+
+object* type_wrapper_rshift(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    object* ret=CAST_TYPE(self)->slot_number->slot_rshift(list_index_int(args, 0), list_index_int(args, 1));
+    if (ret==NULL){
+        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        return NULL;
+    }
+    return ret;
+}
+
+object* type_wrapper_fldiv(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    object* ret=CAST_TYPE(self)->slot_number->slot_fldiv(list_index_int(args, 0), list_index_int(args, 1));
+    if (ret==NULL){
+        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        return NULL;
+    }
+    return ret;
+}
+
 
 
 object* type_wrapper_eq(object* self, object* args, object* kwargs){

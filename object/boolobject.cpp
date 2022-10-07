@@ -130,6 +130,22 @@ object* bool_div(object* self, object* other){
     return new_float_fromdouble(res);   
 }
 
+object* bool_fldiv(object* self, object* other){
+    object* otherv=object_float(other);
+    if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
+        return NULL;
+    }
+    double selfv=(double)CAST_BOOL(self)->val;
+    double otherval=CAST_FLOAT(otherv)->val;
+    double res=floor(selfv/otherval);
+    DECREF(otherv);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);   
+}
+
 object* bool_and(object* self, object* other){
     if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
         return NULL;

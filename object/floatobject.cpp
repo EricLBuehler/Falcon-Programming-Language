@@ -167,6 +167,25 @@ object* float_div(object* self, object* other){
     return new_float_fromdouble(res);
 }
 
+object* float_fldiv(object* self, object* other){
+    object* otherfloat=object_float(other);
+    if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
+        return NULL;
+    }
+    if (CAST_FLOAT(otherfloat)->val==0){
+        DECREF(otherfloat);
+        vm_add_err(&ZeroDivisionError, vm, "Divison by zero");
+        return NULL;
+    }
+    double res=floor(CAST_FLOAT(self)->val/CAST_FLOAT(otherfloat)->val);
+    DECREF(otherfloat);
+    int ires=(int)res;
+    if (res-ires==0){
+        return new_int_fromint(ires);
+    }
+    return new_float_fromdouble(res);
+}
+
 object* float_neg(object* self){
     return new_float_fromdouble(CAST_FLOAT(self)->val*-1);
 }
