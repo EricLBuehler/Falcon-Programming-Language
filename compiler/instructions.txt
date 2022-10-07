@@ -160,3 +160,7 @@ MAKE_CLASSMETH(argc) - Creates a classmethod
 BITWISE_NOTIN - Implements TOS not in TOS-1
 
 BITWISE_IN - Implements TOS in TOS-1
+
+BINOP_FLDIV - Implements TOS//TOS-1
+
+BINOP_IFLDIV - Implements TOS//TOS-1 and assigns to names[n]

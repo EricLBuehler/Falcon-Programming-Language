@@ -244,6 +244,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 case T_ISNOT:
                     add_instruction(compiler->instructions,BINOP_ISNOT,0, expr->start, expr->end);
                     break;
+                case T_FLDIV:
+                    add_instruction(compiler->instructions,BINOP_FLDIV,0, expr->start, expr->end);
+                    break;
                 case T_IADD: {
                     uint32_t idx;
                     if (BINOP(expr->node)->left->type!=N_IDENT){
@@ -414,6 +417,23 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         idx=object_find(compiler->names, str_new_fromstr(*IDENTI(BINOP(expr->node)->left->node)->name));
                     }
                     add_instruction(compiler->instructions,BINOP_IRSH,idx, expr->start, expr->end);
+                    break;
+                }
+                case T_IFLDIV: {
+                    uint32_t idx;
+                    if (BINOP(expr->node)->left->type!=N_IDENT){
+                        parser.add_parsing_error(&parseretglbl, "SyntaxError: Expected identifier for left expression");
+                        return 0x100;
+                    }
+                    if (!_list_contains(compiler->names, IDENTI(BINOP(expr->node)->left->node)->name)){
+                        //Create object
+                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(BINOP(expr->node)->left->node)->name));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(*IDENTI(BINOP(expr->node)->left->node)->name));
+                    }
+                    add_instruction(compiler->instructions,BINOP_IFLDIV,idx, expr->start, expr->end);
                     break;
                 }
             }

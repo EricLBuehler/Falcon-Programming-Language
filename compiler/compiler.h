@@ -83,6 +83,8 @@ enum opcode{
     BINOP_NOTIN,
     BINOP_IN,
     BINOP_ISNOT,
+    BINOP_FLDIV,
+    BINOP_IFLDIV,
 };
 
 enum scope{
