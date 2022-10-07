@@ -15,8 +15,6 @@ enum opcode{
     BUILD_TUPLE,
     BUILD_DICT,
     LOAD_BUILD_CLASS,
-    LOAD_REGISTER_POP,
-    READ_REGISTER_PUSH,
     LOAD_ATTR,
     STORE_ATTR,
     CALL_METHOD,
@@ -85,6 +83,7 @@ enum opcode{
     BINOP_ISNOT,
     BINOP_FLDIV,
     BINOP_IFLDIV,
+    LOAD_METHOD,
 };
 
 enum scope{
