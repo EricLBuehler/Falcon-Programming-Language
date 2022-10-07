@@ -164,6 +164,16 @@ void setup_builtins(){
     isiterargs->type->slot_mappings->slot_append(isiterargs, str_new_fromstr("object"));
     object* isiterkwargs=new_tuple();
     builtins[52]=new_builtin((builtinfunc)builtin_isiter, str_new_fromstr("isiter"), isiterargs, isiterkwargs, 1, false);
+    
+    object* maxargs=new_tuple();
+    maxargs->type->slot_mappings->slot_append(maxargs, str_new_fromstr("object"));
+    object* maxkwargs=new_tuple();
+    builtins[53]=new_builtin((builtinfunc)builtin_max, str_new_fromstr("max"), maxargs, maxkwargs, 1, false);
+    
+    object* minargs=new_tuple();
+    minargs->type->slot_mappings->slot_append(minargs, str_new_fromstr("object"));
+    object* minkwargs=new_tuple();
+    builtins[54]=new_builtin((builtinfunc)builtin_min, str_new_fromstr("min"), minargs, minkwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
