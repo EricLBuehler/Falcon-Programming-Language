@@ -266,3 +266,141 @@ object* builtin_isiter(object* self, object* args){
     }
     return new_bool_true();
 }
+    
+object* builtin_min(object* self, object* args){
+    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+
+    if (val->type->slot_iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", val->type->name->c_str());
+        return NULL;
+    }
+
+    if (val->type->slot_mappings->slot_len==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object has no __len__", val->type->name->c_str());
+        return NULL;
+    }
+    
+    object* len=val->type->slot_mappings->slot_len(val);
+    ERROR_RET(len);
+    if (!object_istype(len->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s' object", len->type->name->c_str());
+        return NULL;
+    }
+    if (*CAST_INT(len)->val==0){
+        vm_add_err(&ValueError, vm, "Got empty sequence");
+        return NULL;
+    }
+
+    object* iter=val->type->slot_iter(val);
+    
+    if (iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        return NULL;
+    }
+
+    object* one=new_int_fromint(0);
+    object* res=NULL;
+    
+    object* o=iter->type->slot_next(iter);
+    object* v;
+    object* min=NULL;
+    while (vm->exception==NULL){
+        if (o->type->slot_mappings->slot_len==NULL){
+            v=o;
+            goto cont;
+        }
+        if (o->type->slot_mappings->slot_get==NULL){
+            DECREF(iter);
+            DECREF(one);
+            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
+            return NULL;
+        }
+        v=o->type->slot_mappings->slot_get(o, one);
+        ERROR_RET(v);
+        
+        cont:
+        if (min==NULL){
+            min=v;
+        }
+        else{
+            if (istrue(object_gt(v, min))){
+                min=v;
+            }
+        }
+        o=iter->type->slot_next(iter);
+    }
+    if (vm->exception!=NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+    }
+    return min;
+}
+    
+object* builtin_max(object* self, object* args){
+    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+
+    if (val->type->slot_iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", val->type->name->c_str());
+        return NULL;
+    }
+
+    if (val->type->slot_mappings->slot_len==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object has no __len__", val->type->name->c_str());
+        return NULL;
+    }
+    
+    object* len=val->type->slot_mappings->slot_len(val);
+    ERROR_RET(len);
+    if (!object_istype(len->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s' object", len->type->name->c_str());
+        return NULL;
+    }
+    if (*CAST_INT(len)->val==0){
+        vm_add_err(&ValueError, vm, "Got empty sequence");
+        return NULL;
+    }
+
+    object* iter=val->type->slot_iter(val);
+    
+    if (iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        return NULL;
+    }
+
+    object* one=new_int_fromint(0);
+    object* res=NULL;
+    
+    object* o=iter->type->slot_next(iter);
+    object* v;
+    object* max=NULL;
+    while (vm->exception==NULL){
+        if (o->type->slot_mappings->slot_len==NULL){
+            v=o;
+            goto cont;
+        }
+        if (o->type->slot_mappings->slot_get==NULL){
+            DECREF(iter);
+            DECREF(one);
+            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
+            return NULL;
+        }
+        v=o->type->slot_mappings->slot_get(o, one);
+        ERROR_RET(v);
+        
+        cont:
+        if (max==NULL){
+            max=v;
+        }
+        else{
+            if (istrue(object_lt(v, max))){
+                max=v;
+            }
+        }
+        o=iter->type->slot_next(iter);
+    }
+    if (vm->exception!=NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+    }
+    return max;
+}
