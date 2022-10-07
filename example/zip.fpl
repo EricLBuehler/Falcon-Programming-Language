@@ -1,0 +1,6 @@
+a = ("a", "b", "c")
+b = ("d", "e", "f", "g")
+
+x = zip(a, b)
+
+print(tuple(x))
