@@ -2827,6 +2827,93 @@ void setup_classmethod_type(){
 
 
 
+void map_del(object* self);
+object* map_next(object* self);
+object* map_new(object* type, object* args, object* kwargs);
+object* map_cmp(object* self, object* other, uint8_t type);
+
+
+typedef struct MapObject{
+    OBJHEAD_VAR
+    object** iterators;
+    size_t n_iterators;
+    uint32_t idx;
+    object* func;
+}MapObject;
+
+Method map_methods[]={{NULL,NULL}};
+GetSets map_getsets[]={{NULL,NULL}};
+
+static NumberMethods map_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+
+    0, //slot_neg
+    0, //slot_not
+
+    0, //slot_bool
+};
+
+static Mappings map_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject MapType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("map"), //name
+    sizeof(MapObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    map_new, //slot_new
+    0, //slot_del
+
+    (iternextfunc)map_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &map_num_methods, //slot_number
+    &map_mappings, //slot_mapping
+
+    map_methods, //slot_methods
+    map_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)map_cmp, //slot_cmp
+};
+
+void setup_map_type(){
+    MapType=(*(TypeObject*)finalize_type(&MapType));
+    fplbases.push_back(&MapType);
+}
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////

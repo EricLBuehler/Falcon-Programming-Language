@@ -174,6 +174,8 @@ void setup_builtins(){
     minargs->type->slot_mappings->slot_append(minargs, str_new_fromstr("object"));
     object* minkwargs=new_tuple();
     builtins[54]=new_builtin((builtinfunc)builtin_min, str_new_fromstr("min"), minargs, minkwargs, 1, false);
+    
+    builtins[55]=(object*)&MapType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

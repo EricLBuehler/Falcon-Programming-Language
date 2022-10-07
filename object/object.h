@@ -138,7 +138,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=55;
+const size_t nbuiltins=56;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -375,6 +375,7 @@ struct vm{
 #define CAST_OFFSETWRAPPER(obj) ((OffsetWrapperObject*)obj)
 #define CAST_SUPER(obj) ((SuperObject*)obj)
 #define CAST_METHOD(obj) ((MethodObject*)obj)
+#define CAST_MAP(obj) ((MapObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -436,6 +437,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "wrappermethodobject.cpp"
 #include "staticmethodobject.cpp"
 #include "classmethodobject.cpp"
+#include "mapobject.cpp"
 
 
 void setup_types_consts(){
@@ -480,6 +482,7 @@ void setup_types_consts(){
     setup_wrappermethod_type();
     setup_staticmethod_type();
     setup_classmethod_type();
+    setup_map_type();
 
     setup_builtins();
     
@@ -615,4 +618,8 @@ void setup_types_consts(){
     inherit_type_dict(&ClassMethodType);
     setup_type_offsets(&ClassMethodType);
     setup_type_getsets(&ClassMethodType);
+    
+    inherit_type_dict(&MapType);
+    setup_type_offsets(&MapType);
+    setup_type_getsets(&MapType);
 }

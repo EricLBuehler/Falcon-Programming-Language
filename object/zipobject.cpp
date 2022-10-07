@@ -1,4 +1,10 @@
 object* zip_new(object* type, object* args, object* kwargs){
+    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
+    if (!(len>=1) || CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+        vm_add_err(&ValueError, vm, "Expected at least 1 argument, got %d", len);
+        return NULL;
+    }
+
     object* zip=new_object(CAST_TYPE(type));
     uint32_t niterators=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
     CAST_ZIP(zip)->idx=0;
@@ -32,6 +38,10 @@ object* zip_next(object* self){
         object* o=CAST_ZIP(self)->iterators[i]->type->slot_next(CAST_ZIP(self)->iterators[i]);
         if (o==NULL){
             return NULL;
+        }
+        if (CAST_ZIP(self)->n_iterators==1){
+            DECREF(tup);
+            return o;
         }
         tup->type->slot_mappings->slot_append(tup, o);
     }
