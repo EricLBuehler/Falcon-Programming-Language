@@ -58,10 +58,10 @@ enum precedence {
     BITWISE_SHIFT_PREC,
     SUM,          
     PRODUCT, 
-    EXP,     
-    UNARY,  
-    CALL,         
-    INDEX,         
+    EXP, 
+    CALL,        
+    INDEX,
+    UNARY,         
 };
 
 enum precedence get_precedence(Token t){

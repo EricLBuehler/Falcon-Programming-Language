@@ -435,7 +435,8 @@ class Parser{
 
             enum token_type type=this->current_tok.type;
             this->advance();
-            Node* right=atom(ret);
+            Node* right=this->expr(ret, LOWEST);
+            this->backadvance();
 
             node->end=right->end;
 
