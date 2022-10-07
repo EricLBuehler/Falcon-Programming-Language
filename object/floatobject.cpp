@@ -191,8 +191,9 @@ object* float_neg(object* self){
 }
 
 object* float_repr(object* self){
-    char buf[to_string(CAST_FLOAT(self)->val).size()];
-    sprintf(buf, "%#.17g", CAST_FLOAT(self)->val);
+    size_t size=to_string(CAST_FLOAT(self)->val).size();
+    char buf[size];
+    sprintf(buf, "%lg", CAST_FLOAT(self)->val);
     return str_new_fromstr(string(buf));
 }
 
