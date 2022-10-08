@@ -1,0 +1,5 @@
+a=[1,2,3]
+a.insert(3, "A")
+print(a)
+a.remove(2)
+print(a)
