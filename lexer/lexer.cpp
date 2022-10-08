@@ -579,13 +579,14 @@ class Lexer{
             while (this->chr!='\0' && (this->chr!='"' || escape) ) {
                 if (escape){
                     if (escape_chars.find(this->chr)==escape_chars.end()){
-                        _tok_data res;
-                        res.data=output;
-                        res.type=T_ERR;
-                        return res;
+                        output.push_back('\\');
+                        output.push_back(this->chr);
+                        escape=false;
                     }
-                    output.push_back(escape_chars[this->chr]);
-                    escape=false;
+                    else{
+                        output.push_back(escape_chars[this->chr]);
+                        escape=false;
+                    }
                 }
                 else{
                     if (this->chr=='\\'){
@@ -618,10 +619,9 @@ class Lexer{
             while (this->chr!='\0' && (this->chr!='\'' || escape) ) {
                 if (escape){
                     if (escape_chars.find(this->chr)==escape_chars.end()){
-                        _tok_data res;
-                        res.data=output;
-                        res.type=T_ERR;
-                        return res;
+                        output.push_back('\\');
+                        output.push_back(this->chr);
+                        escape=false;
                     }
                     output.push_back(escape_chars[this->chr]);
                     escape=false;
