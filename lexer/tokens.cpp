@@ -58,6 +58,7 @@ enum token_type{
     T_ISNOT,
     T_FLDIV,
     T_IFLDIV,
+    T_QMARK,
 };
 
 string token_type_to_str(enum token_type type){
@@ -116,6 +117,7 @@ string token_type_to_str(enum token_type type){
     case T_ISNOT:return "ISNOT";
     case T_FLDIV:return "FLDIV";
     case T_IFLDIV:return "IFLDIV";
+    case T_QMARK:return "QMARK";
     }
     return "";
 }

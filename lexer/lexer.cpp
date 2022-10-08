@@ -347,6 +347,14 @@ class Lexer{
                     }
                 }
 
+                else if (this->chr=='?'){
+                    Position start=this->pos.copy();
+                    Position end=this->pos.copy();
+                    end.advance();
+                    Token t("?",T_QMARK,start,end);
+                    tokens.push_back(t);
+                }
+
                 else if (!isspace(this->chr)){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
