@@ -3029,7 +3029,7 @@ object* type_get(object* self, object* attr){
         }
     }
 
-    //Check type dict
+    //Check self dict
     if (res==NULL && CAST_TYPE(self)->dict!=0){
         object* dict = CAST_TYPE(self)->dict;
         if (object_find_bool_dict_keys(dict, attr)){
@@ -3379,11 +3379,11 @@ object* type_bool(object* self){
 }
 
 object* type_dict(object* type){
-    return CAST_TYPE(type)->dict;
+    return type->type->dict;
 }
 
 object* type_bases_get(object* type){
-    return CAST_TYPE(type)->bases;
+    return type->type->bases;
 }
 
 object* new_type(string* name, object* bases, object* dict){
