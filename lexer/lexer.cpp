@@ -341,6 +341,12 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
+                else if (this->chr=='\\'){
+                    while (this->chr!='\n'){
+                        this->advance();
+                    }
+                }
+
                 else if (!isspace(this->chr)){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
