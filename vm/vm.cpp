@@ -775,7 +775,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
             uint32_t argc=CAST_INT(arg)->val->to_int();
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
-            uint32_t kwargc=argc-posargc;     
+            uint32_t kwargc=argc-posargc;
 
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
@@ -910,7 +910,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
             object_set(base, idx, val);
-            add_dataframe(vm, vm->objstack, base);
             break;
         }
 
@@ -1014,7 +1013,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             }
             object* it=peek_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, it->type->slot_next(it));
-            if (vm->exception!=NULL){
+            if (vm->exception!=NULL && object_istype(vm->exception->type, &StopIteration)){
                 DECREF(vm->exception);
                 vm->exception=NULL;
                 (*ip)=CAST_INT(arg)->val->to_long();
@@ -1725,6 +1724,19 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             break;
         }
+
+        case TERNARY_TEST:{
+            object* expr1=pop_dataframe(vm->objstack);
+            object* expr2=pop_dataframe(vm->objstack);
+            object* left=pop_dataframe(vm->objstack);
+            if (istrue(object_bool(left))){
+                add_dataframe(vm, vm->objstack, expr2);
+            }
+            else{
+                add_dataframe(vm, vm->objstack, expr1);
+            }
+            break;
+        }
         
         default:
             return NULL;
@@ -1748,7 +1760,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
     uint32_t i=0;
     while ((*ip)<instructions){
         instruction=list_index_int(code, (*ip)++);
-
+        
         if (((*ip)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
@@ -1764,9 +1776,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             GIL.lock();
             //
         }
-
-        object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip, &linetup_cntr, linetup);
         
+        object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip, &linetup_cntr, linetup);
+        if (linetup_cntr>len){
+            linetup_cntr=len;
+        }
         if (obj==NULL && vm->exception==NULL){
             continue;
         }
