@@ -243,6 +243,41 @@ Pops last element from list and returns item.
 #### Returns
 Popped value
 
+### ```list.insert```
+Inserts value into list at specified index
+```list.insert(self, idx, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```idx```    | index to insert at    |
+| ```val```    | value to insert     |
+### Example
+```
+a=[1,2,3]
+a.insert(0, "A")
+a == ["A",1,2,3] == True
+```
+#### Returns
+```None```
+
+### ```list.remove```
+Removes first occurrence of value from list
+```list.insert(self, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```val```    | value to insert     |
+### Example
+```
+a=[1,2,3]
+a.remove(1)
+a == [2,3] == True
+```
+#### Returns
+```None```
+
 
 
 ## ```dict```
