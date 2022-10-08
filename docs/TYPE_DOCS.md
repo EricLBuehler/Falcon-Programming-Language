@@ -160,7 +160,31 @@ Strips whitespace off a string
 | ------------- | ----------------- |
 | ```self```    | self argument     |
 ### Example
-```len("12  ".strip() == 2 == True```
+```"12  ".strip() == "12" == True```
+#### Returns
+New string - ```str```
+
+### ```str.lstrip```
+Strips leading whitespace off a string
+```str.kstrip(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```"12  ".lstrip() == "12  " == True```
+#### Returns
+New string - ```str```
+
+### ```str.rstrip```
+Strips trailing whitespace off a string
+```str.strip(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```"12  ".rstrip() == "12" == True```
 #### Returns
 New string - ```str```
 
