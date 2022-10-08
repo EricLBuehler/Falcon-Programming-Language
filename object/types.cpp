@@ -133,6 +133,8 @@ object* string_isupper_meth(object* selftp, object* args, object* kwargs);
 object* string_islower_meth(object* selftp, object* args, object* kwargs);
 object* string_count_meth(object* selftp, object* args, object* kwargs);
 object* string_strip_meth(object* selftp, object* args, object* kwargs);
+object* string_rstrip_meth(object* selftp, object* args, object* kwargs);
+object* string_lstrip_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA
@@ -172,7 +174,8 @@ Method str_methods[]={{"find", (cwrapperfunc)string_find_meth}, {"replace", (cwr
                     , {"isnumeric", (cwrapperfunc)string_isnumeric_meth}, {"isalpha", (cwrapperfunc)string_isalpha_meth}\
                     , {"isspace", (cwrapperfunc)string_isspace_meth}, {"isupper", (cwrapperfunc)string_isupper_meth}\
                     , {"islower", (cwrapperfunc)string_islower_meth}, {"count", (cwrapperfunc)string_count_meth}\
-                    , {"strip", (cwrapperfunc)string_strip_meth}, {NULL,NULL}};
+                    , {"strip", (cwrapperfunc)string_strip_meth}, {"rstrip", (cwrapperfunc)string_rstrip_meth}\
+                    , {"lstrip", (cwrapperfunc)string_lstrip_meth}, {NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 OffsetMember str_offsets[]={{NULL}};
 
@@ -237,6 +240,8 @@ object* list_pop(object* self);
 object* list_pop_meth(object* selftp, object* args, object* kwargs);
 object* list_replace_meth(object* selftp, object* args, object* kwargs);
 object* list_find_meth(object* selftp, object* args, object* kwargs);
+object* list_remove_meth(object* selftp, object* args, object* kwargs);
+object* list_insert_meth(object* selftp, object* args, object* kwargs);
 
 object* list_add(object* self, object* other);
 object* list_mul(object* self, object* other);
@@ -249,7 +254,7 @@ typedef struct ListObject{
 }ListObject;
 
 Method list_methods[]={{"find", (cwrapperfunc)list_find_meth}, {"replace", (cwrapperfunc)list_replace_meth}, {"append", (cwrapperfunc)list_append_meth},\
-                    {"pop", (cwrapperfunc)list_pop_meth}, {NULL,NULL}};
+                    {"pop", (cwrapperfunc)list_pop_meth}, {"remove", (cwrapperfunc)list_remove_meth}, {"insert", (cwrapperfunc)list_insert_meth}, {NULL,NULL}};
 GetSets list_getsets[]={{NULL,NULL}};
 OffsetMember list_offsets[]={{NULL}};
 

@@ -558,3 +558,27 @@ object* string_strip_meth(object* self, object* args, object* kwargs){
     
     return str_new_fromstr(trim(s));
 }
+    
+object* string_rstrip_meth(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(list_index_int(args, 0))->val);
+    
+    return str_new_fromstr(righttrim(s));
+}
+    
+object* string_lstrip_meth(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    string s=(*CAST_STRING(list_index_int(args, 0))->val);
+    
+    return str_new_fromstr(lefttrim(s));
+}

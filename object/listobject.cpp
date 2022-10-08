@@ -611,3 +611,56 @@ object* list_find_meth(object* selftp, object* args, object* kwargs){
 
     return new_int_fromint(-1);
 }
+
+object* list_remove_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* val=tuple_index_int(args, 1);  
+
+    for (size_t idx=0; idx<CAST_LIST(self)->size; idx++){
+        if (istrue(object_cmp(CAST_LIST(self)->array[idx], val, CMP_EQ))){
+            DECREF(CAST_LIST(self)->array[idx]);
+            for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+                CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
+            }
+            list_resize(CAST_LIST(self), CAST_LIST(self)->size--);
+            return new_none();
+        }
+    }
+    
+    vm_add_err(&ValueError, vm, "list.remove(self, x): x not in list");
+    return NULL; 
+}
+
+object* list_insert_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* idx_=tuple_index_int(args, 1);   
+    object* val=tuple_index_int(args, 2);  
+
+    object* idx_new=object_int(idx_);
+    if (idx_new==NULL || !object_istype(idx_new->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx_->type->name->c_str());
+        return NULL;
+    }
+
+    size_t idx=CAST_INT(idx_new)->val->to_long_long();
+    list_resize(CAST_LIST(self), CAST_LIST(self)->size+1);
+    CAST_LIST(self)->size++;
+
+    for (int i=CAST_LIST(self)->size-1; i>idx; i--){
+        CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i-1];
+    }
+    CAST_LIST(self)->array[idx]=INCREF(val);
+
+
+    return new_none();
+}
