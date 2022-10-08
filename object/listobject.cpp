@@ -653,6 +653,10 @@ object* list_insert_meth(object* selftp, object* args, object* kwargs){
     }
 
     size_t idx=CAST_INT(idx_new)->val->to_long_long();
+    if (idx>CAST_LIST(self)->size){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        return NULL;
+    }
     list_resize(CAST_LIST(self), CAST_LIST(self)->size+1);
     CAST_LIST(self)->size++;
 
