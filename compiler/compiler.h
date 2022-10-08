@@ -84,6 +84,7 @@ enum opcode{
     BINOP_FLDIV,
     BINOP_IFLDIV,
     LOAD_METHOD,
+    TERNARY_TEST,
 };
 
 enum scope{
@@ -149,6 +150,7 @@ struct compiler{
 #define DEL(node) ((Del*)node)
 #define GLBLIDENT(node) ((GlblIdent*)node)
 #define ASSERT(node) ((Assert*)node)
+#define TERNARY(node) ((Ternary*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 

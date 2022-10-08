@@ -2269,6 +2269,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_TERNARY: {
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+            compile_expr(compiler,TERNARY(expr->node)->left);
+            compile_expr(compiler,TERNARY(expr->node)->expr2);
+            compile_expr(compiler,TERNARY(expr->node)->expr1);
+            compiler->keep_return=ret;
+            add_instruction(compiler->instructions,TERNARY_TEST, 0, expr->start, expr->end);
+            break;
+        }
+
     }
     
     if (!compiler_nofree){
