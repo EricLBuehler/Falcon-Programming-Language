@@ -1,0 +1,8 @@
+class Peregrine{
+    classmethod a(cls){
+        print(cls)
+    }
+}
+
+x=Peregrine()
+x.a()
