@@ -75,6 +75,21 @@ std::ostream& operator<<(std::ostream &s, const Token &tok) {
 
 class Lexer{
     public:
+        unordered_map<char, char> escape_chars = {
+                { 'n', '\n' },
+                { 't', '\t' },
+                { '"', '"' },
+                { '\'', '\'' },
+                { '\\', '\\' },
+                { '?', '?' },
+                { 'a', '\a' },
+                { 'b', '\b' },
+                { 'f', '\f'},
+                { 'r', '\r' },
+                { 'v', '\v' },
+                { '?', '?' },
+        };
+
         string text;
         string file;
     
@@ -560,14 +575,6 @@ class Lexer{
             this->advance();
             bool escape=false;
 
-            unordered_map<char, char> escape_chars = {
-                    { 'n', '\n' },
-                    { 't', '\t' },
-                    { '"', '"' },
-                    { '\'', '\'' },
-                    { '\\', '\\' },
-            };
-
             while (this->chr!='\0' && (this->chr!='"' || escape) ) {
                 if (escape){
                     if (escape_chars.find(this->chr)==escape_chars.end()){
@@ -606,14 +613,6 @@ class Lexer{
             string output;
             this->advance();
             bool escape=false;
-
-            unordered_map<char, char> escape_chars = {
-                    { 'n', '\n' },
-                    { 't', '\t' },
-                    { '\'', '\'' },
-                    { '"', '"' },
-                    { '\\', '\\' },
-            };
 
             while (this->chr!='\0' && (this->chr!='\'' || escape) ) {
                 if (escape){
