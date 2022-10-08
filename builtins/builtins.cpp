@@ -213,7 +213,7 @@ object* builtin_abs(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("self")); 
     
     object* flval=object_float(val);
-    if (flval==NULL || !object_istype(flval->type, &IntType)){
+    if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
     }
