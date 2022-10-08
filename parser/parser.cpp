@@ -1101,6 +1101,31 @@ class Parser{
             return node;
         }
 
+        Node* make_ternary(parse_ret* ret, Node* left){
+            this->advance();
+            //Make new binop, with minimal setup
+            Node* node=make_node(N_TERNARY);
+            node->start=left->start;
+
+            Ternary* tern=(Ternary*)fpl_malloc(sizeof(Ternary));
+            tern->left=left;
+            tern->expr1=this->expr(ret, LOWEST);
+            
+            if (!this->current_tok_is(T_COLON)){
+                this->add_parsing_error(ret, "SyntaxError: Expected :, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+            this->advance();
+
+            tern->expr2=this->expr(ret, LOWEST);
+
+            node->node=tern;
+
+            node->end=tern->expr2->end;
+            return node;
+        }
+
         Node* atom(parse_ret* ret){
             Node* left;
             switch (this->current_tok.type){
@@ -1315,6 +1340,10 @@ class Parser{
                         left=newnode;
                         break;
                     }
+
+                    case T_QMARK:
+                        left=make_ternary(ret, left);
+                        break;
 
                     default:
                         return left;

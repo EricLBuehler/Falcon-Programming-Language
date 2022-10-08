@@ -43,6 +43,7 @@ enum nodetype{
     N_FSTRING,
     N_ASSERT,
     N_NONLOCAL, //No data struct
+    N_TERNARY,
 };
 
 enum precedence {
@@ -62,7 +63,8 @@ enum precedence {
     BITWISE_NOT_PREC,
     CALL,        
     INDEX,
-    UNARY,         
+    UNARY,
+    TERNARY,        
 };
 
 enum precedence get_precedence(Token t){
@@ -119,6 +121,8 @@ enum precedence get_precedence(Token t){
         case T_LSHIFT:
         case T_RSHIFT:
             return BITWISE_SHIFT_PREC;
+        case T_QMARK:
+            return TERNARY;
         default:
             return LOWEST;
     }
@@ -305,6 +309,13 @@ struct GlblIdent{
 struct Assert{
     Node* expr;
 };
+
+struct Ternary{
+    Node* left;
+    Node* expr1;
+    Node* expr2;
+};
+
 
 void destroy_node(struct Node* node){
     if (node->type==N_INT){
