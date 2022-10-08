@@ -448,6 +448,25 @@ class Parser{
             return node;
         }
 
+        Node* make_tilde(parse_ret* ret){
+            Node* node=make_node(N_UNARY);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            enum token_type type=this->current_tok.type;
+            this->advance();
+            Node* right=this->expr(ret, BITWISE_NOT_PREC);
+            this->backadvance();
+
+            node->end=right->end;
+
+            UnaryOp* unary=(UnaryOp*)fpl_malloc(sizeof(UnaryOp));
+            unary->right=right;
+            unary->opr=type;
+
+            node->node=unary;
+            return node;
+        }
+
         Node* make_not(parse_ret* ret){
             if (this->next_tok_is(T_IN)){
                 this->backadvance();
@@ -1125,8 +1144,10 @@ class Parser{
 
                 case T_PLUS:
                 case T_MINUS:
-                case T_TILDE:
                     left=make_unary(ret);
+                    break;
+                case T_TILDE:
+                    left=make_tilde(ret);
                     break;
                     
                 case T_NOT:

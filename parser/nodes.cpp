@@ -59,6 +59,7 @@ enum precedence {
     SUM,          
     PRODUCT, 
     EXP, 
+    BITWISE_NOT_PREC,
     CALL,        
     INDEX,
     UNARY,         
@@ -97,8 +98,9 @@ enum precedence get_precedence(Token t){
             return LESSGREATER;
         case T_PLUS:
         case T_MINUS:
-        case T_TILDE:
             return SUM;
+        case T_TILDE:
+            return BITWISE_NOT_PREC;
         case T_MUL:
         case T_DIV:
         case T_PERCENT:
