@@ -1,0 +1,8 @@
+class Peregrine{
+    staticmethod a(){
+        print("called!")
+    }
+}
+
+x=Peregrine()
+x.a()
