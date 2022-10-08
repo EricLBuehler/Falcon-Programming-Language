@@ -377,7 +377,7 @@ Seeks to absolute position in an open file object.
 ```None```
 
 ### ```file.write```
-Writes val.__str__() to open, writeable file object.
+Writes ```val.__str__()``` to open, writeable file object.
 ```file.seek(self, val)```
 #### Arguments
 | Argument      | Information       |
