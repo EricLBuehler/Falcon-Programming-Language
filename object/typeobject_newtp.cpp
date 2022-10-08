@@ -8,17 +8,12 @@ object* newtp_init(object* self, object* args, object* kwargs){
 }
 object* newtp_new(object* self, object* args, object* kwargs){
     //Try to call __new__
-    object* n=object_getattr(self, str_new_fromstr("__new__"));
+    object* n=object_genericgetattr(self, str_new_fromstr("__new__"));
     ERROR_RET(n);
     
-    object* args_=new_tuple();
-    args_->type->slot_mappings->slot_append(args_, self);
-    for (int i=0; i<CAST_LIST(args)->size; i++){
-        args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
-    }
-    object* val=object_call(n, args_, kwargs);
+    object* val=object_call(n, args, kwargs);
     if (val!=NULL && object_istype(val->type, &TypeType)){
-        return object_new(val, args_, kwargs);
+        return object_new(val, args, kwargs);
     }
     return val;
 }
