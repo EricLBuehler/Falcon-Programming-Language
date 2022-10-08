@@ -27,6 +27,7 @@
 - ```__div__(self, other)```
 - ```__mod__(self, other)```
 - ```__pow__(self, other)```
+- ```__floordiv__(self, other)```
 - ```__neg__(self)```
 
 ## Call
