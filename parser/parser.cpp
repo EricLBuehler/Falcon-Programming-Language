@@ -705,6 +705,11 @@ class Parser{
             args->clear();
             vector<Node*>* kwargs=new vector<Node*>;
             kwargs->clear();
+            vector<int>* unpackkwargs=new vector<int>;
+            unpackkwargs->clear();
+            vector<int>* unpackargs=new vector<int>;
+            unpackargs->clear();
+
             if (this->current_tok_is(T_RPAREN)){
                 Node* node;
                 if (left->type==N_DOT){
@@ -716,6 +721,8 @@ class Parser{
                     c->args=args;
                     c->kwargs=kwargs;
                     c->dot=left;
+                    c->stargs=unpackargs;
+                    c->stkwargs=unpackkwargs;
                     
                     node->node=c;
                 }
@@ -728,6 +735,8 @@ class Parser{
                     c->args=args;
                     c->kwargs=kwargs;
                     c->object=left;
+                    c->stargs=unpackargs;
+                    c->stkwargs=unpackkwargs;
                     
                     node->node=c;
                 }
@@ -738,6 +747,18 @@ class Parser{
             }
             
 
+
+            int idx=0;
+
+            if (this->current_tok_is(T_MUL)){
+                this->advance();
+                unpackargs->push_back(idx);
+            }
+            else if (this->current_tok_is(T_POW)){
+                this->advance();
+                unpackkwargs->push_back(idx);
+            }
+
             bool b=this->multi;
             this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
@@ -747,6 +768,8 @@ class Parser{
             this->multi=b;
 
             if (ret->errornum>0){
+                delete unpackargs;
+                delete unpackkwargs;
                 return NULL;
             }
             if (expr->type==N_ASSIGN){
@@ -755,11 +778,20 @@ class Parser{
             else {
                 args->push_back(expr);
             }
-            
+            idx++;
             
 
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
+
+                if (this->current_tok_is(T_MUL)){
+                    this->advance();
+                    unpackargs->push_back(idx);
+                }
+                else if (this->current_tok_is(T_POW)){
+                    this->advance();
+                    unpackkwargs->push_back(idx);
+                }
 
                 
                 bool b=this->multi;
@@ -769,6 +801,8 @@ class Parser{
                 Node* expr=this->expr(ret, LOWEST);
                 this->noassign=noassign;
                 if (expr==NULL){
+                    delete unpackargs;
+                    delete unpackkwargs;
                     return NULL;
                 }
                 this->multi=b;
@@ -783,23 +817,32 @@ class Parser{
                         this->advance();
                         delete args;
                         delete kwargs;
+                        delete unpackargs;
+                        delete unpackkwargs;
                         return NULL;
                     }
                     args->push_back(expr);
                 }
                 if (ret->errornum>0){
+                    delete unpackargs;
+                    delete unpackkwargs;
                     return NULL;
                 }
                 if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_RPAREN) && !this->current_tok_is(T_EOF)){
                     this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
                     this->advance();
+                    delete unpackargs;
+                    delete unpackkwargs;
                     return NULL;
                 }
+                idx++;
             }
             
             if (!this->current_tok_is(T_RPAREN)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
                 this->advance();
+                delete unpackargs;
+                delete unpackkwargs;
                 return NULL;
             }
             
@@ -814,6 +857,8 @@ class Parser{
                 c->args=args;
                 c->kwargs=kwargs;
                 c->dot=left;
+                c->stargs=unpackargs;
+                c->stkwargs=unpackkwargs;
                 
                 node->node=c;
             }
@@ -826,6 +871,8 @@ class Parser{
                 c->args=args;
                 c->kwargs=kwargs;
                 c->object=left;
+                c->stargs=unpackargs;
+                c->stkwargs=unpackkwargs;
                 
                 node->node=c;
             }

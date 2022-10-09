@@ -185,6 +185,8 @@ struct Call{
     Node* object;
     vector<Node*>* args;
     vector<Node*>* kwargs;
+    vector<int>* stargs;
+    vector<int>* stkwargs;
 };
 
 struct Class{
@@ -206,6 +208,8 @@ struct DotCall{
     Node* dot;
     vector<Node*>* args;
     vector<Node*>* kwargs;
+    vector<int>* stargs;
+    vector<int>* stkwargs;
 };
 
 struct Return{
