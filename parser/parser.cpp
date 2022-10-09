@@ -973,6 +973,7 @@ class Parser{
                 return make_nonlocal(ret);
             }
             if (!this->current_tok_is(T_IDENTIFIER)){
+                this->backadvance();
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
                 return NULL;
