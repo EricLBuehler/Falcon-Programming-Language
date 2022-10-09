@@ -1,0 +1,16 @@
+func decorator(f){
+    print(f,"A")
+    func x(){
+        print("inner called")
+        return f()
+    }
+    return x
+}
+print(decorator)
+
+@decorator
+func function(){
+    print("Called!")
+}
+
+function()
