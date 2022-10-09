@@ -199,7 +199,7 @@ object* builtin_call(object* self, object* args, object* kwargs){
         || CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_mappings->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()<kwargc \
         || CAST_BUILTIN(self)->argc<argc){
             if (CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_mappings->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()==0){
-                vm_add_err(&ValueError, vm, "expected %d argument(s).",CAST_INT(CAST_BUILTIN(self)->args->type->slot_mappings->slot_len(CAST_BUILTIN(self)->args))->val->to_int());
+                vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_BUILTIN(self)->args->type->slot_mappings->slot_len(CAST_BUILTIN(self)->args))->val->to_int(), argc);
                 return NULL;
             }
             vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_BUILTIN(self)->args->type->slot_mappings->slot_len(CAST_BUILTIN(self)->args))->val->to_int()-CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_mappings->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int(), CAST_BUILTIN(self)->argc, argc);

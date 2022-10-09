@@ -388,6 +388,12 @@ struct vm{
 #define CMP_LTE 4
 #define CMP_NE 4
 
+
+#define FUNC_STRICTARGS 0
+#define FUNC_STARARGS 1
+#define FUNC_STARKWARGS 2
+#define FUNC_STAR 3
+
 #define SETSLOT(tp, base, slot) if (base_tp->slot!=NULL){tp->slot=base->slot;}
 object* finalize_type(TypeObject* newtype);
 

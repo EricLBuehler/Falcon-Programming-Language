@@ -1,4 +1,5 @@
-object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure, int type){
+object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure, int type, int flags\
+    , object* stargs, object* stkwargs){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
     CAST_FUNC(obj)->dict=new_dict();
@@ -8,6 +9,9 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->name=name;
     CAST_FUNC(obj)->closure=closure;
     CAST_FUNC(obj)->functype=type;
+    CAST_FUNC(obj)->flags=flags;
+    CAST_FUNC(obj)->stargs=stargs;
+    CAST_FUNC(obj)->stkwargs=stkwargs;
 
     return obj;
 }
@@ -19,19 +23,33 @@ object* func_call(object* self, object* args, object* kwargs){
 
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self);
     vm->callstack->head->locals=new_dict();
+    
+    
+    int flags=CAST_FUNC(self)->flags;
 
-    if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
+    if (flags!=FUNC_STAR && CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
     || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
     || CAST_FUNC(self)->argc<argc){
+        //If we are starargs and positonal differs, no error
+        if (flags==FUNC_STARARGS && CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()!=posargc){
+            goto noerror;
+        }
+        //If we are starkwargs and positonal differs, no error
+        if (flags==FUNC_STARKWARGS && CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()!=kwargc){
+            goto noerror;
+        }
+
         if (CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()==0){
             vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_mappings->slot_len(CAST_FUNC(self)->args))->val->to_int(), argc);
             return NULL;
         }
         vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_mappings->slot_len(CAST_FUNC(self)->args))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int(), CAST_FUNC(self)->argc, argc);
         return NULL;
-    }    
+    }
+    noerror:
 
-    setup_args(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs);
+
+    setup_args_stars(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
     uint32_t ip=0;
     
     object* ret=run_vm(CAST_FUNC(self)->code, &ip);

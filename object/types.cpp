@@ -754,6 +754,9 @@ typedef struct FuncObject{
     object* name;
     object* closure;
     int functype;
+    int flags;
+    object* stargs;
+    object* stkwargs;
 }FuncObject;
 
 static NumberMethods func_num_methods{
