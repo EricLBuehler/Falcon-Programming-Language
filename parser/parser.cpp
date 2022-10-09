@@ -1144,6 +1144,8 @@ class Parser{
             f->args=args;
             f->kwargs=kwargs;
             f->type=FUNCTION_LAMBDA;
+            f->starargs=false;
+            f->starkwargs=false;
 
             node->node=f;
             return node;
@@ -1171,6 +1173,57 @@ class Parser{
             node->node=tern;
 
             node->end=tern->expr2->end;
+            return node;
+        }
+
+        Node* make_decorator(parse_ret* ret){
+            this->advance();
+            
+            if (!this->current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
+                this->advance();
+                return NULL;
+            }
+
+            Node* name=this->atom(ret);
+            Node* function=NULL;
+            Node* decorator=NULL;
+
+            this->advance();
+            skip_newline;
+            if (this->current_tok_is(T_KWD) && this->current_tok.data=="func"){
+                function=make_function(ret, FUNCTION_NORMAL);
+            }
+            else if (this->current_tok_is(T_KWD) && this->current_tok.data=="classmethod"){
+                function=make_function(ret, FUNCTION_CLASS);
+            }
+            else if (this->current_tok_is(T_KWD) && this->current_tok.data=="staticmethod"){
+                function=make_function(ret, FUNCTION_STATIC);
+            }
+            else{
+                //We must have another decorator.. othwerise.. ERROR!
+                if (!this->current_tok_is(T_AT)){
+                    this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
+                    this->advance();
+                    return NULL;
+                }
+                decorator=this->expr(ret, LOWEST);
+            }
+
+            
+            //Make new binop, with minimal setup
+            Node* node=make_node(N_DECORATOR);
+            node->start=name->start;
+
+            Decorator* dec=(Decorator*)fpl_malloc(sizeof(Decorator));
+            dec->function=function;
+            dec->decorator=decorator;
+            dec->name=name;
+
+            node->node=dec;
+
+            node->end=name->end;
+            this->backadvance();
             return node;
         }
 
@@ -1229,6 +1282,10 @@ class Parser{
 
                 case T_COLON:
                     left=make_colon(ret);
+                    break;
+
+                case T_AT:
+                    left=make_decorator(ret);
                     break;
 
                 case T_KWD:

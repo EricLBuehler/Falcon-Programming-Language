@@ -44,6 +44,7 @@ enum nodetype{
     N_ASSERT,
     N_NONLOCAL, //No data struct
     N_TERNARY,
+    N_DECORATOR,
 };
 
 enum precedence {
@@ -322,6 +323,12 @@ struct Ternary{
     Node* left;
     Node* expr1;
     Node* expr2;
+};
+
+struct Decorator{
+    Node* name;
+    Node* function;
+    Node* decorator;
 };
 
 
