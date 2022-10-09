@@ -733,12 +733,25 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_CALL:  {
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
+            
+            object* stargs=new_tuple();
+            object* stkwargs=new_tuple();
+            int i_=0;
+            size_t argsize=CALL(expr->node)->args->size();
+
             //Args (iterate backwards)
             for (auto it =  (*CALL(expr->node)->args).rbegin(); it != (*CALL(expr->node)->args).rend(); ++it){
                 int cmpexpr=compile_expr(compiler, *it);
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
+                if (find(CALL(expr->node)->stargs->begin(), CALL(expr->node)->stargs->end(), i_)!=CALL(expr->node)->stargs->end()){
+                    tuple_append(stargs, new_int_fromint(i_));
+                }
+                if (find(CALL(expr->node)->stkwargs->begin(), CALL(expr->node)->stkwargs->end(), i_+argsize-1)!=CALL(expr->node)->stkwargs->end()){
+                    tuple_append(stkwargs, new_int_fromint(i_+argsize-1));
+                }
+                i_++;
             }
             //Kwargs (iterate backwards)
             for (auto it =  (*CALL(expr->node)->kwargs).rbegin(); it != (*CALL(expr->node)->kwargs).rend(); ++it){
@@ -757,9 +770,33 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return cmpexpr;
                 }
             }
+
+            
+            uint32_t idx;
+
+            if (!object_find_bool(compiler->consts,stargs)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, stargs);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+            if (!object_find_bool(compiler->consts,stkwargs)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, stkwargs);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
             
             //Num of pos args
-            uint32_t idx;
             object* size=new_int_fromint(CALL(expr->node)->args->size());
             uint32_t argc=CALL(expr->node)->args->size()+CALL(expr->node)->kwargs->size();
             
@@ -886,6 +923,18 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
 
+            object* star_int=new_int_fromint(FUNC_STRICTARGS);
+            if (!object_find_bool(compiler->consts, star_int)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, star_int);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, star_int);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+
+
             add_instruction(compiler->instructions,MAKE_FUNCTION, 0, expr->start, expr->end);            
         
             add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
@@ -899,6 +948,31 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
             add_instruction(compiler->instructions,BUILD_LIST, nbases, expr->start, expr->end);
+
+            object* stargs=new_tuple();
+            object* stkwargs=new_tuple();
+
+            if (!object_find_bool(compiler->consts,stargs)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, stargs);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+            if (!object_find_bool(compiler->consts,stkwargs)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, stkwargs);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
 
 
             object* i=new_int_fromint(3);
@@ -1069,8 +1143,42 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         compiler->keep_return=false;
                     }
 
-                    //Num of pos args
+            
                     uint32_t idx;
+
+                    object* stargs=new_tuple();
+                    for (int i: *DOTCALL(expr->node)->stargs){
+                        tuple_append(stargs, new_int_fromint(i));
+                    }
+
+                    if (!object_find_bool(compiler->consts,stargs)){
+                        //Create object
+                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, stargs);
+                    }
+                    
+                    add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+                    object* stkwargs=new_tuple();
+                    for (int i: *DOTCALL(expr->node)->stkwargs){
+                        tuple_append(stkwargs, new_int_fromint(i));
+                    }
+
+                    if (!object_find_bool(compiler->consts,stkwargs)){
+                        //Create object
+                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, stkwargs);
+                    }
+                    
+                    add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+                    //Num of pos args
                     object* size=new_int_fromint(DOTCALL(expr->node)->args->size());
                     uint32_t argc=DOTCALL(expr->node)->args->size()+DOTCALL(expr->node)->kwargs->size();
 
