@@ -628,6 +628,68 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
 
+            //Star args/kwargs
+            int star=FUNC_STRICTARGS;
+            uint32_t star_kwargs;
+            uint32_t star_args;
+            if (FUNCT(expr->node)->starargs && FUNCT(expr->node)->starkwargs){
+                star=FUNC_STAR;
+                if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->stkwargs->node)->name)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stkwargs->node)->name));
+                    star_kwargs = NAMEIDX(compiler->consts);
+                }
+                else{
+                    star_kwargs=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stkwargs->node)->name));
+                }
+                
+                if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->stargs->node)->name)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stargs->node)->name));
+                    star_args = NAMEIDX(compiler->consts);
+                }
+                else{
+                    star_args=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stargs->node)->name));
+                }
+                add_instruction(compiler->instructions,LOAD_CONST, star_args, expr->start, expr->end);
+                add_instruction(compiler->instructions,LOAD_CONST, star_kwargs, expr->start, expr->end);
+            }
+            else if(FUNCT(expr->node)->starargs){
+                star=FUNC_STARARGS;
+                if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->stargs->node)->name)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stargs->node)->name));
+                    star_args = NAMEIDX(compiler->consts);
+                }
+                else{
+                    star_args=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stargs->node)->name));
+                }
+                add_instruction(compiler->instructions,LOAD_CONST, star_args, expr->start, expr->end);
+            }
+            else if(FUNCT(expr->node)->starkwargs){
+                star=FUNC_STARKWARGS;
+                if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->stkwargs->node)->name)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stkwargs->node)->name));
+                    star_kwargs = NAMEIDX(compiler->consts);
+                }
+                else{
+                    star_kwargs=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stkwargs->node)->name));
+                }
+                add_instruction(compiler->instructions,LOAD_CONST, star_kwargs, expr->start, expr->end);
+            }
+
+            object* star_int=new_int_fromint(star);
+            if (!object_find_bool(compiler->consts, star_int)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, star_int);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, star_int);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+
             //Create callable
             if (compiler->scope!=SCOPE_GLOBAL){
                 if (FUNCT(expr->node)->type==FUNCTION_NORMAL || FUNCT(expr->node)->type==FUNCTION_LAMBDA){
