@@ -189,6 +189,7 @@ object* object_getattr_noerror(object* obj, object* attr);
 object* object_cmp(object* self, object* other, uint8_t type);
 object* object_call_nokwargs(object* obj, object* args);
 object* object_genericgetattr_notype(object* obj, object* attr);
+object* object_in_iter(object* left, object* right);
 
 object* builtin___build_class__(object* self, object* args);
 

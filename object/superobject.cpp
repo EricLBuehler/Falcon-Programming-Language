@@ -26,6 +26,7 @@ object* super_getattr(object* self, object* attr){
             if (ob->type->slot_descrget!=NULL){
                 ob=ob->type->slot_descrget(CAST_SUPER(self)->ob, ob);
             }
+            cout<<ob;
             return ob;
         }
     }

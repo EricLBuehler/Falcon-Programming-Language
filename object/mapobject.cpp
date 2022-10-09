@@ -46,7 +46,7 @@ object* map_next(object* self){
             v=o;
             goto cont;
         }
-        if (o->type->slot_mappings->slot_get==NULL){
+        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
             DECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
             return NULL;

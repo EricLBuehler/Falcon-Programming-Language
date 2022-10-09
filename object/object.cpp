@@ -373,7 +373,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     for (auto k: (*CAST_DICT(kwargs)->val)){
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){
-            vm_add_err(&NameError, vm, "Got unexpected keyword argument %s", object_cstr(k.first).c_str());
+            vm_add_err(&NameError, vm, "Got unexpected keyword argument '%s'", object_cstr(k.first).c_str());
             DECREF(names);
             return NULL;
         }
@@ -425,27 +425,34 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
                         object* stargs, object* stkwargs){
     uint32_t argn=0;
     uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
-    
     //Positional
     object* names=new_list();
-    for (int i=0; i<CAST_INT(selfargs->type->slot_mappings->slot_len(selfargs))->val->to_int(); i++){
-        object* o=list_index_int(selfargs, argn);
-        dict->type->slot_mappings->slot_set(dict, o, list_index_int(args, i));
-        names->type->slot_mappings->slot_append(names, o);
-        argn++;
-    }
-
-    if (flags==FUNC_STAR || flags==FUNC_STARARGS){
-        //Star positional
-        object* new_tup=new_tuple();
-        for (int i=argn; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
-            new_tup->type->slot_mappings->slot_append(new_tup, list_index_int(args, i));
+    int selfarglen=CAST_INT(selfargs->type->slot_mappings->slot_len(selfargs))->val->to_int();
+    int arglen=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    if (arglen>=selfarglen){
+        for (int i=0; i<selfarglen; i++){
+            object* o=list_index_int(selfargs, argn);
+            dict->type->slot_mappings->slot_set(dict, o, list_index_int(args, i));
+            names->type->slot_mappings->slot_append(names, o);
             argn++;
         }
-        if (stargs!=NULL){
-            dict->type->slot_mappings->slot_set(dict, stargs, new_tup);
+        if (flags==FUNC_STAR || flags==FUNC_STARARGS){
+            //Star positional
+            object* new_tup=new_tuple();
+            for (int i=argn; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
+                new_tup->type->slot_mappings->slot_append(new_tup, list_index_int(args, i));
+                argn++;
+            }
+            if (stargs!=NULL){
+                dict->type->slot_mappings->slot_set(dict, stargs, new_tup);
+            }
+            DECREF(new_tup);
         }
-        DECREF(new_tup);
+    }
+    else{
+        for (int i=0; i<selfarglen; i++){
+            names->type->slot_mappings->slot_append(names, list_index_int(selfargs, argn));
+        }
     }
     
     //
@@ -473,12 +480,18 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
                 continue; 
             }
             else{
-                vm_add_err(&NameError, vm, "Got unexpected keyword argument %s", object_cstr(k.first).c_str());
+                vm_add_err(&NameError, vm, "Got unexpected keyword argument '%s'", object_cstr(k.first).c_str());
                 DECREF(names);
                 return NULL;
             }
         }
         //
+
+        if (object_find_bool(names, k.first)){
+            vm_add_err(&NameError, vm, "Got multiple values for keyword argument '%s'", object_cstr(k.first).c_str());
+            DECREF(names);
+            return NULL;
+        }
 
         dict->type->slot_mappings->slot_set(dict, k.first, k.second);
         argn++;
@@ -822,7 +835,7 @@ object* object_in_iter(object* left, object* right){
             }
             goto cont;
         }
-        if (o->type->slot_mappings->slot_get==NULL){
+        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
             DECREF(iter);
             DECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
