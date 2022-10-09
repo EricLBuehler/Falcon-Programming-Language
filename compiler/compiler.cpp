@@ -560,7 +560,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 argc++;
                 args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(n->node)->name));
             }
-            
             //
             
             //Setup kwargs (code object)
@@ -726,6 +725,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         add_instruction(compiler->instructions,STORE_NAME, nameidxstore, expr->start, expr->end);
                         break;
                 }
+                
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
             break;
         }
@@ -2447,6 +2448,305 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compile_expr(compiler,TERNARY(expr->node)->expr1);
             compiler->keep_return=ret;
             add_instruction(compiler->instructions,TERNARY_TEST, 0, expr->start, expr->end);
+            break;
+        }
+
+        case N_DECORATOR: {
+            vector<Decorator*> decorators;
+            decorators.clear();
+            
+            decorators.push_back(DECORATOR(expr->node));
+
+            if (DECORATOR(expr->node)->decorator!=NULL){
+                Decorator* ptr=DECORATOR(DECORATOR(expr->node)->decorator->node); //Next
+                while (ptr){
+                    decorators.push_back(ptr);
+                    ptr=DECORATOR(ptr->decorator);
+                    if (ptr!=NULL){
+                        ptr=DECORATOR(((Node*)ptr)->node);
+                    }
+                }
+            }
+
+            for (size_t i_=decorators.size(); i_>0; i_--){
+                size_t i=i_-1;
+                compile_expr(compiler, DECORATOR(decorators.at(i))->name);
+            }
+            
+            //Make a FUNCTION!
+            
+            //Name
+            uint32_t nameidx;
+            
+            if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name )){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
+                nameidx = NAMEIDX(compiler->consts);
+            }
+            else{
+                nameidx=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
+            }
+            
+            
+            add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
+
+            //Arguments
+            size_t argc=0;
+
+            object* args=new_tuple();
+            object* kwargs=new_tuple();
+
+            //Setup args
+            for (Node* n: (*FUNCT(DECORATOR(decorators.back())->function->node)->args)){
+                argc++;
+                args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(n->node)->name));
+            }
+            
+            //
+            
+            //Setup kwargs (code object)
+            for (Node* n: (*FUNCT(DECORATOR(decorators.back())->function->node)->kwargs)){
+                argc++;
+                args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
+                int cmpexpr=compile_expr(compiler, ASSIGN(n->node)->right);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
+            }
+            //
+
+            add_instruction(compiler->instructions,BUILD_TUPLE, FUNCT(DECORATOR(decorators.back())->function->node)->kwargs->size(), expr->start, expr->end);
+            
+            uint32_t idx;
+            if (!object_find_bool(compiler->consts, args)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, args);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, args);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+            
+
+            //
+
+            //Code
+            parse_ret c;
+            c.nodes=(*FUNCT(DECORATOR(decorators.back())->function->node)->code);
+            struct compiler* comp=new_compiler();
+            comp->scope=SCOPE_LOCAL;
+            struct compiler* compiler_=compiler;
+            compiler=comp;
+            object* code=compile(comp, c, DECORATOR(decorators.back())->function->start->line);
+            compiler=compiler_;
+            
+            object* lines=new_list();
+            
+            object* tuple=new_tuple();
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
+            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(DECORATOR(decorators.back())->function->start->line));
+            
+            lines->type->slot_mappings->slot_append(lines, tuple);
+            for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_lines)->size; i++){
+                lines->type->slot_mappings->slot_append(lines, list_index_int(CAST_CODE(code)->co_lines, i));
+            }
+            DECREF(CAST_CODE(code)->co_lines);
+            CAST_CODE(code)->co_lines=lines; //No incref necessary
+
+            DECREF(CAST_CODE(code)->co_file);
+            CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
+            
+            
+            if (!object_find_bool(compiler->consts, code)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, code);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, code);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+
+            //Star args/kwargs
+            int star=FUNC_STRICTARGS;
+            uint32_t star_kwargs;
+            uint32_t star_args;
+            if (FUNCT(DECORATOR(decorators.back())->function->node)->starargs && FUNCT(DECORATOR(decorators.back())->function->node)->starkwargs){
+                star=FUNC_STAR;
+                if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name));
+                    star_kwargs = NAMEIDX(compiler->consts);
+                }
+                else{
+                    star_kwargs=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name));
+                }
+                
+                if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name));
+                    star_args = NAMEIDX(compiler->consts);
+                }
+                else{
+                    star_args=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name));
+                }
+                add_instruction(compiler->instructions,LOAD_CONST, star_args, expr->start, expr->end);
+                add_instruction(compiler->instructions,LOAD_CONST, star_kwargs, expr->start, expr->end);
+            }
+            else if(FUNCT(DECORATOR(decorators.back())->function->node)->starargs){
+                star=FUNC_STARARGS;
+                if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name));
+                    star_args = NAMEIDX(compiler->consts);
+                }
+                else{
+                    star_args=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name));
+                }
+                add_instruction(compiler->instructions,LOAD_CONST, star_args, expr->start, expr->end);
+            }
+            else if(FUNCT(DECORATOR(decorators.back())->function->node)->starkwargs){
+                star=FUNC_STARKWARGS;
+                if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name));
+                    star_kwargs = NAMEIDX(compiler->consts);
+                }
+                else{
+                    star_kwargs=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name));
+                }
+                add_instruction(compiler->instructions,LOAD_CONST, star_kwargs, expr->start, expr->end);
+            }
+
+            object* star_int=new_int_fromint(star);
+            if (!object_find_bool(compiler->consts, star_int)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, star_int);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, star_int);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+
+            //Create callable
+            if (compiler->scope!=SCOPE_GLOBAL){
+                if (FUNCT(expr->node)->type==FUNCTION_STATIC){
+                    add_instruction(compiler->instructions,MAKE_STATICMETH, argc, expr->start, expr->end);
+                }
+                if (FUNCT(expr->node)->type==FUNCTION_CLASS){
+                    add_instruction(compiler->instructions,MAKE_CLASSMETH, argc, expr->start, expr->end);
+                }
+            }
+            else{
+                add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
+            }
+            
+            //TOS is now the function!
+            object* stargs=new_tuple();
+            object* stkwargs=new_tuple();
+
+            if (!object_find_bool(compiler->consts,stargs)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, stargs);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+            if (!object_find_bool(compiler->consts,stkwargs)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, stkwargs);
+            }
+            
+            add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+
+            object* idx1=new_int_fromint(1);
+            if (!object_find_bool(compiler->consts, idx1)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, idx1);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, idx1);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+            
+            add_instruction(compiler->instructions,CALL_FUNCTION_BOTTOM, 1, expr->start, expr->end);
+            
+
+            for (size_t i_=decorators.size()-1; i_>0; i_--){
+                size_t i=i_-1;
+
+                object* stargs=new_tuple();
+                object* stkwargs=new_tuple();
+
+                if (!object_find_bool(compiler->consts,stargs)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, stargs);
+                }
+                
+                add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+                if (!object_find_bool(compiler->consts,stkwargs)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, stkwargs);
+                }
+                
+                add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+
+                object* idx0=new_int_fromint(1);
+                if (!object_find_bool(compiler->consts, idx0)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, idx0);
+                    idx = NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, idx0);
+                }
+                add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+                
+                add_instruction(compiler->instructions,CALL_FUNCTION_BOTTOM, 1, expr->start, expr->end);
+            }
+            
+            //Store function
+            uint32_t nameidxstore;
+            if (!_list_contains(compiler->names, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name )){
+                //Create object
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
+                nameidxstore = NAMEIDX(compiler->names);
+            }
+            else{
+                nameidxstore=object_find(compiler->names, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
+            }
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler->instructions,STORE_GLOBAL, nameidxstore, expr->start, expr->end);
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler->instructions,STORE_NAME, nameidxstore, expr->start, expr->end);
+                    break;
+            }
+
             break;
         }
 

@@ -165,3 +165,5 @@ BINOP_IFLDIV - Implements TOS//TOS-1 and assigns to names[n]
 LOAD_METHOD(idx) - Similar to LOAD_ATTR but leaves TOS on TOS
 
 TERNARY_TEST - If TOS-2 is true, then put TOS on stack, otherwise put TOS-1
+
+CALL_FUNCTION_BOTTOM(argc) - Same as CALL_FUNCTION, but TOS is on the bottom of everything
