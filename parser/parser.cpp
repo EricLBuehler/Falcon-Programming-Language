@@ -1437,6 +1437,10 @@ class Parser{
             args->clear();
             vector<Node*>* kwargs=new vector<Node*>;
             kwargs->clear();
+            bool starargs=false;
+            bool starkwargs=false;
+            Node* stargs=NULL;
+            Node* stkwargs=NULL;
 
             this->advance();
             
@@ -1462,7 +1466,42 @@ class Parser{
             //Parse arguments
             this->advance();
             while (!this->current_tok_is(T_RPAREN)){
-                if (this->next_tok_is(T_EQ)){
+                if (this->current_tok_is(T_MUL)){
+                    this->advance();
+                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER)){
+                            this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
+                            this->advance();
+                            delete args;
+                            delete kwargs;
+                            return NULL;
+                    }
+                    stargs=this->atom(ret);
+                    starargs=true;  
+                    this->advance();
+                    continue;                
+                }
+                if (this->current_tok_is(T_POW)){
+                    this->advance();
+                    if (starkwargs){
+                        this->add_parsing_error(ret, "SyntaxError: Expected (, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }   
+                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER)){
+                            this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
+                            this->advance();
+                            delete args;
+                            delete kwargs;
+                            return NULL;
+                    }
+                    stkwargs=this->atom(ret);
+                    starkwargs=true; 
+                    this->advance();
+                    continue;
+                }
+                else if (this->next_tok_is(T_EQ)){
                     bool b=this->multi;
                     bool noassign=this->noassign;
                     this->noassign=false;
@@ -1567,6 +1606,10 @@ class Parser{
             f->args=args;
             f->kwargs=kwargs;
             f->type=type;
+            f->stargs=stargs;
+            f->stkwargs=stkwargs;
+            f->starargs=starargs;
+            f->starkwargs=starkwargs;
 
             node->node=f;
             this->advance();

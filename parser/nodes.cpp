@@ -175,6 +175,10 @@ struct Func{
     vector<Node*>* args;
     vector<Node*>* kwargs;
     int type;
+    bool starargs;
+    bool starkwargs;
+    Node* stargs;
+    Node* stkwargs;
 };
 
 struct Call{
