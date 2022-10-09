@@ -740,7 +740,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         }
 
         case RETURN_VAL: {
-            return pop_dataframe(vm->objstack);
+            return INCREF(pop_dataframe(vm->objstack));
         }
 
         case CALL_METHOD: {
@@ -1025,6 +1025,155 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
             //
+            
+            //Call
+            object* ret=function->type->slot_call(function, args, kwargs);
+            if (ret==NULL){ 
+                return CALL_ERR;
+            }
+            if (ret==TERM_PROGRAM){
+                return TERM_PROGRAM;
+            }
+            
+            add_dataframe(vm, vm->objstack, ret);
+            
+            break;            
+        }
+
+        case CALL_FUNCTION_BOTTOM: {
+            uint32_t argc=CAST_INT(arg)->val->to_int();
+            uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
+            uint32_t kwargc=argc-posargc;
+
+            object* stkwargs=pop_dataframe(vm->objstack);
+            object* stargs=pop_dataframe(vm->objstack);
+
+            int stkwargsidx=0;
+            int stargsidx=0;
+
+            //Setup kwargs
+            object* kwargs=new_dict();
+            object* val;
+            for (uint32_t i=0; i<kwargc; i++){
+                val=pop_dataframe(vm->objstack);
+                dict_set(kwargs, pop_dataframe(vm->objstack), val);
+            }
+            //
+
+            //Setup args
+            object* args=new_tuple();
+            for (uint32_t i=0; i<posargc; i++){
+                if (stkwargsidx<CAST_LIST(stkwargs)->size && CAST_INT(list_index_int(stkwargs, stkwargsidx))->val->to_int()==i){
+                    //pop dict, insert values
+                    object* ob=pop_dataframe(vm->objstack);
+                    
+                    if (ob->type->slot_iter==NULL){
+                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+                        return NULL;
+                    }
+                    
+                    object* iter=ob->type->slot_iter(ob);
+                    
+                    if (iter==NULL){
+                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+                        return NULL;
+                    }
+
+                    object* one=new_int_fromint(0);
+                    object* two=new_int_fromint(1);
+                    object* res=NULL;
+                    
+                    object* o=iter->type->slot_next(iter);
+                    object* v;
+                    while (vm->exception==NULL){
+                        if (o->type->slot_mappings->slot_len==NULL){
+                            vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
+                            DECREF(iter);
+                            DECREF(one);
+                            return NULL;
+                        }
+                        int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
+                        if (len!=2){
+                            vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
+                            DECREF(iter);
+                            DECREF(one);
+                            return NULL;
+                        }
+                        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
+                            DECREF(iter);
+                            DECREF(one);
+                            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
+                            return NULL;
+                        }
+                        object* a=o->type->slot_mappings->slot_get(o, one);
+                        ERROR_RET(a);
+                        object* b=o->type->slot_mappings->slot_get(o, two);
+                        ERROR_RET(b);
+
+                        dict_set(kwargs, a, b);
+                        
+                        o=iter->type->slot_next(iter);
+                    }
+                    if (vm->exception!=NULL){
+                        DECREF(vm->exception);
+                        vm->exception=NULL;
+                    }
+
+
+                    stkwargsidx++;
+                    continue;
+                }
+                if (stargsidx<CAST_LIST(stargs)->size && CAST_INT(list_index_int(stargs, stargsidx))->val->to_int()==i){
+                    //pop dict, insert values
+                    object* ob=pop_dataframe(vm->objstack);
+                    
+                    if (ob->type->slot_iter==NULL){
+                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+                        return NULL;
+                    }
+                    
+                    object* iter=ob->type->slot_iter(ob);
+                    
+                    if (iter==NULL){
+                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+                        return NULL;
+                    }
+
+                    object* one=new_int_fromint(0);
+                    object* two=new_int_fromint(1);
+                    object* res=NULL;
+                    
+                    object* o=iter->type->slot_next(iter);
+                    object* v;
+                    while (vm->exception==NULL){
+                        if (o->type->slot_iter!=NULL){
+                            vm_add_err(&TypeError, vm, "Did not expect iterator, got '%s' object", o->type->name->c_str());
+                            return NULL;
+                        }
+
+                        tuple_append(args, o);
+                        
+                        o=iter->type->slot_next(iter);
+                    }
+                    if (vm->exception!=NULL){
+                        DECREF(vm->exception);
+                        vm->exception=NULL;
+                    }
+
+
+                    stargsidx++;
+                    continue;
+                }
+                tuple_append(args, pop_dataframe(vm->objstack));
+            }
+            //
+
+            
+            object* function=pop_dataframe(vm->objstack);
+            if (function->type->slot_call==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                return NULL;
+            }
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
