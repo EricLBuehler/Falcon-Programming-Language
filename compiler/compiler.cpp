@@ -544,7 +544,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
         
         case N_FUNC: {
             //Name
-            cout<<"A";
             uint32_t nameidx;
             
             if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->name->node)->name )){
@@ -558,7 +557,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             
             add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
-            cout<<"B";
 
             //Arguments
             size_t argc=0;
@@ -577,7 +575,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
             //
-            cout<<"C";
             
             //Setup kwargs (code object)
             for (Node* n: (*FUNCT(expr->node)->kwargs)){
@@ -599,7 +596,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             //
             add_instruction(compiler->instructions,BUILD_TUPLE, FUNCT(expr->node)->kwargs->size(), expr->start, expr->end);
-            cout<<"D";
             
             uint32_t idx;
             if (!object_find_bool(compiler->consts, args)){
@@ -619,7 +615,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
 
             //Annotations
-            cout<<"E";
             uint32_t n_anno=0;
             if (FUNCT(expr->node)->rettp!=NULL){
                 n_anno++;
