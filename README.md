@@ -40,6 +40,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```method```
 - ```classmethod```
 - ```staticmethod```
+- ```property```
 
 ### Builtin libraries ###
 - ```time```
