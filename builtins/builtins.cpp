@@ -441,7 +441,7 @@ object* builtin_sum(object* self, object* args){
             vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", val->type->name->c_str(), ob->type->name->c_str());
             return NULL;
         }
-        v=val;
+        val=v;
         ob=iter->type->slot_next(iter);
     }
     if (vm->exception!=NULL){
