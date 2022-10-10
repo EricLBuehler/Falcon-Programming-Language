@@ -24,6 +24,7 @@ object* func_call(object* self, object* args, object* kwargs){
 
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self);
     vm->callstack->head->locals=new_dict();
+    dict_set(vm->callstack->head->locals, str_new_fromstr("__annotations__"), vm->callstack->head->annontations);
     
     
     int flags=CAST_FUNC(self)->flags;
