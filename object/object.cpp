@@ -819,7 +819,7 @@ object* object_in_iter(object* left, object* right){
     
     object* iter=right->type->slot_iter(right);
     
-    if (iter==NULL){
+    if (iter!=NULL && iter->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
         return NULL;
     }

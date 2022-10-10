@@ -185,6 +185,11 @@ void setup_builtins(){
     getannotationargs->type->slot_mappings->slot_append(getannotationargs, str_new_fromstr("name"));
     object* getannotationkwargs=new_tuple();
     builtins[60]=new_builtin((builtinfunc)builtin_getannotation, str_new_fromstr("getannotation"), getannotationargs, getannotationkwargs, 1, false);
+
+    object* sumargs=new_tuple();
+    sumargs->type->slot_mappings->slot_append(sumargs, str_new_fromstr("object"));
+    object* sumkwargs=new_tuple();
+    builtins[61]=new_builtin((builtinfunc)builtin_sum, str_new_fromstr("sum"), sumargs, sumkwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
