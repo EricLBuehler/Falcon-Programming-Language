@@ -138,7 +138,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=56;
+const size_t nbuiltins=59;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -377,6 +377,8 @@ struct vm{
 #define CAST_SUPER(obj) ((SuperObject*)obj)
 #define CAST_METHOD(obj) ((MethodObject*)obj)
 #define CAST_MAP(obj) ((MapObject*)obj)
+#define CAST_CLASSMETHOD(obj) ((ClassMethodObject*)obj)
+#define CAST_STATICMETHOD(obj) ((StaticMethodObject*)obj)
 
 
 #define object_istype(this, other) (this==other)

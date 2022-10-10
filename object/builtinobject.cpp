@@ -176,6 +176,9 @@ void setup_builtins(){
     builtins[54]=new_builtin((builtinfunc)builtin_min, str_new_fromstr("min"), minargs, minkwargs, 1, false);
     
     builtins[55]=(object*)&MapType;
+    builtins[56]=(object*)&MethodType;
+    builtins[57]=(object*)&ClassMethodType;
+    builtins[58]=(object*)&StaticMethodType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

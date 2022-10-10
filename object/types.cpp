@@ -2738,9 +2738,45 @@ void setup_wrappermethod_type(){
 }
 
 
-object* staticmethod_call(object* self, object* args, object* kwargs);
+object* staticmethod_descrget(object* instance, object* self);
 object* staticmethod_repr(object* self);
-object* staticmethod_new_impl(object* func, object* instance);
+object* staticmethod_new(object* cls, object* args, object* kwargs);
+void staticmethod_del(object* self);
+object* staticmethod_cmp(object* self, object* other, uint8_t type);
+
+Method staticmethod_methods[]={{NULL,NULL}};
+GetSets staticmethod_getsets[]={{NULL,NULL}};
+
+static NumberMethods staticmethod_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+
+    0, //slot_neg
+    0, //slot_not
+
+    0, //slot_bool
+};
+
+static Mappings staticmethod_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+typedef struct StaticMethodObject{
+    OBJHEAD_VAR
+    object* function;
+}StaticMethodObject;
 
 TypeObject StaticMethodType={
     0, //refcnt
@@ -2749,7 +2785,7 @@ TypeObject StaticMethodType={
     0, //gen
     &TypeType, //type
     new string("staticmethod"), //name
-    sizeof(MethodObject), //size
+    sizeof(StaticMethodObject), //size
     0, //var_base_size
     true, //gc_trackable
     NULL, //bases
@@ -2759,37 +2795,72 @@ TypeObject StaticMethodType={
     0, //slot_setattr
 
     0, //slot_init
-    0, //slot_new
-    0, //slot_del
+    staticmethod_new, //slot_new
+    staticmethod_del, //slot_del
 
     0, //slot_next
     0, //slot_iter
 
     staticmethod_repr, //slot_repr
     staticmethod_repr, //slot_str
-    staticmethod_call, //slot_call
+    0, //slot_call
 
-    &method_num_methods, //slot_number
-    &method_mappings, //slot_mapping
+    &staticmethod_num_methods, //slot_number
+    &staticmethod_mappings, //slot_mapping
 
-    method_methods, //slot_methods
-    method_getsets, //slot_getsets
+    staticmethod_methods, //slot_methods
+    staticmethod_getsets, //slot_getsets
     0, //slot_offsets
 
-    (compfunc)method_cmp, //slot_cmp
+    (compfunc)staticmethod_cmp, //slot_cmp
+
+    staticmethod_descrget, //slot_descrget
 };
 
 void setup_staticmethod_type(){
-    StaticMethodType.bases=new_tuple();
-    tuple_append(StaticMethodType.bases, (object*)(&MethodType));
     StaticMethodType=(*(TypeObject*)finalize_type(&StaticMethodType));
     fplbases.push_back(&StaticMethodType);
 }
 
-
-object* classmethod_call(object* self, object* args, object* kwargs);
 object* classmethod_repr(object* self);
-object* classmethod_new_impl(object* func, object* instance);
+object* classmethod_new(object* cls, object* args, object* kwargs);
+void classmethod_del(object* self);
+object* classmethod_cmp(object* self, object* other, uint8_t type);
+object* classmethod_descrget(object* instance, object* self);
+
+Method classmethod_methods[]={{NULL,NULL}};
+GetSets classmethod_getsets[]={{NULL,NULL}};
+
+static NumberMethods classmethod_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+
+    0, //slot_neg
+    0, //slot_not
+
+    0, //slot_bool
+};
+
+static Mappings classmethod_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+typedef struct ClassMethodObject{
+    OBJHEAD_VAR
+    object* function;
+}ClassethodObject;
 
 TypeObject ClassMethodType={
     0, //refcnt
@@ -2798,7 +2869,7 @@ TypeObject ClassMethodType={
     0, //gen
     &TypeType, //type
     new string("classmethod"), //name
-    sizeof(MethodObject), //size
+    sizeof(ClassMethodObject), //size
     0, //var_base_size
     true, //gc_trackable
     NULL, //bases
@@ -2808,29 +2879,29 @@ TypeObject ClassMethodType={
     0, //slot_setattr
 
     0, //slot_init
-    0, //slot_new
-    0, //slot_del
+    classmethod_new, //slot_new
+    classmethod_del, //slot_del
 
     0, //slot_next
     0, //slot_iter
 
     classmethod_repr, //slot_repr
     classmethod_repr, //slot_str
-    classmethod_call, //slot_call
+    0, //slot_call
 
-    &method_num_methods, //slot_number
-    &method_mappings, //slot_mapping
+    &classmethod_num_methods, //slot_number
+    &classmethod_mappings, //slot_mapping
 
-    method_methods, //slot_methods
-    method_getsets, //slot_getsets
+    classmethod_methods, //slot_methods
+    classmethod_getsets, //slot_getsets
     0, //slot_offsets
 
-    (compfunc)method_cmp, //slot_cmp
+    (compfunc)classmethod_cmp, //slot_cmp
+
+    classmethod_descrget, //slot_descrget
 };
 
 void setup_classmethod_type(){
-    ClassMethodType.bases=new_tuple();
-    tuple_append(ClassMethodType.bases, (object*)(&MethodType));
     ClassMethodType=(*(TypeObject*)finalize_type(&ClassMethodType));
     fplbases.push_back(&ClassMethodType);
 }
@@ -2921,7 +2992,6 @@ void setup_map_type(){
     MapType=(*(TypeObject*)finalize_type(&MapType));
     fplbases.push_back(&MapType);
 }
-
 
 
 

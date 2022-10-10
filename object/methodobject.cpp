@@ -1,7 +1,10 @@
 object* method_new_impl(object* func, object* instance){
     object* method=new_object(&MethodType);
     CAST_METHOD(method)->function=INCREF(func);
-    CAST_METHOD(method)->instance=INCREF(instance);
+    if (instance!=NULL){
+        INCREF(instance);
+    }
+    CAST_METHOD(method)->instance=instance;
     return method;
 }
 
@@ -20,7 +23,9 @@ object* method_new(object* type, object* args, object* kwargs){
 
 void method_del(object* self){
     DECREF(CAST_METHOD(self)->function);
-    DECREF(CAST_METHOD(self)->instance);
+    if (CAST_METHOD(self)->instance!=NULL){
+        DECREF(CAST_METHOD(self)->instance);
+    }
 }
 
 object* method_repr(object* self){
@@ -35,13 +40,15 @@ object* method_cmp(object* self, object* other, uint8_t type){
         return NULL;
     }
     if (type==CMP_EQ){
-        if (istrue(object_cmp(CAST_METHOD(self)->function,CAST_METHOD(other)->function, CMP_EQ))){
+        if (istrue(object_cmp(CAST_METHOD(self)->function,CAST_METHOD(other)->function, CMP_EQ)) &&\
+        !( (CAST_METHOD(self)->instance!=NULL && CAST_METHOD(other)->instance!=NULL) && istrue(object_cmp(CAST_METHOD(self)->instance,CAST_METHOD(other)->instance, CMP_EQ)))){
             return new_bool_true();
         }
         return new_bool_false();
     }
     if (type==CMP_NE){
-        if (!istrue(object_cmp(CAST_METHOD(self)->function,CAST_METHOD(other)->function, CMP_EQ))){
+        if (!istrue(object_cmp(CAST_METHOD(self)->function,CAST_METHOD(other)->function, CMP_EQ)) &&\
+        !( (CAST_METHOD(self)->instance!=NULL && CAST_METHOD(other)->instance!=NULL) && istrue(object_cmp(CAST_METHOD(self)->instance,CAST_METHOD(other)->instance, CMP_EQ)))){
             return new_bool_true();
         }
         return new_bool_false();
@@ -51,7 +58,9 @@ object* method_cmp(object* self, object* other, uint8_t type){
 
 object* method_call(object* self, object* args, object* kwargs){
     object* args_=new_tuple();
-    args_->type->slot_mappings->slot_append(args_, CAST_METHOD(self)->instance);
+    if (CAST_METHOD(self)->instance!=NULL){
+        args_->type->slot_mappings->slot_append(args_, CAST_METHOD(self)->instance);
+    }
     for (int i=0; i<CAST_LIST(args)->size; i++){
         args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
     }

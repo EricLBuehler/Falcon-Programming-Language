@@ -136,11 +136,5 @@ void func_del(object* obj){
 }
 
 object* func_descrget(object* obj, object* self){
-    switch (CAST_FUNC(self)->functype){
-        case FUNCTION_STATIC:
-            return staticmethod_new_impl(self, obj);
-        case FUNCTION_CLASS:
-            return classmethod_new_impl(self, obj);
-    }
     return method_new_impl(self, obj);
 }
