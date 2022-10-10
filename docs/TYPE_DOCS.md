@@ -232,12 +232,13 @@ Appends argument ```val``` to list.
 New list - ```list```
 
 ### ```list.pop```
-Pops last element from list and returns item.
-```list.pop(self)```
+Pops element at idx from list and returns item.
+```list.pop(self, idx=-1)```
 #### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
 | ```self```    | self argument     |
+| ```idx```    | index to pop from     |
 ### Example
 ```[1,2,3].pop() == 3 == True```
 #### Returns
