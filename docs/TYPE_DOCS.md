@@ -188,6 +188,19 @@ Strips trailing whitespace off a string
 #### Returns
 New string - ```str```
 
+### ```str.contains```
+Return ```True``` is needle is found in ```self```, otherwise, ```False```
+```str.contains(self, needle)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | ```str``` needle     |
+### Example
+```"abc".contains("c") == True```
+#### Returns
+Boolean - ```bool```
+
 
 ## ```list```
 
