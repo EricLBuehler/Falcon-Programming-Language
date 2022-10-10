@@ -404,3 +404,15 @@ object* builtin_max(object* self, object* args){
     }
     return max;
 }
+    
+object* builtin_getannotation(object* self, object* args){
+    object* nm=args->type->slot_mappings->slot_get(args, str_new_fromstr("name"));
+    object* anno=vm->callstack->head->annontations;
+
+    object* tp=dict_get(anno, nm);
+    if (tp==NULL){
+        vm_add_err(&NameError, vm, "No annotation for name %s found", object_cstr(object_repr(nm)).c_str());
+        return NULL;
+    }
+    return tp;
+}
