@@ -1178,14 +1178,13 @@ class Parser{
 
         Node* make_decorator(parse_ret* ret){
             this->advance();
-            
-            if (!this->current_tok_is(T_IDENTIFIER)){
+
+            Node* name=this->expr(ret, LOWEST);
+            if (!isname(name->type)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
                 return NULL;
             }
-
-            Node* name=this->atom(ret);
             Node* function=NULL;
             Node* decorator=NULL;
 
@@ -1193,12 +1192,6 @@ class Parser{
             skip_newline;
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="func"){
                 function=make_function(ret, FUNCTION_NORMAL);
-            }
-            else if (this->current_tok_is(T_KWD) && this->current_tok.data=="classmethod"){
-                function=make_function(ret, FUNCTION_CLASS);
-            }
-            else if (this->current_tok_is(T_KWD) && this->current_tok.data=="staticmethod"){
-                function=make_function(ret, FUNCTION_STATIC);
             }
             else{
                 //We must have another decorator.. othwerise.. ERROR!
@@ -1508,12 +1501,6 @@ class Parser{
             else if (this->current_tok.data=="assert"){
                 n= make_assert(ret);
             }
-            else if (this->current_tok.data=="staticmethod"){
-                n=make_function(ret, FUNCTION_STATIC);
-            }
-            else if (this->current_tok.data=="classmethod"){
-                n=make_function(ret, FUNCTION_CLASS);
-            }
             else if (this->current_tok.data=="lambda"){
                 n=this->expr(ret,LOWEST);
             }
@@ -1527,16 +1514,6 @@ class Parser{
         }
 
         Node* make_function(parse_ret* ret, int type){
-            if (type==FUNCTION_STATIC && !this->inclass){
-                this->add_parsing_error(ret, "SyntaxError: staticmethod outside of class");
-                return NULL;
-            }
-
-            if (type==FUNCTION_CLASS && !this->inclass){
-                this->add_parsing_error(ret, "SyntaxError: classmethod outside of class");
-                return NULL;
-            }
-
             vector<Node*>* args=new vector<Node*>;
             args->clear();
             vector<Node*>* kwargs=new vector<Node*>;
