@@ -1358,7 +1358,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand types for <=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                vm_add_err(&TypeError, vm, "Invalid operand types for <: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             break;
         }
@@ -2027,54 +2027,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
-            break;
-        }
-
-        case MAKE_STATICMETH:{
-            int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
-            object* stargs=NULL;
-            object* stkwargs=NULL;
-            if (flags==FUNC_STARARGS){
-                stargs=pop_dataframe(vm->objstack); 
-            }
-            else if (flags==FUNC_STARKWARGS){
-                stkwargs=pop_dataframe(vm->objstack); 
-            }
-            else if (flags==FUNC_STAR){
-                stkwargs=pop_dataframe(vm->objstack); 
-                stargs=pop_dataframe(vm->objstack); 
-            }
-            object* code=pop_dataframe(vm->objstack); //<- Code
-            object* args=pop_dataframe(vm->objstack); //<- Args
-            object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
-            object* name=pop_dataframe(vm->objstack); //<- Name
-            
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_STATIC, flags, stargs, stkwargs);
-            add_dataframe(vm, vm->objstack, func);
-            break;
-        }
-
-        case MAKE_CLASSMETH:{
-            int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
-            object* stargs=NULL;
-            object* stkwargs=NULL;
-            if (flags==FUNC_STARARGS){
-                stargs=pop_dataframe(vm->objstack); 
-            }
-            else if (flags==FUNC_STARKWARGS){
-                stkwargs=pop_dataframe(vm->objstack); 
-            }
-            else if (flags==FUNC_STAR){
-                stkwargs=pop_dataframe(vm->objstack); 
-                stargs=pop_dataframe(vm->objstack); 
-            }
-            object* code=pop_dataframe(vm->objstack); //<- Code
-            object* args=pop_dataframe(vm->objstack); //<- Args
-            object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
-            object* name=pop_dataframe(vm->objstack); //<- Name
-            
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_CLASS, flags, stargs, stkwargs);
-            add_dataframe(vm, vm->objstack, func);
             break;
         }
         
