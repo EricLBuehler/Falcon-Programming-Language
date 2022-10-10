@@ -45,6 +45,11 @@ enum nodetype{
     N_NONLOCAL, //No data struct
     N_TERNARY,
     N_DECORATOR,
+    N_ANONIDENT,
+    N_ANONASSIGN, //No data struct
+    N_ANONNONLOCAL, //No data struct
+    N_ANONGLBL_IDENT, //No data struct
+    N_ANONDOT,
 };
 
 enum precedence {
@@ -180,6 +185,7 @@ struct Func{
     bool starkwargs;
     Node* stargs;
     Node* stkwargs;
+    Node* rettp;
 };
 
 struct Call{
@@ -329,6 +335,16 @@ struct Decorator{
     Node* name;
     Node* function;
     Node* decorator;
+};
+
+struct AnnotatedIdentifier{
+    string* name;
+    Node* tp;
+};
+
+struct AnnotatedDot{
+    vector<Node*>* names;
+    Node* tp;
 };
 
 
