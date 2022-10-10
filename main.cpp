@@ -39,8 +39,7 @@ int main(int argc, char** argv) {
 
             struct compiler* compiler = new_compiler();
             vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
-            vm->globals=new_dict();
-            vm->callstack->head->locals=INCREF(vm->globals);
+            dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
             
             while (true){
                 struct vm* vm_=vm;
