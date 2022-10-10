@@ -758,6 +758,7 @@ typedef struct FuncObject{
     int flags;
     object* stargs;
     object* stkwargs;
+    object* annotations;
 }FuncObject;
 
 static NumberMethods func_num_methods{
@@ -787,7 +788,7 @@ static Mappings func_mappings{
 
 Method func_methods[]={{NULL,NULL}};
 GetSets func_getsets[]={{NULL,NULL}};
-OffsetMember func_offsets[]={{NULL}};
+OffsetMember func_offsets[]={{"__annotations__", offsetof(FuncObject, annotations), true}, {NULL}};
 
 TypeObject FuncType={
     0, //refcnt

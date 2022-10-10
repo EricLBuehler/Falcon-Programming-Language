@@ -307,6 +307,7 @@ struct callframe{
     object* code;
     string* filedata;
     object* callable;
+    object* annontations;
 };
 
 struct blockframe{
@@ -348,6 +349,7 @@ struct vm{
 
     object* globals;
     object* path;
+    object* global_annotations;
 };
 
 

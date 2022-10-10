@@ -1,5 +1,5 @@
 object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure, int type, int flags\
-    , object* stargs, object* stkwargs){
+    , object* stargs, object* stkwargs, object* annotations){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
     CAST_FUNC(obj)->dict=new_dict();
@@ -12,6 +12,7 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->flags=flags;
     CAST_FUNC(obj)->stargs=stargs;
     CAST_FUNC(obj)->stkwargs=stkwargs;
+    CAST_FUNC(obj)->annotations=annotations;
 
     return obj;
 }
