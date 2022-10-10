@@ -309,7 +309,7 @@ object* builtin_min(object* self, object* args){
             v=o;
             goto cont;
         }
-        if (o->type->slot_mappings->slot_get==NULL){
+        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
             DECREF(iter);
             DECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
@@ -378,7 +378,7 @@ object* builtin_max(object* self, object* args){
             v=o;
             goto cont;
         }
-        if (o->type->slot_mappings->slot_get==NULL){
+        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
             DECREF(iter);
             DECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());

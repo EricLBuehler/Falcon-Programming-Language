@@ -40,8 +40,12 @@ object* builtin_eval(object* self, object* args){
     
     struct vm* vm_=::vm;
     ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
+    
     ::vm->globals=glbls;
     ::vm->callstack->head->locals=locals;
+    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
+    ::vm->global_annotations=::vm->callstack->head->annontations;
+
     object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
     
