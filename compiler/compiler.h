@@ -84,6 +84,10 @@ enum opcode{
     LOAD_METHOD,
     TERNARY_TEST,
     CALL_FUNCTION_BOTTOM,
+    ANNOTATE_GLOBAL,
+    ANNOTATE_NAME,
+    ANNOTATE_NONLOCAL,
+    STORE_ATTR_ANNOTATE,
 };
 
 enum scope{
@@ -151,6 +155,8 @@ struct compiler{
 #define ASSERT(node) ((Assert*)node)
 #define TERNARY(node) ((Ternary*)node)
 #define DECORATOR(node) ((Decorator*)node)
+#define ANONIDENT(node) ((AnnotatedIdentifier*)node)
+#define ANONDOT(node) ((AnnotatedDot*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 
