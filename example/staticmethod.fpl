@@ -1,8 +1,9 @@
-class Peregrine{
-    staticmethod a(){
-        print("called!")
+class a{
+    @staticmethod
+    func f(*args){
+        print(args)
     }
 }
 
-x=Peregrine()
-x.a()
+x=a()
+x.f()
