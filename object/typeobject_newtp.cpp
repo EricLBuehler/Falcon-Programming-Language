@@ -2,7 +2,6 @@ object* newtp_init(object* self, object* args, object* kwargs){
     //Try to call __init__
     object* n=object_getattr(self, str_new_fromstr("__init__"));
     ERROR_RET(n);
-    
     object* val=object_call(n, args, kwargs);
     return val;
 }

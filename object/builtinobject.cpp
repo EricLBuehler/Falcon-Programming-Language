@@ -208,7 +208,6 @@ object* builtin_call(object* self, object* args, object* kwargs){
             }
         }
     }
-    
 
     object* builtinargs=new_dict();
     if (!CAST_BUILTIN(self)->nargs){

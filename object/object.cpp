@@ -628,10 +628,12 @@ object* object_getattr(object* obj, object* attr){
 
 object* object_genericsetattr(object* obj, object* attr, object* val){
     object* d=NULL;
+    object* dict_=NULL;
     
     //Try instance dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
+        dict_=dict;
         if (object_find_bool_dict_keys(dict, attr)){
             d=dict;
         }
@@ -640,6 +642,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
     //Check type dict 
     if (d==NULL && obj->type->dict!=0){
         object* dict = obj->type->dict;
+        dict_=dict;
         if (object_find_bool_dict_keys(dict, attr)){
             d=dict;
         }
@@ -649,11 +652,12 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         //Check bases
         uint32_t total_bases = CAST_INT(list_len(obj->type->bases))->val->to_long_long();
         for (uint32_t i=0; i<total_bases; i++){
-            TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i-1));
+            TypeObject* base_tp=CAST_TYPE(list_index_int(obj->type->bases, i));
 
             //Check type dict
             if (base_tp->dict!=0){
                 object* dict = base_tp->dict;
+                dict_=dict;
                 if (object_find_bool_dict_keys(dict, attr)){
                     d=dict;
                     break;
@@ -662,11 +666,11 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         }
     }
 
-    if (d==NULL){
+    if (d==NULL && dict_==NULL){
         vm_add_err(&AttributeError, vm, "%s object is read only",obj->type->name->c_str());
         return NULL;
     }
-    else{
+    else if (d!=NULL){
         object* res=dict_get(d, attr);
         if (res!=NULL && res->type->slot_descrget!=NULL && res->type->slot_descrset==NULL){
             vm_add_err(&AttributeError, vm, "attribute '%s' of '%s' object is read only",object_cstr(attr).c_str() ,obj->type->name->c_str());
@@ -675,7 +679,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         if (res!=NULL && !(res->type->slot_descrset==NULL && res->type->slot_descrget==NULL) ){
             if (res!=NULL && res->type->slot_descrset!=NULL){
                 object* v=res->type->slot_descrset(obj, res, val);
-                if (v!=NULL && v!=TERM_PROGRAM){
+                if (v!=CALL_ERR && v!=NULL && v!=TERM_PROGRAM){
                     DECREF(v);
                     return SUCCESS;
                 }
@@ -690,7 +694,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         }
     }
     
-    dict_set(d, attr, val);
+    dict_set(dict_, attr, val);
     return SUCCESS;
 }
 

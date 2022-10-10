@@ -44,8 +44,7 @@ object* func_call(object* self, object* args, object* kwargs){
         }
     }
     noerror:
-
-
+    
     setup_args_stars(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
     uint32_t ip=0;
     

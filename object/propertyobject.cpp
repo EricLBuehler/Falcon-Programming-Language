@@ -79,6 +79,7 @@ object* property_descrget(object* instance, object* self){
     args->type->slot_mappings->slot_append(args, instance);
         
     object* val=object_call_nokwargs(CAST_PROPERTY(self)->get, args);
+    ERROR_RET(val);
     return val;
 }
 object* property_descrset(object* instance, object* self, object* value){
@@ -93,6 +94,7 @@ object* property_descrset(object* instance, object* self, object* value){
         args->type->slot_mappings->slot_append(args, value);
             
         object* val=object_call_nokwargs(CAST_PROPERTY(self)->set, args);
+        ERROR_RET(val);
         return val;
     }
     
@@ -105,6 +107,7 @@ object* property_descrset(object* instance, object* self, object* value){
     args->type->slot_mappings->slot_append(args, instance);
         
     object* val=object_call_nokwargs(CAST_PROPERTY(self)->del, args);
+    ERROR_RET(val);
     return val;
 }
 object* property_getter(object* selftp, object* args, object* kwargs){

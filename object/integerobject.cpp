@@ -368,49 +368,49 @@ object* int_repr(object* self){
 }
 
 object* int_cmp(object* self, object* other, uint8_t type){
-    object* otherint=object_int(other);
-    if (otherint==NULL || !object_istype(otherint->type, &IntType)){
+    object* otherv=object_float(other);
+    if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
     //Other type is int
     if (type==CMP_EQ){
-        if (*CAST_INT(self)->val==*CAST_INT(otherint)->val){
-            DECREF(otherint);
+        if (CAST_INT(self)->val->to_int()==CAST_FLOAT(otherv)->val){
+            DECREF(otherv);
             return new_bool_true();
         }
-            DECREF(otherint);
+        DECREF(otherv);
         return new_bool_false();
     }
     else if (type==CMP_GT){
-        if (*CAST_INT(self)->val>*CAST_INT(otherint)->val){
-            DECREF(otherint);
+        if (CAST_INT(self)->val->to_int()>CAST_FLOAT(otherv)->val){
+            DECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherint);
+        DECREF(otherv);
         return new_bool_false();
     }
     else if (type==CMP_GTE){
-        if (*CAST_INT(self)->val>=*CAST_INT(otherint)->val){
-            DECREF(otherint);
+        if (CAST_INT(self)->val->to_int()>=CAST_FLOAT(otherv)->val){
+            DECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherint);
+        DECREF(otherv);
         return new_bool_false();
     }
     else if (type==CMP_LT){
-        if (*CAST_INT(self)->val<*CAST_INT(otherint)->val){
-            DECREF(otherint);
+        if (CAST_INT(self)->val->to_int()<CAST_FLOAT(otherv)->val){
+            DECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherint);
+        DECREF(otherv);
         return new_bool_false();
     }
     else if (type==CMP_LTE){
-        if (*CAST_INT(self)->val<=*CAST_INT(otherint)->val){
-            DECREF(otherint);
+        if (CAST_INT(self)->val->to_int()<=CAST_FLOAT(otherv)->val){
+            DECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherint);
+        DECREF(otherv);
         return new_bool_false();
     }
 
