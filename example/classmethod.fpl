@@ -1,8 +1,9 @@
-class Peregrine{
-    classmethod a(cls){
-        print(cls)
+class a{
+    @classmethod
+    func f(*args){
+        print(args)
     }
 }
 
-x=Peregrine()
-x.a()
+x=a()
+x.f()
