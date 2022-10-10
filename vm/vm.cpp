@@ -236,15 +236,6 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
 }
 
 struct object* vm_get_var_locals(struct vm* vm, object* name){
-    if (vm->callstack->head->callable!=NULL && object_istype(vm->callstack->head->callable->type, &FuncType)\
-    && CAST_FUNC(vm->callstack->head->callable)->closure!=NULL){
-        object* closure=CAST_FUNC(vm->callstack->head->callable)->closure;
-        //Check if name in closure
-        if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-            return CAST_DICT(closure)->val->at(name);
-        }
-    }
-    
     struct callframe* frame=vm->callstack->head;
     while(frame){
         for (auto k: (*CAST_DICT(frame->locals)->val)){
@@ -266,6 +257,14 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
             if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
                 return builtins[i];
             } 
+        }
+    }
+    if (vm->callstack->head->callable!=NULL && object_istype(vm->callstack->head->callable->type, &FuncType)\
+    && CAST_FUNC(vm->callstack->head->callable)->closure!=NULL){
+        object* closure=CAST_FUNC(vm->callstack->head->callable)->closure;
+        //Check if name in closure
+        if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+            return CAST_DICT(closure)->val->at(name);
         }
     }
 
