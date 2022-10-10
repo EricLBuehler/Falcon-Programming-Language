@@ -880,7 +880,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (ret==NULL){
+            if (ret==NULL || ret==CALL_ERR){
                 return CALL_ERR;
             }
             if (ret==TERM_PROGRAM){
@@ -1027,7 +1027,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (ret==NULL){ 
+            if (ret==NULL || ret==CALL_ERR){ 
                 return CALL_ERR;
             }
             if (ret==TERM_PROGRAM){
@@ -1176,7 +1176,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (ret==NULL){ 
+            if (ret==NULL || ret==CALL_ERR){ 
                 return CALL_ERR;
             }
             if (ret==TERM_PROGRAM){
@@ -1226,14 +1226,31 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         case LOAD_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
-            add_dataframe(vm, vm->objstack, object_getattr(obj, attr));
+            object* ret=object_getattr(obj, attr);            
+            
+            if (ret==NULL || ret==CALL_ERR){ 
+                return CALL_ERR;
+            }
+            if (ret==TERM_PROGRAM){
+                return TERM_PROGRAM;
+            }
+            
+            add_dataframe(vm, vm->objstack, ret);
             break;
         }    
 
         case LOAD_METHOD: {
             object* obj=peek_dataframe(vm->objstack);
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
-            add_dataframe(vm, vm->objstack, object_getattr(obj, attr));
+            object* ret=object_getattr(obj, attr);            
+            
+            if (ret==NULL || ret==CALL_ERR){ 
+                return CALL_ERR;
+            }
+            if (ret==TERM_PROGRAM){
+                return TERM_PROGRAM;
+            }
+            add_dataframe(vm, vm->objstack, ret);
             break;
         }  
 
@@ -1241,7 +1258,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* obj=pop_dataframe(vm->objstack);
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
-            object_setattr(obj, attr, val);
+            object* ret=object_setattr(obj, attr, val);
+            
+            if (ret==NULL || ret==CALL_ERR){ 
+                return CALL_ERR;
+            }
+            if (ret==TERM_PROGRAM){
+                return TERM_PROGRAM;
+            }
             break;
         }
 
@@ -1684,11 +1708,18 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             }
             for (uint32_t i=0; i<len; i++){
                 object* o=object_getattr(lib, list_index_int(names, i));
+            
+                if (o==CALL_ERR){ 
+                    return CALL_ERR;
+                }
+                if (o==TERM_PROGRAM){
+                    return TERM_PROGRAM;
+                }
                 if (o==NULL){
                     DECREF(vm->exception);
                     vm->exception=NULL;
                     vm_add_err(&ImportError,vm, "Cannot import name '%s' from '%s'",CAST_STRING(list_index_int(names, i))->val->c_str(), CAST_STRING(CAST_MODULE(lib)->name)->val->c_str());
-                    return NULL;
+                    return CALL_ERR;
                 }
                 vm_add_var_locals(vm, list_index_int(names, i), o);
             }
@@ -1866,7 +1897,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         case DEL_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
-            object_setattr(obj, attr, NULL);
+            object* ret=object_setattr(obj, attr, NULL);
+            
+            if (ret==NULL || ret==CALL_ERR){ 
+                return CALL_ERR;
+            }
+            if (ret==TERM_PROGRAM){
+                return TERM_PROGRAM;
+            }
             break;
         }
 
