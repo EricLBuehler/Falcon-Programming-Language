@@ -3077,19 +3077,19 @@ object* type_get(object* self, object* attr){
 
     object* res=NULL;
     //First check metatype
-    
-    //Check type dict
-    if (self->type->dict!=0){
-        object* dict = self->type->dict;
+
+    //Check self dict
+    if (CAST_TYPE(self)->dict!=0){
+        object* dict = CAST_TYPE(self)->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             res=dict_get(dict, attr);
         }
     }
 
     if (res==NULL){
-        uint32_t total_bases = CAST_INT(list_len(self->type->bases))->val->to_long_long();
+        uint32_t total_bases = CAST_INT(list_len(CAST_TYPE(self)->bases))->val->to_long_long();
         for (uint32_t i=total_bases; i>0; i--){
-            TypeObject* base_tp=CAST_TYPE(list_index_int(self->type->bases, i-1));
+            TypeObject* base_tp=CAST_TYPE(list_index_int(CAST_TYPE(self)->bases, i-1));
 
             //Check type dict
             if (base_tp->dict!=0){
@@ -3101,19 +3101,19 @@ object* type_get(object* self, object* attr){
             }
         }
     }
-
-    //Check self dict
-    if (res==NULL && CAST_TYPE(self)->dict!=0){
-        object* dict = CAST_TYPE(self)->dict;
+    
+    //Check type dict
+    if (res==NULL && self->type->dict!=0){
+        object* dict = self->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             res=dict_get(dict, attr);
         }
     }
 
     if (res==NULL){
-        uint32_t total_bases = CAST_INT(list_len(CAST_TYPE(self)->bases))->val->to_long_long();
+        uint32_t total_bases = CAST_INT(list_len(self->type->bases))->val->to_long_long();
         for (uint32_t i=total_bases; i>0; i--){
-            TypeObject* base_tp=CAST_TYPE(list_index_int(CAST_TYPE(self)->bases, i-1));
+            TypeObject* base_tp=CAST_TYPE(list_index_int(self->type->bases, i-1));
 
             //Check type dict
             if (base_tp->dict!=0){
@@ -3378,6 +3378,18 @@ void inherit_type_dict(TypeObject* tp){
     if (tp_tp->slot_str){
         type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_str, "__str__");
     }
+    if (tp_tp->slot_descrget){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_descrget, "__get__");
+    }
+    if (tp_tp->slot_descrset){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_descrset, "__set__");
+    }
+    if (tp_tp->slot_getattr){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_getattr, "__getattr__");
+    }
+    if (tp_tp->slot_setattr){
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_setattr, "__setattr__");
+    }
 
     
 
@@ -3452,11 +3464,17 @@ object* type_bool(object* self){
 }
 
 object* type_dict(object* type){
-    return type->type->dict;
+    if (!object_istype(type->type, &TypeType)){
+        return type->type->dict;
+    }
+    return CAST_TYPE(type)->dict;
 }
 
 object* type_bases_get(object* type){
-    return type->type->bases;
+    if (!object_istype(type->type, &TypeType)){
+        return type->type->bases;
+    }
+    return CAST_TYPE(type)->bases;
 }
 
 object* new_type(string* name, object* bases, object* dict){
@@ -3838,7 +3856,6 @@ object* new_type(string* name, object* bases, object* dict){
         newtp_post_tpcall, //slot_posttpcall
     };
     object* tp=finalize_type(&newtype);
-    //inherit_type_dict_nofill((TypeObject*)tp);
     setup_type_getsets((TypeObject*)tp);
     setup_type_methods((TypeObject*)tp);
     setup_type_offsets((TypeObject*)tp);
@@ -3852,7 +3869,7 @@ object* new_type(string* name, object* bases, object* dict){
         }
     }
     
-    object* n=object_getattr(tp, str_new_fromstr("__dict__"));
+    object* n=dict_get(CAST_TYPE(tp)->dict, str_new_fromstr("__dict__"));
     CAST_OFFSETWRAPPER(n)->offset=size;
     return tp;
 }

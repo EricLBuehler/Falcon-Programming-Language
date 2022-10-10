@@ -265,6 +265,11 @@ object* type_wrapper_str(object* self, object* args, object* kwargs);
 object* type_wrapper_repr(object* self, object* args, object* kwargs);
 object* type_wrapper_call(object* self, object* args, object* kwargs);
 
+object* type_wrapper_descrget(object* self, object* args, object* kwargs);
+object* type_wrapper_descrset(object* self, object* args, object* kwargs);
+object* type_wrapper_getattr(object* self, object* args, object* kwargs);
+object* type_wrapper_setattr(object* self, object* args, object* kwargs);
+
 object* type_wrapper_eq(object* self, object* args, object* kwargs);
 object* type_wrapper_ne(object* self, object* args, object* kwargs);
 object* type_wrapper_gt(object* self, object* args, object* kwargs);
