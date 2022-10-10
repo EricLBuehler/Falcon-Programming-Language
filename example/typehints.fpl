@@ -1,4 +1,4 @@
-func f(x: str, y:int=10) -> int{
+func f(x: str, y:int=10) : int{
     return 10
 }
 
