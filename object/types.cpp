@@ -2994,6 +2994,99 @@ void setup_map_type(){
     fplbases.push_back(&MapType);
 }
 
+void property_del(object* self);
+object* property_new(object* type, object* args, object* kwargs);
+object* property_cmp(object* self, object* other, uint8_t type);
+object* property_call(object* self, object* args, object* kwargs);
+object* property_repr(object* self);
+object* property_descrget(object* instance, object* self);
+object* property_descrset(object* instance, object* self, object* value);
+object* property_getter(object* self, object* args, object* kwargs);
+object* property_setter(object* self, object* args, object* kwargs);
+object* property_deleter(object* self, object* args, object* kwargs);
+
+typedef struct PropertyObject{
+    OBJHEAD_VAR
+    object* get;
+    object* set;
+    object* del;
+}PropertyObject;
+
+Method property_methods[]={{"getter", property_getter}, {"setter", property_setter},\
+                        {"deleter", property_deleter}, {NULL,NULL}};
+GetSets property_getsets[]={{NULL,NULL}};
+
+static NumberMethods property_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+
+    0, //slot_neg
+    0, //slot_not
+
+    0, //slot_bool
+};
+
+static Mappings property_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject PropertyType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("property"), //name
+    sizeof(PropertyObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    property_new, //slot_new
+    property_del, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    property_repr, //slot_repr
+    property_repr, //slot_str
+    0, //slot_call
+
+    &property_num_methods, //slot_number
+    &property_mappings, //slot_mapping
+
+    property_methods, //slot_methods
+    property_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)property_cmp, //slot_cmp
+
+    property_descrget, //slot_descrget
+    property_descrset, //slot_descrset
+};
+
+void setup_property_type(){
+    PropertyType=(*(TypeObject*)finalize_type(&PropertyType));
+    fplbases.push_back(&PropertyType);
+}
+
 
 
 
