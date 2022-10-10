@@ -1151,7 +1151,7 @@ class Parser{
             while (!this->current_tok_is(T_LCURLY)){
                 if (this->current_tok_is(T_MUL)){
                     this->advance();
-                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER)){
+                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER) || starargs){
                             this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                             this->advance();
                             delete args;
@@ -1159,20 +1159,20 @@ class Parser{
                             return NULL;
                     }
                     stargs=this->atom(ret);
+                    if (stargs->type!=N_IDENT){
+                        this->add_parsing_error(ret, "SyntaxError: Expected identifier");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }
                     starargs=true;  
                     this->advance();
                     continue;                
                 }
                 else if (this->current_tok_is(T_POW)){
                     this->advance();
-                    if (starkwargs){
-                        this->add_parsing_error(ret, "SyntaxError: Expected (, got '%s'",token_type_to_str(this->current_tok.type).c_str());
-                        this->advance();
-                        delete args;
-                        delete kwargs;
-                        return NULL;
-                    }   
-                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER)){
+                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER) || starkwargs){
                             this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                             this->advance();
                             delete args;
@@ -1180,6 +1180,13 @@ class Parser{
                             return NULL;
                     }
                     stkwargs=this->atom(ret);
+                    if (stkwargs->type!=N_IDENT){
+                        this->add_parsing_error(ret, "SyntaxError: Expected identifier");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }
                     starkwargs=true; 
                     this->advance();
                     continue;
@@ -1716,7 +1723,7 @@ class Parser{
             while (!this->current_tok_is(T_RPAREN)){
                 if (this->current_tok_is(T_MUL)){
                     this->advance();
-                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER)){
+                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER) || starargs){
                             this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                             this->advance();
                             delete args;
@@ -1724,20 +1731,20 @@ class Parser{
                             return NULL;
                     }
                     stargs=this->atom(ret);
+                    if (stargs->type!=N_IDENT){
+                        this->add_parsing_error(ret, "SyntaxError: Expected identifier");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }
                     starargs=true;  
                     this->advance();
                     continue;                
                 }
                 else if (this->current_tok_is(T_POW)){
                     this->advance();
-                    if (starkwargs){
-                        this->add_parsing_error(ret, "SyntaxError: Expected (, got '%s'",token_type_to_str(this->current_tok.type).c_str());
-                        this->advance();
-                        delete args;
-                        delete kwargs;
-                        return NULL;
-                    }   
-                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER)){
+                    if (!this->current_tok_is(T_COMMA) && !this->current_tok_is(T_IDENTIFIER) || starkwargs){
                             this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                             this->advance();
                             delete args;
@@ -1745,6 +1752,13 @@ class Parser{
                             return NULL;
                     }
                     stkwargs=this->atom(ret);
+                    if (stkwargs->type!=N_IDENT){
+                        this->add_parsing_error(ret, "SyntaxError: Expected identifier");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }
                     starkwargs=true; 
                     this->advance();
                     continue;
