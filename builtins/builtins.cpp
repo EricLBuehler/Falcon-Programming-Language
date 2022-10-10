@@ -293,7 +293,7 @@ object* builtin_min(object* self, object* args){
 
     object* iter=val->type->slot_iter(val);
     
-    if (iter==NULL){
+    if (iter!=NULL && iter->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
         return NULL;
     }
@@ -362,7 +362,7 @@ object* builtin_max(object* self, object* args){
 
     object* iter=val->type->slot_iter(val);
     
-    if (iter==NULL){
+    if (iter!=NULL && iter->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
         return NULL;
     }
@@ -415,4 +415,38 @@ object* builtin_getannotation(object* self, object* args){
         return NULL;
     }
     return tp;
+}
+    
+object* builtin_sum(object* self, object* args){
+    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    
+    if (o->type->slot_iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", o->type->name->c_str());
+        return NULL;
+    }
+
+    object* iter=o->type->slot_iter(o);
+    
+    if (iter!=NULL && iter->type->slot_iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        return NULL;
+    }
+
+    object* ob=iter->type->slot_next(iter);
+    object* val=new_float_fromdouble(0);
+    
+    while (vm->exception==NULL){
+        object* v=object_add(val, ob);
+        if (v==NULL){
+            vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", val->type->name->c_str(), ob->type->name->c_str());
+            return NULL;
+        }
+        v=val;
+        ob=iter->type->slot_next(iter);
+    }
+    if (vm->exception!=NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
+    }
+    return val;
 }
