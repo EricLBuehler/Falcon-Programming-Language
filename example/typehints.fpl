@@ -1,0 +1,8 @@
+func f(x: str, y:int=10) -> int{
+    return 10
+}
+
+print(f.__annotations__)
+x:list = [1,2,3]
+print(x)
+print(__annotations__)
