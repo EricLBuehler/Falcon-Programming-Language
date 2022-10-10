@@ -180,6 +180,11 @@ void setup_builtins(){
     builtins[57]=(object*)&ClassMethodType;
     builtins[58]=(object*)&StaticMethodType;
     builtins[59]=(object*)&PropertyType;
+    
+    object* getannotationargs=new_tuple();
+    getannotationargs->type->slot_mappings->slot_append(getannotationargs, str_new_fromstr("name"));
+    object* getannotationkwargs=new_tuple();
+    builtins[60]=new_builtin((builtinfunc)builtin_getannotation, str_new_fromstr("getannotation"), getannotationargs, getannotationkwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

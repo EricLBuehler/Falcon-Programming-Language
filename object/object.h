@@ -138,7 +138,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=60;
+const size_t nbuiltins=61;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
