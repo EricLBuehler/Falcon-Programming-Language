@@ -1,0 +1,39 @@
+#Adapted - See https://www.programiz.com/python-programming/property
+#Modified by Eric Buehler 2022
+
+
+# Using @property decorator
+class Celsius{
+    func __init__(self, temperature=0){
+        self.temperature = temperature
+    }
+
+    func to_fahrenheit(self){
+        return (self.temperature * 1.8) + 32
+    }
+
+    @property
+    func temperature(self){
+        print("Getting value...")
+        return self._temperature
+    }
+
+    @temperature.setter
+    func temperature(self, value){
+        print("Setting value...")
+        if value < -273.15{
+            raise ValueError("Temperature below -273 is not possible")
+        }
+        self._temperature = value
+    }
+}
+
+
+# create an object
+human = Celsius(37)
+
+print(human.temperature)
+
+print(human.to_fahrenheit())
+
+coldest_thing = Celsius(-300)
