@@ -318,8 +318,7 @@ void list_del_slice(object* self, object* index){
     list_resize(CAST_LIST(self), CAST_LIST(self)->size);
 }
 
-void list_del_item(object* self, object* index){
-    uint32_t idx=CAST_INT(index)->val->to_int();
+void list_del_item(object* self, long idx){
     DECREF(CAST_LIST(self)->array[idx]);
     for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
         CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
@@ -336,25 +335,28 @@ object* list_set(object* self, object* idx, object* val){
         list_store_slice(self, idx,val);
         return new_none();
     }
-    if (!object_istype(idx->type, &IntType)){
-        vm_add_err(&TypeError, vm, "List must be indexed by int not '%s'",idx->type->name->c_str());
-        //Error
+    object* idx_=object_int(idx);
+    if (idx_==NULL || !object_istype(idx->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx->type->name->c_str());
         return NULL;
     }
-    if (CAST_LIST(self)->size<=CAST_INT(idx)->val->to_long_long() || CAST_INT(idx)->val->to_long_long()<0){
+    int lidx=CAST_INT(idx_)->val->to_int();
+    if (lidx<0){
+        lidx=lidx+(int)CAST_LIST(self)->size;
+    }
+    if ((int)CAST_LIST(self)->size<=lidx || lidx<0){
         vm_add_err(&IndexError, vm, "List index out of range");
-        //Error
         return NULL;
     }
 
     if (val==NULL){
-        list_del_item(self, idx);
+        list_del_item(self, lidx);
         return new_none();
     }
     
-    DECREF(CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]);
+    DECREF(CAST_LIST(self)->array[lidx]);
 
-    CAST_LIST(self)->array[CAST_INT(idx)->val->to_long_long()]=INCREF(val);
+    CAST_LIST(self)->array[lidx]=INCREF(val);
     return new_none();
 }
 
@@ -512,11 +514,22 @@ object* list_iter_bool(object* self){
 
 object* list_pop_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if ((len!=2 && len!=1) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 or 2 arguments, got %d", len);
         return NULL; 
     }
     object* self=list_index_int(args, 0);
+    if (len==2){
+        object* idx=list_index_int(args, 1);
+        
+        object* val=list_get(self, idx);
+        if (val==NULL){
+            return NULL;
+        }
+        INCREF(val);
+        list_set(self, idx, NULL);
+        return val;
+    }
 
 
     uint32_t idx=CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1;
