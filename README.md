@@ -37,6 +37,9 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```max```
 - ```map```
 - ```abs```
+- ```method```
+- ```classmethod```
+- ```staticmethod```
 
 ### Builtin libraries ###
 - ```time```
@@ -87,8 +90,6 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```del```
 - ```assert```
 - ```continue```
-- ```classmethod```
-- ```staticmethod```
 - ```lambda```
 
 ### Other syntax ###
