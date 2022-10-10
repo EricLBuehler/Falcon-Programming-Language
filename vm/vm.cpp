@@ -86,6 +86,7 @@ inline void add_callframe(struct callstack* stack, object* line, string* name, o
     frame->locals=NULL;
     frame->filedata=vm->filedata;
     frame->callable=callable;
+    frame->annontations=new_dict();
 
     stack->size++;
     stack->head=frame;
@@ -100,6 +101,8 @@ inline void pop_callframe(struct callstack* stack){
 
     stack->head=frame->next;
     stack->size--;
+
+    DECREF(frame->annontations);
     
     free(frame);
 }
@@ -191,6 +194,10 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     }
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL);
+    vm->globals=new_dict();
+    vm->callstack->head->locals=INCREF(vm->globals);
+    dict_set(vm->globals, str_new_fromstr("__annotations__"), vm->callstack->head->annontations);
+    vm->global_annotations=vm->callstack->head->annontations;
     
     return vm;
 }
@@ -499,8 +506,12 @@ object* import_name(string data, object* name){
     CAST_CODE(code)->co_file=object_repr(name);
     struct vm* vm_=::vm;
     ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
+    
     ::vm->globals=new_dict();
     ::vm->callstack->head->locals=INCREF(::vm->globals);
+    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
+    ::vm->global_annotations=::vm->callstack->head->annontations;
+
     object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
     vm_del(::vm);
@@ -577,6 +588,59 @@ dataframe* reverse(dataframe* head, int k){
   
     /* prev is new head of the input list */
     return prev;
+}
+
+void annotate_var(object* tp, object* name){
+    dict_set(vm->callstack->head->annontations, name, tp);
+}
+
+void annotate_global(object* tp, object* name){
+    dict_set(vm->global_annotations, name, tp);
+}
+
+void annotate_nonlocal(object* tp, object* name){
+    int i=0;
+    struct callframe* frame=vm->callstack->head;
+    while (frame){
+        if (frame->next==NULL){
+            break;
+        }
+        if (i==0){
+            if (find(CAST_DICT(frame->locals)->keys->begin(), CAST_DICT(frame->locals)->keys->end(), name) != CAST_DICT(frame->locals)->keys->end()){
+                if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
+                }
+                DECREF(CAST_DICT(frame->locals)->val->at(name));
+                
+                if (tp->type->size==0){
+                    ((object_var*)tp)->gc_ref++;
+                }
+                dict_set(frame->locals, name, tp);
+
+                return;
+            }
+        }
+        i+=1;
+        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
+        && CAST_FUNC(frame->callable)->closure!=NULL){
+            object* closure=CAST_FUNC(frame->callable)->closure;
+            //Check if name in closure
+            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                if (CAST_DICT(closure)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
+                }
+                DECREF(CAST_DICT(closure)->val->at(name));
+                
+                if (tp->type->size==0){
+                    ((object_var*)tp)->gc_ref++;
+                }
+                dict_set(closure, name, tp);
+
+                return;
+            }
+        }
+        frame=frame->next;
+    }
 }
 
 object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, uint32_t* linecounter, object* linetuple){
@@ -729,11 +793,12 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 stargs=pop_dataframe(vm->objstack); 
             }
             object* code=pop_dataframe(vm->objstack); //<- Code
+            object* annotations=pop_dataframe(vm->objstack); //<- Annotations
             object* args=pop_dataframe(vm->objstack); //<- Args
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -1923,11 +1988,12 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 stargs=pop_dataframe(vm->objstack); 
             }
             object* code=pop_dataframe(vm->objstack); //<- Code
+            object* annotations=pop_dataframe(vm->objstack); //<- Annotations
             object* args=pop_dataframe(vm->objstack); //<- Args
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -2139,6 +2205,50 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             }
             else{
                 add_dataframe(vm, vm->objstack, expr1);
+            }
+            break;
+        }
+
+        case ANNOTATE_GLOBAL:{
+            object* tp=pop_dataframe(vm->objstack);
+            annotate_global(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            break;
+        }
+
+        case ANNOTATE_NAME:{
+            object* tp=pop_dataframe(vm->objstack);
+            annotate_var(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            break;
+        }
+
+        case ANNOTATE_NONLOCAL:{
+            object* tp=pop_dataframe(vm->objstack);
+            annotate_nonlocal(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            break;
+        } 
+
+        case STORE_ATTR_ANNOTATE: {
+            object* tp=pop_dataframe(vm->objstack); //Type to annotate
+
+            object* obj=pop_dataframe(vm->objstack);
+            object* val=peek_dataframe(vm->objstack); //For multiple assignment
+            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* ret=object_setattr(obj, attr, val);
+            
+            object* annon=object_getattr(obj, str_new_fromstr("__annotations__"));
+            if (annon==NULL){
+                DECREF(vm->exception);
+                vm->exception=NULL;
+                annon=new_dict();
+                object_setattr(obj, str_new_fromstr("__annotations__"), annon);
+            }
+            dict_set(annon, attr, tp);
+            
+            if (ret==NULL || ret==CALL_ERR){ 
+                return CALL_ERR;
+            }
+            if (ret==TERM_PROGRAM){
+                return TERM_PROGRAM;
             }
             break;
         }
