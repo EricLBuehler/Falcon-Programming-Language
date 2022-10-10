@@ -582,3 +582,28 @@ object* string_lstrip_meth(object* self, object* args, object* kwargs){
     
     return str_new_fromstr(lefttrim(s));
 }
+
+object* string_contains_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* val=tuple_index_int(args, 1);   
+
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", val->type->name->c_str());
+        return NULL; 
+    }  
+
+    string s=*CAST_STRING(self)->val;
+    string v=*CAST_STRING(val)->val;
+    
+    size_t idx=s.find(v);
+    
+    if (idx==-1){
+        return new_bool_false();
+    }
+    return new_bool_true();
+}

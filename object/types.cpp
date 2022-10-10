@@ -135,6 +135,7 @@ object* string_count_meth(object* selftp, object* args, object* kwargs);
 object* string_strip_meth(object* selftp, object* args, object* kwargs);
 object* string_rstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_lstrip_meth(object* selftp, object* args, object* kwargs);
+object* string_contains_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA
@@ -175,7 +176,7 @@ Method str_methods[]={{"find", (cwrapperfunc)string_find_meth}, {"replace", (cwr
                     , {"isspace", (cwrapperfunc)string_isspace_meth}, {"isupper", (cwrapperfunc)string_isupper_meth}\
                     , {"islower", (cwrapperfunc)string_islower_meth}, {"count", (cwrapperfunc)string_count_meth}\
                     , {"strip", (cwrapperfunc)string_strip_meth}, {"rstrip", (cwrapperfunc)string_rstrip_meth}\
-                    , {"lstrip", (cwrapperfunc)string_lstrip_meth}, {NULL,NULL}};
+                    , {"lstrip", (cwrapperfunc)string_lstrip_meth}, {"contains", (cwrapperfunc)string_contains_meth}, {NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 OffsetMember str_offsets[]={{NULL}};
 
