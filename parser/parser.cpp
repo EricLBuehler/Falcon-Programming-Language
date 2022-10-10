@@ -1204,7 +1204,7 @@ class Parser{
                 this->multi=b;
                 if (expr->type==N_ASSIGN || expr->type==N_ANONASSIGN){
                     kwargs->push_back(expr);
-                    if (this->current_tok_is(T_RPAREN)){
+                    if (this->current_tok_is(T_LCURLY)){
                         break;
                     }
                     this->advance();
@@ -1224,9 +1224,8 @@ class Parser{
                         delete kwargs;
                         return NULL;
                     }
-                    
                     args->push_back(expr);
-                    if (this->current_tok_is(T_RPAREN)){
+                    if (this->current_tok_is(T_LCURLY)){
                         break;
                     }
                     this->advance();
@@ -1267,8 +1266,7 @@ class Parser{
                 delete kwargs;
                 return NULL;
             }
-            if (this->next_tok_is(T_MINUS) && this->next_next_tok_is(T_GT)){
-                this->advance();
+            if (this->next_tok_is(T_COLON)){
                 this->advance();
                 this->advance();
                 if (!this->current_tok_is(T_IDENTIFIER)){
@@ -1278,8 +1276,7 @@ class Parser{
                     delete kwargs;
                     return NULL;
                 }
-                rettp=this->expr(ret, LOWEST);
-                this->backadvance();
+                rettp=this->atom(ret);
             }
 
             Node* node=make_node(N_FUNC);
@@ -1814,9 +1811,9 @@ class Parser{
             }
 
             this->advance();
-            if (this->current_tok_is(T_MINUS) && this->next_tok_is(T_GT)){
+            if (this->current_tok_is(T_COLON)){
                 this->advance();
-                this->advance();
+                rettp=this->atom(ret);
                 if (!this->current_tok_is(T_IDENTIFIER)){
                     this->add_parsing_error(ret, "SyntaxError: Expected identifier");
                     this->advance();
@@ -1824,7 +1821,7 @@ class Parser{
                     delete kwargs;
                     return NULL;
                 }
-                rettp=this->expr(ret, LOWEST);
+                this->advance();
             }
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
