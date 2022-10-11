@@ -117,6 +117,24 @@ object* os_listdir(object* self, object* args, object* kwargs){
     return NULL;
 }
 
+
+object* os_system(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* val=list_index_int(args, 1);
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
+        return NULL; 
+    }
+
+    string cmd=*CAST_STRING(val)->val;
+    
+    return new_int_fromint(system(cmd.c_str()));
+}
+
 object* new_os_module(){
     object* dict=new_dict();
     
@@ -125,6 +143,7 @@ object* new_os_module(){
     dict_set(dict, str_new_fromstr("getcwd"), cwrapper_new_fromfunc_null((cwrapperfunc)os_getcwd, "getcwd"));
     dict_set(dict, str_new_fromstr("rmdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_rmdir, "rmdir"));
     dict_set(dict, str_new_fromstr("listdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_listdir, "listdir"));
+    dict_set(dict, str_new_fromstr("system"), cwrapper_new_fromfunc_null((cwrapperfunc)os_system, "system"));
 
     return module_new_fromdict(dict, str_new_fromstr("os"));
 }
