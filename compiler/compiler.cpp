@@ -618,7 +618,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t n_anno=0;
             if (FUNCT(expr->node)->rettp!=NULL){
                 n_anno++;
-                  
+                
                 int cmpexpr=compile_expr(compiler, FUNCT(expr->node)->rettp);
                 if (cmpexpr==0x100){
                     return cmpexpr;
@@ -692,6 +692,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
+            bool isgen=false;
+            for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_code)->size; i+=2){
+                if (*CAST_INT(list_index_int(CAST_CODE(code)->co_code, i))->val==YIELD_VALUE){
+                    isgen=true;
+                    break;
+                }
+            }
             
             object* lines=new_list();
             
@@ -785,12 +792,20 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             //Create callable
             if (compiler->scope!=SCOPE_GLOBAL){
-                if (FUNCT(expr->node)->type==FUNCTION_NORMAL || FUNCT(expr->node)->type==FUNCTION_LAMBDA){
+                if (!isgen){
                     add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
+                }
+                else{
+                    add_instruction(compiler->instructions,MAKE_CLOSURE_GENERATOR, argc, expr->start, expr->end);                    
                 }
             }
             else{
-                add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
+                if (!isgen){
+                    add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
+                }
+                else{
+                    add_instruction(compiler->instructions,MAKE_GENERATOR, argc, expr->start, expr->end);
+                }
             }
 
             if (FUNCT(expr->node)->type!=FUNCTION_LAMBDA){
@@ -2725,6 +2740,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, DECORATOR(decorators.back())->function->start->line);
             compiler=compiler_;
+            bool isgen=false;
+            for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_code)->size; i+=2){
+                if (*CAST_INT(list_index_int(CAST_CODE(code)->co_code, i))->val==YIELD_VALUE){
+                    isgen=true;
+                    break;
+                }
+            }
             
             object* lines=new_list();
             
@@ -2818,10 +2840,20 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             //Create callable
             if (compiler->scope!=SCOPE_GLOBAL){
-                add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
+                if (!isgen){
+                    add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
+                }
+                else{
+                    add_instruction(compiler->instructions,MAKE_CLOSURE_GENERATOR, argc, expr->start, expr->end);                    
+                }
             }
             else{
-                add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
+                if (!isgen){
+                    add_instruction(compiler->instructions,MAKE_FUNCTION, argc, expr->start, expr->end);
+                }
+                else{
+                    add_instruction(compiler->instructions,MAKE_GENERATOR, argc, expr->start, expr->end);
+                }
             }
             
             //TOS is now the function!
@@ -3056,6 +3088,23 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }                
             }
             break;
+        }
+
+        case N_YIELD: {
+            if (compiler->scope==SCOPE_GLOBAL){
+                parser.add_parsing_error(&parseretglbl, "SyntaxError: Yield outside function");
+                return 0x100;
+            }
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+            int cmpexpr=compile_expr(compiler, YIELD(expr->node)->expr); //Push data
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (!ret){
+                compiler->keep_return=false;
+            }
+            add_instruction(compiler->instructions,YIELD_VALUE, 0, expr->start, expr->end);
         }
 
     }
