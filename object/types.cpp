@@ -3172,19 +3172,19 @@ object* type_get(object* self, object* attr){
 
     object* res=NULL;
     //First check metatype
-
-    //Check self dict
-    if (CAST_TYPE(self)->dict!=0){
-        object* dict = CAST_TYPE(self)->dict;
+    
+    //Check type dict
+    if (self->type->dict!=0){
+        object* dict = self->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             res=dict_get(dict, attr);
         }
     }
 
     if (res==NULL){
-        uint32_t total_bases = CAST_INT(list_len(CAST_TYPE(self)->bases))->val->to_long_long();
+        uint32_t total_bases = CAST_INT(list_len(self->type->bases))->val->to_long_long();
         for (uint32_t i=total_bases; i>0; i--){
-            TypeObject* base_tp=CAST_TYPE(list_index_int(CAST_TYPE(self)->bases, i-1));
+            TypeObject* base_tp=CAST_TYPE(list_index_int(self->type->bases, i-1));
 
             //Check type dict
             if (base_tp->dict!=0){
@@ -3197,18 +3197,19 @@ object* type_get(object* self, object* attr){
         }
     }
     
-    //Check type dict
-    if (res==NULL && self->type->dict!=0){
-        object* dict = self->type->dict;
+
+    //Check self dict
+    if (res==NULL && CAST_TYPE(self)->dict!=0){
+        object* dict = CAST_TYPE(self)->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             res=dict_get(dict, attr);
         }
     }
 
     if (res==NULL){
-        uint32_t total_bases = CAST_INT(list_len(self->type->bases))->val->to_long_long();
+        uint32_t total_bases = CAST_INT(list_len(CAST_TYPE(self)->bases))->val->to_long_long();
         for (uint32_t i=total_bases; i>0; i--){
-            TypeObject* base_tp=CAST_TYPE(list_index_int(self->type->bases, i-1));
+            TypeObject* base_tp=CAST_TYPE(list_index_int(CAST_TYPE(self)->bases, i-1));
 
             //Check type dict
             if (base_tp->dict!=0){
@@ -3904,7 +3905,7 @@ object* new_type(string* name, object* bases, object* dict){
         size=maxsize;
     }
     if (size==0){
-        size=sizeof(object);
+        size=offsetof(NewTypeObject, dict);
     }
 
     map<object*, object*> orig_dict(*CAST_DICT(dict)->val);
