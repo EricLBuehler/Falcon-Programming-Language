@@ -205,7 +205,7 @@ vector<TypeObject*> fplbases;
 
 string* glblfildata=NULL;
 
-object* run_vm(object* codeobj, uint32_t* ip);
+object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_);
 struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, string* filedata);
 
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
@@ -216,6 +216,11 @@ inline object* pop_dataframe(struct datastack* stack);
 inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable);
 inline void pop_callframe(struct callstack* stack);
 void print_traceback();
+inline object* peek_dataframe(struct datastack* stack);
+
+struct datastack* new_datastack();
+struct callstack* new_callstack();
+struct blockstack* new_blockstack();
 
 void finalize_threads();
 
@@ -290,6 +295,8 @@ enum blocktype{
     TRY_BLOCK,
     FOR_BLOCK,
 };
+void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint32_t arg, enum blocktype tp);
+void pop_blockframe(struct blockstack* stack);
 
 
 struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type);

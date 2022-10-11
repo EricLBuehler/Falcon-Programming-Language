@@ -5,6 +5,10 @@ object* new_generator_impl(object* func, object* locals){
     CAST_GEN(obj)->locals=locals;
     CAST_GEN(obj)->ip=0;
     CAST_GEN(obj)->done=false;
+    
+    CAST_GEN(obj)->objstack=new_datastack();
+    CAST_GEN(obj)->callstack=new_callstack();
+    CAST_GEN(obj)->blockstack=new_blockstack();
 
     return obj;
 }
@@ -55,15 +59,70 @@ object* gen_next(object* self){
         return NULL;
     }
 
+    if (CAST_GEN(self)->objstack->size>0){
+        while (CAST_GEN(self)->objstack->size>0){
+            add_dataframe(vm, vm->objstack, pop_dataframe(CAST_GEN(self)->objstack));
+        }
+    }
+
+    if (CAST_GEN(self)->callstack->size>0){
+        while (CAST_GEN(self)->callstack->size>0){
+            add_callframe(vm->callstack, CAST_GEN(self)->callstack->head->line, CAST_GEN(self)->callstack->head->name,\
+                CAST_GEN(self)->callstack->head->code, CAST_GEN(self)->callstack->head->callable);
+            DECREF(vm->callstack->head->annontations);
+            vm->callstack->head->annontations=INCREF(CAST_GEN(self)->callstack->head->annontations);
+            pop_callframe(CAST_GEN(self)->callstack);
+        }
+    }
+
+    if (CAST_GEN(self)->blockstack->size>0){
+        while (CAST_GEN(self)->blockstack->size>0){
+            add_blockframe(&(CAST_GEN(self)->blockstack->head->start_ip), vm, vm->blockstack, CAST_GEN(self)->blockstack->head->arg, CAST_GEN(self)->blockstack->head->type);
+            pop_blockframe(CAST_GEN(self)->blockstack);
+        }
+    }
+
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(CAST_GEN(self)->func)->name)->val, CAST_FUNC(CAST_GEN(self)->func)->code, self);
     vm->callstack->head->locals=CAST_GEN(self)->locals;
 
     uint32_t ip_=CAST_GEN(self)->ip;
-    object* ret=run_vm(CAST_FUNC(CAST_GEN(self)->func)->code, &(CAST_GEN(self)->ip));
+    uint32_t datastack_size=vm->objstack->size;
+    uint32_t callstack_size=vm->callstack->size;
+    uint32_t blockstack_size=vm->blockstack->size;
+    uint32_t realip=0;
+
+    object* ret=run_vm(CAST_FUNC(CAST_GEN(self)->func)->code, &realip, &(CAST_GEN(self)->ip));
+
+    
+    uint32_t datastack_size_=vm->objstack->size;
+    uint32_t callstack_size_=vm->callstack->size;
+    uint32_t blockstack_size_=vm->blockstack->size;
+
+    if (datastack_size_>datastack_size){
+        while (vm->objstack->size>datastack_size){
+            add_dataframe(vm, CAST_GEN(self)->objstack, pop_dataframe(vm->objstack));
+        }
+    }
+    if (callstack_size_>callstack_size){
+        while (vm->callstack->size>callstack_size){
+            add_callframe(CAST_GEN(self)->callstack, vm->callstack->head->line, vm->callstack->head->name,\
+                vm->callstack->head->code, vm->callstack->head->callable);
+            DECREF(CAST_GEN(self)->callstack->head->annontations);
+            CAST_GEN(self)->callstack->head->annontations=INCREF(vm->callstack->head->annontations);
+            pop_callframe(vm->callstack);
+        }
+    }
+    if (blockstack_size_>blockstack_size){
+        while (vm->blockstack->size>blockstack_size){
+            add_blockframe(&(vm->blockstack->head->start_ip), vm, CAST_GEN(self)->blockstack, vm->blockstack->head->arg, vm->blockstack->head->type);
+            pop_blockframe(vm->blockstack);
+        }
+    }
+    
     if (*CAST_INT(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_code, CAST_GEN(self)->ip-2))->val == RETURN_VAL){
         CAST_GEN(self)->done=true;
     }
-    if (CAST_GEN(self)->ip==ip_){
+    if (realip==ip_){
         vm_add_err(&StopIteration, vm, "Iterator out of data");
         return NULL;
     }

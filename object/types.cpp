@@ -3103,6 +3103,9 @@ typedef struct GeneratorObject{
     object* locals;
     uint32_t ip;
     bool done;
+    struct datastack* objstack;
+    struct callstack* callstack;
+    struct blockstack* blockstack;
 }GeneratorObject;
 
 static NumberMethods gen_num_methods{
