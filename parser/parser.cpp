@@ -297,12 +297,13 @@ class Parser{
                 string _name=this->current_tok.data;
                 this->advance();
                 this->advance();
-                if (!this->current_tok_is(T_IDENTIFIER)){
-                    this->add_parsing_error(ret, "SyntaxError: Expected identifier, got '%s'", token_type_to_str(this->current_tok.type).c_str());
-                    this->advance();
-                    return NULL;
-                }
-                Node* tp=this->atom(ret);
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
+                Node* tp=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->backadvance();
 
                 free(node->node);
                 delete i->name;
@@ -311,7 +312,7 @@ class Parser{
                 i->name=new string(_name);
                 i->tp=tp;
                 node->node=i;   
-                node->type=N_ANONIDENT;             
+                node->type=N_ANONIDENT;    
             }
 
             return node;
@@ -1064,7 +1065,13 @@ class Parser{
                     this->advance();
                     return NULL;
                 }
-                Node* tp=this->atom(ret);
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
+                Node* tp=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->backadvance();
 
                 free(name->node);
 
@@ -1110,7 +1117,13 @@ class Parser{
                     this->advance();
                     return NULL;
                 }
-                Node* tp=this->atom(ret);
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
+                Node* tp=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->backadvance();
 
                 free(node->node);
                 free(g->name);
@@ -1217,13 +1230,7 @@ class Parser{
                         delete kwargs;
                         return NULL;
                     }
-                    if (expr->type!=N_IDENT && expr->type!=N_ANONIDENT){
-                        this->add_parsing_error(ret, "SyntaxError: Expected identifier");
-                        this->advance();
-                        delete args;
-                        delete kwargs;
-                        return NULL;
-                    }
+                    
                     args->push_back(expr);
                     if (this->current_tok_is(T_LCURLY)){
                         break;
@@ -1269,14 +1276,8 @@ class Parser{
             if (this->next_tok_is(T_COLON)){
                 this->advance();
                 this->advance();
-                if (!this->current_tok_is(T_IDENTIFIER)){
-                    this->add_parsing_error(ret, "SyntaxError: Expected identifier");
-                    this->advance();
-                    delete args;
-                    delete kwargs;
-                    return NULL;
-                }
-                rettp=this->atom(ret);
+                rettp=this->expr(ret, LOWEST);
+                // this->advance(); // BACKADVANCE would cancel out
             }
 
             Node* node=make_node(N_FUNC);
@@ -1508,9 +1509,7 @@ class Parser{
                 switch (this->current_tok.type){
                     case T_EQ:
                         if (this->noassign){
-                            this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
-                            this->advance();
-                            return NULL;
+                            return left;
                         }
                         left=make_assignment(ret, left);
                         break;
@@ -1596,7 +1595,13 @@ class Parser{
                                 this->advance();
                                 return NULL;
                             }
-                            Node* tp=this->atom(ret);
+                            bool b=this->multi;
+                            bool noassign=this->noassign;
+                            this->noassign=true;
+                            this->multi=false;
+                            Node* tp=this->expr(ret, LOWEST);
+                            this->noassign=noassign;
+                            this->backadvance();
 
                             AnnotatedDot* i=(AnnotatedDot*)fpl_malloc(sizeof(AnnotatedDot));
                             i->names=d->names;
@@ -1789,13 +1794,6 @@ class Parser{
                         delete kwargs;
                         return NULL;
                     }
-                    if (expr->type!=N_IDENT && expr->type!=N_ANONIDENT){
-                        this->add_parsing_error(ret, "SyntaxError: Expected identifier");
-                        this->advance();
-                        delete args;
-                        delete kwargs;
-                        return NULL;
-                    }
                     
                     args->push_back(expr);
                     if (this->current_tok_is(T_RPAREN)){
@@ -1816,15 +1814,8 @@ class Parser{
             this->advance();
             if (this->current_tok_is(T_COLON)){
                 this->advance();
-                rettp=this->atom(ret);
-                if (!this->current_tok_is(T_IDENTIFIER)){
-                    this->add_parsing_error(ret, "SyntaxError: Expected identifier");
-                    this->advance();
-                    delete args;
-                    delete kwargs;
-                    return NULL;
-                }
-                this->advance();
+                rettp=this->expr(ret, LOWEST);
+                // this->advance(); // BACKADVANCE would cancel out
             }
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
