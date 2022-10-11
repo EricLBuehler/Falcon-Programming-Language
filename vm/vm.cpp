@@ -196,7 +196,6 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL);
     vm->globals=new_dict();
     vm->callstack->head->locals=INCREF(vm->globals);
-    dict_set(vm->globals, str_new_fromstr("__annotations__"), vm->callstack->head->annontations);
     vm->global_annotations=vm->callstack->head->annontations;
     
     return vm;
@@ -798,7 +797,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -1993,7 +1992,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -2250,6 +2249,62 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             if (ret==TERM_PROGRAM){
                 return TERM_PROGRAM;
             }
+            break;
+        }
+
+        case YIELD_VALUE: {
+            object* o = pop_dataframe(vm->objstack);
+            return o;
+        }
+
+        case MAKE_GENERATOR:{
+            int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
+            object* stargs=NULL;
+            object* stkwargs=NULL;
+            
+            if (flags==FUNC_STARARGS){
+                stargs=pop_dataframe(vm->objstack);
+            }
+            else if (flags==FUNC_STARKWARGS){
+                stkwargs=pop_dataframe(vm->objstack); 
+            }
+            else if (flags==FUNC_STAR){
+                stkwargs=pop_dataframe(vm->objstack); 
+                stargs=pop_dataframe(vm->objstack); 
+            }
+            object* code=pop_dataframe(vm->objstack); //<- Code
+            object* annotations=pop_dataframe(vm->objstack); //<- Annotations
+            object* args=pop_dataframe(vm->objstack); //<- Args
+            object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
+            object* name=pop_dataframe(vm->objstack); //<- Name
+            
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
+            add_dataframe(vm, vm->objstack, func);
+            break;
+        }
+
+        case MAKE_CLOSURE_GENERATOR:{
+            int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
+            object* stargs=NULL;
+            object* stkwargs=NULL;
+            if (flags==FUNC_STARARGS){
+                stargs=pop_dataframe(vm->objstack); 
+            }
+            else if (flags==FUNC_STARKWARGS){
+                stkwargs=pop_dataframe(vm->objstack); 
+            }
+            else if (flags==FUNC_STAR){
+                stkwargs=pop_dataframe(vm->objstack); 
+                stargs=pop_dataframe(vm->objstack); 
+            }
+            object* code=pop_dataframe(vm->objstack); //<- Code
+            object* annotations=pop_dataframe(vm->objstack); //<- Annotations
+            object* args=pop_dataframe(vm->objstack); //<- Args
+            object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
+            object* name=pop_dataframe(vm->objstack); //<- Name
+            
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
+            add_dataframe(vm, vm->objstack, func);
             break;
         }
         
