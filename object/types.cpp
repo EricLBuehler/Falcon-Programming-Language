@@ -759,6 +759,7 @@ typedef struct FuncObject{
     object* stargs;
     object* stkwargs;
     object* annotations;
+    bool isgen;
 }FuncObject;
 
 static NumberMethods func_num_methods{
@@ -3087,6 +3088,92 @@ TypeObject PropertyType={
 void setup_property_type(){
     PropertyType=(*(TypeObject*)finalize_type(&PropertyType));
     fplbases.push_back(&PropertyType);
+}
+
+
+void gen_del(object* self);
+object* gen_repr(object* self);
+object* gen_cmp(object* self, object* other, uint8_t type);
+object* gen_next(object* self);
+object* new_generator_impl(object* func, object* locals);
+
+typedef struct GeneratorObject{
+    OBJHEAD_EXTRA
+    object* func;
+    object* locals;
+    uint32_t ip;
+    bool done;
+}GeneratorObject;
+
+static NumberMethods gen_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+
+    0, //slot_neg
+    0, //slot_not
+
+    0, //slot_bool
+};
+
+static Mappings gen_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
+Method gen_methods[]={{NULL,NULL}};
+GetSets gen_getsets[]={{NULL,NULL}};
+OffsetMember gen_offsets[]={{NULL}};
+
+TypeObject GeneratorType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("generator"), //name
+    sizeof(GeneratorObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    (getattrfunc)object_genericgetattr, //slot_getattr
+    (setattrfunc)object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)gen_del, //slot_del
+
+    gen_next, //slot_next   
+    generic_iter_iter, //slot_iter
+
+    (reprfunc)gen_repr, //slot_repr
+    (reprfunc)gen_repr, //slot_str
+    0, //slot_call
+
+    &gen_num_methods, //slot_number
+    &gen_mappings, //slot_mapping
+
+    gen_methods, //slot_methods
+    gen_getsets, //slot_getsets
+    gen_offsets, //slot_offsests
+
+    (compfunc)gen_cmp, //slot_cmp
+};
+
+void setup_gen_type(){
+    GeneratorType=(*(TypeObject*)finalize_type(&GeneratorType));
+    fplbases.push_back(&GeneratorType);
 }
 
 

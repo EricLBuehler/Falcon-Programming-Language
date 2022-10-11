@@ -1,5 +1,5 @@
 object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure, int type, int flags\
-    , object* stargs, object* stkwargs, object* annotations){
+    , object* stargs, object* stkwargs, object* annotations, bool isgen){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
     CAST_FUNC(obj)->dict=new_dict();
@@ -13,6 +13,7 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->stargs=stargs;
     CAST_FUNC(obj)->stkwargs=stkwargs;
     CAST_FUNC(obj)->annotations=annotations;
+    CAST_FUNC(obj)->isgen=isgen;
 
     return obj;
 }
@@ -49,8 +50,13 @@ object* func_call(object* self, object* args, object* kwargs){
     
     setup_args_stars(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
     uint32_t ip=0;
+    object* ret;
+    if (CAST_FUNC(self)->isgen){
+        goto make_gen;
+    }
     
-    object* ret=run_vm(CAST_FUNC(self)->code, &ip);
+    ret=run_vm(CAST_FUNC(self)->code, &ip);
+
     for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
         DECREF(k.first);
         if (k.second->type->size==0){
@@ -59,6 +65,12 @@ object* func_call(object* self, object* args, object* kwargs){
         DECREF(k.second);
     }
 
+    make_gen:
+    if (CAST_FUNC(self)->isgen){
+        INCREF(vm->callstack->head->locals);
+        pop_callframe(vm->callstack);
+        return new_generator_impl(self, vm->callstack->head->locals);
+    }
     pop_callframe(vm->callstack);
     return ret;
 }

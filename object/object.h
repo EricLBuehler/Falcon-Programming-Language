@@ -352,6 +352,101 @@ struct vm{
     object* global_annotations;
 };
 
+enum opcode{
+    LOAD_CONST,
+    STORE_NAME,
+    LOAD_NAME,
+    STORE_GLOBAL,
+    LOAD_GLOBAL,
+    BINOP_ADD,
+    BINOP_SUB,
+    UNARY_NEG,
+    BINOP_MUL,
+    BINOP_DIV,
+    MAKE_FUNCTION,
+    RETURN_VAL,
+    CALL_FUNCTION,
+    BUILD_TUPLE,
+    BUILD_DICT,
+    LOAD_BUILD_CLASS,
+    LOAD_ATTR,
+    STORE_ATTR,
+    CALL_METHOD,
+    BUILD_LIST,
+    BINOP_IS,
+    BINOP_EE,
+    POP_JMP_TOS_FALSE,
+    JUMP_DELTA,
+    BINOP_SUBSCR,
+    RAISE_EXC,
+    STORE_SUBSCR,
+    DUP_TOS,
+    POP_TOS,
+    SETUP_TRY,
+    FINISH_TRY,
+    BINOP_EXC_CMP,
+    BINOP_GT,
+    BINOP_GTE,
+    BINOP_LT,
+    BINOP_LTE,
+    FOR_TOS_ITER,
+    JUMP_TO,
+    EXTRACT_ITER,
+    BREAK_LOOP,
+    CONTINUE_LOOP,
+    UNPACK_SEQ,
+    BINOP_IADD,
+    BINOP_ISUB,
+    BINOP_IMUL,
+    BINOP_IDIV,
+    IMPORT_NAME,
+    IMPORT_FROM_MOD,
+    MAKE_SLICE,
+    BINOP_NE,
+    DEL_SUBSCR,
+    DEL_NAME,
+    BINOP_MOD,
+    BINOP_POW,
+    BINOP_IPOW,
+    BINOP_IMOD,
+    BINOP_AND,
+    BINOP_OR,
+    UNARY_NOT,
+    BUILD_STRING,
+    POP_JMP_TOS_TRUE,
+    RAISE_ASSERTIONERR,
+    DEL_GLBL,
+    DEL_ATTR,
+    MAKE_CLOSURE,
+    LOAD_NONLOCAL,
+    STORE_NONLOCAL,
+    DEL_NONLOCAL,
+    BITWISE_NOT,
+    BITWISE_AND,
+    BITWISE_OR,
+    BITWISE_LSHIFT,
+    BITWISE_RSHIFT,
+    BINOP_IAND,
+    BINOP_IOR,
+    BINOP_ILSH,
+    BINOP_IRSH,
+    BINOP_NOTIN,
+    BINOP_IN,
+    BINOP_ISNOT,
+    BINOP_FLDIV,
+    BINOP_IFLDIV,
+    LOAD_METHOD,
+    TERNARY_TEST,
+    CALL_FUNCTION_BOTTOM,
+    ANNOTATE_GLOBAL,
+    ANNOTATE_NAME,
+    ANNOTATE_NONLOCAL,
+    STORE_ATTR_ANNOTATE,
+    YIELD_VALUE,
+    MAKE_GENERATOR,
+    MAKE_CLOSURE_GENERATOR,
+};
+
 
 #define CAST_VAR(obj) ((object_var*)obj)
 #define CAST_INT(obj) ((IntObject*)obj)
@@ -387,6 +482,7 @@ struct vm{
 #define CAST_CLASSMETHOD(obj) ((ClassMethodObject*)obj)
 #define CAST_STATICMETHOD(obj) ((StaticMethodObject*)obj)
 #define CAST_PROPERTY(obj) ((PropertyObject*)obj)
+#define CAST_GEN(obj) ((GeneratorObject*)obj)
 
 
 #define object_istype(this, other) (this==other)
@@ -456,6 +552,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "classmethodobject.cpp"
 #include "mapobject.cpp"
 #include "propertyobject.cpp"
+#include "genobject.cpp"
 
 
 void setup_types_consts(){
@@ -502,6 +599,7 @@ void setup_types_consts(){
     setup_classmethod_type();
     setup_map_type();
     setup_property_type();
+    setup_gen_type();
 
     setup_builtins();
     
@@ -646,4 +744,8 @@ void setup_types_consts(){
     setup_type_offsets(&PropertyType);
     setup_type_getsets(&PropertyType);
     setup_type_methods(&PropertyType);
+    
+    inherit_type_dict(&GeneratorType);
+    setup_type_offsets(&GeneratorType);
+    setup_type_getsets(&GeneratorType);
 }
