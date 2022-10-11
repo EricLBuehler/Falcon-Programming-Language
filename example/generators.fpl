@@ -1,0 +1,13 @@
+func a(){
+    for n in [2,3]{
+        print(n,end=" is ")
+        yield n*2
+    }
+}
+
+print(a)
+x=a()
+print(x)
+for item in x{
+    print(item)
+}
