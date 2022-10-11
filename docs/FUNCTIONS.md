@@ -27,3 +27,6 @@ Classmethods are methods that take an instance argument in the form of the type 
 @classmethod
 func <name> (cls, <arguments>){<code>}
 ```
+## Iterators
+### Generators
+Generators are any functions witha ```yield``` statement.
