@@ -122,7 +122,8 @@ object* gen_next(object* self){
     if (*CAST_INT(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_code, CAST_GEN(self)->ip-2))->val == RETURN_VAL){
         CAST_GEN(self)->done=true;
     }
-    if (realip==ip_){
+    if (realip==ip_ || CAST_GEN(self)->done){
+        CAST_GEN(self)->done=true;
         vm_add_err(&StopIteration, vm, "Iterator out of data");
         return NULL;
     }
