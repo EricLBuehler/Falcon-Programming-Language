@@ -1315,6 +1315,7 @@ object* file_read_meth(object* selftp, object* args, object* kwargs);
 object* file_close_meth(object* selftp, object* args, object* kwargs);
 object* file_write_meth(object* selftp, object* args, object* kwargs);
 object* file_seek_meth(object* selftp, object* args, object* kwargs);
+object* file_size_meth(object* selftp, object* args, object* kwargs);
 
 Method file_methods[]={{"read", (cwrapperfunc)file_read_meth}, {"close", (cwrapperfunc)file_close_meth}\
                     , {"write", (cwrapperfunc)file_write_meth}, {"seek", (cwrapperfunc)file_seek_meth}, {NULL,NULL}};

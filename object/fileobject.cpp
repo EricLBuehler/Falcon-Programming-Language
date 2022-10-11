@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+
 object* file_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
     if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
@@ -69,7 +71,7 @@ object* file_new_fromfile(object* name, char* mode){
 
 object* file_read_meth(object* selftp, object* args, object* kwargs){    
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if (len!=1){
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }
@@ -100,7 +102,7 @@ object* file_read_meth(object* selftp, object* args, object* kwargs){
 
 object* file_seek_meth(object* selftp, object* args, object* kwargs){    
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if (len!=2){
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -125,7 +127,7 @@ object* file_seek_meth(object* selftp, object* args, object* kwargs){
 
 object* file_write_meth(object* selftp, object* args, object* kwargs){   
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if (len!=2){
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -149,7 +151,13 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
     return INCREF(self);
 }
 
-object* file_close_meth(object* selftp, object* args, object* kwargs){    
+object* file_close_meth(object* selftp, object* args, object* kwargs){   
+    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL;
+    }
+
     object* self=list_index_int(args, 0);
     if (object_istype(self->type, &TypeType)){
         vm_add_err(&TypeError, vm, "Expected file type, got type '%s'", self->type->name->c_str());
