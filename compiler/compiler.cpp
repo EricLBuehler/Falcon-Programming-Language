@@ -619,10 +619,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (FUNCT(expr->node)->rettp!=NULL){
                 n_anno++;
                 
-                int cmpexpr=compile_expr(compiler, FUNCT(expr->node)->rettp);
+                bool ret=compiler->keep_return;
+                compiler->keep_return=true;
+                int cmpexpr=compile_expr(compiler, FUNCT(expr->node)->rettp); //Push data
                 if (cmpexpr==0x100){
                     return cmpexpr;
-                }                
+                }
+                if (!ret){
+                    compiler->keep_return=false;
+                }    
+
                 uint32_t idx;
                 string* s=new string("return");
                 if (!_list_contains(compiler->consts, s)){
@@ -640,10 +646,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*FUNCT(expr->node)->args)){
                 if (n->type!=N_IDENT){
                     n_anno++;
-                    int cmpexpr=compile_expr(compiler, ANONIDENT(n->node)->tp);
+                    
+                    bool ret=compiler->keep_return;
+                    compiler->keep_return=true;
+                    int cmpexpr=compile_expr(compiler, ANONIDENT(n->node)->tp); //Push data
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
+                    if (!ret){
+                        compiler->keep_return=false;
+                    } 
+
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, ANONIDENT(n->node)->name )){
                         //Create object
@@ -659,10 +672,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*FUNCT(expr->node)->kwargs)){
                 if (n->type!=N_ASSIGN){
                     n_anno++; 
-                    int cmpexpr=compile_expr(compiler, ANONIDENT(ASSIGN(n->node)->name->node)->tp);
+                    
+                    bool ret=compiler->keep_return;
+                    compiler->keep_return=true;
+                    int cmpexpr=compile_expr(compiler, ASSIGN(n->node)->name); //Push data
                     if (cmpexpr==0x100){
                         return cmpexpr;
-                    }                
+                    }
+                    if (!ret){
+                        compiler->keep_return=false;
+                    } 
+
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, ANONIDENT(ASSIGN(n->node)->name->node)->name )){
                         //Create object
@@ -2663,14 +2683,19 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             //Annotations
             uint32_t n_anno=0;
-
             if (FUNCT(DECORATOR(decorators.back())->function->node)->rettp!=NULL){
                 n_anno++;
-                  
-                int cmpexpr=compile_expr(compiler, FUNCT(DECORATOR(decorators.back())->function->node)->rettp);
+                
+                bool ret=compiler->keep_return;
+                compiler->keep_return=true;
+                int cmpexpr=compile_expr(compiler, FUNCT(DECORATOR(decorators.back())->function->node)->rettp); //Push data
                 if (cmpexpr==0x100){
                     return cmpexpr;
-                }                
+                }
+                if (!ret){
+                    compiler->keep_return=false;
+                }    
+
                 uint32_t idx;
                 string* s=new string("return");
                 if (!_list_contains(compiler->consts, s)){
@@ -2684,14 +2709,21 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 delete s;
                 add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
             }
-            
+
             for (Node* n: (*FUNCT(DECORATOR(decorators.back())->function->node)->args)){
                 if (n->type!=N_IDENT){
                     n_anno++;
-                    int cmpexpr=compile_expr(compiler, ANONIDENT(n->node)->tp);
+                    
+                    bool ret=compiler->keep_return;
+                    compiler->keep_return=true;
+                    int cmpexpr=compile_expr(compiler, ANONIDENT(n->node)->tp); //Push data
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
+                    if (!ret){
+                        compiler->keep_return=false;
+                    } 
+
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, ANONIDENT(n->node)->name )){
                         //Create object
@@ -2705,12 +2737,19 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
             for (Node* n: (*FUNCT(DECORATOR(decorators.back())->function->node)->kwargs)){
-                if (n->type!=N_ASSIGN){  
-                    n_anno++;  
-                    int cmpexpr=compile_expr(compiler, ANONIDENT(ASSIGN(n->node)->name->node)->tp);
+                if (n->type!=N_ASSIGN){
+                    n_anno++; 
+                    
+                    bool ret=compiler->keep_return;
+                    compiler->keep_return=true;
+                    int cmpexpr=compile_expr(compiler, ASSIGN(n->node)->name); //Push data
                     if (cmpexpr==0x100){
                         return cmpexpr;
-                    }                
+                    }
+                    if (!ret){
+                        compiler->keep_return=false;
+                    } 
+
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, ANONIDENT(ASSIGN(n->node)->name->node)->name )){
                         //Create object
@@ -2988,20 +3027,34 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 switch (compiler->scope){
                     case SCOPE_GLOBAL: {
                         add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                        
+                        bool ret=compiler->keep_return;
+                        compiler->keep_return=true;
                         cmpexpr=compile_expr(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
                         if (cmpexpr==0x100){
                             return cmpexpr;
                         }
+                        if (!ret){
+                            compiler->keep_return=false;
+                        }
+                        
                         add_instruction(compiler->instructions,ANNOTATE_GLOBAL, idx, expr->start, expr->end);
                         break;
                     }
 
                     case SCOPE_LOCAL: {
                         add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                        
+                        bool ret=compiler->keep_return;
+                        compiler->keep_return=true;
                         cmpexpr=compile_expr(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
                         if (cmpexpr==0x100){
                             return cmpexpr;
                         }
+                        if (!ret){
+                            compiler->keep_return=false;
+                        }
+                        
                         add_instruction(compiler->instructions,ANNOTATE_NAME, idx, expr->start, expr->end);
                         break;
                     }
@@ -3024,11 +3077,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (!compiler->keep_return){
                     add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
                 }
-                
+                        
+                bool ret=compiler->keep_return;
+                compiler->keep_return=true;
                 int cmpexpr=compile_expr(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
+                if (!ret){
+                    compiler->keep_return=false;
+                }
+                        
                 add_instruction(compiler->instructions,ANNOTATE_NONLOCAL, idx, expr->start, expr->end);
             }
             else if (ASSIGN(expr->node)->name->type==N_ANONGLBL_IDENT){
@@ -3046,10 +3105,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
                 }
                 
+                bool ret=compiler->keep_return;
+                compiler->keep_return=true;
                 int cmpexpr=compile_expr(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
+                if (!ret){
+                    compiler->keep_return=false;
+                }
+                        
                 add_instruction(compiler->instructions,ANNOTATE_GLOBAL, idx, expr->start, expr->end);
             }
             else if (ASSIGN(expr->node)->name->type==N_ANONDOT){
@@ -3074,10 +3139,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     
                     if (i==names->size()-1){
+                        bool ret=compiler->keep_return;
+                        compiler->keep_return=true;
                         int cmpexpr=compile_expr(compiler, ANONDOT(ASSIGN(expr->node)->name->node)->tp);
                         if (cmpexpr==0x100){
                             return cmpexpr;
                         }
+                        if (!ret){
+                            compiler->keep_return=false;
+                        }
+
                         add_instruction(compiler->instructions,STORE_ATTR_ANNOTATE, idx, expr->start, expr->end);
                         continue;
                     }     
