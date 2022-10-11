@@ -1,0 +1,3 @@
+import os
+
+print(os.system("dir")) #Should list directory, then print 0, as 0 is the return value
