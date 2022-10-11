@@ -242,6 +242,15 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
 }
 
 struct object* vm_get_var_locals(struct vm* vm, object* name){
+    if (vm->callstack->head->callable!=NULL && object_istype(vm->callstack->head->callable->type, &FuncType)\
+    && CAST_FUNC(vm->callstack->head->callable)->closure!=NULL){
+        object* closure=CAST_FUNC(vm->callstack->head->callable)->closure;
+        //Check if name in closure
+        if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+            return CAST_DICT(closure)->val->at(name);
+        }
+    }
+    
     struct callframe* frame=vm->callstack->head;
     while(frame){
         for (auto k: (*CAST_DICT(frame->locals)->val)){
@@ -263,14 +272,6 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
             if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
                 return builtins[i];
             } 
-        }
-    }
-    if (vm->callstack->head->callable!=NULL && object_istype(vm->callstack->head->callable->type, &FuncType)\
-    && CAST_FUNC(vm->callstack->head->callable)->closure!=NULL){
-        object* closure=CAST_FUNC(vm->callstack->head->callable)->closure;
-        //Check if name in closure
-        if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-            return CAST_DICT(closure)->val->at(name);
         }
     }
 
@@ -295,7 +296,7 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
 
 object* vm_get_var_nonlocal(struct vm* vm, object* name){
     int i=0;
-    struct callframe* frame=vm->callstack->head;
+    struct callframe* frame=vm->callstack->head->next;
     while (frame){
         if (frame->next==NULL){
             break;
@@ -323,7 +324,7 @@ object* vm_get_var_nonlocal(struct vm* vm, object* name){
 
 void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
     int i=0;
-    struct callframe* frame=vm->callstack->head;
+    struct callframe* frame=vm->callstack->head->next;
     while (frame){
         if (frame->next==NULL){
             break;
@@ -511,7 +512,7 @@ object* import_name(string data, object* name){
     dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
     ::vm->global_annotations=::vm->callstack->head->annontations;
 
-    object* ret=run_vm(code, &::vm->ip);
+    object* ret=run_vm(code, NULL, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
     vm_del(::vm);
     ::vm=vm_;
@@ -2315,7 +2316,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
     return NULL;
 }
 
-object* run_vm(object* codeobj, uint32_t* ip){
+object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
     object* code=CAST_CODE(codeobj)->co_code;
     object* lines=CAST_CODE(codeobj)->co_lines;
     
@@ -2328,10 +2329,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
     vm->callstack->head->line=list_index_int(linetup, 2);
 
     uint32_t i=0;
-    while ((*ip)<instructions){
-        instruction=list_index_int(code, (*ip)++);
+    while ((*ip_)<instructions){
+        if (ip!=NULL){
+            (*ip)++;
+        }
+        instruction=list_index_int(code, (*ip_)++);
         
-        if (((*ip)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
+        if (((*ip_)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
         }
@@ -2347,7 +2351,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             //
         }
         
-        object* obj=_vm_step(instruction, list_index_int(code, (*ip)++), vm, ip, &linetup_cntr, linetup);
+        if (ip!=NULL){
+            (*ip)++;
+        }
+        object* obj=_vm_step(instruction, list_index_int(code, (*ip_)++), vm, ip_, &linetup_cntr, linetup);
         if (linetup_cntr>len){
             linetup_cntr=len;
         }
@@ -2434,8 +2441,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 }
                 frame->other=linetup_cntr;
                 
-                (*ip)=frame->arg+4; //skip jump
-                calculate_new_line(ip, &linetup_cntr, &linetup);
+                (*ip_)=frame->arg+4; //skip jump
+                calculate_new_line(ip_, &linetup_cntr, &linetup);
                 frame->arg=1;
                 continue;
             }
