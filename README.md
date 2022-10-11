@@ -94,6 +94,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```assert```
 - ```continue```
 - ```lambda```
+- ```yield```
 
 ### Other syntax ###
 - ```:``` - Global variable access
