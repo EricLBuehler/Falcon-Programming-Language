@@ -1676,6 +1676,9 @@ class Parser{
             else if (this->current_tok.data=="lambda"){
                 n=this->expr(ret,LOWEST);
             }
+            else if (this->current_tok.data=="yield"){
+                n= make_yield(ret);
+            }
             else{
                 this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
                 this->advance();
@@ -2795,6 +2798,25 @@ class Parser{
             a->expr=expr;
 
             node->node=a;
+
+            return node;
+        }
+
+        Node* make_yield(parse_ret* ret){
+            this->advance();
+
+            Token t=this->current_tok;
+
+            Node* expr=this->expr(ret, LOWEST);
+
+            Node* node=make_node(N_YIELD);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            Yield* y=(Yield*)fpl_malloc(sizeof(Yield));
+            y->expr=expr;
+
+            node->node=y;
 
             return node;
         }

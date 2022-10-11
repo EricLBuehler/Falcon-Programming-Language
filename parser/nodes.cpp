@@ -50,6 +50,7 @@ enum nodetype{
     N_ANONNONLOCAL, //No data struct
     N_ANONGLBL_IDENT, //No data struct
     N_ANONDOT,
+    N_YIELD,
 };
 
 enum precedence {
@@ -345,6 +346,10 @@ struct AnnotatedIdentifier{
 struct AnnotatedDot{
     vector<Node*>* names;
     Node* tp;
+};
+
+struct Yield{
+    Node* expr;
 };
 
 
