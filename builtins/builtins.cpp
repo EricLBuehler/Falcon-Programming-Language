@@ -412,6 +412,8 @@ object* builtin_getannotation(object* self, object* args){
 
     object* tp=dict_get(anno, nm);
     if (tp==NULL){
+        DECREF(vm->exception);
+        vm->exception=NULL;
         vm_add_err(&NameError, vm, "No annotation for name %s found", object_cstr(object_repr(nm)).c_str());
         return NULL;
     }
