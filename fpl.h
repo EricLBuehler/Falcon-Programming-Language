@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <chrono>
 #include <mutex>
+#include <set>
 
 
 #include <sys/stat.h>
@@ -41,6 +42,8 @@ using namespace std;
 #define LIST_TUP_LEN(l) CAST_TUPLE(l)->size
 
 #define GIL_MAX_SWITCH 128
+
+#define FPL_VERSION 1.01
 
 std::mutex GIL;
 
@@ -173,7 +176,7 @@ int execute(string data, bool objdump, bool verbose){
         cout<<"--------\n";
     }
     auto a=time_nanoseconds();
-    object* returned=run_vm(code, &vm->ip);
+    object* returned=run_vm(code, NULL, &vm->ip);
     auto b=time_nanoseconds();
 
     finalize_threads();

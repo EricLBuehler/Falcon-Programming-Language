@@ -26,10 +26,11 @@ int main(int argc, char** argv) {
     kwds.push_back("assert");
     kwds.push_back("continue");
     kwds.push_back("lambda");
+    kwds.push_back("yield");
     
     if (argc==1){
         try{
-            cout<<"Falcon Programming Language V1.00"<<endl;
+            cout<<"Falcon Programming Language V"<<FPL_VERSION<<endl;
             cout<<"Eric Buehler 2022"<<endl;
             cout<<"Type copyright() for copyright and license information, exit() to exit"<<endl<<endl;
             //Prep constants and types
@@ -93,7 +94,7 @@ int main(int argc, char** argv) {
                 vm->ip=0;
                 
                 auto a=time_nanoseconds();
-                object* returned=run_vm(code, &vm->ip);
+                object* returned=run_vm(code, NULL, &vm->ip);
                 auto b=time_nanoseconds();
 
                 if (returned==TERM_PROGRAM){
