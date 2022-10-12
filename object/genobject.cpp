@@ -123,7 +123,7 @@ object* gen_next(object* self){
         CAST_GEN(self)->done=true;
     }
     
-    if (CAST_GEN(self)->ip==ip_ || CAST_GEN(self)->done){
+    if (realip==0 || CAST_GEN(self)->done){
         CAST_GEN(self)->done=true;
         vm_add_err(&StopIteration, vm, "Iterator out of data");
 
