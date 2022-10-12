@@ -453,6 +453,7 @@ enum opcode{
     MAKE_GENERATOR,
     MAKE_CLOSURE_GENERATOR,
     BUILD_SET,
+    CLEAR_EXC,
 };
 
 
