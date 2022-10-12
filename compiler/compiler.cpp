@@ -3178,6 +3178,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,YIELD_VALUE, 0, expr->start, expr->end);
         }
 
+        case N_SET: {
+            for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
+                int cmpexpr=compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
+            }
+            add_instruction(compiler->instructions, BUILD_SET, LIST(expr->node)->list->size(), new Position, new Position);
+            break;
+        }
+
     }
     
     if (!compiler_nofree){

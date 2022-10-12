@@ -174,3 +174,5 @@ STORE_ATTR(idx) - Implement TOS-1.names[idx] =TOS-2. Annotates variable with tp 
                 creates a new __annotations__
 
 YIELD_VALUE - Yields TOS. If call stack callable is a function, return a generator of the function.
+
+BUILD_SET(n) - Pops n frames of stack (L->R and Top->Down) and pushes set
