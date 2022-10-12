@@ -1741,7 +1741,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     continue;
                 }
                 else if (i==TRYEXCEPTFINALLY(expr->node)->bases->size()-1 && TRYEXCEPTFINALLY(expr->node)->bases->at(i)->type==N_FINALLY){                    
-                    add_instruction(compiler->instructions,RAISE_EXC,0, expr->start, expr->end); 
+                    add_instruction(compiler->instructions,CLEAR_EXC,0, expr->start, expr->end); 
                     instrs+=2;
                     
                     Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(i);
@@ -1865,7 +1865,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                 }
 
-                add_instruction(compiler->instructions,JUMP_DELTA,target-instrs+4, tryn->start, tryn->end);
+                add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
 
             }
             if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
