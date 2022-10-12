@@ -2395,8 +2395,8 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
                 vm->exception=NULL;
                 frame->other=linetup_cntr;
                 
-                (*ip)=frame->arg+4; //skip jump
-                calculate_new_line(ip, &linetup_cntr, &linetup);
+                (*ip_)=frame->arg+4; //skip jump
+                calculate_new_line(ip_, &linetup_cntr, &linetup);
                 frame->arg=1;
                 continue;
             }
@@ -2442,8 +2442,10 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
                     //
                     return NULL;
                 }
+                
                 add_dataframe(vm, vm->objstack, vm->exception);
                 frame->obj=INCREF(vm->exception);
+                
                 if (vm->exception!=NULL){
                     DECREF(vm->exception);
                     vm->exception=NULL;
