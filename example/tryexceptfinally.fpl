@@ -1,0 +1,9 @@
+try{
+    raise NameError("A")
+}
+except NameError t{
+    print(t)
+}
+finally{
+    print("done")
+}
