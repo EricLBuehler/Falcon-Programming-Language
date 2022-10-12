@@ -51,6 +51,7 @@ enum nodetype{
     N_ANONGLBL_IDENT, //No data struct
     N_ANONDOT,
     N_YIELD,
+    N_SET, //No data struct (List)
 };
 
 enum precedence {

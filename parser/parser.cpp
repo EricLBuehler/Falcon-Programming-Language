@@ -554,9 +554,13 @@ class Parser{
             
             
             bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
             this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
             if (expr==NULL){
+                delete list;
                 return NULL;
             }
             this->multi=b;
@@ -570,9 +574,13 @@ class Parser{
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
                 bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
                 this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                this->noassign=noassign;
                 if (expr==NULL){
+                    delete list;
                     return NULL;
                 }
                 this->multi=b;
@@ -616,8 +624,15 @@ class Parser{
             
             
             bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
             this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            if (expr==NULL){
+                delete list;
+                return NULL;
+            }
             this->multi=b;
             if (ret->errornum>0){
                 delete list;
@@ -627,9 +642,16 @@ class Parser{
 
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
-                b=this->multi;
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
                 this->multi=false;
                 Node* expr=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                if (expr==NULL){
+                    delete list;
+                    return NULL;
+                }
                 this->multi=b;
                 if (ret->errornum>0){
                     delete list;
@@ -642,6 +664,75 @@ class Parser{
             }
 
             Node* node=make_node(N_TUPLE);
+            node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            
+            List* l=(List*)fpl_malloc(sizeof(List));
+            l->list=list;
+            
+            node->node=l;
+            return node;
+        }
+
+        Node* make_set(parse_ret* ret, Node* base){
+            this->advance();
+            vector<Node*>* list=new vector<Node*>;
+            list->push_back(base);
+
+            if (this->current_tok_is(T_RCURLY)){
+                Node* node=make_node(N_SET);
+                node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
+                node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                
+                List* l=(List*)fpl_malloc(sizeof(List));
+                l->list=list;
+                
+                node->node=l;
+                return node;
+            }
+            
+            
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
+            Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            if (expr==NULL){
+                delete list;
+                return NULL;
+            }
+            this->multi=b;
+            if (ret->errornum>0){
+                delete list;
+                return NULL;
+            }
+            list->push_back(expr);
+
+            while(this->current_tok_is(T_COMMA)){
+                this->advance();
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
+                Node* expr=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                if (expr==NULL){
+                    delete list;
+                    return NULL;
+                }
+                this->multi=b;
+                if (ret->errornum>0){
+                    delete list;
+                    return NULL;
+                }
+                list->push_back(expr);
+                if (this->current_tok_is(T_RCURLY)){
+                    break;
+                }
+            }
+
+            Node* node=make_node(N_SET);
             node->start=new Position(this->get_prev().start.infile, this->get_prev().start.index, this->get_prev().start.col, this->get_prev().start.line);
             node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             
@@ -671,8 +762,16 @@ class Parser{
             }
 
             bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
             this->multi=false;
             Node* key=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            if (key==NULL){
+                delete keys;
+                delete vals;
+                return NULL;
+            }
             this->multi=b;
             if (ret->errornum>0){
                 delete vals;
@@ -680,6 +779,11 @@ class Parser{
                 return NULL;
             }
             if (!this->current_tok_is(T_COLON)){
+                if (this->current_tok_is(T_COMMA)){
+                    delete keys;
+                    delete vals;
+                    return make_set(ret, key);
+                }
                 this->add_parsing_error(ret, "SyntaxError: Expected :");
                 delete vals;
                 delete keys;
@@ -687,8 +791,16 @@ class Parser{
             }
             this->advance();
             b=this->multi;
+            noassign=this->noassign;
+            this->noassign=true;
             this->multi=false;
             Node* value=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            if (value==NULL){
+                delete keys;
+                delete vals;
+                return NULL;
+            }
             this->multi=b;
             if (ret->errornum>0){
                 delete vals;
@@ -701,8 +813,16 @@ class Parser{
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
                 b=this->multi;
+                noassign=this->noassign;
+                this->noassign=false;
                 this->multi=false;
                 Node* key=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                if (key==NULL){
+                    delete keys;
+                    delete vals;
+                    return NULL;
+                }
                 this->multi=b;
                 if (ret->errornum>0){
                     delete vals;
@@ -717,8 +837,16 @@ class Parser{
                 }
                 this->advance();
                 b=this->multi;
+                noassign=this->noassign;
+                this->noassign=false;
                 this->multi=false;
                 Node* value=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                if (value==NULL){
+                    delete keys;
+                    delete vals;
+                    return NULL;
+                }
                 this->multi=b;
                 if (ret->errornum>0){
                     delete vals;
