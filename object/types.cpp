@@ -1671,6 +1671,7 @@ TypeObject ListIterType={
 
 void setup_listiter_type(){
     ListIterType=(*(TypeObject*)finalize_type(&ListIterType));
+    ListIterType.slot_new=NULL;
     fplbases.push_back(&ListIterType);
 }
 
@@ -1757,6 +1758,7 @@ TypeObject TupleIterType={
 
 void setup_tupleiter_type(){
     TupleIterType=(*(TypeObject*)finalize_type(&TupleIterType));
+    TupleIterType.slot_new=NULL;
     fplbases.push_back(&TupleIterType);
 }
 
@@ -1842,6 +1844,7 @@ TypeObject DictIterType={
 
 void setup_dictiter_type(){
     DictIterType=(*(TypeObject*)finalize_type(&DictIterType));
+    DictIterType.slot_new=NULL;
     fplbases.push_back(&DictIterType);
 }
 
@@ -1925,6 +1928,7 @@ TypeObject StrIterType={
 
 void setup_striter_type(){
     StrIterType=(*(TypeObject*)finalize_type(&StrIterType));
+    StrIterType.slot_new=NULL;
     fplbases.push_back(&StrIterType);
 }
 
@@ -3177,6 +3181,185 @@ TypeObject GeneratorType={
 void setup_gen_type(){
     GeneratorType=(*(TypeObject*)finalize_type(&GeneratorType));
     fplbases.push_back(&GeneratorType);
+}
+
+
+object* set_init(object* self, object* args, object* kwargs);
+void set_del(object* self);
+object* set_len(object* self);
+void set_append(object* self, object* obj);
+object* set_new(object* type, object* args, object* kwargs);
+object* set_repr(object* self);
+object* set_next(object* self);
+object* set_cmp(object* self, object* other, uint8_t type);
+object* set_bool(object* self);
+object* set_iter(object* self);
+
+object* set_find_meth(object* selftp, object* args, object* kwargs);
+object* set_add_meth(object* selftp, object* args, object* kwargs);
+object* set_remove_meth(object* selftp, object* args, object* kwargs);
+
+typedef struct SetObject{
+    OBJHEAD_VAR
+    vector<object*>* vec;
+}SetObject;
+
+static NumberMethods set_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+
+    0, //slot_neg
+    0, //slot_not
+
+    (unaryfunc)set_bool, //slot_bool
+};
+
+
+static Mappings set_mappings{
+    0, //slot_get
+    0, //slot_set
+    set_len, //slot_len
+    set_append, //slot_append
+};
+
+Method set_methods[]={{"find", (cwrapperfunc)set_find_meth}, {"add", (cwrapperfunc)set_add_meth}, {"remove", (cwrapperfunc)set_remove_meth}, {NULL,NULL}};
+GetSets set_getsets[]={{NULL,NULL}};
+OffsetMember set_offsets[]={{NULL}};
+
+TypeObject SetType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("set"), //name
+    sizeof(SetObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    (newfunc)set_new, //slot_new
+    (delfunc)set_del, //slot_del
+
+    0, //slot_next
+    (unaryfunc)set_iter, //slot_iter
+
+    (reprfunc)set_repr, //slot_repr
+    (reprfunc)set_repr, //slot_str
+    0, //slot_call
+
+    &set_num_methods, //slot_number
+    &set_mappings, //slot_mapping
+
+    set_methods, //slot_methods
+    set_getsets, //slot_getsets
+    set_offsets, //slot_offsests
+
+    (compfunc)set_cmp, //slot_cmp
+};
+
+void setup_set_type(){
+    SetType=(*(TypeObject*)finalize_type(&SetType));
+    fplbases.push_back(&SetType);
+}
+
+
+void set_iter_del(object* self);
+object* set_iter_repr(object* self);
+object* set_iter_next(object* self);
+object* set_iter_cmp(object* self, object* other, uint8_t type);
+object* set_iter_bool(object* self);
+
+typedef struct SetIterObject{
+    OBJHEAD_VAR
+    vector<object*>* vec;
+    uint32_t idx;
+}SetIterObject;
+
+Method set_iter_methods[]={{NULL,NULL}};
+GetSets set_iter_getsets[]={{NULL,NULL}};
+
+static NumberMethods set_iter_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+
+    0, //slot_neg
+    0, //slot_not
+
+    (unaryfunc)set_iter_bool, //slot_bool
+};
+
+static Mappings set_iter_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject SetIterType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("set_iter"), //name
+    0, //size
+    sizeof(SetIterObject), //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)set_iter_del, //slot_del
+
+    (iternextfunc)set_iter_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &set_iter_num_methods, //slot_number
+    &set_iter_mappings, //slot_mapping
+
+    set_iter_methods, //slot_methods
+    set_iter_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)set_iter_cmp, //slot_cmp
+};
+
+void setup_setiter_type(){
+    SetIterType=(*(TypeObject*)finalize_type(&SetIterType));
+    SetIterType.slot_new=NULL;
+    fplbases.push_back(&SetIterType);
 }
 
 

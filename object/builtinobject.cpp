@@ -192,6 +192,8 @@ void setup_builtins(){
     sumargs->type->slot_mappings->slot_append(sumargs, str_new_fromstr("object"));
     object* sumkwargs=new_tuple();
     builtins[61]=new_builtin((builtinfunc)builtin_sum, str_new_fromstr("sum"), sumargs, sumkwargs, 1, false);
+
+    builtins[62]=(object*)&SetType;    
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

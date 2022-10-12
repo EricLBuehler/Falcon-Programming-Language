@@ -138,7 +138,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=62;
+const size_t nbuiltins=63;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -452,6 +452,7 @@ enum opcode{
     YIELD_VALUE,
     MAKE_GENERATOR,
     MAKE_CLOSURE_GENERATOR,
+    BUILD_SET,
 };
 
 
@@ -490,7 +491,8 @@ enum opcode{
 #define CAST_STATICMETHOD(obj) ((StaticMethodObject*)obj)
 #define CAST_PROPERTY(obj) ((PropertyObject*)obj)
 #define CAST_GEN(obj) ((GeneratorObject*)obj)
-
+#define CAST_SET(obj) ((SetObject*)obj)
+#define CAST_SETITER(obj) ((SetIterObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
@@ -560,6 +562,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "mapobject.cpp"
 #include "propertyobject.cpp"
 #include "genobject.cpp"
+#include "setobject.cpp"
 
 
 void setup_types_consts(){
@@ -607,6 +610,8 @@ void setup_types_consts(){
     setup_map_type();
     setup_property_type();
     setup_gen_type();
+    setup_set_type();
+    setup_setiter_type();
 
     setup_builtins();
     
@@ -755,4 +760,13 @@ void setup_types_consts(){
     inherit_type_dict(&GeneratorType);
     setup_type_offsets(&GeneratorType);
     setup_type_getsets(&GeneratorType);
+
+    inherit_type_dict(&SetType);
+    setup_type_methods(&SetType);
+    setup_type_offsets(&SetType);
+    setup_type_getsets(&SetType);
+
+    inherit_type_dict(&SetIterType); 
+    setup_type_offsets(&SetIterType);
+    setup_type_getsets(&SetIterType);
 }
