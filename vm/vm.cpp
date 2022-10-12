@@ -1480,7 +1480,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             add_dataframe(vm, vm->objstack, it->type->slot_next(it));
             if (vm->exception!=NULL && object_istype(vm->exception->type, &StopIteration)){
                 DECREF(vm->exception);
-                vm->exception=NULL;
+                vm->exception=NULL; 
                 (*ip)=CAST_INT(arg)->val->to_long();
                 calculate_new_line(ip, linecounter, &linetuple);
                 pop_blockframe(vm->blockstack);
@@ -2306,6 +2306,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
             add_dataframe(vm, vm->objstack, func);
+            break;
+        }
+
+        case BUILD_SET: {
+            object* set=new_set();
+            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+                set_append(set, pop_dataframe(vm->objstack));
+            }
+            add_dataframe(vm, vm->objstack, set);
             break;
         }
         
