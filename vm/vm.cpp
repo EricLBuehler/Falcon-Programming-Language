@@ -1370,6 +1370,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             break;
         }
 
+        case CLEAR_EXC: {
+            if (vm->exception!=NULL){
+                DECREF(vm->exception);
+            }
+            vm->exception=NULL;
+            break;
+        }
+
         case STORE_SUBSCR: {
             object* val=pop_dataframe(vm->objstack);
             object* idx=pop_dataframe(vm->objstack);
@@ -1401,7 +1409,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         case BINOP_EXC_CMP: {
             object* self=pop_dataframe(vm->objstack);
             object* other=pop_dataframe(vm->objstack);
-            if (object_istype(CAST_TYPE(self), other->type) || object_issubclass(other, CAST_TYPE(self))){
+            if (object_issubclass(other, CAST_TYPE(self))){
                 add_dataframe(vm, vm->objstack, new_bool_true());
                 break;
             }
