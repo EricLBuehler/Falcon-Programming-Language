@@ -433,10 +433,10 @@ void print_traceback(){
         if (callframe->name==NULL){
             callframe=callframe->next;
         }
-        cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int()+1)+", in "+(*callframe->name)<<endl;
+        cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int())+", in "+(*callframe->name)<<endl;
         
         int line=0;
-        int target=CAST_INT(callframe->line)->val->to_int();
+        int target=CAST_INT(callframe->line)->val->to_int()-1;
         int startidx=0;
         int endidx=0;
         int idx=0;
@@ -550,7 +550,7 @@ void vm_del_var_globals(struct vm* vm, object* name){
 
 void calculate_new_line(uint32_t* ip, uint32_t* linecounter, object** linetup){
     object* lines=CAST_CODE(vm->callstack->head->code)->co_lines;
-    
+
     for (uint32_t linecntr=0; linecntr<CAST_LIST(lines)->size; linecntr++){
         object* line=list_index_int(lines, linecntr);
         if ((*ip)>=(*CAST_INT(tuple_index_int(line, 0))->val) && (*ip)<=(*CAST_INT(tuple_index_int(line, 1))->val)){
@@ -2337,7 +2337,7 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
         }
         instruction=list_index_int(code, (*ip_)++);
         
-        if (((*ip_)-1)/2>=(*CAST_INT(list_index_int(linetup, 1))->val)){
+        if ((*ip_)-1>=(*CAST_INT(list_index_int(linetup, 1))->val)){
             linetup=list_index_int(lines, linetup_cntr++);
             vm->callstack->head->line=list_index_int(linetup, 2);
         }
@@ -2356,6 +2356,7 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
         if (ip!=NULL){
             (*ip)++;
         }
+        
         object* obj=_vm_step(instruction, list_index_int(code, (*ip_)++), vm, ip_, &linetup_cntr, linetup);
         if (linetup_cntr>len){
             linetup_cntr=len;
