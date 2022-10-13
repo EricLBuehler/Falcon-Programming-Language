@@ -290,6 +290,7 @@ struct For{
 struct While{
     vector<Node*>* code;
     Node* expr;
+    Node* elsen;
 };
 
 struct MultiIdentifier{
