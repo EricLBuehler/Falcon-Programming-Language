@@ -2793,6 +2793,58 @@ class Parser{
 
             this->advance();
 
+            Node* elsen=NULL;
+
+            skip_newline;
+            if (this->current_tok_is(T_KWD) && this->current_tok.data=="else"){                
+                Token t=this->current_tok;
+                this->advance(); 
+                
+                if (!this->current_tok_is(T_LCURLY)){
+                    this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                    this->advance();
+                    return NULL;
+                }
+                this->advance();
+                skip_newline;
+                parse_ret code;
+                if (!this->current_tok_is(T_RCURLY)){
+                    code=this->statements();
+                }
+                else{
+                    code.errornum=0;
+                    code.nodes.clear();
+                }
+                if (code.errornum>0){
+                    (*ret)=code;
+                }
+
+                if (!this->current_tok_is(T_RCURLY)){
+                    this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                    this->advance();
+                    return NULL;
+                }         
+
+                elsen=make_node(N_ELSE);
+                elsen->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+                elsen->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+                Else* e=(Else*)fpl_malloc(sizeof(Else));
+                e->base=NULL;
+                e->code=new vector<Node*>;
+                e->code->clear();
+                for (Node* n: code.nodes){
+                    e->code->push_back(n);
+                }
+
+                elsen->node=e;
+                
+                this->advance();
+            }
+            else if (!this->current_tok_is(T_EOF)){
+                reverse_non_newline;
+            }
+
             Node* node=make_node(N_FOR);
             node->start=ident->start;
             node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
@@ -2805,6 +2857,7 @@ class Parser{
             for (Node* n: code.nodes){
                 f->code->push_back(n);
             }
+            f->elsen=elsen;
 
             node->node=f;
 
