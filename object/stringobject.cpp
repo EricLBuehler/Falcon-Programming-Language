@@ -1,3 +1,5 @@
+string trim(string s);
+
 object* str_new_fromstr(string val){
     object* obj=new_object(&StrType);
     
@@ -15,7 +17,7 @@ object* str_new_fromstr(string val){
 object* str_int(object* self){
     BigInt* b;
     try{
-        b=new BigInt(CAST_STRING(self)->val->c_str());
+        b=new BigInt(trim((*CAST_STRING(self)->val)));
     }
     catch (std::invalid_argument){
         return NULL;

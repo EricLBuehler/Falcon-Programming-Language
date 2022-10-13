@@ -9,10 +9,12 @@ object* new_int_fromint(int v){
     return o;
 }
 
+string trim(string s);
+
 object* new_int_fromstr(string v){
     object* obj=new_object(&IntType);
     try{    
-        CAST_INT(obj)->val=new BigInt(v);
+        CAST_INT(obj)->val=new BigInt(trim(v));
     }
     catch (std::invalid_argument){
         if (::vm!=NULL){
@@ -94,11 +96,11 @@ object* int_new(object* type, object* args, object* kwargs){
     
     object* obj=object_int(val);
     if (obj==NULL && !object_istype(val->type, &StrType)){
-        vm_add_err(&ValueError, vm, "Float argument must be str or a number, not '%s'",val->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Int argument must be str or a number, not '%s'",val->type->name->c_str());
         return NULL;
     }
-    else if(obj==NULL && !object_istype(obj->type, &IntType)){
-        vm_add_err(&ValueError, vm, "Could not convert string '%s' to float",object_cstr(val).c_str());
+    else if(obj==NULL || !object_istype(obj->type, &IntType)){
+        vm_add_err(&ValueError, vm, "Could not convert string '%s' to int",object_cstr(val).c_str());
         return NULL;
     }
 

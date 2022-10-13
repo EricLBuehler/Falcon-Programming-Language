@@ -65,7 +65,7 @@ object* float_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Float argument must be str or a number, not '%s'",val->type->name->c_str());
         return NULL;
     }
-    else if(obj==NULL && !object_istype(obj->type, &IntType)){
+    else if(obj==NULL || !object_istype(obj->type, &FloatType)){
         vm_add_err(&ValueError, vm, "Could not convert string '%s' to float",object_cstr(val).c_str());
         return NULL;
     }
