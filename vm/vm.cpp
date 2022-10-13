@@ -1496,7 +1496,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             if (vm->blockstack->head==NULL){
                 break;
             }
-            if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK){
+            if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK && vm->blockstack->head->type!=WHILE_BLOCK){
                 break;
             }
             (*ip)=vm->blockstack->head->arg;
@@ -1509,7 +1509,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             if (vm->blockstack->head==NULL){
                 break;
             }
-            if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK){
+            if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK && vm->blockstack->head->type!=WHILE_BLOCK){
                 break;
             }
             (*ip)=vm->blockstack->head->start_ip;
@@ -2313,6 +2313,16 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 set_append(set, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, set);
+            break;
+        }
+
+        case ENTER_WHILE: {
+            add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), WHILE_BLOCK);
+            break;
+        }
+
+        case EXIT_WHILE: {
+            pop_blockframe(vm->blockstack);
             break;
         }
         
