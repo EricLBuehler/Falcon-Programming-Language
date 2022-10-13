@@ -1888,18 +1888,38 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (!ret){
                 compiler->keep_return=false;
             }
-            
-            add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
 
             uint32_t start=compiler->instructions->count*2;
+            
+            add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
+            size_t target=0;
+            cout<<start<<" ";
+            
+            size_t n_elsen=0;
+            if (FOR(expr->node)->elsen!=NULL){
+                n_elsen=num_instructions(ELSE(FOR(expr->node)->elsen->node)->code, compiler->scope)*2;
+                target+=n_elsen;
+            }
             if (FOR(expr->node)->ident->type!=N_MULTIIDENT){
-                add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+num_instructions(FOR(expr->node)->ident, compiler->scope)*2+6, expr->start, expr->end); 
+                target+=compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+num_instructions(FOR(expr->node)->ident, compiler->scope)*2+6;
             }
             else{
-                add_instruction(compiler->instructions,FOR_TOS_ITER,compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+8+num_instructions(FOR(expr->node)->ident, compiler->scope)*2, expr->start, expr->end); 
+                target+=compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+8+num_instructions(FOR(expr->node)->ident, compiler->scope)*2;
             }
-
+            object* num=new_int_fromint(target-n_elsen+2);
             uint32_t idx;
+            if (!object_find_bool(compiler->consts, num)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, num);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, num);
+            }
+            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
+            add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end); 
+
+
             if (FOR(expr->node)->ident->type==N_IDENT){
                 if (!_list_contains(compiler->names, IDENTI(FOR(expr->node)->ident->node)->name)){
                     //Create object
@@ -1929,6 +1949,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
+            cout<<target<<" ";
             
             //Code
             for (Node* n: (*FOR(expr->node)->code)){
@@ -1949,6 +1970,27 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
 
             add_instruction(compiler->instructions,JUMP_TO,start, expr->start, expr->end); 
+            
+            if (FOR(expr->node)->elsen!=NULL){
+                //Code
+                for (Node* n: (*ELSE(FOR(expr->node)->elsen->node)->code)){
+                    uint32_t start=compiler->instructions->count;
+                    long line=n->start->line;
+                    int i=compile_expr(compiler, n);
+                    if (i==0x100){
+                        return 0x100;
+                    }
+                    uint32_t end=compiler->instructions->count;
+                    if (compiler->lines!=NULL && i!=0x200){
+                        object* tuple=new_tuple();
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    }
+                }   
+            }
+
             return 0x200;
         }
 
