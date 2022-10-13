@@ -1466,15 +1466,20 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
         case FOR_TOS_ITER: {
             if (vm->blockstack->size==0 || vm->blockstack->head->type!=FOR_BLOCK || (vm->blockstack->head->type==FOR_BLOCK && vm->blockstack->head->arg!=CAST_INT(arg)->val->to_int()) ){
+                object* idx=pop_dataframe(vm->objstack);
                 add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), FOR_BLOCK);
-                vm->blockstack->head->start_ip-=2;
+                vm->blockstack->head->obj=INCREF(idx);
+            }
+            else{
+                object* idx=pop_dataframe(vm->objstack);
             }
             object* it=peek_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, it->type->slot_next(it));
             if (vm->exception!=NULL && object_istype(vm->exception->type, &StopIteration)){
                 DECREF(vm->exception);
-                vm->exception=NULL; 
-                (*ip)=CAST_INT(arg)->val->to_long();
+                vm->exception=NULL;
+                (*ip)=CAST_INT(vm->blockstack->head->obj)->val->to_long();
+                DECREF(vm->blockstack->head->obj);
                 calculate_new_line(ip, linecounter, &linetuple);
                 pop_blockframe(vm->blockstack);
             }
