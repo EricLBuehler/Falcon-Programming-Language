@@ -194,7 +194,12 @@ object* float_repr(object* self){
     size_t size=to_string(CAST_FLOAT(self)->val).size();
     char buf[size];
     sprintf(buf, "%.17lg", CAST_FLOAT(self)->val);
-    return str_new_fromstr(string(buf));
+    string s(buf);
+    int count = std::count(s.begin(), s.end(), '.');
+    if (count==0){
+        s+=".0";
+    }
+    return str_new_fromstr(s);
 }
 
 object* float_cmp(object* self, object* other, uint8_t type){

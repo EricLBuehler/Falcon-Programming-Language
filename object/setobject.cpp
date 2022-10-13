@@ -74,9 +74,15 @@ object* set_len(object* self){
 }
 
 void set_append(object* self, object* obj){
-    if (find(CAST_SET(self)->vec->begin(), CAST_SET(self)->vec->end(), obj)==CAST_SET(self)->vec->end()){
-        CAST_SET(self)->vec->push_back(INCREF(obj));
+    if (find(CAST_SET(self)->vec->begin(), CAST_SET(self)->vec->end(), obj)!=CAST_SET(self)->vec->end()){
+        return;
     }
+    for (object* o: (*CAST_SET(self)->vec)){
+        if (istrue(object_cmp(o, obj, CMP_EQ))){
+            return;
+        }
+    }
+    CAST_SET(self)->vec->push_back(INCREF(obj));
 }
 
 void set_del(object* obj){
