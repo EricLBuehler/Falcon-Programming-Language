@@ -355,6 +355,14 @@ class Lexer{
                     tokens.push_back(t);
                 }
 
+                else if (this->chr=='@'){
+                    Position start=this->pos.copy();
+                    Position end=this->pos.copy();
+                    end.advance();
+                    Token t("@",T_AT,start,end);
+                    tokens.push_back(t);
+                }
+
                 else if (!isspace(this->chr)){
                     Position start=this->pos.copy();
                     Position end=this->pos.copy();
@@ -475,6 +483,10 @@ class Lexer{
                 }
                 else if (isdigit(this->chr)){
                     output.push_back(this->chr);
+                }
+                else if (this->chr=='_'){
+                    this->advance();
+                    continue;
                 }
                 else{
                     break;
