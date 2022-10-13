@@ -1966,11 +1966,26 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //Checks here
             uint32_t start=compiler->instructions->count*2;
             uint32_t start_=start;
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+
             int cmpexpr=compile_expr(compiler, WHILE(expr->node)->expr);
             if (cmpexpr==0x100){
                 return cmpexpr;
+            } 
+            
+            if (!ret){
+                compiler->keep_return=false;
             }
-            add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(WHILE(expr->node)->code, compiler->scope)*2+2, expr->start, expr->end); 
+            add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(WHILE(expr->node)->code, compiler->scope)*2+2, expr->start, expr->end);
+            
+            if (compiler->lines!=NULL){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(WHILE(expr->node)->expr->start->line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            }     
             
             size_t idx=0;
             //Code
