@@ -294,6 +294,7 @@ struct vm* vm=NULL;
 enum blocktype{
     TRY_BLOCK,
     FOR_BLOCK,
+    WHILE_BLOCK,
 };
 void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint32_t arg, enum blocktype tp);
 void pop_blockframe(struct blockstack* stack);
@@ -454,6 +455,8 @@ enum opcode{
     MAKE_CLOSURE_GENERATOR,
     BUILD_SET,
     CLEAR_EXC,
+    ENTER_WHILE,
+    EXIT_WHILE,
 };
 
 
