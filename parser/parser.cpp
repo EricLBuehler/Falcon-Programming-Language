@@ -303,6 +303,7 @@ class Parser{
                 this->multi=false;
                 Node* tp=this->expr(ret, LOWEST);
                 this->noassign=noassign;
+                this->multi=b;
                 this->backadvance();
 
                 free(node->node);
@@ -342,7 +343,13 @@ class Parser{
 
         Node* make_grouped_expr(parse_ret* ret){
             this->advance();
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* node=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             
             if (this->current_tok_is(T_COMMA)){
                 return make_tuple(ret, node);
@@ -386,7 +393,14 @@ class Parser{
                 this->advance();
             }
             
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             binop->right=this->expr(ret, precedence);
+            this->noassign=noassign;
+            this->multi=b;
+
             if (ret->errornum>0){
                 return NULL;
             }
@@ -418,8 +432,14 @@ class Parser{
                     this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
                     this->advance();
                     return NULL;
-                }
+                }                
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
                 Node* right=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->multi=b;
                 if (right==NULL){
                     return NULL;
                 }
@@ -442,7 +462,13 @@ class Parser{
                     this->advance();
                     return NULL;
                 }
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
                 Node* right=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->multi=b;
                 if (right==NULL){
                     return NULL;
                 }
@@ -465,7 +491,13 @@ class Parser{
                 this->advance();
                 return NULL;
             }
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* right=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             if (right==NULL){
                 return NULL;
             }
@@ -481,7 +513,13 @@ class Parser{
 
             enum token_type type=this->current_tok.type;
             this->advance();
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* right=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             this->backadvance();
 
             node->end=right->end;
@@ -500,7 +538,13 @@ class Parser{
 
             enum token_type type=this->current_tok.type;
             this->advance();
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* right=this->expr(ret, BITWISE_NOT_PREC);
+            this->noassign=noassign;
+            this->multi=b;
             this->backadvance();
 
             node->end=right->end;
@@ -523,7 +567,13 @@ class Parser{
 
             enum token_type type=this->current_tok.type;
             this->advance();
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* right=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
 
             node->end=right->end;
 
@@ -932,13 +982,16 @@ class Parser{
                 this->advance();
                 unpackkwargs->push_back(idx);
             }
-
+            
             bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
             this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
             if (expr==NULL){
                 return NULL;
             }
+            this->noassign=noassign;
             this->multi=b;
 
             if (ret->errornum>0){
@@ -1058,7 +1111,14 @@ class Parser{
 
         Node* make_store_subscr(parse_ret* ret, Node* left){
             this->advance();
+            
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             
             Node* node=make_node(N_STORE_SUBSCR);
             node->start=left->start;
@@ -1074,7 +1134,13 @@ class Parser{
 
         Node* make_store_slice(parse_ret* ret, Node* left){
             this->advance();
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             
             Node* node=make_node(N_STORE_SLICE);
             node->start=left->start;
@@ -1108,7 +1174,13 @@ class Parser{
                 }
                 return node;
             }
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             
             Node* node=make_node(N_SLICE);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line); //No guarrantee
@@ -1146,7 +1218,13 @@ class Parser{
 
                 return this->make_slice(ret, node);
             }
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             
             Node* node=make_node(N_SUBSCR);
             node->start=left->start;
@@ -1404,7 +1482,13 @@ class Parser{
             if (this->next_tok_is(T_COLON)){
                 this->advance();
                 this->advance();
-                rettp=this->expr(ret, LOWEST);
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
+                Node* rettp=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->multi=b;
                 // this->advance(); // BACKADVANCE would cancel out
             }
 
@@ -1440,7 +1524,13 @@ class Parser{
 
             Ternary* tern=(Ternary*)fpl_malloc(sizeof(Ternary));
             tern->left=left;
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             tern->expr1=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             
             if (!this->current_tok_is(T_COLON)){
                 this->add_parsing_error(ret, "SyntaxError: Expected :, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -1448,8 +1538,14 @@ class Parser{
                 return NULL;
             }
             this->advance();
-
+            
+            b=this->multi;
+            noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             tern->expr2=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
 
             node->node=tern;
 
@@ -1459,8 +1555,14 @@ class Parser{
 
         Node* make_decorator(parse_ret* ret){
             this->advance();
-
+            
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* name=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             if (!isname(name->type)){
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
@@ -1481,7 +1583,14 @@ class Parser{
                     this->advance();
                     return NULL;
                 }
+                
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
                 decorator=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->multi=b;
             }
 
             
@@ -1729,6 +1838,7 @@ class Parser{
                             this->multi=false;
                             Node* tp=this->expr(ret, LOWEST);
                             this->noassign=noassign;
+                            this->multi=b;
                             this->backadvance();
 
                             AnnotatedDot* i=(AnnotatedDot*)fpl_malloc(sizeof(AnnotatedDot));
@@ -1942,7 +2052,13 @@ class Parser{
             this->advance();
             if (this->current_tok_is(T_COLON)){
                 this->advance();
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
                 rettp=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->multi=b;
                 // this->advance(); // BACKADVANCE would cancel out
             }
             if (!this->current_tok_is(T_LCURLY)){
@@ -2019,11 +2135,14 @@ class Parser{
 
                 if (!this->current_tok_is(T_RPAREN)){
                     bool b=this->multi;
+                    bool noassign=this->noassign;
+                    this->noassign=true;
                     this->multi=false;
                     Node* expr=this->expr(ret, LOWEST);
                     if (expr==NULL){
                         return NULL;
                     }
+                    this->noassign=noassign;
                     this->multi=b;
 
                     bases->push_back(expr);
@@ -2032,8 +2151,14 @@ class Parser{
                     this->advance();
 
                     bool b=this->multi;
+                    bool noassign=this->noassign;
+                    this->noassign=true;
                     this->multi=false;
                     Node* expr=this->expr(ret, LOWEST);
+                    if (expr==NULL){
+                        return NULL;
+                    }
+                    this->noassign=noassign;
                     this->multi=b;
                     
                     bases->push_back(expr); 
@@ -2103,7 +2228,13 @@ class Parser{
             this->advance();
             Node* n;
             if (!this->current_tok_is(T_NEWLINE) && !this->current_tok_is(T_RCURLY)){
-               n=this->expr(ret, LOWEST);
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
+                n=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->multi=b;
             }
             else{
                 n=make_none();
@@ -2268,8 +2399,14 @@ class Parser{
 
         Node* make_elif_(parse_ret* ret){
             this->advance();
-
-            Node* expr=this->expr(ret, LOWEST);   
+            
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
+            Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -2318,7 +2455,13 @@ class Parser{
             vector<Node*>* bases=new vector<Node*>;
             this->advance();
 
-            Node* expr=this->expr(ret, LOWEST);   
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
+            Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
@@ -2388,7 +2531,13 @@ class Parser{
 
         Node* make_raise(parse_ret* ret){
             this->advance();
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
             this->advance();
 
             Node* n=make_node(N_RAISE);
@@ -2604,7 +2753,14 @@ class Parser{
             }
             this->advance();
             
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
+
             if (!current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2686,7 +2842,14 @@ class Parser{
 
             Token t=this->current_tok;
 
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
+
             if (!current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2884,7 +3047,14 @@ class Parser{
                 return NULL;
             }
 
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
+
             if (!this->isname(expr->type)){
                 this->add_parsing_error(ret, "Expected name, got non-name");
                 return NULL;
@@ -2907,7 +3077,13 @@ class Parser{
 
             Token t=this->current_tok;
 
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
 
             Node* node=make_node(N_ASSERT);
             node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
@@ -2926,7 +3102,13 @@ class Parser{
 
             Token t=this->current_tok;
 
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
             Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
 
             Node* node=make_node(N_YIELD);
             node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
