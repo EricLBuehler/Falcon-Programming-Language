@@ -913,11 +913,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        if (o->type->slot_iter!=NULL){
-                            vm_add_err(&TypeError, vm, "Did not expect iterator, got '%s' object", o->type->name->c_str());
-                            return NULL;
-                        }
-
                         tuple_append(args, o);
                         
                         o=iter->type->slot_next(iter);
@@ -1068,11 +1063,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        if (o->type->slot_iter!=NULL){
-                            vm_add_err(&TypeError, vm, "Did not expect iterator, got '%s' object", o->type->name->c_str());
-                            return NULL;
-                        }
-
                         tuple_append(args, o);
                         
                         o=iter->type->slot_next(iter);
@@ -1210,11 +1200,6 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        if (o->type->slot_iter!=NULL){
-                            vm_add_err(&TypeError, vm, "Did not expect iterator, got '%s' object", o->type->name->c_str());
-                            return NULL;
-                        }
-
                         tuple_append(args, o);
                         
                         o=iter->type->slot_next(iter);
