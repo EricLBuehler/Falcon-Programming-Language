@@ -436,7 +436,7 @@ void print_traceback(){
         cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int())+", in "+(*callframe->name)<<endl;
         
         int line=0;
-        int target=CAST_INT(callframe->line)->val->to_int()-1;
+        int target=CAST_INT(callframe->line)->val->to_int();
         int startidx=0;
         int endidx=0;
         int idx=0;
