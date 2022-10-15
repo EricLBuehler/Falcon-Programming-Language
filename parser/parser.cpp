@@ -620,9 +620,9 @@ class Parser{
                 return NULL;
             }
             list->push_back(expr);
-
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
+                skip_newline;
                 bool b=this->multi;
                 bool noassign=this->noassign;
                 this->noassign=true;
@@ -639,6 +639,7 @@ class Parser{
                     return NULL;
                 }
                 list->push_back(expr);
+                skip_newline;
                 if (this->current_tok_is(T_RSQUARE)){
                     break;
                 }
@@ -689,7 +690,7 @@ class Parser{
                 return NULL;
             }
             list->push_back(expr);
-
+            
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
                 bool b=this->multi;
@@ -708,6 +709,7 @@ class Parser{
                     return NULL;
                 }
                 list->push_back(expr);
+                skip_newline;
                 if (this->current_tok_is(T_RPAREN)){
                     break;
                 }
@@ -758,7 +760,7 @@ class Parser{
                 return NULL;
             }
             list->push_back(expr);
-
+            
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
                 bool b=this->multi;
@@ -777,6 +779,7 @@ class Parser{
                     return NULL;
                 }
                 list->push_back(expr);
+                skip_newline;
                 if (this->current_tok_is(T_RCURLY)){
                     break;
                 }
@@ -859,7 +862,7 @@ class Parser{
             }
             keys->push_back(key);
             vals->push_back(value);
-
+            
             while(this->current_tok_is(T_COMMA)){
                 this->advance();
                 b=this->multi;
@@ -905,7 +908,7 @@ class Parser{
                 }
                 keys->push_back(key);
                 vals->push_back(value);
-
+                skip_newline;
                 if (this->current_tok_is(T_RCURLY)){
                     break;
                 }
