@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
     kwds.push_back("continue");
     kwds.push_back("lambda");
     kwds.push_back("yield");
+    kwds.push_back("with");
     
     if (argc==1){
         try{
@@ -96,17 +97,19 @@ int main(int argc, char** argv) {
                 auto a=time_nanoseconds();
                 object* returned=run_vm(code, NULL, &vm->ip);
                 auto b=time_nanoseconds();
+                
+                socket_cleanup();
 
                 if (returned==TERM_PROGRAM){
                     return 0;
                 }
                 
                 compiler_del(compiler);
-                DECREF(code);
+                FPLDECREF(code);
                 compiler = new_compiler();
                 //cout<<endl;
                 if (returned!=NULL){
-                    DECREF(returned);
+                    FPLDECREF(returned);
                 }
             }
 
