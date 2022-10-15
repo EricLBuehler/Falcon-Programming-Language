@@ -24,7 +24,7 @@ object* sys_getrefcnt(object* self, object* args, object* kwargs){
 }
 
 object* sys_getpath(object* sys){
-    return vm->path;
+    return FPLINCREF(vm->path);
 }
 
 object* new_sys_module(){
