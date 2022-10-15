@@ -1,0 +1,11 @@
+import socket
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) x{
+    x.connect(("142.250.80.78", 80))
+
+    print("Sent",x.send("GET / HTTP/1.1\r\n\r\n"),"bytes")
+
+    print(x.recv(128))
+
+    print(x.gethostbyname("www.google.com"))
+}
