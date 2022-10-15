@@ -1,0 +1,13 @@
+class a{
+    func __enter__(self){
+        print(self)
+        return 100
+    }
+    func __exit__(self){
+        return self
+    }
+}
+
+with a() b{
+    print(b)
+}
