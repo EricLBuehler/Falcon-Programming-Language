@@ -102,7 +102,7 @@ inline void pop_callframe(struct callstack* stack){
     stack->head=frame->next;
     stack->size--;
 
-    DECREF(frame->annontations);
+    FPLDECREF(frame->annontations);
     
     free(frame);
 }
@@ -120,8 +120,8 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     object* eargs=new_tuple();
     object* kwargs=new_dict();
     vm->exception=exception->type->slot_call((object*)exception, eargs, kwargs); //Create new exception object
-    DECREF(eargs);
-    DECREF(kwargs);
+    FPLDECREF(eargs);
+    FPLDECREF(kwargs);
     
     char* msg = (char*)fpl_malloc(sizeof(char)*length);
 
@@ -130,7 +130,7 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     va_end(args);
     
     if (vm->exception!=NULL && CAST_EXCEPTION(vm->exception)->err!=NULL){
-        DECREF(CAST_EXCEPTION(vm->exception)->err);
+        FPLDECREF(CAST_EXCEPTION(vm->exception)->err);
     }
     CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(msg);
     free(msg);
@@ -145,8 +145,8 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
     object* eargs=new_tuple();
     object* kwargs=new_dict();
     object* exc=exception->type->slot_call((object*)exception, eargs, kwargs); //Create new exception object
-    DECREF(eargs);
-    DECREF(kwargs);
+    FPLDECREF(eargs);
+    FPLDECREF(kwargs);
 
     char *msg = (char*)fpl_malloc(sizeof(char)*length);
 
@@ -155,7 +155,7 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
     va_end(args);
     
     if (vm->exception!=NULL && CAST_EXCEPTION(vm->exception)->err!=NULL){
-        DECREF(CAST_EXCEPTION(vm->exception)->err);
+        FPLDECREF(CAST_EXCEPTION(vm->exception)->err);
     }
     CAST_EXCEPTION(exc)->err=str_new_fromstr(msg);
     return exc;
@@ -195,7 +195,7 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL);
     vm->globals=new_dict();
-    vm->callstack->head->locals=INCREF(vm->globals);
+    vm->callstack->head->locals=FPLINCREF(vm->globals);
     vm->global_annotations=vm->callstack->head->annontations;
     
     return vm;
@@ -205,7 +205,7 @@ void vm_del(struct vm* vm){
     struct callframe* i=vm->callstack->head;
     while (i){
         struct callframe* i_=i->next;;
-        DECREF(i->locals);
+        FPLDECREF(i->locals);
         free(i);
         i=i_;
     }
@@ -216,10 +216,10 @@ void vm_del(struct vm* vm){
         j=j_;
     }
 
-    DECREF(vm->globals);
+    FPLDECREF(vm->globals);
     delete vm->filedata;
     if (vm->exception!=NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
     }
 }
 
@@ -229,7 +229,7 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
             if (CAST_DICT(vm->callstack->head->locals)->val->at(k.first)->type->size==0){
                 ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
             }
-            DECREF(CAST_DICT(vm->callstack->head->locals)->val->at(k.first));
+            FPLDECREF(CAST_DICT(vm->callstack->head->locals)->val->at(k.first));
         }
     }
 
@@ -285,7 +285,7 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
             if (CAST_DICT(vm->globals)->val->at(k.first)->type->size==0){
                 ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
             }
-            DECREF(CAST_DICT(vm->globals)->val->at(k.first));
+            FPLDECREF(CAST_DICT(vm->globals)->val->at(k.first));
         }
     }
     if (value->type->size==0){
@@ -334,7 +334,7 @@ void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
                 if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
                     ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
                 }
-                DECREF(CAST_DICT(frame->locals)->val->at(name));
+                FPLDECREF(CAST_DICT(frame->locals)->val->at(name));
                 
                 if (val->type->size==0){
                     ((object_var*)val)->gc_ref++;
@@ -353,7 +353,7 @@ void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
                 if (CAST_DICT(closure)->val->at(name)->type->size==0){
                     ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
                 }
-                DECREF(CAST_DICT(closure)->val->at(name));
+                FPLDECREF(CAST_DICT(closure)->val->at(name));
                 
                 if (val->type->size==0){
                     ((object_var*)val)->gc_ref++;
@@ -508,7 +508,7 @@ object* import_name(string data, object* name){
     ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
     
     ::vm->globals=new_dict();
-    ::vm->callstack->head->locals=INCREF(::vm->globals);
+    ::vm->callstack->head->locals=FPLINCREF(::vm->globals);
     dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
     ::vm->global_annotations=::vm->callstack->head->annontations;
 
@@ -610,7 +610,7 @@ void annotate_nonlocal(object* tp, object* name){
                 if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
                     ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
                 }
-                DECREF(CAST_DICT(frame->locals)->val->at(name));
+                FPLDECREF(CAST_DICT(frame->locals)->val->at(name));
                 
                 if (tp->type->size==0){
                     ((object_var*)tp)->gc_ref++;
@@ -629,7 +629,7 @@ void annotate_nonlocal(object* tp, object* name){
                 if (CAST_DICT(closure)->val->at(name)->type->size==0){
                     ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
                 }
-                DECREF(CAST_DICT(closure)->val->at(name));
+                FPLDECREF(CAST_DICT(closure)->val->at(name));
                 
                 if (tp->type->size==0){
                     ((object_var*)tp)->gc_ref++;
@@ -804,7 +804,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         }
 
         case RETURN_VAL: {
-            return INCREF(pop_dataframe(vm->objstack));
+            return FPLINCREF(pop_dataframe(vm->objstack));
         }
 
         case CALL_METHOD: {
@@ -855,20 +855,20 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     while (vm->exception==NULL){
                         if (o->type->slot_mappings->slot_len==NULL){
                             vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             return NULL;
                         }
                         int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
                         if (len!=2){
                             vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             return NULL;
                         }
                         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
                             return NULL;
                         }
@@ -882,7 +882,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         o=iter->type->slot_next(iter);
                     }
                     if (vm->exception!=NULL){
-                        DECREF(vm->exception);
+                        FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
 
@@ -918,7 +918,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         o=iter->type->slot_next(iter);
                     }
                     if (vm->exception!=NULL){
-                        DECREF(vm->exception);
+                        FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
 
@@ -1005,20 +1005,20 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     while (vm->exception==NULL){
                         if (o->type->slot_mappings->slot_len==NULL){
                             vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             return NULL;
                         }
                         int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
                         if (len!=2){
                             vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             return NULL;
                         }
                         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
                             return NULL;
                         }
@@ -1032,7 +1032,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         o=iter->type->slot_next(iter);
                     }
                     if (vm->exception!=NULL){
-                        DECREF(vm->exception);
+                        FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
 
@@ -1068,7 +1068,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         o=iter->type->slot_next(iter);
                     }
                     if (vm->exception!=NULL){
-                        DECREF(vm->exception);
+                        FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
 
@@ -1142,20 +1142,20 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     while (vm->exception==NULL){
                         if (o->type->slot_mappings->slot_len==NULL){
                             vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             return NULL;
                         }
                         int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
                         if (len!=2){
                             vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             return NULL;
                         }
                         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-                            DECREF(iter);
-                            DECREF(one);
+                            FPLDECREF(iter);
+                            FPLDECREF(one);
                             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
                             return NULL;
                         }
@@ -1169,7 +1169,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         o=iter->type->slot_next(iter);
                     }
                     if (vm->exception!=NULL){
-                        DECREF(vm->exception);
+                        FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
 
@@ -1205,7 +1205,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         o=iter->type->slot_next(iter);
                     }
                     if (vm->exception!=NULL){
-                        DECREF(vm->exception);
+                        FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
 
@@ -1349,7 +1349,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 break;
             }
             if (vm->exception!=NULL){
-                DECREF(vm->exception);
+                FPLDECREF(vm->exception);
             }
             vm->exception=pop_dataframe(vm->objstack);
             break;
@@ -1357,7 +1357,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
         case CLEAR_EXC: {
             if (vm->exception!=NULL){
-                DECREF(vm->exception);
+                FPLDECREF(vm->exception);
             }
             vm->exception=NULL;
             break;
@@ -1377,7 +1377,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
         }
 
         case POP_TOS: {
-            DECREF(pop_dataframe(vm->objstack));
+            FPLDECREF(pop_dataframe(vm->objstack));
             break;
         }
 
@@ -1468,7 +1468,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             if (vm->blockstack->size==0 || vm->blockstack->head->type!=FOR_BLOCK || (vm->blockstack->head->type==FOR_BLOCK && vm->blockstack->head->arg!=CAST_INT(arg)->val->to_int()) ){
                 object* idx=pop_dataframe(vm->objstack);
                 add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), FOR_BLOCK);
-                vm->blockstack->head->obj=INCREF(idx);
+                vm->blockstack->head->obj=FPLINCREF(idx);
             }
             else{
                 object* idx=pop_dataframe(vm->objstack);
@@ -1476,10 +1476,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* it=peek_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, it->type->slot_next(it));
             if (vm->exception!=NULL && object_istype(vm->exception->type, &StopIteration)){
-                DECREF(vm->exception);
+                FPLDECREF(vm->exception);
                 vm->exception=NULL;
                 (*ip)=CAST_INT(vm->blockstack->head->obj)->val->to_long();
-                DECREF(vm->blockstack->head->obj);
+                FPLDECREF(vm->blockstack->head->obj);
                 calculate_new_line(ip, linecounter, &linetuple);
                 pop_blockframe(vm->blockstack);
             }
@@ -1547,8 +1547,8 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 }
                 
                 if (ob->type->slot_mappings->slot_get==NULL){
-                    DECREF(iter);
-                    DECREF(one);
+                    FPLDECREF(iter);
+                    FPLDECREF(one);
                     vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", ob->type->name->c_str());
                     return NULL;
                 }
@@ -1560,7 +1560,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 len++;
             }
             if (vm->exception!=NULL){
-                DECREF(vm->exception);
+                FPLDECREF(vm->exception);
                 vm->exception=NULL;
             }
             
@@ -1779,7 +1779,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     return TERM_PROGRAM;
                 }
                 if (o==NULL){
-                    DECREF(vm->exception);
+                    FPLDECREF(vm->exception);
                     vm->exception=NULL;
                     vm_add_err(&ImportError,vm, "Cannot import name '%s' from '%s'",CAST_STRING(list_index_int(names, i))->val->c_str(), CAST_STRING(CAST_MODULE(lib)->name)->val->c_str());
                     return CALL_ERR;
@@ -1870,8 +1870,8 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             left=right->type->slot_number->slot_bool(left);
             bool r=CAST_BOOL(right)->val;
             bool l=CAST_BOOL(left)->val;
-            DECREF(right);
-            DECREF(left);
+            FPLDECREF(right);
+            FPLDECREF(left);
             if (r && l){
                 add_dataframe(vm, vm->objstack, new_bool_true());
                 break;
@@ -1888,8 +1888,8 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             left=right->type->slot_number->slot_bool(left);
             bool r=CAST_BOOL(right)->val;
             bool l=CAST_BOOL(left)->val;
-            DECREF(right);
-            DECREF(left);
+            FPLDECREF(right);
+            FPLDECREF(left);
             if (r || l){
                 add_dataframe(vm, vm->objstack, new_bool_true());
                 break;
@@ -1903,7 +1903,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             right=right->type->slot_number->slot_bool(right);
             bool v=CAST_BOOL(right)->val;
-            DECREF(right);
+            FPLDECREF(right);
             if (!v){
                 add_dataframe(vm, vm->objstack, new_bool_true());
                 break;
@@ -1946,7 +1946,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
         case RAISE_ASSERTIONERR: {
             object* exc=vm_setup_err(&AssertionError, vm, "");
-            DECREF(CAST_EXCEPTION(exc)->err);
+            FPLDECREF(CAST_EXCEPTION(exc)->err);
             CAST_EXCEPTION(exc)->err=NULL;
             vm->exception=exc;
             break;
@@ -1991,7 +1991,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -2137,7 +2137,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* res=object_in_iter(left, right);
 
             if (res!=NULL){
-                DECREF(res);
+                FPLDECREF(res);
                 add_dataframe(vm, vm->objstack, new_bool_false());
             }
             add_dataframe(vm, vm->objstack, new_bool_true());
@@ -2235,7 +2235,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             object* annon=object_getattr(obj, str_new_fromstr("__annotations__"));
             if (annon==NULL){
-                DECREF(vm->exception);
+                FPLDECREF(vm->exception);
                 vm->exception=NULL;
                 annon=new_dict();
                 object_setattr(obj, str_new_fromstr("__annotations__"), annon);
@@ -2302,7 +2302,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, INCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
             add_dataframe(vm, vm->objstack, func);
             break;
         }
@@ -2323,6 +2323,16 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
         case EXIT_WHILE: {
             pop_blockframe(vm->blockstack);
+            break;
+        }
+
+        case ENTER_WITH: {
+            add_dataframe(vm, vm->objstack, object_enter_with(pop_dataframe(vm->objstack)));
+            break;
+        }
+
+        case EXIT_WITH: {
+            add_dataframe(vm, vm->objstack, object_exit_with(pop_dataframe(vm->objstack)));
             break;
         }
         
@@ -2372,6 +2382,7 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
             (*ip)++;
         }
         
+        
         object* obj=_vm_step(instruction, list_index_int(code, (*ip_)++), vm, ip_, &linetup_cntr, linetup);
         if (linetup_cntr>len){
             linetup_cntr=len;
@@ -2397,9 +2408,9 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
                     return NULL;
                 }
                 add_dataframe(vm, vm->objstack, vm->exception);
-                frame->obj=INCREF(vm->exception);
+                frame->obj=FPLINCREF(vm->exception);
                 if (vm->exception!=NULL){
-                    DECREF(vm->exception);
+                    FPLDECREF(vm->exception);
                 }
                 vm->exception=NULL;
                 frame->other=linetup_cntr;
@@ -2426,7 +2437,7 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
             cout<<endl;
     
             if (vm->exception!=NULL){
-                DECREF(vm->exception);
+                FPLDECREF(vm->exception);
             }
             vm->exception=NULL;
             
@@ -2453,10 +2464,10 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
                 }
                 
                 add_dataframe(vm, vm->objstack, vm->exception);
-                frame->obj=INCREF(vm->exception);
+                frame->obj=FPLINCREF(vm->exception);
                 
                 if (vm->exception!=NULL){
-                    DECREF(vm->exception);
+                    FPLDECREF(vm->exception);
                     vm->exception=NULL;
                 }
                 frame->other=linetup_cntr;
@@ -2492,7 +2503,7 @@ object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
             cout<<endl;
     
             if (vm->exception!=NULL){
-                DECREF(vm->exception);
+                FPLDECREF(vm->exception);
             }
             vm->exception=NULL;
             
