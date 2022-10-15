@@ -51,6 +51,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```threading```
 - ```sys```
 - ```os```
+- ```sockets```
 
 <details>
 <summary>Exceptions</summary>
@@ -95,6 +96,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```continue```
 - ```lambda```
 - ```yield```
+- ```with```
 
 ### Other syntax ###
 - ```:``` - Global variable access
