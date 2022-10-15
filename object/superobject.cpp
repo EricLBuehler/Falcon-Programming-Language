@@ -8,7 +8,7 @@ object* super_new(object* type, object* args, object* kwargs){
     object* ob=tuple_index_int(args, 0);
 
     object* super=new_object(CAST_TYPE(type));
-    CAST_SUPER(super)->ob=INCREF(ob);
+    CAST_SUPER(super)->ob=FPLINCREF(ob);
     
     return super;
 }
@@ -34,7 +34,7 @@ object* super_getattr(object* self, object* attr){
     return NULL;
 }
 void super_del(object* self){
-    DECREF(CAST_SUPER(self)->ob);
+    FPLDECREF(CAST_SUPER(self)->ob);
 }
 
 object* super_cmp(object* self, object* other, uint8_t type){

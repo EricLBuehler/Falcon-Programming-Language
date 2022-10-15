@@ -1,4 +1,4 @@
-inline bool DECREF(struct object* object){
+inline bool FPLDECREF(struct object* object){
     object->refcnt--;
     if (object->refcnt==0){
         if (object->type->slot_del!=NULL){
@@ -71,7 +71,7 @@ inline bool DECREF(struct object* object){
 
 
 
-inline object* INCREF(struct object* object){
+inline object* FPLINCREF(struct object* object){
     object->refcnt++;
     return object;
 }
@@ -89,17 +89,17 @@ object* in_immutables(object* obj){
         if ((*o->type->name)==(*obj->type->name)){
             if (o->type->name==StrType.name){
                 if ((*CAST_STRING(o)->val)==(*CAST_STRING(obj)->val)){
-                    return INCREF(o);
+                    return FPLINCREF(o);
                 }
             }
             if (o->type->name==IntType.name){
                 if ((*CAST_INT(o)->val)==(*CAST_INT(obj)->val)){
-                    return INCREF(o);
+                    return FPLINCREF(o);
                 }
             }
             if (o->type->name==FloatType.name){
                 if (CAST_FLOAT(o)->val==CAST_FLOAT(obj)->val){
-                    return INCREF(o);
+                    return FPLINCREF(o);
                 }
             }
         }
@@ -374,7 +374,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){
             vm_add_err(&NameError, vm, "Got unexpected keyword argument '%s'", object_cstr(k.first).c_str());
-            DECREF(names);
+            FPLDECREF(names);
             return NULL;
         }
         //
@@ -382,7 +382,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         dict->type->slot_mappings->slot_set(dict, k.first, k.second);
         argn++;
     }
-    DECREF(names);
+    FPLDECREF(names);
     
     return dict;
 }
@@ -446,7 +446,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
             if (stargs!=NULL){
                 dict->type->slot_mappings->slot_set(dict, stargs, new_tup);
             }
-            DECREF(new_tup);
+            FPLDECREF(new_tup);
         }
     }
     else{
@@ -481,7 +481,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
             }
             else{
                 vm_add_err(&NameError, vm, "Got unexpected keyword argument '%s'", object_cstr(k.first).c_str());
-                DECREF(names);
+                FPLDECREF(names);
                 return NULL;
             }
         }
@@ -489,14 +489,14 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
 
         if (object_find_bool(names, k.first)){
             vm_add_err(&NameError, vm, "Got multiple values for keyword argument '%s'", object_cstr(k.first).c_str());
-            DECREF(names);
+            FPLDECREF(names);
             return NULL;
         }
 
         dict->type->slot_mappings->slot_set(dict, k.first, k.second);
         argn++;
     }
-    DECREF(names);
+    FPLDECREF(names);
     
     
 
@@ -505,7 +505,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         if (stkwargs!=NULL){
             dict->type->slot_mappings->slot_set(dict, stkwargs, stdict);
         }
-        DECREF(stdict);
+        FPLDECREF(stdict);
     }
     
     return dict;
@@ -680,7 +680,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
             if (res!=NULL && res->type->slot_descrset!=NULL){
                 object* v=res->type->slot_descrset(obj, res, val);
                 if (v!=CALL_ERR && v!=NULL && v!=TERM_PROGRAM){
-                    DECREF(v);
+                    FPLDECREF(v);
                     return SUCCESS;
                 }
                 return v;
@@ -688,7 +688,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         }
         else{
             if (vm!=NULL && vm->exception!=NULL){
-                DECREF(vm->exception);
+                FPLDECREF(vm->exception);
                 vm->exception=NULL;
             }
         }
@@ -713,7 +713,7 @@ object* object_call(object* obj, object* args, object* kwargs){
 object* object_call_nokwargs(object* obj, object* args){
     object* kwargs=new_dict();
     object* res=obj->type->slot_call(obj, args,kwargs);
-    DECREF(kwargs);
+    FPLDECREF(kwargs);
     return res;
 }
 
@@ -832,16 +832,16 @@ object* object_in_iter(object* left, object* right){
     while (vm->exception==NULL){
         if (o->type->slot_mappings->slot_len==NULL){
             if (istrue(object_cmp(o, left, CMP_EQ))){
-                DECREF(iter);
-                DECREF(one);
+                FPLDECREF(iter);
+                FPLDECREF(one);
                 res=new_bool_true();
                 break;
             }
             goto cont;
         }
         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-            DECREF(iter);
-            DECREF(one);
+            FPLDECREF(iter);
+            FPLDECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
             return NULL;
         }
@@ -849,8 +849,8 @@ object* object_in_iter(object* left, object* right){
         ERROR_RET(v);
         
         if (istrue(object_cmp(v, left, CMP_EQ))){
-            DECREF(one);
-            DECREF(iter);
+            FPLDECREF(one);
+            FPLDECREF(iter);
             res=new_bool_true();
             break;
         }
@@ -859,11 +859,35 @@ object* object_in_iter(object* left, object* right){
         o=iter->type->slot_next(iter);
     }
     if (vm->exception!=NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
     return res;
 }
+
+object* object_enter_with(object* self){
+    object* o=object_getattr(self, str_new_fromstr("__enter__"));
+    if (o==NULL){
+        return NULL;
+    }
+
+    object* args=new_tuple();
+
+    return object_call_nokwargs(o, args);
+}
+
+object* object_exit_with(object* self){
+    object* o=object_getattr(self, str_new_fromstr("__exit__"));
+    if (o==NULL){
+        return NULL;
+    }
+
+    object* args=new_tuple();
+
+    return object_call_nokwargs(o, args);
+}
+
+
 
 //I have setup memory_error to be a fatal exception
 void memory_error(){
@@ -882,7 +906,7 @@ void memory_error(){
     }
     CAST_EXCEPTION(exception)->err=str_new_fromstr("Out of memory");
     if (CAST_EXCEPTION(exception)->err->type==&MemoryError){
-        DECREF(exception);
+        FPLDECREF(exception);
         goto fatal;
     }
 
@@ -907,7 +931,7 @@ void memory_error(){
         cout<<endl;
 
         if (exception!=NULL){
-            DECREF(exception);
+            FPLDECREF(exception);
         }
         goto done;
         

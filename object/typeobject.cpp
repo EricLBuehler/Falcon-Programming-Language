@@ -116,6 +116,9 @@ object* newtp_descrset(object* obj, object* self, object* val);
 object* newtp_getattr(object* self, object* attr);
 object* newtp_setattr(object* self, object* attr, object* val);
 
+object* newtp_enter(object* self);
+object* newtp_exit(object* self);
+
 NumberMethods newtp_number={    
     //binops
     newtp_add,

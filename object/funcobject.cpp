@@ -58,16 +58,16 @@ object* func_call(object* self, object* args, object* kwargs){
     ret=run_vm(CAST_FUNC(self)->code, NULL, &ip);
 
     for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
-        DECREF(k.first);
+        FPLDECREF(k.first);
         if (k.second->type->size==0){
             ((object_var*)k.second)->gc_ref--;
         }
-        DECREF(k.second);
+        FPLDECREF(k.second);
     }
 
     make_gen:
     if (CAST_FUNC(self)->isgen){
-        INCREF(vm->callstack->head->locals);
+        FPLINCREF(vm->callstack->head->locals);
         pop_callframe(vm->callstack);
         return new_generator_impl(self, vm->callstack->head->locals);
     }
@@ -138,13 +138,13 @@ object* func_bool(object* self){
 }
 
 void func_del(object* obj){
-    DECREF(CAST_FUNC(obj)->code);
-    DECREF(CAST_FUNC(obj)->name);
-    DECREF(CAST_FUNC(obj)->args);
-    DECREF(CAST_FUNC(obj)->kwargs);
-    DECREF(CAST_FUNC(obj)->dict);
+    FPLDECREF(CAST_FUNC(obj)->code);
+    FPLDECREF(CAST_FUNC(obj)->name);
+    FPLDECREF(CAST_FUNC(obj)->args);
+    FPLDECREF(CAST_FUNC(obj)->kwargs);
+    FPLDECREF(CAST_FUNC(obj)->dict);
     if (CAST_FUNC(obj)->closure!=NULL){
-        DECREF(CAST_FUNC(obj)->closure);
+        FPLDECREF(CAST_FUNC(obj)->closure);
     }
 }
 

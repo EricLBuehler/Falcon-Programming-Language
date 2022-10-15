@@ -10,7 +10,7 @@ object* bool_new(object* type, object* args, object* kwargs){
     }
     object* o=new_object(CAST_TYPE(type));
     CAST_BOOL(o)->val=CAST_BOOL(boolv)->val;
-    DECREF(boolv);
+    FPLDECREF(boolv);
     return o;
 }
 
@@ -27,11 +27,11 @@ object* _new_bool_false(){
 }
 
 object* new_bool_true(){
-    return INCREF(trueobj);
+    return FPLINCREF(trueobj);
 }
 
 object* new_bool_false(){
-    return INCREF(falseobj);
+    return FPLINCREF(falseobj);
 }
 
 object* bool_pow(object* self, object* other){
@@ -42,7 +42,7 @@ object* bool_pow(object* self, object* other){
     double selfv=(double)CAST_BOOL(self)->val;
     double otherval=CAST_FLOAT(otherv)->val;
     double res=pow(selfv, otherval);
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -58,7 +58,7 @@ object* bool_mod(object* self, object* other){
     double selfv=(double)CAST_BOOL(self)->val;
     double otherval=CAST_FLOAT(otherv)->val;
     double res=fmod(selfv, otherval);
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -74,7 +74,7 @@ object* bool_add(object* self, object* other){
     double selfv=(double)CAST_BOOL(self)->val;
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv+otherval;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -90,7 +90,7 @@ object* bool_sub(object* self, object* other){
     double selfv=(double)CAST_BOOL(self)->val;
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv-otherval;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -106,7 +106,7 @@ object* bool_mul(object* self, object* other){
     double selfv=(double)CAST_BOOL(self)->val;
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv*otherval;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -122,7 +122,7 @@ object* bool_div(object* self, object* other){
     double selfv=(double)CAST_BOOL(self)->val;
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv/otherval;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -138,7 +138,7 @@ object* bool_fldiv(object* self, object* other){
     double selfv=(double)CAST_BOOL(self)->val;
     double otherval=CAST_FLOAT(otherv)->val;
     double res=floor(selfv/otherval);
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -155,7 +155,7 @@ object* bool_and(object* self, object* other){
         return NULL;
     }
     object* res=new_int_fromint(CAST_BOOL(self)->val & CAST_INT(otherv)->val->to_int());
-    DECREF(otherv);
+    FPLDECREF(otherv);
     return res;
 }
 
@@ -168,7 +168,7 @@ object* bool_or(object* self, object* other){
         return NULL;
     }
     object* res=new_int_fromint(CAST_BOOL(self)->val | CAST_INT(otherv)->val->to_int());
-    DECREF(otherv);
+    FPLDECREF(otherv);
     return res;
 }
 
@@ -182,7 +182,7 @@ object* bool_lshift(object* self, object* other){
     }
     
     int val=CAST_INT(otherv)->val->to_int();
-    DECREF(otherv);
+    FPLDECREF(otherv);
     if (val<0){
         vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
         return NULL;
@@ -200,7 +200,7 @@ object* bool_rshift(object* self, object* other){
         return NULL;
     }
     int val=CAST_INT(otherv)->val->to_int();
-    DECREF(otherv);
+    FPLDECREF(otherv);
     if (val<0){
         vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
         return NULL;

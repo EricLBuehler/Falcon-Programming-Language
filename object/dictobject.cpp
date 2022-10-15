@@ -20,7 +20,7 @@ object* dict_new(object* type, object* args, object* kwargs){
         return (object*)obj;    
     }
     if (CAST_LIST(args)->size!=0 && object_istype(list_index_int(args, 0)->type, &DictType)){
-        return INCREF(list_index_int(args, 0));
+        return FPLINCREF(list_index_int(args, 0));
     }
     if (CAST_LIST(args)->size!=0 && list_index_int(args, 0)->type->slot_iter!=NULL){
         object* o=list_index_int(args, 0);
@@ -42,7 +42,7 @@ object* dict_new(object* type, object* args, object* kwargs){
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
             if (o->type->slot_mappings->slot_len==NULL || *CAST_INT(o->type->slot_mappings->slot_len(o))->val!=2){
-                DECREF((object*)obj);
+                FPLDECREF((object*)obj);
                 vm_add_err(&ValueError, vm, "Expected 2 values (key/value) for dictionary update, got '%d'",CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int());
                 return NULL;
             }
@@ -51,10 +51,10 @@ object* dict_new(object* type, object* args, object* kwargs){
             o=iter->type->slot_next(iter);
         }
         if (vm->exception!=NULL){
-            DECREF(vm->exception);
+            FPLDECREF(vm->exception);
             vm->exception=NULL;
         }
-        DECREF(iter);
+        FPLDECREF(iter);
         return (object*)obj;
     }
 
@@ -99,14 +99,14 @@ object* dict_get(object* self, object* key){
 void dict_del_item(object* self, object* key){
     for (auto k: (*CAST_DICT(self)->val)){
         if (istrue(object_cmp(key, k.first, CMP_EQ))){
-            DECREF(k.first);
-            DECREF(k.second);
+            FPLDECREF(k.first);
+            FPLDECREF(k.second);
             CAST_DICT(self)->val->erase(CAST_DICT(self)->val->find(k.first));
             CAST_DICT(self)->keys->erase(find(CAST_DICT(self)->keys->begin(), CAST_DICT(self)->keys->end(), k.first));
             return;
         }
         if (vm->exception!=NULL){
-            DECREF(vm->exception);
+            FPLDECREF(vm->exception);
             vm->exception=NULL;
         }
     }
@@ -121,12 +121,12 @@ object* dict_set(object* self, object* key, object* val){
     }
     //Fast path for immutables
     if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
-        //Do not incref key!
+        //Do not FPLINCREF key!
         if ((*CAST_DICT(self)->val)[key]==val){ //Same val
-            //Do not incref val!
+            //Do not FPLINCREF val!
             return new_none();
         } 
-        (*CAST_DICT(self)->val)[key]=INCREF(val);
+        (*CAST_DICT(self)->val)[key]=FPLINCREF(val);
         CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
         return new_none();
     }
@@ -135,11 +135,11 @@ object* dict_set(object* self, object* key, object* val){
         
         if (istrue(object_cmp(key, k.first, CMP_EQ))){
             if (istrue(object_cmp(val, k.second, CMP_EQ))){ //Same val
-                //Do not incref val!
+                //Do not FPLINCREF val!
                 return new_none();
             }
             
-            (*CAST_DICT(self)->val)[key]=INCREF(val);
+            (*CAST_DICT(self)->val)[key]=FPLINCREF(val);
             CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
             return new_none();
         }
@@ -147,7 +147,7 @@ object* dict_set(object* self, object* key, object* val){
     
     CAST_DICT(self)->keys->push_back(key);
 
-    (*CAST_DICT(self)->val)[INCREF(key)]=INCREF(val);
+    (*CAST_DICT(self)->val)[FPLINCREF(key)]=FPLINCREF(val);
     CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
     return new_none();
 }
@@ -242,8 +242,8 @@ object* dict_cmp(object* self, object* other, uint8_t type){
 
 void dict_del(object* obj){
     for (auto k: (*CAST_DICT(obj)->val)){
-        DECREF(k.first);
-        DECREF(k.second);
+        FPLDECREF(k.first);
+        FPLDECREF(k.second);
     }
     delete CAST_DICT(obj)->val;
 }
@@ -257,16 +257,16 @@ object* dict_iter(object* self){
     CAST_DICTITER(iter)->keys->clear();
     CAST_DICTITER(iter)->idx=0;
     for (auto k: *CAST_DICT(self)->val){
-        (*CAST_DICTITER(iter)->val)[INCREF(k.first)]=INCREF(k.second);
-        CAST_DICTITER(iter)->keys->push_back(INCREF(k.first));
+        (*CAST_DICTITER(iter)->val)[FPLINCREF(k.first)]=FPLINCREF(k.second);
+        CAST_DICTITER(iter)->keys->push_back(FPLINCREF(k.first));
     }
     return iter;
 }
 
 void dict_iter_del(object* self){
     for (auto k: (*CAST_DICTITER(self)->val)){
-        DECREF(k.first);
-        DECREF(k.second);
+        FPLDECREF(k.first);
+        FPLDECREF(k.second);
     }
     delete CAST_DICTITER(self)->val;
 }

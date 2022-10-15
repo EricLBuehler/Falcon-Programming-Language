@@ -410,3 +410,21 @@ object* type_wrapper_del(object* self, object* args, object* kwargs){
     CAST_TYPE(self)->slot_del(list_index_int(args, 0));
     return new_none();
 }
+
+object* type_wrapper_enter(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    return CAST_TYPE(self)->slot_enter(list_index_int(args, 0));
+}
+
+object* type_wrapper_exit(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    return CAST_TYPE(self)->slot_exit(list_index_int(args, 0));
+}

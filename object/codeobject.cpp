@@ -8,11 +8,11 @@ object* code_new_fromargs(object* args){
         //Error
         return NULL;
     }
-    CAST_CODE(obj)->co_names=INCREF(list_index_int(args, 0));
-    CAST_CODE(obj)->co_consts=INCREF(list_index_int(args, 1));
-    CAST_CODE(obj)->co_code=INCREF(list_index_int(args, 2));
-    CAST_CODE(obj)->co_file=INCREF(list_index_int(args, 3));
-    CAST_CODE(obj)->co_lines=INCREF(list_index_int(args, 4));
+    CAST_CODE(obj)->co_names=FPLINCREF(list_index_int(args, 0));
+    CAST_CODE(obj)->co_consts=FPLINCREF(list_index_int(args, 1));
+    CAST_CODE(obj)->co_code=FPLINCREF(list_index_int(args, 2));
+    CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
+    CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
     
     return obj;
 }
@@ -26,20 +26,20 @@ object* code_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 6 arguments, got %d", CAST_LIST(args)->size);
         return NULL;
     }
-    CAST_CODE(obj)->co_names=INCREF(list_index_int(args, 0));
-    CAST_CODE(obj)->co_consts=INCREF(list_index_int(args, 1));
-    CAST_CODE(obj)->co_code=INCREF(list_index_int(args, 2));
-    CAST_CODE(obj)->co_file=INCREF(list_index_int(args, 3));
-    CAST_CODE(obj)->co_lines=INCREF(list_index_int(args, 4));
+    CAST_CODE(obj)->co_names=FPLINCREF(list_index_int(args, 0));
+    CAST_CODE(obj)->co_consts=FPLINCREF(list_index_int(args, 1));
+    CAST_CODE(obj)->co_code=FPLINCREF(list_index_int(args, 2));
+    CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
+    CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
     return obj;
 }
 
 void code_del(object* obj){
-    DECREF(CAST_CODE(obj)->co_names);
-    DECREF(CAST_CODE(obj)->co_consts);
-    DECREF(CAST_CODE(obj)->co_code);
-    DECREF(CAST_CODE(obj)->co_lines);
-    DECREF(CAST_CODE(obj)->co_file);
+    FPLDECREF(CAST_CODE(obj)->co_names);
+    FPLDECREF(CAST_CODE(obj)->co_consts);
+    FPLDECREF(CAST_CODE(obj)->co_code);
+    FPLDECREF(CAST_CODE(obj)->co_lines);
+    FPLDECREF(CAST_CODE(obj)->co_file);
 }
 
 object* code_repr(object* self){

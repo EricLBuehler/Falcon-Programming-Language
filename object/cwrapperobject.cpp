@@ -6,7 +6,7 @@ object* cwrapper_new_fromfunc(cwrapperfunc func, string name, object* tp){
     object* o=new_object(&CWrapperType);
     CAST_CWRAPPER(o)->function=func;
     CAST_CWRAPPER(o)->name=new string(name);
-    CAST_CWRAPPER(o)->tp=INCREF(tp);
+    CAST_CWRAPPER(o)->tp=FPLINCREF(tp);
     return o;
 }
 
@@ -34,7 +34,7 @@ object* cwrapper_repr(object* self){
 
 void cwrapper_del(object* self){
     if (CAST_CWRAPPER(self)->tp!=NULL){
-        DECREF(CAST_CWRAPPER(self)->tp);
+        FPLDECREF(CAST_CWRAPPER(self)->tp);
     }
 }
 

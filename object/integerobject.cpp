@@ -5,7 +5,7 @@ object* new_int_fromint(int v){
     if (o==NULL){
         return obj;
     }
-    DECREF(obj);
+    FPLDECREF(obj);
     return o;
 }
 
@@ -26,7 +26,7 @@ object* new_int_fromstr(string v){
     if (o==NULL){
         return (object*)obj;
     }
-    DECREF((struct object*)obj);
+    FPLDECREF((struct object*)obj);
     return o;
 }
 
@@ -46,7 +46,7 @@ object* new_int_fromstr(string* v){
     if (o==NULL){
         return (object*)obj;
     }
-    DECREF((struct object*)obj);
+    FPLDECREF((struct object*)obj);
     return o;
 }
 
@@ -58,12 +58,12 @@ object* new_int_frombigint(BigInt* v){
     if (o==NULL){
         return (object*)obj;
     }
-    DECREF((struct object*)obj);
+    FPLDECREF((struct object*)obj);
     return o;
 }
 
 object* int_int(object* self){
-    return INCREF(self);
+    return FPLINCREF(self);
 }
 
 object* int_float(object* self){
@@ -80,7 +80,7 @@ object* int_new(object* type, object* args, object* kwargs){
         if (o==NULL){
             return (object*)obj;
         }
-        DECREF((struct object*)obj);
+        FPLDECREF((struct object*)obj);
         return o;
     }
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
@@ -91,7 +91,7 @@ object* int_new(object* type, object* args, object* kwargs){
     object* val=list_index_int(args, 0);
     
     if (object_istype(val->type, CAST_TYPE(type))){
-        return INCREF(val);
+        return FPLINCREF(val);
     }
     
     object* obj=object_int(val);
@@ -108,7 +108,7 @@ object* int_new(object* type, object* args, object* kwargs){
     if (o==NULL){
         return (object*)obj;
     }
-    DECREF((struct object*)obj);
+    FPLDECREF((struct object*)obj);
     return o;
 }
 
@@ -130,10 +130,10 @@ object* int_pow(object* self, object* other){
     }
     object* selfv_=object_float(self);
     double selfv =CAST_FLOAT(selfv_)->val;
-    DECREF(selfv_);
+    FPLDECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=pow(selfv,otherval);
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -153,10 +153,10 @@ object* int_mod(object* self, object* other){
     }
     object* selfv_=object_float(self);
     double selfv =CAST_FLOAT(selfv_)->val;
-    DECREF(selfv_);
+    FPLDECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=fmod(selfv,otherval);
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -177,10 +177,10 @@ object* int_add(object* self, object* other){
     }
     object* selfv_=object_float(self);
     double selfv =CAST_FLOAT(selfv_)->val;
-    DECREF(selfv_);
+    FPLDECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv+otherval;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -200,10 +200,10 @@ object* int_sub(object* self, object* other){
     }
     object* selfv_=object_float(self);
     double selfv =CAST_FLOAT(selfv_)->val;
-    DECREF(selfv_);
+    FPLDECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv-otherval;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -223,10 +223,10 @@ object* int_mul(object* self, object* other){
     }
     object* selfv_=object_float(self);
     double selfv =CAST_FLOAT(selfv_)->val;
-    DECREF(selfv_);
+    FPLDECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
     double res=selfv*otherval;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -248,9 +248,9 @@ object* int_div(object* self, object* other){
     }
     object* selfv_=object_float(self);
     double selfv =CAST_FLOAT(selfv_)->val;
-    DECREF(selfv_);
+    FPLDECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     if (otherval==0){
         vm_add_err(&ZeroDivisionError, vm, "Divison by zero");
         return NULL;
@@ -277,9 +277,9 @@ object* int_fldiv(object* self, object* other){
     }
     object* selfv_=object_float(self);
     double selfv =CAST_FLOAT(selfv_)->val;
-    DECREF(selfv_);
+    FPLDECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
-    DECREF(otherv);
+    FPLDECREF(otherv);
     if (otherval==0){
         vm_add_err(&ZeroDivisionError, vm, "Divison by zero");
         return NULL;
@@ -301,7 +301,7 @@ object* int_and(object* self, object* other){
         return NULL;
     }
     object* res=new_int_fromint(CAST_INT(self)->val->to_int() & CAST_INT(otherv)->val->to_int());
-    DECREF(otherv);
+    FPLDECREF(otherv);
     return res;
 }
 
@@ -314,7 +314,7 @@ object* int_or(object* self, object* other){
         return NULL;
     }
     object* res=new_int_fromint(CAST_INT(self)->val->to_int() | CAST_INT(otherv)->val->to_int());
-    DECREF(otherv);
+    FPLDECREF(otherv);
     return res;
 }
 
@@ -328,7 +328,7 @@ object* int_lshift(object* self, object* other){
     }
     
     int val=CAST_INT(otherv)->val->to_int();
-    DECREF(otherv);
+    FPLDECREF(otherv);
     if (val<0){
         vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
         return NULL;
@@ -347,7 +347,7 @@ object* int_rshift(object* self, object* other){
     }
     
     int val=CAST_INT(otherv)->val->to_int();
-    DECREF(otherv);
+    FPLDECREF(otherv);
     if (val<0){
         vm_add_err(&ValueError, vm, "Cannot right shift by negative number of bits");
         return NULL;
@@ -377,42 +377,42 @@ object* int_cmp(object* self, object* other, uint8_t type){
     //Other type is int
     if (type==CMP_EQ){
         if (CAST_INT(self)->val->to_int()==CAST_FLOAT(otherv)->val){
-            DECREF(otherv);
+            FPLDECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherv);
+        FPLDECREF(otherv);
         return new_bool_false();
     }
     else if (type==CMP_GT){
         if (CAST_INT(self)->val->to_int()>CAST_FLOAT(otherv)->val){
-            DECREF(otherv);
+            FPLDECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherv);
+        FPLDECREF(otherv);
         return new_bool_false();
     }
     else if (type==CMP_GTE){
         if (CAST_INT(self)->val->to_int()>=CAST_FLOAT(otherv)->val){
-            DECREF(otherv);
+            FPLDECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherv);
+        FPLDECREF(otherv);
         return new_bool_false();
     }
     else if (type==CMP_LT){
         if (CAST_INT(self)->val->to_int()<CAST_FLOAT(otherv)->val){
-            DECREF(otherv);
+            FPLDECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherv);
+        FPLDECREF(otherv);
         return new_bool_false();
     }
     else if (type==CMP_LTE){
         if (CAST_INT(self)->val->to_int()<=CAST_FLOAT(otherv)->val){
-            DECREF(otherv);
+            FPLDECREF(otherv);
             return new_bool_true();
         }
-        DECREF(otherv);
+        FPLDECREF(otherv);
         return new_bool_false();
     }
 

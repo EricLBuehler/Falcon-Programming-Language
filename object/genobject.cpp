@@ -1,7 +1,7 @@
 //Expects strong reference for locals!
 object* new_generator_impl(object* func, object* locals){
     object* obj=new_object(&GeneratorType);
-    CAST_GEN(obj)->func=INCREF(func);
+    CAST_GEN(obj)->func=FPLINCREF(func);
     CAST_GEN(obj)->locals=locals;
     CAST_GEN(obj)->ip=0;
     CAST_GEN(obj)->done=false;
@@ -14,8 +14,8 @@ object* new_generator_impl(object* func, object* locals){
 }
 
 void gen_del(object* self){
-    DECREF(CAST_GEN(self)->func);
-    DECREF(CAST_GEN(self)->locals);
+    FPLDECREF(CAST_GEN(self)->func);
+    FPLDECREF(CAST_GEN(self)->locals);
 }
 
 object* gen_repr(object* self){
@@ -69,8 +69,8 @@ object* gen_next(object* self){
         while (CAST_GEN(self)->callstack->size>0){
             add_callframe(vm->callstack, CAST_GEN(self)->callstack->head->line, CAST_GEN(self)->callstack->head->name,\
                 CAST_GEN(self)->callstack->head->code, CAST_GEN(self)->callstack->head->callable);
-            DECREF(vm->callstack->head->annontations);
-            vm->callstack->head->annontations=INCREF(CAST_GEN(self)->callstack->head->annontations);
+            FPLDECREF(vm->callstack->head->annontations);
+            vm->callstack->head->annontations=FPLINCREF(CAST_GEN(self)->callstack->head->annontations);
             pop_callframe(CAST_GEN(self)->callstack);
         }
     }
@@ -107,8 +107,8 @@ object* gen_next(object* self){
         while (vm->callstack->size>callstack_size){
             add_callframe(CAST_GEN(self)->callstack, vm->callstack->head->line, vm->callstack->head->name,\
                 vm->callstack->head->code, vm->callstack->head->callable);
-            DECREF(CAST_GEN(self)->callstack->head->annontations);
-            CAST_GEN(self)->callstack->head->annontations=INCREF(vm->callstack->head->annontations);
+            FPLDECREF(CAST_GEN(self)->callstack->head->annontations);
+            CAST_GEN(self)->callstack->head->annontations=FPLINCREF(vm->callstack->head->annontations);
             pop_callframe(vm->callstack);
         }
     }

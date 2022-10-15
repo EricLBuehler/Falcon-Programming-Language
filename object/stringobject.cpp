@@ -9,7 +9,7 @@ object* str_new_fromstr(string val){
         return (object*)obj;
     }
     
-    DECREF((object*)obj);
+    FPLDECREF((object*)obj);
     return o;
 }
 
@@ -46,7 +46,7 @@ object* str_new(object* type, object* args, object* kwargs){
         if (o==NULL){
             return (object*)obj;
         }
-        DECREF((struct object*)obj);
+        FPLDECREF((struct object*)obj);
         return o;
     }
     int len=CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
@@ -54,7 +54,7 @@ object* str_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", len);
         return NULL;
     }
-    object* val=INCREF(list_index_int(args, 0));
+    object* val=FPLINCREF(list_index_int(args, 0));
     string s=object_cstr(val);
 
     object* obj=new_object(CAST_TYPE(type));
@@ -64,7 +64,7 @@ object* str_new(object* type, object* args, object* kwargs){
     if (o==NULL){
         return (object*)obj;
     }
-    DECREF((struct object*)obj);
+    FPLDECREF((struct object*)obj);
     return o;
 }
 
@@ -241,7 +241,7 @@ object* string_join_meth(object* selftp, object* args, object* kwargs){
     while (vm->exception==NULL){
         object* o=iter->type->slot_next(iter);
         if (o==NULL){
-            DECREF(vm->exception);
+            FPLDECREF(vm->exception);
             break;
         }
         s+=object_cstr(o);
@@ -251,10 +251,10 @@ object* string_join_meth(object* selftp, object* args, object* kwargs){
         i++;
     }
     if (vm->exception!=NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
-    DECREF(iter);
+    FPLDECREF(iter);
     return str_new_fromstr(s);
 }
 

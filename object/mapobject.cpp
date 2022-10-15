@@ -10,18 +10,18 @@ object* map_new(object* type, object* args, object* kwargs){
     CAST_MAP(map)->idx=0;
     CAST_MAP(map)->n_iterators=niterators-1;
     CAST_MAP(map)->iterators=(object**)fpl_malloc(sizeof(object*)*(niterators-1));
-    CAST_MAP(map)->func=INCREF(list_index_int(args,0));
+    CAST_MAP(map)->func=FPLINCREF(list_index_int(args,0));
     
     for (uint32_t i=1; i<niterators; i++){
-        CAST_MAP(map)->iterators[i-1]=INCREF(list_index_int(args, i));
+        CAST_MAP(map)->iterators[i-1]=FPLINCREF(list_index_int(args, i));
         if (CAST_MAP(map)->iterators[i-1]->type->slot_iter!=NULL){
-            DECREF(CAST_MAP(map)->iterators[i-1]);
-            CAST_MAP(map)->iterators[i-1]=INCREF(CAST_MAP(map)->iterators[i-1]->type->slot_iter(CAST_MAP(map)->iterators[i-1]));
+            FPLDECREF(CAST_MAP(map)->iterators[i-1]);
+            CAST_MAP(map)->iterators[i-1]=FPLINCREF(CAST_MAP(map)->iterators[i-1]->type->slot_iter(CAST_MAP(map)->iterators[i-1]));
         }
         else{
-            DECREF(map);
+            FPLDECREF(map);
             vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", CAST_MAP(map)->iterators[i-1]->type->name->c_str());
-            DECREF(CAST_MAP(map)->iterators[i-1]);
+            FPLDECREF(CAST_MAP(map)->iterators[i-1]);
             return NULL;
         }
     }
@@ -30,7 +30,7 @@ object* map_new(object* type, object* args, object* kwargs){
 
 void map_del(object* self){
     for (uint32_t i=0; i<CAST_MAP(self)->n_iterators; i++){
-        DECREF(CAST_MAP(self)->iterators[i]);
+        FPLDECREF(CAST_MAP(self)->iterators[i]);
     }
 }
 
@@ -47,7 +47,7 @@ object* map_next(object* self){
             goto cont;
         }
         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-            DECREF(one);
+            FPLDECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
             return NULL;
         }
@@ -58,15 +58,15 @@ object* map_next(object* self){
         object* args=new_tuple();
         tuple_append(args, v);
         object* ret=object_call_nokwargs(CAST_MAP(self)->func, args);
-        DECREF(args);
+        FPLDECREF(args);
         if (CAST_MAP(self)->n_iterators==1){
-            DECREF(one);
-            DECREF(tup);
+            FPLDECREF(one);
+            FPLDECREF(tup);
             return ret;
         }
         tup->type->slot_mappings->slot_append(tup, ret);
     }
-    DECREF(one);
+    FPLDECREF(one);
     return tup;
 }
 

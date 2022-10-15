@@ -1,7 +1,7 @@
 object* slice_new_fromnums(object* start, object* end){
     object* slice=new_object(&SliceType);
-    CAST_SLICE(slice)->start=INCREF(start);
-    CAST_SLICE(slice)->end=INCREF(end);
+    CAST_SLICE(slice)->start=FPLINCREF(start);
+    CAST_SLICE(slice)->end=FPLINCREF(end);
     return slice;
 }
 
@@ -16,14 +16,14 @@ object* slice_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     object* slice=new_object(CAST_TYPE(type));
-    CAST_SLICE(slice)->start=INCREF(list_index_int(args, 0));
-    CAST_SLICE(slice)->end=INCREF(list_index_int(args, 1));
+    CAST_SLICE(slice)->start=FPLINCREF(list_index_int(args, 0));
+    CAST_SLICE(slice)->end=FPLINCREF(list_index_int(args, 1));
     return slice;
 }
 
 void slice_del(object* self){
-    DECREF(CAST_SLICE(self)->start);
-    DECREF(CAST_SLICE(self)->end);
+    FPLDECREF(CAST_SLICE(self)->start);
+    FPLDECREF(CAST_SLICE(self)->end);
 }
 
 object* slice_repr(object* self){

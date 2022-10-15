@@ -36,7 +36,7 @@ object* file_new(object* type, object* args, object* kwargs){
 }
 
 void file_del(object* self){
-    DECREF(CAST_FILE(self)->name);
+    FPLDECREF(CAST_FILE(self)->name);
     if (CAST_FILE(self)->open){
         fclose(CAST_FILE(self)->file);
     }
@@ -148,7 +148,7 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
         vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
         return NULL;
     }
-    return INCREF(self);
+    return FPLINCREF(self);
 }
 
 object* file_close_meth(object* selftp, object* args, object* kwargs){   
@@ -164,6 +164,16 @@ object* file_close_meth(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
+    fclose(CAST_FILE(self)->file);
+    CAST_FILE(self)->open=false;
+    return new_none();
+}
+
+object* file_enter(object* self){
+    return self;
+}
+
+object* file_exit(object* self){
     fclose(CAST_FILE(self)->file);
     CAST_FILE(self)->open=false;
     return new_none();

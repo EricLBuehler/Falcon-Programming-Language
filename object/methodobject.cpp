@@ -1,8 +1,8 @@
 object* method_new_impl(object* func, object* instance){
     object* method=new_object(&MethodType);
-    CAST_METHOD(method)->function=INCREF(func);
+    CAST_METHOD(method)->function=FPLINCREF(func);
     if (instance!=NULL){
-        INCREF(instance);
+        FPLINCREF(instance);
     }
     CAST_METHOD(method)->instance=instance;
     return method;
@@ -16,15 +16,15 @@ object* method_new(object* type, object* args, object* kwargs){
     }
 
     object* method=new_object(CAST_TYPE(type));
-    CAST_METHOD(method)->function=INCREF(list_index_int(args, 0));
-    CAST_METHOD(method)->instance=INCREF(list_index_int(args, 1));
+    CAST_METHOD(method)->function=FPLINCREF(list_index_int(args, 0));
+    CAST_METHOD(method)->instance=FPLINCREF(list_index_int(args, 1));
     return method;
 }
 
 void method_del(object* self){
-    DECREF(CAST_METHOD(self)->function);
+    FPLDECREF(CAST_METHOD(self)->function);
     if (CAST_METHOD(self)->instance!=NULL){
-        DECREF(CAST_METHOD(self)->instance);
+        FPLDECREF(CAST_METHOD(self)->instance);
     }
 }
 

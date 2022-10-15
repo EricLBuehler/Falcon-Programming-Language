@@ -33,7 +33,7 @@ object* list_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     if (object_istype(list_index_int(args, 0)->type, &ListType)){
-        return INCREF(list_index_int(args, 0));
+        return FPLINCREF(list_index_int(args, 0));
     }
     if (list_index_int(args, 0)->type->slot_iter!=NULL){
         object* o=list_index_int(args, 0);
@@ -57,11 +57,11 @@ object* list_new(object* type, object* args, object* kwargs){
             o=iter->type->slot_next(iter);
         }
         if (vm->exception!=NULL){
-            DECREF(vm->exception);
+            FPLDECREF(vm->exception);
             vm->exception=NULL;
         }
-        DECREF(iter);
-        DECREF(one);
+        FPLDECREF(iter);
+        FPLDECREF(one);
         return (object*)obj;
     }
 
@@ -73,7 +73,7 @@ object* list_new(object* type, object* args, object* kwargs){
 
     size_t length=(size_t)CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     for (size_t i=0; i<length; i++){
-        list_append((object*)obj, INCREF(list_index_int(args, i)));
+        list_append((object*)obj, FPLINCREF(list_index_int(args, i)));
     }
     
     return (object*)obj;
@@ -212,7 +212,7 @@ void list_store_slice(object* self, object* idx, object* val){
         }
         object* intv=new_int_fromint(i);
         list_set(self, intv, list_index_int(val, n++));
-        DECREF(intv);
+        FPLDECREF(intv);
     }
     
 }
@@ -225,7 +225,7 @@ object* list_pop(object* self){
     }
 
     CAST_LIST(self)->size--;
-    object* o=CAST_LIST(self)->array[CAST_LIST(self)->size]; //No need to decref, we return a reference
+    object* o=CAST_LIST(self)->array[CAST_LIST(self)->size]; //No need to FPLDECREF, we return a reference
 
     ((object_var*)self)->var_size=sizeof(ListObject)+CAST_LIST(self)->size;
 
@@ -307,7 +307,7 @@ void list_del_slice(object* self, object* index){
     }
 
     for (uint32_t idx=start_v; idx<end_v; idx++){
-        DECREF(CAST_LIST(self)->array[idx]);
+        FPLDECREF(CAST_LIST(self)->array[idx]);
         
         for(int i = start_v; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
             CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
@@ -319,7 +319,7 @@ void list_del_slice(object* self, object* index){
 }
 
 void list_del_item(object* self, long idx){
-    DECREF(CAST_LIST(self)->array[idx]);
+    FPLDECREF(CAST_LIST(self)->array[idx]);
     for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
         CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
     }
@@ -354,9 +354,9 @@ object* list_set(object* self, object* idx, object* val){
         return new_none();
     }
     
-    DECREF(CAST_LIST(self)->array[lidx]);
+    FPLDECREF(CAST_LIST(self)->array[lidx]);
 
-    CAST_LIST(self)->array[lidx]=INCREF(val);
+    CAST_LIST(self)->array[lidx]=FPLINCREF(val);
     return new_none();
 }
 
@@ -374,14 +374,14 @@ void list_append(object* self, object* obj){
         list_resize(CAST_LIST(self), CAST_LIST(self)->size+1);
     }
 
-    CAST_LIST(self)->array[CAST_LIST(self)->size++]=INCREF(obj);
+    CAST_LIST(self)->array[CAST_LIST(self)->size++]=FPLINCREF(obj);
 
     ((object_var*)self)->var_size=sizeof(ListObject)+CAST_LIST(self)->size;
 }
 
 void list_del(object* obj){
     for (size_t i=0; i<CAST_LIST(obj)->size; i++){
-        DECREF(CAST_LIST(obj)->array[i]);
+        FPLDECREF(CAST_LIST(obj)->array[i]);
     }
     free(((ListObject*)obj)->array);
 }
@@ -455,14 +455,14 @@ object* list_iter(object* self){
     CAST_LISTITER(iter)->idx=0;
     CAST_LISTITER(iter)->array=(object**)fpl_malloc(CAST_LISTITER(iter)->capacity * sizeof(struct object*));
     for (size_t i=0; i<CAST_LIST(self)->size; i++){
-        CAST_LISTITER(iter)->array[i]=INCREF(CAST_LIST(self)->array[i]);
+        CAST_LISTITER(iter)->array[i]=FPLINCREF(CAST_LIST(self)->array[i]);
     }
     return iter;
 }
 
 void list_iter_del(object* self){
     for (size_t i=0; i<CAST_LISTITER(self)->size; i++){
-        DECREF(CAST_LISTITER(self)->array[i]);
+        FPLDECREF(CAST_LISTITER(self)->array[i]);
     }
     free(CAST_LISTITER(self)->array);
 }
@@ -526,7 +526,7 @@ object* list_pop_meth(object* selftp, object* args, object* kwargs){
         if (val==NULL){
             return NULL;
         }
-        INCREF(val);
+        FPLINCREF(val);
         list_set(self, idx, NULL);
         return val;
     }
@@ -559,7 +559,7 @@ object* list_mul(object* self, object* other){
         
     for (int i=1; i<nrepeat; i++){
         for (int a=0; a<orig_size; a++){
-            CAST_LIST(self)->array[a+(i*orig_size)]=INCREF(CAST_LIST(self)->array[a]);
+            CAST_LIST(self)->array[a+(i*orig_size)]=FPLINCREF(CAST_LIST(self)->array[a]);
         }
     }
     return self;
@@ -577,10 +577,10 @@ object* list_add(object* self, object* other){
     list_resize(CAST_LIST(list), CAST_LIST(list)->size);
 
     for (size_t i=0; i<CAST_LIST(self)->size; i++){
-        CAST_LIST(list)->array[i]=INCREF(CAST_LIST(self)->array[i]);
+        CAST_LIST(list)->array[i]=FPLINCREF(CAST_LIST(self)->array[i]);
     }
     for (size_t i=CAST_LIST(self)->size; i<CAST_LIST(list)->size; i++){
-        CAST_LIST(list)->array[i]=INCREF(CAST_LIST(other)->array[i-CAST_LIST(self)->size]);
+        CAST_LIST(list)->array[i]=FPLINCREF(CAST_LIST(other)->array[i-CAST_LIST(self)->size]);
     }
     return list;
 }
@@ -597,8 +597,8 @@ object* list_replace_meth(object* selftp, object* args, object* kwargs){
 
     for (size_t i=0; i<CAST_LIST(self)->size; i++){
         if (istrue(object_cmp(CAST_LIST(self)->array[i], replace, CMP_EQ))){
-            DECREF(CAST_LIST(self)->array[i]);
-            CAST_LIST(self)->array[i]=INCREF(replacewi);
+            FPLDECREF(CAST_LIST(self)->array[i]);
+            CAST_LIST(self)->array[i]=FPLINCREF(replacewi);
             return self;
         }
     }
@@ -636,7 +636,7 @@ object* list_remove_meth(object* selftp, object* args, object* kwargs){
 
     for (size_t idx=0; idx<CAST_LIST(self)->size; idx++){
         if (istrue(object_cmp(CAST_LIST(self)->array[idx], val, CMP_EQ))){
-            DECREF(CAST_LIST(self)->array[idx]);
+            FPLDECREF(CAST_LIST(self)->array[idx]);
             for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
                 CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
             }
@@ -676,7 +676,7 @@ object* list_insert_meth(object* selftp, object* args, object* kwargs){
     for (int i=CAST_LIST(self)->size-1; i>idx; i--){
         CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i-1];
     }
-    CAST_LIST(self)->array[idx]=INCREF(val);
+    CAST_LIST(self)->array[idx]=FPLINCREF(val);
 
 
     return new_none();

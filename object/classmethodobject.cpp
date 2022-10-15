@@ -6,12 +6,12 @@ object* classmethod_new(object* type, object* args, object* kwargs){
     }
 
     object* method=new_object(CAST_TYPE(type));
-    CAST_CLASSMETHOD(method)->function=INCREF(list_index_int(args, 0));
+    CAST_CLASSMETHOD(method)->function=FPLINCREF(list_index_int(args, 0));
     return method;
 }
 
 void classmethod_del(object* self){
-    DECREF(CAST_CLASSMETHOD(self)->function);
+    FPLDECREF(CAST_CLASSMETHOD(self)->function);
 }
 
 object* classmethod_repr(object* self){

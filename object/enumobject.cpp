@@ -6,10 +6,10 @@ object* enum_new(object* type, object* args, object* kwargs){
     }
 
     object* enumer=new_object(CAST_TYPE(type));
-    CAST_ENUM(enumer)->iterator=INCREF(list_index_int(args, 0));
+    CAST_ENUM(enumer)->iterator=FPLINCREF(list_index_int(args, 0));
     if (CAST_ENUM(enumer)->iterator->type->slot_iter!=NULL){
-        DECREF(CAST_ENUM(enumer)->iterator);
-        CAST_ENUM(enumer)->iterator=INCREF(CAST_ENUM(enumer)->iterator->type->slot_iter(CAST_ENUM(enumer)->iterator));
+        FPLDECREF(CAST_ENUM(enumer)->iterator);
+        CAST_ENUM(enumer)->iterator=FPLINCREF(CAST_ENUM(enumer)->iterator->type->slot_iter(CAST_ENUM(enumer)->iterator));
  
         if (CAST_ENUM(enumer)->iterator==NULL){
             vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", CAST_ENUM(enumer)->iterator->type->name->c_str());
@@ -17,9 +17,9 @@ object* enum_new(object* type, object* args, object* kwargs){
         }
     }
     else{
-        DECREF(enumer);
+        FPLDECREF(enumer);
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", CAST_ENUM(enumer)->iterator->type->name->c_str());
-        DECREF(CAST_ENUM(enumer)->iterator);
+        FPLDECREF(CAST_ENUM(enumer)->iterator);
         return NULL;
     }
     CAST_ENUM(enumer)->idx=0;
@@ -27,7 +27,7 @@ object* enum_new(object* type, object* args, object* kwargs){
 }
 
 void enum_del(object* self){
-    DECREF(CAST_ENUM(self)->iterator);
+    FPLDECREF(CAST_ENUM(self)->iterator);
 }
 
 object* enum_next(object* self){

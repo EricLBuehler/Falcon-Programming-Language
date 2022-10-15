@@ -116,6 +116,9 @@ typedef struct object_type{
     descrgetfunc slot_descrget;
     descrsetfunc slot_descrset;
 
+    unaryfunc slot_enter;
+    unaryfunc slot_exit;
+
     posttpcall slot_posttpcall;
 }TypeObject;
 
@@ -156,6 +159,7 @@ TypeObject ImportError;
 TypeObject KeyboardInterrupt;
 TypeObject AssertionError;
 TypeObject ZeroDivisionError;
+TypeObject OSError;
 
 bool setup_memory_error=false;
 bool hit_memory_error=false;
@@ -163,8 +167,8 @@ bool hit_memory_error=false;
 Parser parser;
 
 
-inline bool DECREF(struct object* object);
-inline object* INCREF(struct object* object);
+inline bool FPLDECREF(struct object* object);
+inline object* FPLINCREF(struct object* object);
 object* in_immutables(object* obj);
 object* new_object(TypeObject* type);
 object_var* new_object_var(TypeObject* type, size_t size);
@@ -190,6 +194,9 @@ object* object_cmp(object* self, object* other, uint8_t type);
 object* object_call_nokwargs(object* obj, object* args);
 object* object_genericgetattr_notype(object* obj, object* attr);
 object* object_in_iter(object* left, object* right);
+object* object_in_iter(object* left, object* right);
+object* object_enter_with(object* self);
+object* object_exit_with(object* self);
 
 object* builtin___build_class__(object* self, object* args);
 
@@ -281,6 +288,9 @@ object* type_wrapper_gt(object* self, object* args, object* kwargs);
 object* type_wrapper_lt(object* self, object* args, object* kwargs);
 object* type_wrapper_gte(object* self, object* args, object* kwargs);
 object* type_wrapper_lte(object* self, object* args, object* kwargs);
+
+object* type_wrapper_enter(object* self, object* args, object* kwargs);
+object* type_wrapper_exit(object* self, object* args, object* kwargs);
 
 object* newtp_wrapper_eq(object* self, object* args, object* kwargs);
 object* newtp_wrapper_ne(object* self, object* args, object* kwargs);
@@ -457,6 +467,8 @@ enum opcode{
     CLEAR_EXC,
     ENTER_WHILE,
     EXIT_WHILE,
+    ENTER_WITH,
+    EXIT_WITH,
 };
 
 

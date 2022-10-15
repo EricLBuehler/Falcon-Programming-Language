@@ -1,6 +1,6 @@
 void module_del(object* self){
-    DECREF(CAST_MODULE(self)->dict);
-    DECREF(CAST_MODULE(self)->name);
+    FPLDECREF(CAST_MODULE(self)->dict);
+    FPLDECREF(CAST_MODULE(self)->name);
 }
 
 object* module_new_fromdict(object* dict, object* name){

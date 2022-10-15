@@ -19,7 +19,7 @@ object* newtp_new(object* self, object* args, object* kwargs){
 
 void _newtp_del(object* self){
     object* dict= (*(object**)((char*)self + self->type->dict_offset));
-    DECREF(dict);
+    FPLDECREF(dict);
 }
 
 void newtp_del(object* self){
@@ -72,7 +72,7 @@ object* newtp_set(object* self, object* idx, object* val){
     ERROR_RET(n);
     
     if (n==NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
         n=object_getattr(self, str_new_fromstr("__delitem__"));
         ERROR_RET(n);
@@ -384,7 +384,7 @@ object* newtp_getattr(object* self, object* attr){
         return val;
     }
     else{
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
         object* n=object_genericgetattr(self, attr);
         return n;
@@ -400,7 +400,7 @@ object* newtp_setattr(object* self, object* attr, object* val){
     n=object_genericgetattr_notype(self, str_new_fromstr("__setattr__"));
     
     if (n==NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
         if (val!=NULL){
             return object_genericsetattr(self, attr, val);;
@@ -408,7 +408,7 @@ object* newtp_setattr(object* self, object* attr, object* val){
         n=object_genericgetattr_notype(self, str_new_fromstr("__delattr__"));
     
         if (n==NULL){
-            DECREF(vm->exception);
+            FPLDECREF(vm->exception);
             vm->exception=NULL;
             return object_genericsetattr(self, attr, val);;
         }
@@ -430,7 +430,7 @@ object* newtp_descrget(object* obj, object* self){
     ERROR_RET(n);
     
     if (n==NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
         return NULL;
     }
@@ -448,14 +448,14 @@ object* newtp_descrset(object* obj, object* self, object* val){
     ERROR_RET(n);
     
     if (n==NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
         
         n=object_getattr(self, str_new_fromstr("__delete__"));
         ERROR_RET(n);
     
         if (n==NULL){
-            DECREF(vm->exception);
+            FPLDECREF(vm->exception);
             vm->exception=NULL;
             return NULL;
         }
@@ -468,6 +468,41 @@ object* newtp_descrset(object* obj, object* self, object* val){
     return res;
 }
 
+object* newtp_enter(object* self){    
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    
+    object* n;
+    n=object_getattr(self, str_new_fromstr("__enter__"));
+    ERROR_RET(n);
+    
+    if (n==NULL){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+        return NULL;
+    }
+
+    object* res=object_call_nokwargs(n, args);
+    return res;
+}
+
+object* newtp_exit(object* self){    
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, self);
+    
+    object* n;
+    n=object_getattr(self, str_new_fromstr("__exit__"));
+    ERROR_RET(n);
+    
+    if (n==NULL){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+        return NULL;
+    }
+
+    object* res=object_call_nokwargs(n, args);
+    return res;
+}
 
 
 void newtp_post_tpcall(object* ob){

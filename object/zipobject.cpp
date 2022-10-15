@@ -11,15 +11,15 @@ object* zip_new(object* type, object* args, object* kwargs){
     CAST_ZIP(zip)->n_iterators=niterators;
     CAST_ZIP(zip)->iterators=(object**)fpl_malloc(sizeof(object*)*niterators);
     for (uint32_t i=0; i<niterators; i++){
-        CAST_ZIP(zip)->iterators[i]=INCREF(list_index_int(args, i));
+        CAST_ZIP(zip)->iterators[i]=FPLINCREF(list_index_int(args, i));
         if (CAST_ZIP(zip)->iterators[i]->type->slot_iter!=NULL){
-            DECREF(CAST_ZIP(zip)->iterators[i]);
-            CAST_ZIP(zip)->iterators[i]=INCREF(CAST_ZIP(zip)->iterators[i]->type->slot_iter(CAST_ZIP(zip)->iterators[i]));
+            FPLDECREF(CAST_ZIP(zip)->iterators[i]);
+            CAST_ZIP(zip)->iterators[i]=FPLINCREF(CAST_ZIP(zip)->iterators[i]->type->slot_iter(CAST_ZIP(zip)->iterators[i]));
         }
         else{
-            DECREF(zip);
+            FPLDECREF(zip);
             vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", CAST_ZIP(zip)->iterators[i]->type->name->c_str());
-            DECREF(CAST_ZIP(zip)->iterators[i]);
+            FPLDECREF(CAST_ZIP(zip)->iterators[i]);
             return NULL;
         }
     }
@@ -28,7 +28,7 @@ object* zip_new(object* type, object* args, object* kwargs){
 
 void zip_del(object* self){
     for (uint32_t i=0; i<CAST_ZIP(self)->n_iterators; i++){
-        DECREF(CAST_ZIP(self)->iterators[i]);
+        FPLDECREF(CAST_ZIP(self)->iterators[i]);
     }
 }
 
@@ -40,7 +40,7 @@ object* zip_next(object* self){
             return NULL;
         }
         if (CAST_ZIP(self)->n_iterators==1){
-            DECREF(tup);
+            FPLDECREF(tup);
             return o;
         }
         tup->type->slot_mappings->slot_append(tup, o);

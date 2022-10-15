@@ -30,7 +30,7 @@ object* offsetwrapper_descrget(object* obj, object* self){
 }
 
 object* offsetwrapper_descrset(object* obj, object* self, object* val){
-    DECREF((*(object**)((char*)obj + CAST_OFFSETWRAPPER(self)->offset)));
+    FPLDECREF((*(object**)((char*)obj + CAST_OFFSETWRAPPER(self)->offset)));
     (*(object**)((char*)obj + CAST_OFFSETWRAPPER(self)->offset))=val;
     return new_none();
 }

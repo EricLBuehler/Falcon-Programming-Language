@@ -37,7 +37,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     if (object_istype(list_index_int(args, 0)->type, &TupleType)){
-        return INCREF(list_index_int(args, 0));
+        return FPLINCREF(list_index_int(args, 0));
     }
     if (list_index_int(args, 0)->type->slot_iter!=NULL){
         object* o=list_index_int(args, 0);
@@ -62,11 +62,11 @@ object* tuple_new(object* type, object* args, object* kwargs){
             o=iter->type->slot_next(iter);
         }
         if (vm->exception!=NULL){
-            DECREF(vm->exception);
+            FPLDECREF(vm->exception);
             vm->exception=NULL;
         }
-        DECREF(iter);
-        DECREF(one);
+        FPLDECREF(iter);
+        FPLDECREF(one);
         return (object*)obj;
     }
 
@@ -78,7 +78,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
     CAST_TUPLE(obj)->array=(object**)fpl_malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
 
     for (size_t i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
-        tuple_append((object*)obj, INCREF(list_index_int(args, i)));
+        tuple_append((object*)obj, FPLINCREF(list_index_int(args, i)));
     }
     
     return (object*)obj;
@@ -176,14 +176,14 @@ void tuple_append(object* self, object* obj){
         tuple_resize(CAST_TUPLE(self), CAST_TUPLE(self)->size+1);
     }
 
-    CAST_TUPLE(self)->array[CAST_TUPLE(self)->size++]=INCREF(obj);
+    CAST_TUPLE(self)->array[CAST_TUPLE(self)->size++]=FPLINCREF(obj);
 
     ((object_var*)self)->var_size=sizeof(TupleObject)+CAST_TUPLE(self)->size;
 }
 
 void tuple_del(object* obj){
     for (size_t i=0; i<CAST_TUPLE(obj)->size; i++){
-        DECREF(CAST_TUPLE(obj)->array[i]);
+        FPLDECREF(CAST_TUPLE(obj)->array[i]);
     }
     free(((TupleObject*)obj)->array);
 }
@@ -253,14 +253,14 @@ object* tuple_iter(object* self){
     CAST_TUPLEITER(iter)->idx=0;
     CAST_TUPLEITER(iter)->array=(object**)fpl_malloc(CAST_TUPLEITER(iter)->capacity * sizeof(struct object*));
     for (size_t i=0; i<CAST_TUPLE(self)->size; i++){
-        CAST_TUPLEITER(iter)->array[i]=INCREF(CAST_TUPLE(self)->array[i]);
+        CAST_TUPLEITER(iter)->array[i]=FPLINCREF(CAST_TUPLE(self)->array[i]);
     }
     return iter;
 }
 
 void tuple_iter_del(object* self){
     for (size_t i=0; i<CAST_TUPLEITER(self)->size; i++){
-        DECREF(CAST_TUPLEITER(self)->array[i]);
+        FPLDECREF(CAST_TUPLEITER(self)->array[i]);
     }
     free(CAST_TUPLEITER(self)->array);
 }
@@ -324,7 +324,7 @@ object* tuple_mul(object* self, object* other){
         
     for (int i=1; i<nrepeat; i++){
         for (int a=0; a<orig_size; a++){
-            CAST_TUPLE(self)->array[a+(i*orig_size)]=INCREF(CAST_TUPLE(self)->array[a]);
+            CAST_TUPLE(self)->array[a+(i*orig_size)]=FPLINCREF(CAST_TUPLE(self)->array[a]);
         }
     }
     return self;
@@ -341,10 +341,10 @@ object* tuple_add(object* self, object* other){
     tuple_resize(CAST_TUPLE(tup), CAST_TUPLE(tup)->size);
 
     for (size_t i=0; i<CAST_TUPLE(self)->size; i++){
-        CAST_TUPLE(tup)->array[i]=INCREF(CAST_TUPLE(self)->array[i]);
+        CAST_TUPLE(tup)->array[i]=FPLINCREF(CAST_TUPLE(self)->array[i]);
     }
     for (size_t i=CAST_TUPLE(self)->size; i<CAST_TUPLE(tup)->size; i++){
-        CAST_TUPLE(tup)->array[i]=INCREF(CAST_TUPLE(other)->array[i-CAST_TUPLE(self)->size]);
+        CAST_TUPLE(tup)->array[i]=FPLINCREF(CAST_TUPLE(other)->array[i-CAST_TUPLE(self)->size]);
     }
     return tup;
 }

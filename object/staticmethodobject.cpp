@@ -6,12 +6,12 @@ object* staticmethod_new(object* type, object* args, object* kwargs){
     }
 
     object* method=new_object(CAST_TYPE(type));
-    CAST_STATICMETHOD(method)->function=INCREF(list_index_int(args, 0));
+    CAST_STATICMETHOD(method)->function=FPLINCREF(list_index_int(args, 0));
     return method;
 }
 
 void staticmethod_del(object* self){
-    DECREF(CAST_STATICMETHOD(self)->function);
+    FPLDECREF(CAST_STATICMETHOD(self)->function);
 }
 
 object* staticmethod_repr(object* self){

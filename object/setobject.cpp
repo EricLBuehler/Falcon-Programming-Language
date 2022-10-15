@@ -20,7 +20,7 @@ object* set_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     if (object_istype(list_index_int(args, 0)->type, &SetType)){
-        return INCREF(list_index_int(args, 0));
+        return FPLINCREF(list_index_int(args, 0));
     }
     if (list_index_int(args, 0)->type->slot_iter!=NULL){
         object* o=list_index_int(args, 0);
@@ -45,11 +45,11 @@ object* set_new(object* type, object* args, object* kwargs){
             o=iter->type->slot_next(iter);
         }
         if (vm->exception!=NULL){
-            DECREF(vm->exception);
+            FPLDECREF(vm->exception);
             vm->exception=NULL;
         }
-        DECREF(iter);
-        DECREF(one);
+        FPLDECREF(iter);
+        FPLDECREF(one);
         return obj;
     }
 
@@ -82,12 +82,12 @@ void set_append(object* self, object* obj){
             return;
         }
     }
-    CAST_SET(self)->vec->push_back(INCREF(obj));
+    CAST_SET(self)->vec->push_back(FPLINCREF(obj));
 }
 
 void set_del(object* obj){
     for (object* o: (*CAST_SET(obj)->vec)){
-        DECREF(o);
+        FPLDECREF(o);
     }
     delete CAST_SET(obj)->vec;
 }
@@ -155,7 +155,7 @@ object* set_iter(object* self){
     CAST_SETITER(obj)->idx=0;
 
     for (object* o: (*CAST_SET(self)->vec)){
-        CAST_SETITER(obj)->vec->push_back(INCREF(o));
+        CAST_SETITER(obj)->vec->push_back(FPLINCREF(o));
     }
     
     return obj;
@@ -163,7 +163,7 @@ object* set_iter(object* self){
 
 void set_iter_del(object* self){
     for (object* o: (*CAST_SETITER(self)->vec)){
-        DECREF(o);
+        FPLDECREF(o);
     }
     delete CAST_SETITER(self)->vec;
 }
@@ -268,7 +268,7 @@ object* set_remove_meth(object* selftp, object* args, object* kwargs){
     for (object* o: ((*CAST_SET(self)->vec))){
         if (istrue(object_cmp(o, val, CMP_EQ))){
             CAST_SET(self)->vec->erase(find(CAST_SET(self)->vec->begin(), CAST_SET(self)->vec->end(), o));
-            DECREF(o);
+            FPLDECREF(o);
             return new_none();
         }
     }
