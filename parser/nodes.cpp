@@ -52,6 +52,7 @@ enum nodetype{
     N_ANONDOT,
     N_YIELD,
     N_SET, //No data struct (List)
+    N_WITH,
 };
 
 enum precedence {
@@ -353,6 +354,12 @@ struct AnnotatedDot{
 
 struct Yield{
     Node* expr;
+};
+
+struct With{
+    Node* expr;
+    Node* name;
+    vector<Node*>* code;
 };
 
 

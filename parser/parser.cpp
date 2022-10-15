@@ -1922,6 +1922,9 @@ class Parser{
             else if (this->current_tok.data=="yield"){
                 n= make_yield(ret);
             }
+            else if (this->current_tok.data=="with"){
+                n= make_with(ret);
+            }
             else{
                 this->add_parsing_error(ret, "SyntaxError: Unexpected keyword '%s'",this->current_tok.data.c_str());
                 this->advance();
@@ -3224,6 +3227,82 @@ class Parser{
             y->expr=expr;
 
             node->node=y;
+
+            return node;
+        }
+
+        Node* make_with(parse_ret* ret){
+            vector<Node*>* bases=new vector<Node*>;
+            Token t=this->current_tok;
+            this->advance();
+
+            bool b=this->multi;
+            bool noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
+            Node* expr=this->expr(ret, LOWEST);
+            this->noassign=noassign;
+            this->multi=b;
+            
+
+            if (!this->current_tok_is(T_IDENTIFIER)){
+                this->add_parsing_error(ret, "SyntaxError: Expected identifier, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+
+            b=this->multi;
+            noassign=this->noassign;
+            this->noassign=true;
+            this->multi=false;
+            Node* name=this->atom(ret);
+            this->noassign=noassign;
+            this->multi=b;
+            
+            this->advance();
+            
+            
+            //Parse code
+            if (!this->current_tok_is(T_LCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }
+
+            this->advance();
+            skip_newline;
+            parse_ret code;
+            if (!this->current_tok_is(T_RCURLY)){
+                code=this->statements();
+            }
+            else{
+                code.errornum=0;
+                code.nodes.clear();
+            }
+            if (code.errornum>0){
+                (*ret)=code;
+            }
+            
+            if (!this->current_tok_is(T_RCURLY)){
+                this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                return NULL;
+            }  
+            
+            Node* node=make_node(N_WITH);
+            node->start=new Position(t.start.infile, t.start.index, t.start.col, t.start.line);
+            node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+
+            With* w=(With*)fpl_malloc(sizeof(With));
+            w->code=new vector<Node*>;
+            w->code->clear();
+            for (Node* n: code.nodes){
+                w->code->push_back(n);
+            }
+            w->expr=expr;
+            w->name=name;
+
+            node->node=w;
 
             return node;
         }
