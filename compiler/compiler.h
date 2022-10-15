@@ -66,6 +66,7 @@ struct compiler{
 #define ANONIDENT(node) ((AnnotatedIdentifier*)node)
 #define ANONDOT(node) ((AnnotatedDot*)node)
 #define YIELD(node) ((Yield*)node)
+#define WITH(node) ((With*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 

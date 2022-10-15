@@ -178,3 +178,11 @@ YIELD_VALUE - Yields TOS. If call stack callable is a function, return a generat
 BUILD_SET(n) - Pops n frames of stack (L->R and Top->Down) and pushes set
 
 CLEAR_EXC - Clears exception
+
+ENTER_WHILE - Enter while loop
+
+EXIT_WHILE - Exit while loop
+
+ENTER_WHILE - Implements TOS.__enter__()
+
+EXIT_WHILE - Implements TOS.__exit__()

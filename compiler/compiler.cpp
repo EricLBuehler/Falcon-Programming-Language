@@ -46,8 +46,8 @@ struct compiler* new_compiler(){
 }
 
 void compiler_del(struct compiler* compiler){
-    DECREF(compiler->consts);
-    DECREF(compiler->names);
+    FPLDECREF(compiler->consts);
+    FPLDECREF(compiler->names);
     struct instruction* i=compiler->instructions->first;
     while (i){
         struct instruction* i_=i->next;
@@ -736,10 +736,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_lines)->size; i++){
                 lines->type->slot_mappings->slot_append(lines, list_index_int(CAST_CODE(code)->co_lines, i));
             }
-            DECREF(CAST_CODE(code)->co_lines);
-            CAST_CODE(code)->co_lines=lines; //No incref necessary
+            FPLDECREF(CAST_CODE(code)->co_lines);
+            CAST_CODE(code)->co_lines=lines; //No FPLINCREF necessary
 
-            DECREF(CAST_CODE(code)->co_file);
+            FPLDECREF(CAST_CODE(code)->co_file);
             CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
             
             
@@ -1051,7 +1051,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
 
-            DECREF(CAST_CODE(code)->co_file);
+            FPLDECREF(CAST_CODE(code)->co_file);
             CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
             
             if (!object_find_bool(compiler->consts, code)){
@@ -1652,6 +1652,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
                     compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
+                
+                    
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }    
 
             if (EXCEPT(expr->node)->type!=NULL){
@@ -1801,6 +1804,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->name->start->line));
                         compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                     }
+                    
+                    add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
                 }    
 
                 if (EXCEPT(tryn->node)->type!=NULL){
@@ -2132,6 +2137,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
                         break;
                 }
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
             break;
         }
@@ -2884,10 +2890,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_lines)->size; i++){
                 lines->type->slot_mappings->slot_append(lines, list_index_int(CAST_CODE(code)->co_lines, i));
             }
-            DECREF(CAST_CODE(code)->co_lines);
-            CAST_CODE(code)->co_lines=lines; //No incref necessary
+            FPLDECREF(CAST_CODE(code)->co_lines);
+            CAST_CODE(code)->co_lines=lines; //No FPLINCREF necessary
 
-            DECREF(CAST_CODE(code)->co_file);
+            FPLDECREF(CAST_CODE(code)->co_file);
             CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
             
             
@@ -3272,6 +3278,72 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
             add_instruction(compiler->instructions, BUILD_SET, LIST(expr->node)->list->size(), new Position, new Position);
+            break;
+        }
+
+        case N_WITH: {
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
+            int cmpexpr=compile_expr(compiler, WITH(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (!ret){
+                compiler->keep_return=false;
+            }
+
+            add_instruction(compiler->instructions,ENTER_WITH, 0, expr->start, expr->end);
+
+            uint32_t idx;
+            if (!_list_contains(compiler->names, STRLIT(WITH(expr->node)->name->node)->literal)){
+                //Create object
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(WITH(expr->node)->name->node)->literal));
+                idx = NAMEIDX(compiler->names);
+            }
+            else{
+                idx=object_find(compiler->names, str_new_fromstr(*STRLIT(WITH(expr->node)->name->node)->literal));
+            }
+
+            uint32_t start=compiler->instructions->count;
+            
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                    break;
+            }
+
+            uint32_t end=compiler->instructions->count;
+            if (compiler->lines!=NULL){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            }
+
+            for (Node* n: (*WITH(expr->node)->code)){
+                uint32_t start=compiler->instructions->count;
+                long line=n->start->line;        
+                int i=compile_expr(compiler, n);
+                if (i==0x100){
+                    return 0x100;
+                }
+                uint32_t end=compiler->instructions->count;
+                if (compiler->lines!=NULL && i!=0x200){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                }
+            }
+            add_instruction(compiler->instructions,EXIT_WITH, 0, expr->start, expr->end);
+            add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+
             break;
         }
 
