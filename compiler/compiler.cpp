@@ -560,7 +560,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 nameidx=object_find(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
             }
             
-            
             add_instruction(compiler->instructions,LOAD_CONST, nameidx, expr->start, expr->end);
 
             //Arguments
@@ -615,10 +614,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
 
             //
-
-
             
-
             //Annotations
             uint32_t n_anno=0;
             if (FUNCT(expr->node)->rettp!=NULL){
@@ -706,8 +702,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //
 
 
-
-
             //Code
             parse_ret c;
             c.nodes=(*FUNCT(expr->node)->code);
@@ -718,6 +712,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
             bool isgen=false;
+            
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_code)->size; i+=2){
                 if (*CAST_INT(list_index_int(CAST_CODE(code)->co_code, i))->val==YIELD_VALUE){
                     isgen=true;
@@ -1889,8 +1884,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
-        case N_FOR: { 
+        case N_FOR: {
+
+            uint32_t start_=compiler->instructions->count*2;
             bool ret=compiler->keep_return;
+            long line=FOR(expr->node)->expr->start->line;
             compiler->keep_return=true;
 
             int cmpexpr=compile_expr(compiler, FOR(expr->node)->expr);
@@ -1901,6 +1899,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (!ret){
                 compiler->keep_return=false;
             }
+            if (compiler->lines!=NULL){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            } 
 
             uint32_t start=compiler->instructions->count*2;
             
@@ -1929,7 +1934,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 idx=object_find(compiler->consts, num);
             }
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
-            add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end); 
+            add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end);
 
 
             if (FOR(expr->node)->ident->type==N_IDENT){
@@ -3413,8 +3418,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
             lines->type->slot_mappings->slot_append(lines, tuple);
         }
-    }
-        
+    }        
     
     uint32_t idx;
     if (!object_find_bool(compiler->consts, noneobj)){
