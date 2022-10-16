@@ -191,8 +191,8 @@ object* float_neg(object* self){
 }
 
 object* float_repr(object* self){
-    size_t size=to_string(CAST_FLOAT(self)->val).size();
-    char buf[size];
+    char buf[128];
+    
     sprintf(buf, "%.17lg", CAST_FLOAT(self)->val);
     string s(buf);
     int count = std::count(s.begin(), s.end(), '.');
@@ -210,6 +210,14 @@ object* float_cmp(object* self, object* other, uint8_t type){
     
     if (type==CMP_EQ){
         if (CAST_FLOAT(self)->val==CAST_FLOAT(otherfloat)->val){
+            FPLDECREF(otherfloat);
+            return new_bool_true();
+        }
+        FPLDECREF(otherfloat);
+        return new_bool_false();
+    }
+    else if (type==CMP_NE){
+        if (CAST_FLOAT(self)->val!=CAST_FLOAT(otherfloat)->val){
             FPLDECREF(otherfloat);
             return new_bool_true();
         }

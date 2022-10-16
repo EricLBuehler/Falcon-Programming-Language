@@ -13,7 +13,7 @@ string trim(string s);
 
 object* new_int_fromstr(string v){
     object* obj=new_object(&IntType);
-    try{    
+    try{
         CAST_INT(obj)->val=new BigInt(trim(v));
     }
     catch (std::invalid_argument){
@@ -33,8 +33,8 @@ object* new_int_fromstr(string v){
 
 object* new_int_fromstr(string* v){
     object* obj=new_object(&IntType);
-    try{    
-        CAST_INT(obj)->val=new BigInt(*v);
+    try{
+        CAST_INT(obj)->val=new BigInt(trim(*v));
     }
     catch (std::invalid_argument){
         if (::vm!=NULL){
@@ -371,48 +371,69 @@ object* int_repr(object* self){
 
 object* int_cmp(object* self, object* other, uint8_t type){
     object* otherv=object_float(other);
+    object* selfv=object_float(self);
     if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
     //Other type is int
     if (type==CMP_EQ){
-        if (CAST_INT(self)->val->to_int()==CAST_FLOAT(otherv)->val){
+        if (CAST_FLOAT(selfv)->val==CAST_FLOAT(otherv)->val){
             FPLDECREF(otherv);
+            FPLDECREF(selfv);
             return new_bool_true();
         }
         FPLDECREF(otherv);
+        FPLDECREF(selfv);
+        return new_bool_false();
+    }
+    else if (type==CMP_NE){
+        if (CAST_FLOAT(selfv)->val!=CAST_FLOAT(otherv)->val){
+            FPLDECREF(otherv);
+            FPLDECREF(selfv);
+            return new_bool_true();
+        }
+        FPLDECREF(otherv);
+        FPLDECREF(selfv);
         return new_bool_false();
     }
     else if (type==CMP_GT){
-        if (CAST_INT(self)->val->to_int()>CAST_FLOAT(otherv)->val){
+        if (CAST_FLOAT(selfv)->val>CAST_FLOAT(otherv)->val){
             FPLDECREF(otherv);
+            FPLDECREF(selfv);
             return new_bool_true();
         }
         FPLDECREF(otherv);
+        FPLDECREF(selfv);
         return new_bool_false();
     }
     else if (type==CMP_GTE){
-        if (CAST_INT(self)->val->to_int()>=CAST_FLOAT(otherv)->val){
+        if (CAST_FLOAT(selfv)->val>=CAST_FLOAT(otherv)->val){
             FPLDECREF(otherv);
+            FPLDECREF(selfv);
             return new_bool_true();
         }
         FPLDECREF(otherv);
+        FPLDECREF(selfv);
         return new_bool_false();
     }
     else if (type==CMP_LT){
-        if (CAST_INT(self)->val->to_int()<CAST_FLOAT(otherv)->val){
+        if (CAST_FLOAT(selfv)->val<CAST_FLOAT(otherv)->val){
             FPLDECREF(otherv);
+            FPLDECREF(selfv);
             return new_bool_true();
         }
         FPLDECREF(otherv);
+        FPLDECREF(selfv);
         return new_bool_false();
     }
     else if (type==CMP_LTE){
-        if (CAST_INT(self)->val->to_int()<=CAST_FLOAT(otherv)->val){
+        if (CAST_FLOAT(selfv)->val<=CAST_FLOAT(otherv)->val){
             FPLDECREF(otherv);
+            FPLDECREF(selfv);
             return new_bool_true();
         }
         FPLDECREF(otherv);
+        FPLDECREF(selfv);
         return new_bool_false();
     }
 

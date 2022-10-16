@@ -15,7 +15,7 @@ void setup_builtins(){
     buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr("name"));
     buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr(("func")));
     object* buildclasskwargs=new_tuple();
-    builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr("__build_class__"s), buildclassargs, buildclasskwargs, CAST_INT(buildclassargs->type->slot_mappings->slot_len(buildclassargs))->val->to_int(), false);
+    builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr("__build_class__"), buildclassargs, buildclasskwargs, CAST_INT(buildclassargs->type->slot_mappings->slot_len(buildclassargs))->val->to_int(), false);
 
     builtins[2]=(object*)&TypeType;
     builtins[3]=(object*)&IntType;
