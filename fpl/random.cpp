@@ -29,10 +29,12 @@ object* random_randint(object* self, object* args, object* kwargs){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
         return NULL; 
     }
-    object* res=new_int_fromint(iRand(CAST_INT(low)->val->to_int(), CAST_INT(low)->val->to_int()));
     
-    DECREF(low);
-    DECREF(high);
+    
+    object* res=new_int_fromint(iRand(CAST_INT(low)->val->to_int(), CAST_INT(high)->val->to_int()));
+    
+    FPLDECREF(low);
+    FPLDECREF(high);
 
     return res;
 }
@@ -59,11 +61,11 @@ object* random_random(object* self, object* args, object* kwargs){
             return NULL; 
         }
         
-        lo=CAST_FLOAT(low)->val;
-        hi=CAST_FLOAT(high)->val;
+        lo=CAST_INT(low)->val->to_int();
+        hi=CAST_INT(high)->val->to_int();
 
-        DECREF(low);
-        DECREF(high);
+        FPLDECREF(low);
+        FPLDECREF(high);
     }
 
     return new_float_fromdouble(fRand(lo, hi));
@@ -86,7 +88,7 @@ object* random_choice(object* self, object* args, object* kwargs){
     
     int len_sub1=CAST_INT(iterlen)->val->to_int()-1;
 
-    return INCREF(ob->type->slot_mappings->slot_get(ob, new_int_fromint(iRand(0,len_sub1))));
+    return FPLINCREF(ob->type->slot_mappings->slot_get(ob, new_int_fromint(iRand(0,len_sub1))));
 }
 
 object* new_random_module(){

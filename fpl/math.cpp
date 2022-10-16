@@ -17,7 +17,7 @@ object* math_sin(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=sin(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -42,7 +42,7 @@ object* math_cos(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=cos(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -67,7 +67,7 @@ object* math_tan(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=tan(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -92,7 +92,7 @@ object* math_acos(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=acos(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -117,7 +117,7 @@ object* math_acosh(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=acosh(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -142,7 +142,7 @@ object* math_asin(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=asin(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -167,7 +167,7 @@ object* math_asinh(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=asinh(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -192,7 +192,7 @@ object* math_atan(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=atan(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -217,7 +217,7 @@ object* math_atanh(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=atanh(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -248,7 +248,7 @@ object* math_atan2(object* self, object* args, object* kwargs){
     double otherval=CAST_FLOAT(flval)->val;
     double otherval2=CAST_FLOAT(flval2)->val;
     double res=atan2(otherval,otherval2);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -273,7 +273,7 @@ object* math_cbrt(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=cbrt(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -298,7 +298,7 @@ object* math_ceil(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=ceil(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -323,7 +323,7 @@ object* math_cosh(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=cosh(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -348,7 +348,7 @@ object* math_exp(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=exp(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -373,7 +373,7 @@ object* math_abs(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=fabs(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -398,7 +398,7 @@ object* math_floor(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=floor(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -429,7 +429,7 @@ object* math_hypot(object* self, object* args, object* kwargs){
     double otherval=CAST_FLOAT(flval)->val;
     double otherval2=CAST_FLOAT(flval2)->val;
     double res=hypot(otherval,otherval2);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -454,7 +454,7 @@ object* math_log(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=log(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -479,7 +479,7 @@ object* math_log10(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=log10(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -510,8 +510,8 @@ object* math_pow(object* self, object* args, object* kwargs){
     double otherval=CAST_FLOAT(flval)->val;
     double otherval2=CAST_FLOAT(flval2)->val;
     double res=pow(otherval,otherval2);
-    DECREF(flval);
-    DECREF(flval2);
+    FPLDECREF(flval);
+    FPLDECREF(flval2);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -536,7 +536,7 @@ object* math_sinh(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=sinh(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -561,7 +561,7 @@ object* math_sqrt(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=sqrt(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -586,7 +586,7 @@ object* math_tanh(object* self, object* args, object* kwargs){
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=tanh(otherval);
-    DECREF(flval);
+    FPLDECREF(flval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -660,7 +660,7 @@ object* math_todeg(object* self, object* args, object* kwargs){
 
     double otherval=CAST_FLOAT(val)->val;
     double res=otherval*(180/M_PI);
-    DECREF(val);
+    FPLDECREF(val);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);

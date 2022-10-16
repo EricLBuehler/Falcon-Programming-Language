@@ -20,7 +20,7 @@ object* time_sleep(object* self, object* args, object* kwargs){
             return NULL;
         }
         time=CAST_INT(otherint)->val->to_long();
-        DECREF(otherint);
+        FPLDECREF(otherint);
     }
     
     std::this_thread::sleep_for(std::chrono::milliseconds(time*1000));
@@ -46,7 +46,7 @@ object* time_sleep_ms(object* self, object* args, object* kwargs){
             return NULL;
         }
         time=CAST_INT(otherint)->val->to_long();
-        DECREF(otherint);
+        FPLDECREF(otherint);
     }
     
     std::this_thread::sleep_for(std::chrono::milliseconds(time));
@@ -54,7 +54,7 @@ object* time_sleep_ms(object* self, object* args, object* kwargs){
     return new_none();
 }
 
-object* time_time(object* self, object* args, object* kwargs){
+object* time_timens(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
@@ -65,6 +65,19 @@ object* time_time(object* self, object* args, object* kwargs){
     uint64_t time = time_point_cast<nanoseconds>(system_clock::now()).time_since_epoch().count();
 
     return new_int_frombigint(new BigInt(time));
+}
+
+object* time_time(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+    
+    using namespace std::chrono;
+    double time = (time_point_cast<nanoseconds>(system_clock::now()).time_since_epoch().count())/pow(10,9);
+
+    return new_float_fromdouble(time);
 }
 
 object* time_strftime(object* self, object* args, object* kwargs){
@@ -101,6 +114,9 @@ object* new_time_module(){
 
     object* strftime=cwrapper_new_fromfunc_null((cwrapperfunc)time_strftime, "strftime");
     dict_set(dict, str_new_fromstr("strftime"), strftime);
+
+    object* time_ns=cwrapper_new_fromfunc_null((cwrapperfunc)time_timens, "time_ns");
+    dict_set(dict, str_new_fromstr("time_ns"), time_ns);
 
     return module_new_fromdict(dict, str_new_fromstr("time"));
 }
