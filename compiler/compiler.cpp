@@ -1917,6 +1917,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 n_elsen=num_instructions(ELSE(FOR(expr->node)->elsen->node)->code, compiler->scope)*2;
                 target+=n_elsen;
             }
+            
             if (FOR(expr->node)->ident->type!=N_MULTIIDENT){
                 target+=compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+num_instructions(FOR(expr->node)->ident, compiler->scope)*2+6;
             }
@@ -1924,6 +1925,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 target+=compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+8+num_instructions(FOR(expr->node)->ident, compiler->scope)*2;
             }
             object* num=new_int_fromint(target-n_elsen+2);
+            
             uint32_t idx;
             if (!object_find_bool(compiler->consts, num)){
                 //Create object
@@ -1935,7 +1937,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
             add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end);
-
 
             if (FOR(expr->node)->ident->type==N_IDENT){
                 if (!_list_contains(compiler->names, IDENTI(FOR(expr->node)->ident->node)->name)){
@@ -3263,6 +3264,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 parser.add_parsing_error(&parseretglbl, "SyntaxError: Yield outside function");
                 return 0x100;
             }
+            
             bool ret=compiler->keep_return;
             compiler->keep_return=true;
             int cmpexpr=compile_expr(compiler, YIELD(expr->node)->expr); //Push data
@@ -3273,6 +3275,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->keep_return=false;
             }
             add_instruction(compiler->instructions,YIELD_VALUE, 0, expr->start, expr->end);
+            break;
         }
 
         case N_SET: {
@@ -3369,7 +3372,7 @@ uint32_t num_instructions(vector<Node*>* nodes, scope s){
     struct compiler* comp=new_compiler();
     comp->lines=NULL;
     comp->scope=s;
-    for (Node* n: (*nodes)){    
+    for (Node* n: (*nodes)){
         int cmpexpr=compile_expr(comp, n);
         if (cmpexpr==0x100){
             return -1;
@@ -3404,7 +3407,6 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
         uint32_t start=compiler->instructions->count*2;
         
         int line=n->start->line;
-        
         int i=compile_expr(compiler, n);
 
         if (i==0x100){
@@ -3432,7 +3434,6 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
     
     add_instruction(compiler->instructions, LOAD_CONST, idx, new Position, new Position);
     add_instruction(compiler->instructions, RETURN_VAL, 0, new Position, new Position);
-
 
     if (ast.nodes.size()>0){
         object* tuple=new_tuple();
