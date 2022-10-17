@@ -1398,10 +1398,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_IF: {
+            bool ret=compiler->keep_return;
+            compiler->keep_return=true;
             int cmpexpr=compile_expr(compiler, IF(expr->node)->expr);
             if (cmpexpr==0x100){
                 return cmpexpr;
             }
+            compiler->keep_return=ret;
 
             add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(expr->node)->code, compiler->scope)*2, expr->start, expr->end); 
 
@@ -1463,11 +1466,15 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (n->type==N_IF){
                     instrs+=num_instructions(IF(n->node)->code, compiler->scope)*2;
                     instrs+=num_instructions(IF(n->node)->expr, compiler->scope)*2;
+                    instrs+=4;
                     
+                    bool ret=compiler->keep_return;
+                    compiler->keep_return=true;
                     int cmpexpr=compile_expr(compiler, IF(n->node)->expr);
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
+                    compiler->keep_return=ret;
                     
                     add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions(IF(n->node)->code, compiler->scope)*2+2, n->start, n->end);
 
@@ -1592,6 +1599,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }
+            add_instruction(compiler->instructions,JUMP_DELTA,0, expr->start, expr->end);
             break;
         }
 
@@ -1678,8 +1686,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     add_instruction(compiler->instructions,BINOP_EE,0, expr->start, expr->end);                
 
                     add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,0, expr->start, expr->end);
-
-                    add_instruction(compiler->instructions,POP_TOS,0, expr->start, expr->end);
                 }
 
             for (Node* n: (*EXCEPT(expr->node)->code)){
@@ -1719,6 +1725,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (i==0){ //Add try block
                     Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(0);
                     instrs+=num_instructions(TRY(tryn->node)->code, compiler->scope)*2;
+                    instrs+=2;
                     
                     for (Node* n: (*TRY(tryn->node)->code)){
                         uint32_t start=compiler->instructions->count*2;
@@ -1767,41 +1774,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(i);
                 instrs+=num_instructions(EXCEPT(tryn->node)->code, compiler->scope)*2;
-                if (EXCEPT(tryn->node)->name!=NULL){
-                    uint32_t idx;
-                    if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->name->node)->literal)){
-                        //Create object
-                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->name->node)->literal));
-                        idx = NAMEIDX(compiler->names);
-                    }
-                    else{
-                        idx=object_find(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->name->node)->literal));
-                    }
-
-                    uint32_t start=compiler->instructions->count*2;
-                    
-                    switch (compiler->scope){
-                        case SCOPE_GLOBAL:
-                            add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
-                            break;
-
-                        case SCOPE_LOCAL:
-                            add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
-                            break;
-                    }
-                    instrs+=2;
-
-                    uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL){
-                        object* tuple=new_tuple();
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->name->start->line));
-                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
-                    }
-                    
-                    add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
-                }    
 
                 if (EXCEPT(tryn->node)->type!=NULL){
                     add_instruction(compiler->instructions,DUP_TOS,0, expr->start, expr->end); //For possible pop_jump
@@ -1845,10 +1817,43 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                     add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(EXCEPT(tryn->node)->code, compiler->scope)*2+4, expr->start, expr->end);
                     instrs+=2;
-
-                    add_instruction(compiler->instructions,POP_TOS,0, expr->start, expr->end);
-                    instrs+=2;
                 }
+
+                if (EXCEPT(tryn->node)->name!=NULL){
+                    uint32_t idx;
+                    if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->name->node)->literal)){
+                        //Create object
+                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->name->node)->literal));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->name->node)->literal));
+                    }
+
+                    uint32_t start=compiler->instructions->count*2;
+                    
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                            break;
+                    }
+                    instrs+=2;
+
+                    uint32_t end=compiler->instructions->count*2;
+                    if (compiler->lines!=NULL){
+                        object* tuple=new_tuple();
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
+                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->name->start->line));
+                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    }
+                    
+                    add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                }    
                 
                 for (Node* n: (*EXCEPT(tryn->node)->code)){
                     uint32_t start=compiler->instructions->count*2;
@@ -1867,6 +1872,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                 }            
                     
+                instrs+=2;
                 if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
                     add_instruction(compiler->instructions,JUMP_DELTA,target-instrs+2, tryn->start, tryn->end);
                 }         
