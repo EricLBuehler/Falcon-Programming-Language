@@ -451,6 +451,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     break;
                 }
             }
+            
+            if (!compiler->keep_return){
+                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            }
             break;
         }
 
