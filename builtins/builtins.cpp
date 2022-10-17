@@ -29,16 +29,16 @@ object* builtin___build_class__(object* self, object* args){
         return NULL;
     }
     
-    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, INCREF(CAST_FUNC(function)->code), function);
+    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, FPLINCREF(CAST_FUNC(function)->code), function);
     vm->callstack->head->locals=new_dict();
     
     object* kwargs=new_dict();
-    object* fargs=new_list();
+    object* fargs=new_list();   
     object* ret=func_call_nostack(function, fargs, kwargs);
-    DECREF(kwargs);
-    DECREF(fargs);
+    FPLDECREF(kwargs);
+    FPLDECREF(fargs);
 
-    dict=INCREF(vm->callstack->head->locals);
+    dict=FPLINCREF(vm->callstack->head->locals);
     pop_callframe(vm->callstack);
     if (ret==NULL){
         return NULL;
@@ -113,13 +113,13 @@ object* builtin_round(object* self, object* args){
     }
     if (CAST_INT(ndigits)->val->to_int()==0){
         substr=orig_val.substr(0, pos+2);
-        DECREF(ndigits);
-        DECREF(floatval);
+        FPLDECREF(ndigits);
+        FPLDECREF(floatval);
         return new_int_fromint(round(stod(substr)));
     }
     substr=orig_val.substr(0, pos+2+CAST_INT(ndigits)->val->to_int());
-    DECREF(ndigits);
-    DECREF(floatval);
+    FPLDECREF(ndigits);
+    FPLDECREF(floatval);
     
     return new_float_fromdouble(round_double(stod(substr), CAST_INT(ndigits)->val->to_int()));
 }
@@ -213,20 +213,12 @@ object* builtin_setattr(object* self, object* args){
 object* builtin_abs(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("self")); 
     
-    object* flval=object_float(val);
-    if (flval==NULL || !object_istype(flval->type, &FloatType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
+    object* retval=object_abs(val);
+    if (retval==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object has no absolute value", val->type->name->c_str());
         return NULL; 
     }
-    
-    double otherval=CAST_FLOAT(flval)->val;
-    double res=fabs(otherval);
-    DECREF(flval);
-    int ires=(int)res;
-    if (res-ires==0){
-        return new_int_fromint(ires);
-    }
-    return new_float_fromdouble(res);
+    return retval;
 }
     
 object* builtin_iscallable(object* self, object* args){
@@ -251,10 +243,10 @@ object* builtin_reverse(object* self, object* args){
         if (v==NULL){
             return NULL;
         }
-        DECREF(idx);
+        FPLDECREF(idx);
         list_append(list,v);
     }
-    DECREF(len);
+    FPLDECREF(len);
 
     return list;
 }
@@ -311,8 +303,8 @@ object* builtin_min(object* self, object* args){
             goto cont;
         }
         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-            DECREF(iter);
-            DECREF(one);
+            FPLDECREF(iter);
+            FPLDECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
             return NULL;
         }
@@ -331,7 +323,7 @@ object* builtin_min(object* self, object* args){
         o=iter->type->slot_next(iter);
     }
     if (vm->exception!=NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
     return min;
@@ -380,8 +372,8 @@ object* builtin_max(object* self, object* args){
             goto cont;
         }
         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-            DECREF(iter);
-            DECREF(one);
+            FPLDECREF(iter);
+            FPLDECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
             return NULL;
         }
@@ -400,7 +392,7 @@ object* builtin_max(object* self, object* args){
         o=iter->type->slot_next(iter);
     }
     if (vm->exception!=NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
     return max;
@@ -412,7 +404,7 @@ object* builtin_getannotation(object* self, object* args){
 
     object* tp=dict_get(anno, nm);
     if (tp==NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
         vm_add_err(&NameError, vm, "No annotation for name %s found", object_cstr(object_repr(nm)).c_str());
         return NULL;
@@ -448,7 +440,7 @@ object* builtin_sum(object* self, object* args){
         ob=iter->type->slot_next(iter);
     }
     if (vm->exception!=NULL){
-        DECREF(vm->exception);
+        FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
     return val;

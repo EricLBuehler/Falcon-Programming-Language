@@ -46,7 +46,7 @@ object* builtin_eval(object* self, object* args){
     dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
     ::vm->global_annotations=::vm->callstack->head->annontations;
 
-    object* ret=run_vm(code, NULL, &::vm->ip);
+    object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
     
     vm_del(::vm);
