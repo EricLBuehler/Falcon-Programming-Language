@@ -108,7 +108,7 @@ inline void pop_callframe(struct callstack* stack){
 }
 
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {
-    if (vm->exception!=NULL){
+    if (vm==NULL || vm->exception!=NULL){
         return;
     }
     
@@ -137,6 +137,10 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
 }
 
 object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {  
+    if (vm==NULL || vm->exception!=NULL){
+        return NULL;
+    }
+
     va_list args;
     const int length=256;
     char format[length];
@@ -512,7 +516,7 @@ object* import_name(string data, object* name){
     dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
     ::vm->global_annotations=::vm->callstack->head->annontations;
 
-    object* ret=run_vm(code, NULL, &::vm->ip);
+    object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
     vm_del(::vm);
     ::vm=vm_;
@@ -546,20 +550,6 @@ void vm_del_var_globals(struct vm* vm, object* name){
     }
     vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
     return;
-}
-
-void calculate_new_line(uint32_t* ip, uint32_t* linecounter, object** linetup){
-    object* lines=CAST_CODE(vm->callstack->head->code)->co_lines;
-
-    for (uint32_t linecntr=0; linecntr<CAST_LIST(lines)->size; linecntr++){
-        object* line=list_index_int(lines, linecntr);
-        if ((*ip)>=(*CAST_INT(tuple_index_int(line, 0))->val) && (*ip)<=(*CAST_INT(tuple_index_int(line, 1))->val)){
-            (*linecounter)=linecntr;
-            (*linetup)=line;
-            vm->callstack->head->line=tuple_index_int(line, 2);
-            break;
-        }
-    }
 }
 
 dataframe* reverse(dataframe* head, int k){
@@ -643,35 +633,143 @@ void annotate_nonlocal(object* tp, object* name){
     }
 }
 
-object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, uint32_t* linecounter, object* linetuple){
-    //Run one instruction
-    switch (CAST_INT(instruction)->val->to_int()){
-        case LOAD_CONST:{
+object* run_vm(object* codeobj, uint32_t* ip){
+    object* code=CAST_CODE(codeobj)->co_code;
+    object* lines=CAST_CODE(codeobj)->co_lines;
+
+    object* arg;
+    
+    static void* dispatch_table[]={
+        &&LOAD_CONST,
+        &&STORE_NAME,
+        &&LOAD_NAME,
+        &&STORE_GLOBAL,
+        &&LOAD_GLOBAL,
+        &&BINOP_ADD,
+        &&BINOP_SUB,
+        &&UNARY_NEG,
+        &&BINOP_MUL,
+        &&BINOP_DIV,
+        &&MAKE_FUNCTION,
+        &&RETURN_VAL,
+        &&CALL_FUNCTION,
+        &&BUILD_TUPLE,
+        &&BUILD_DICT,
+        &&LOAD_BUILD_CLASS,
+        &&LOAD_ATTR,
+        &&STORE_ATTR,
+        &&CALL_METHOD,
+        &&BUILD_LIST,
+        &&BINOP_IS,
+        &&BINOP_EE,
+        &&POP_JMP_TOS_FALSE,
+        &&JUMP_DELTA,
+        &&BINOP_SUBSCR,
+        &&RAISE_EXC,
+        &&STORE_SUBSCR,
+        &&DUP_TOS,
+        &&POP_TOS,
+        &&SETUP_TRY,
+        &&FINISH_TRY,
+        &&BINOP_EXC_CMP,
+        &&BINOP_GT,
+        &&BINOP_GTE,
+        &&BINOP_LT,
+        &&BINOP_LTE,
+        &&FOR_TOS_ITER,
+        &&JUMP_TO,
+        &&EXTRACT_ITER,
+        &&BREAK_LOOP,
+        &&CONTINUE_LOOP,
+        &&UNPACK_SEQ,
+        &&BINOP_IADD,
+        &&BINOP_ISUB,
+        &&BINOP_IMUL,
+        &&BINOP_IDIV,
+        &&IMPORT_NAME,
+        &&IMPORT_FROM_MOD,
+        &&MAKE_SLICE,
+        &&BINOP_NE,
+        &&DEL_SUBSCR,
+        &&DEL_NAME,
+        &&BINOP_MOD,
+        &&BINOP_POW,
+        &&BINOP_IPOW,
+        &&BINOP_IMOD,
+        &&BINOP_AND,
+        &&BINOP_OR,
+        &&UNARY_NOT,
+        &&BUILD_STRING,
+        &&POP_JMP_TOS_TRUE,
+        &&RAISE_ASSERTIONERR,
+        &&DEL_GLBL,
+        &&DEL_ATTR,
+        &&MAKE_CLOSURE,
+        &&LOAD_NONLOCAL,
+        &&STORE_NONLOCAL,
+        &&DEL_NONLOCAL,
+        &&BITWISE_NOT,
+        &&BITWISE_AND,
+        &&BITWISE_OR,
+        &&BITWISE_LSHIFT,
+        &&BITWISE_RSHIFT,
+        &&BINOP_IAND,
+        &&BINOP_IOR,
+        &&BINOP_ILSH,
+        &&BINOP_IRSH,
+        &&BINOP_NOTIN,
+        &&BINOP_IN,
+        &&BINOP_ISNOT,
+        &&BINOP_FLDIV,
+        &&BINOP_IFLDIV,
+        &&LOAD_METHOD,
+        &&TERNARY_TEST,
+        &&CALL_FUNCTION_BOTTOM,
+        &&ANNOTATE_GLOBAL,
+        &&ANNOTATE_NAME,
+        &&ANNOTATE_NONLOCAL,
+        &&STORE_ATTR_ANNOTATE,
+        &&YIELD_VALUE,
+        &&MAKE_GENERATOR,
+        &&MAKE_CLOSURE_GENERATOR,
+        &&BUILD_SET,
+        &&CLEAR_EXC,
+        &&ENTER_WHILE,
+        &&EXIT_WHILE,
+        &&ENTER_WITH,
+        &&EXIT_WITH,
+    };
+    
+    object** code_array=CAST_LIST(code)->array;
+    
+    DISPATCH();
+    while(1){
+        LOAD_CONST:{
             add_dataframe(vm, vm->objstack, list_get(CAST_CODE(vm->callstack->head->code)->co_consts, arg));
-            break;
+            DISPATCH();
         }
 
-        case STORE_GLOBAL:{
+        STORE_GLOBAL:{
             vm_add_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
-            break;
+            DISPATCH();
         }
 
-        case LOAD_GLOBAL:{
+        LOAD_GLOBAL:{
             add_dataframe(vm, vm->objstack, vm_get_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
-            break;
+            DISPATCH();
         }
 
-        case STORE_NAME:{
+        STORE_NAME:{
             vm_add_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
-            break;
+            DISPATCH();
         }
 
-        case LOAD_NAME:{
+        LOAD_NAME:{
             add_dataframe(vm, vm->objstack, vm_get_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
-            break;
+            DISPATCH();
         }
 
-        case BINOP_ADD:{
+        BINOP_ADD:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -682,10 +780,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_SUB:{
+        BINOP_SUB:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -696,10 +794,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_MUL:{
+        BINOP_MUL:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -710,10 +808,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;  
+            DISPATCH();  
         }
 
-        case BINOP_DIV:{
+        BINOP_DIV:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -724,19 +822,19 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IS:{
+        BINOP_IS:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=left==right ? new_bool_true() : new_bool_false();
             add_dataframe(vm, vm->objstack, ret);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_EE:{
+        BINOP_EE:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -747,10 +845,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for ==: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_NE:{
+        BINOP_NE:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -761,10 +859,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for !=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case UNARY_NEG:{
+        UNARY_NEG:{
             struct object* right=pop_dataframe(vm->objstack);
             
             object* ret=object_neg(right);
@@ -774,10 +872,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid unary operand -: '%s'.", right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case MAKE_FUNCTION:{
+        MAKE_FUNCTION:{
             int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
             object* stargs=NULL;
             object* stkwargs=NULL;
@@ -800,14 +898,15 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false);
             add_dataframe(vm, vm->objstack, func);
-            break;
+            DISPATCH();
         }
 
-        case RETURN_VAL: {
+        RETURN_VAL: {
+            GIL.unlock();
             return FPLINCREF(pop_dataframe(vm->objstack));
         }
 
-        case CALL_METHOD: {
+        CALL_METHOD: {
             uint32_t argc=CAST_INT(arg)->val->to_int();
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
             uint32_t kwargc=argc-posargc;
@@ -836,14 +935,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     
                     if (ob->type->slot_iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
                     
                     if (iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
 
                     object* one=new_int_fromint(0);
@@ -857,20 +956,20 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                             vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
                             FPLDECREF(iter);
                             FPLDECREF(one);
-                            return NULL;
+                            DISPATCH();
                         }
                         int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
                         if (len!=2){
                             vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
                             FPLDECREF(iter);
                             FPLDECREF(one);
-                            return NULL;
+                            DISPATCH();
                         }
                         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
                             FPLDECREF(iter);
                             FPLDECREF(one);
                             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-                            return NULL;
+                            DISPATCH();
                         }
                         object* a=o->type->slot_mappings->slot_get(o, one);
                         ERROR_RET(a);
@@ -896,14 +995,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     
                     if (ob->type->slot_iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
                     
                     if (iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
 
                     object* one=new_int_fromint(0);
@@ -935,22 +1034,24 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
 
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL || ret==CALL_ERR){
-                return CALL_ERR;
+                DISPATCH();
             }
             if (ret==TERM_PROGRAM){
+                GIL.unlock();
                 return TERM_PROGRAM;
             }
             add_dataframe(vm, vm->objstack, ret);
-            break;
+
+            DISPATCH();
         }
 
-        case CALL_FUNCTION: {
+        CALL_FUNCTION: {
             object* function=pop_dataframe(vm->objstack);
             
             uint32_t argc=CAST_INT(arg)->val->to_int();
@@ -962,7 +1063,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
 
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
 
             int stkwargsidx=0;
@@ -986,14 +1087,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     
                     if (ob->type->slot_iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
                     
                     if (iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
 
                     object* one=new_int_fromint(0);
@@ -1007,20 +1108,20 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                             vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
                             FPLDECREF(iter);
                             FPLDECREF(one);
-                            return NULL;
+                            DISPATCH();
                         }
                         int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
                         if (len!=2){
                             vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
                             FPLDECREF(iter);
                             FPLDECREF(one);
-                            return NULL;
+                            DISPATCH();
                         }
                         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
                             FPLDECREF(iter);
                             FPLDECREF(one);
                             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-                            return NULL;
+                            DISPATCH();
                         }
                         object* a=o->type->slot_mappings->slot_get(o, one);
                         ERROR_RET(a);
@@ -1046,14 +1147,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     
                     if (ob->type->slot_iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
                     
                     if (iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
 
                     object* one=new_int_fromint(0);
@@ -1083,18 +1184,19 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL || ret==CALL_ERR){ 
-                return CALL_ERR;
+                DISPATCH();
             }
             if (ret==TERM_PROGRAM){
+                GIL.unlock();
                 return TERM_PROGRAM;
             }
             
             add_dataframe(vm, vm->objstack, ret);
             
-            break;            
+            DISPATCH();            
         }
 
-        case CALL_FUNCTION_BOTTOM: {
+        CALL_FUNCTION_BOTTOM: {
             uint32_t argc=CAST_INT(arg)->val->to_int();
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
             uint32_t kwargc=argc-posargc;
@@ -1123,14 +1225,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     
                     if (ob->type->slot_iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
                     
                     if (iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
 
                     object* one=new_int_fromint(0);
@@ -1144,20 +1246,20 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                             vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
                             FPLDECREF(iter);
                             FPLDECREF(one);
-                            return NULL;
+                            DISPATCH();
                         }
                         int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
                         if (len!=2){
                             vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
                             FPLDECREF(iter);
                             FPLDECREF(one);
-                            return NULL;
+                            DISPATCH();
                         }
                         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
                             FPLDECREF(iter);
                             FPLDECREF(one);
                             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-                            return NULL;
+                            DISPATCH();
                         }
                         object* a=o->type->slot_mappings->slot_get(o, one);
                         ERROR_RET(a);
@@ -1183,14 +1285,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     
                     if (ob->type->slot_iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
                     
                     if (iter==NULL){
                         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        return NULL;
+                        DISPATCH();
                     }
 
                     object* one=new_int_fromint(0);
@@ -1221,42 +1323,43 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             object* function=pop_dataframe(vm->objstack);
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL || ret==CALL_ERR){ 
-                return CALL_ERR;
+                DISPATCH();
             }
             if (ret==TERM_PROGRAM){
+                GIL.unlock();
                 return TERM_PROGRAM;
             }
             
             add_dataframe(vm, vm->objstack, ret);
             
-            break;            
+            DISPATCH();            
         }
 
-        case BUILD_LIST: {
+        BUILD_LIST: {
             object* list=new_list();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 list_append(list, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, list);
-            break;
+            DISPATCH();
         }
 
-        case BUILD_TUPLE: {
+        BUILD_TUPLE: {
             object* tuple=new_tuple();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 tuple_append(tuple, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, tuple);
-            break;
+            DISPATCH();
         }
 
-        case BUILD_DICT: {
+        BUILD_DICT: {
             
             object* dict=new_dict();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
@@ -1265,144 +1368,142 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 dict_set(dict, name, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, dict);
-            break;
+            DISPATCH();
         }
 
-        case LOAD_BUILD_CLASS: {
+        LOAD_BUILD_CLASS: {
             add_dataframe(vm, vm->objstack, BUILTIN_BUILD_CLASS);
-            break;
+            DISPATCH();
         }
 
-        case LOAD_ATTR: {
+        LOAD_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
             if (ret==NULL || ret==CALL_ERR){ 
-                return CALL_ERR;
+                DISPATCH();
             }
             if (ret==TERM_PROGRAM){
                 return TERM_PROGRAM;
             }
             
             add_dataframe(vm, vm->objstack, ret);
-            break;
+            DISPATCH();
         }    
 
-        case LOAD_METHOD: {
+        LOAD_METHOD: {
             object* obj=peek_dataframe(vm->objstack);
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
             if (ret==NULL || ret==CALL_ERR){ 
-                return CALL_ERR;
+                DISPATCH();
             }
             if (ret==TERM_PROGRAM){
                 return TERM_PROGRAM;
             }
             add_dataframe(vm, vm->objstack, ret);
-            break;
+            DISPATCH();
         }  
 
-        case STORE_ATTR: {
+        STORE_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_setattr(obj, attr, val);
             
             if (ret==NULL || ret==CALL_ERR){ 
-                return CALL_ERR;
+                DISPATCH();
             }
             if (ret==TERM_PROGRAM){
                 return TERM_PROGRAM;
             }
-            break;
+            DISPATCH();
         }
 
-        case POP_JMP_TOS_FALSE: {
+        POP_JMP_TOS_FALSE: {
             object* o=pop_dataframe(vm->objstack);
             object* val=object_istruthy(o);
             if (!istrue(val)){
                 (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
-                calculate_new_line(ip, linecounter, &linetuple);
-                break;
+                DISPATCH();
             }
-            break;
+            DISPATCH();
         }
 
-        case JUMP_DELTA: {
+        JUMP_DELTA: {
             (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
-            calculate_new_line(ip, linecounter, &linetuple);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_SUBSCR: {
+        BINOP_SUBSCR: {
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, object_get(base, idx));
-            break;
+            DISPATCH();
         }
 
-        case RAISE_EXC: {
+        RAISE_EXC: {
             if (!object_issubclass(peek_dataframe(vm->objstack), &ExceptionType)){
                 vm_add_err(&TypeError, vm, "Exceptions must be subclass of Exception");
-                break;
+                DISPATCH();
             }
             if (vm->exception!=NULL){
                 FPLDECREF(vm->exception);
             }
             vm->exception=pop_dataframe(vm->objstack);
-            break;
+            DISPATCH();
         }
 
-        case CLEAR_EXC: {
+        CLEAR_EXC: {
             if (vm->exception!=NULL){
                 FPLDECREF(vm->exception);
             }
             vm->exception=NULL;
-            break;
+            DISPATCH();
         }
 
-        case STORE_SUBSCR: {
+        STORE_SUBSCR: {
             object* val=pop_dataframe(vm->objstack);
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
             object_set(base, idx, val);
-            break;
+            DISPATCH();
         }
 
-        case DUP_TOS: {
+        DUP_TOS: {
             add_dataframe(vm, vm->objstack, peek_dataframe(vm->objstack));
-            break;
+            DISPATCH();
         }
 
-        case POP_TOS: {
+        POP_TOS: {
             FPLDECREF(pop_dataframe(vm->objstack));
-            break;
+            DISPATCH();
         }
 
-        case SETUP_TRY: {
+        SETUP_TRY: {
             add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), TRY_BLOCK);
-            break;
+            DISPATCH();
         }
 
-        case FINISH_TRY: {
+        FINISH_TRY: {
             pop_blockframe(vm->blockstack);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_EXC_CMP: {
+        BINOP_EXC_CMP: {
             object* self=pop_dataframe(vm->objstack);
             object* other=pop_dataframe(vm->objstack);
             if (object_issubclass(other, CAST_TYPE(self))){
                 add_dataframe(vm, vm->objstack, new_bool_true());
-                break;
+                DISPATCH();
             }
             add_dataframe(vm, vm->objstack, new_bool_false());
-            break;
+            DISPATCH();
         }
 
-        case BINOP_GT: {
+        BINOP_GT: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
             
@@ -1413,10 +1514,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_GTE: {
+        BINOP_GTE: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
             
@@ -1427,10 +1528,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for >=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_LT: {
+        BINOP_LT: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
             
@@ -1441,10 +1542,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for <: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_LTE: {
+        BINOP_LTE: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
             
@@ -1455,16 +1556,16 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for <=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case EXTRACT_ITER: {
+        EXTRACT_ITER: {
             object* it=pop_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, it->type->slot_iter(it));
-            break;
+            DISPATCH();
         }
 
-        case FOR_TOS_ITER: {
+        FOR_TOS_ITER: {
             if (vm->blockstack->size==0 || vm->blockstack->head->type!=FOR_BLOCK || (vm->blockstack->head->type==FOR_BLOCK && vm->blockstack->head->arg!=CAST_INT(arg)->val->to_int()) ){
                 object* idx=pop_dataframe(vm->objstack);
                 add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), FOR_BLOCK);
@@ -1480,57 +1581,53 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 vm->exception=NULL;
                 (*ip)=CAST_INT(vm->blockstack->head->obj)->val->to_long();
                 FPLDECREF(vm->blockstack->head->obj);
-                calculate_new_line(ip, linecounter, &linetuple);
                 pop_blockframe(vm->blockstack);
             }
-            break;
+            DISPATCH();
         }
 
-        case JUMP_TO: {
+        JUMP_TO: {
             (*ip)=CAST_INT(arg)->val->to_long();
-            calculate_new_line(ip, linecounter, &linetuple);
-            break;
+            DISPATCH();
         }
 
-        case BREAK_LOOP: {
+        BREAK_LOOP: {
             if (vm->blockstack->head==NULL){
-                break;
+                DISPATCH();
             }
             if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK && vm->blockstack->head->type!=WHILE_BLOCK){
-                break;
+                DISPATCH();
             }
             (*ip)=vm->blockstack->head->arg;
-            calculate_new_line(ip, linecounter, &linetuple);
             pop_blockframe(vm->blockstack);
-            break;
+            DISPATCH();
         }
 
-        case CONTINUE_LOOP: {
+        CONTINUE_LOOP: {
             if (vm->blockstack->head==NULL){
-                break;
+                DISPATCH();
             }
             if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK && vm->blockstack->head->type!=WHILE_BLOCK){
-                break;
+                DISPATCH();
             }
             (*ip)=vm->blockstack->head->start_ip;
-            calculate_new_line(ip, linecounter, &linetuple);
             pop_blockframe(vm->blockstack);
-            break;
+            DISPATCH();
         }
 
-        case UNPACK_SEQ: {
+        UNPACK_SEQ: {
             object* o=peek_dataframe(vm->objstack);
 
             if (o->type->slot_iter==NULL){
                 vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", o->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             
             object* iter=o->type->slot_iter(o);
             
             if (iter==NULL){
                 vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
 
             object* one=new_int_fromint(0);
@@ -1550,7 +1647,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     FPLDECREF(iter);
                     FPLDECREF(one);
                     vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", ob->type->name->c_str());
-                    return NULL;
+                    DISPATCH();
                 }
                 
                 add_dataframe(vm, vm->objstack, ob->type->slot_mappings->slot_get(ob, one));
@@ -1566,70 +1663,70 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             if (len>CAST_INT(arg)->val->to_int()){
                 vm_add_err(&ValueError, vm, "Too many values to unpack, expected %d", len, CAST_INT(arg)->val->to_int());
-                return NULL;
+                DISPATCH();
             }
             if (len<CAST_INT(arg)->val->to_int()){
                 vm_add_err(&ValueError, vm, "Not enough values to unpack, expected %d", len, CAST_INT(arg)->val->to_int());
-                return NULL;
+                DISPATCH();
             }
 
             vm->objstack->head=reverse(vm->objstack->head, len-1);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IADD:{
+        BINOP_IADD:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_add(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_ISUB:{
+        BINOP_ISUB:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_sub(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IMUL:{
+        BINOP_IMUL:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_mul(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
-            break;  
+            DISPATCH();  
         }
 
-        case BINOP_IDIV:{
+        BINOP_IDIV:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_div(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
-            break;
+            DISPATCH();
         }
 
-        case IMPORT_NAME: {
+        IMPORT_NAME: {
             object* name=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             string nm_plain=*CAST_STRING(name)->val;
 
@@ -1682,7 +1779,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                                 FILE* f=fopen((nm+"/"+string(en->d_name)).c_str(), "rb");
                                 if (f==NULL){
                                     vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+string(en->d_name)).c_str());
-                                    return NULL;
+                                    DISPATCH();
                                 }
 
 
@@ -1694,7 +1791,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                                 int i=fread(s, fsize, 1, f);
                                 if (i==0 && fsize>0){
                                     vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
-                                    return NULL;
+                                    DISPATCH();
                                 }
                                 s[fsize] = 0;
                                 string str(s);
@@ -1711,7 +1808,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         object* o=module_new_fromdict(dict, str_new_fromstr(string(nm_plain)));
                         add_dataframe(vm, vm->objstack, o);
 
-                        return NULL;
+                        DISPATCH();
                     }
                     else{ //File
                         //try nm.fpl
@@ -1726,7 +1823,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         int i=fread(s, fsize, 1, f);
                         if (i==0 && fsize>0){
                             vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
-                            return NULL;
+                            DISPATCH();
                         }
                         s[fsize] = 0;
                         string str(s);
@@ -1739,7 +1836,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                         if (istrue(object_cmp(name, CAST_MODULE(modules[i])->name, CMP_EQ))){
                             add_dataframe(vm, vm->objstack, modules[i]);
                             done=true;
-                            return NULL;
+                            DISPATCH();
                         }
                     }
 
@@ -1751,16 +1848,14 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     return TERM_PROGRAM;
                 }
                 add_dataframe(vm, vm->objstack, o);
-                return NULL;
+                DISPATCH();
             }
 
             vm_add_err(&ImportError, vm, "'%s' not found", nm_plain.c_str());
-            return NULL;
-
-            break;
+            DISPATCH();
         }
 
-        case IMPORT_FROM_MOD: {
+        IMPORT_FROM_MOD: {
             object* names=pop_dataframe(vm->objstack);
             object* lib=pop_dataframe(vm->objstack);
             uint32_t len=CAST_INT(names->type->slot_mappings->slot_len(names))->val->to_int();
@@ -1773,7 +1868,7 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 object* o=object_getattr(lib, list_index_int(names, i));
             
                 if (o==CALL_ERR){ 
-                    return CALL_ERR;
+                    DISPATCH();
                 }
                 if (o==TERM_PROGRAM){
                     return TERM_PROGRAM;
@@ -1782,34 +1877,34 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                     FPLDECREF(vm->exception);
                     vm->exception=NULL;
                     vm_add_err(&ImportError,vm, "Cannot import name '%s' from '%s'",CAST_STRING(list_index_int(names, i))->val->c_str(), CAST_STRING(CAST_MODULE(lib)->name)->val->c_str());
-                    return CALL_ERR;
+                    DISPATCH();
                 }
                 vm_add_var_locals(vm, list_index_int(names, i), o);
             }
-            break;
+            DISPATCH();
         }
 
-        case MAKE_SLICE: {
+        MAKE_SLICE: {
             object* end=pop_dataframe(vm->objstack);
             object* start=pop_dataframe(vm->objstack);
             object* base=peek_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, slice_new_fromnums(start, end));
-            break;
+            DISPATCH();
         }
 
-        case DEL_SUBSCR: {
+        DEL_SUBSCR: {
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
             object_del_item(base, idx);
-            break;
+            DISPATCH();
         }
 
-        case DEL_NAME: {
+        DEL_NAME: {
             vm_del_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
-            break;
+            DISPATCH();
         }
 
-        case BINOP_MOD:{
+        BINOP_MOD:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -1820,10 +1915,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for %: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_POW:{
+        BINOP_POW:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             object* ret=object_pow(left, right);
@@ -1833,36 +1928,36 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IPOW:{
+        BINOP_IPOW:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_pow(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IMOD:{
+        BINOP_IMOD:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_mod(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_AND:{
+        BINOP_AND:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -1874,13 +1969,13 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             FPLDECREF(left);
             if (r && l){
                 add_dataframe(vm, vm->objstack, new_bool_true());
-                break;
+                DISPATCH();
             }
             add_dataframe(vm, vm->objstack, new_bool_false());
-            break;
+            DISPATCH();
         }
 
-        case BINOP_OR:{
+        BINOP_OR:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -1892,13 +1987,13 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             FPLDECREF(left);
             if (r || l){
                 add_dataframe(vm, vm->objstack, new_bool_true());
-                break;
+                DISPATCH();
             }
             add_dataframe(vm, vm->objstack, new_bool_false());
-            break;
+            DISPATCH();
         }
 
-        case UNARY_NOT:{
+        UNARY_NOT:{
             struct object* right=pop_dataframe(vm->objstack);
             
             right=right->type->slot_number->slot_bool(right);
@@ -1906,13 +2001,13 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             FPLDECREF(right);
             if (!v){
                 add_dataframe(vm, vm->objstack, new_bool_true());
-                break;
+                DISPATCH();
             }
             add_dataframe(vm, vm->objstack, new_bool_false());
-            break;
+            DISPATCH();
         }
 
-        case BUILD_STRING: {
+        BUILD_STRING: {
             string s="";
             vector<string> strs;
             strs.clear();
@@ -1930,48 +2025,47 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 s+=strs.at(i-1);
             }
             add_dataframe(vm, vm->objstack, str_new_fromstr(s));
-            break;
+            DISPATCH();
         }
 
-        case POP_JMP_TOS_TRUE: {
+        POP_JMP_TOS_TRUE: {
             object* o=pop_dataframe(vm->objstack);
             object* val=object_istruthy(o);
             if (istrue(val)){
                 (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
-                calculate_new_line(ip, linecounter, &linetuple);
-                break;
+                DISPATCH();
             }
-            break;
+            DISPATCH();
         }
 
-        case RAISE_ASSERTIONERR: {
+        RAISE_ASSERTIONERR: {
             object* exc=vm_setup_err(&AssertionError, vm, "");
             FPLDECREF(CAST_EXCEPTION(exc)->err);
             CAST_EXCEPTION(exc)->err=NULL;
             vm->exception=exc;
-            break;
+            DISPATCH();
         }        
 
-        case DEL_GLBL: {
+        DEL_GLBL: {
             vm_del_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
-            break;
+            DISPATCH();
         }
 
-        case DEL_ATTR: {
+        DEL_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_setattr(obj, attr, NULL);
             
             if (ret==NULL || ret==CALL_ERR){ 
-                return CALL_ERR;
+                DISPATCH()
             }
             if (ret==TERM_PROGRAM){
                 return TERM_PROGRAM;
             }
-            break;
+            DISPATCH();
         }
 
-        case MAKE_CLOSURE:{
+        MAKE_CLOSURE:{
             int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
             object* stargs=NULL;
             object* stkwargs=NULL;
@@ -1993,25 +2087,25 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false);
             add_dataframe(vm, vm->objstack, func);
-            break;
+            DISPATCH();
         }
 
-        case LOAD_NONLOCAL:{
+        LOAD_NONLOCAL:{
             add_dataframe(vm, vm->objstack, vm_get_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
-            break;
+            DISPATCH();
         }
 
-        case STORE_NONLOCAL:{
+        STORE_NONLOCAL:{
             vm_add_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
-            break;
+            DISPATCH();
         }
 
-        case DEL_NONLOCAL:{
+        DEL_NONLOCAL:{
             vm_del_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
-            break;
+            DISPATCH();
         }
         
-        case BITWISE_NOT:{
+        BITWISE_NOT:{
             struct object* right=pop_dataframe(vm->objstack);
             
             object* ret=object_not(right);
@@ -2021,10 +2115,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand ~: '%s'.", right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BITWISE_AND:{
+        BITWISE_AND:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2035,10 +2129,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BITWISE_OR:{
+        BITWISE_OR:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2049,10 +2143,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BITWISE_LSHIFT:{
+        BITWISE_LSHIFT:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2063,10 +2157,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BITWISE_RSHIFT:{
+        BITWISE_RSHIFT:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2077,10 +2171,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IAND:{
+        BINOP_IAND:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2089,10 +2183,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IOR:{
+        BINOP_IOR:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2102,10 +2196,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
-            break;
+            DISPATCH();
         }
 
-        case BINOP_ILSH:{
+        BINOP_ILSH:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2115,10 +2209,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IRSH:{
+        BINOP_IRSH:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2128,10 +2222,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
-            break;
+            DISPATCH();
         }
         
-        case BINOP_NOTIN:{
+        BINOP_NOTIN:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             object* res=object_in_iter(left, right);
@@ -2141,10 +2235,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
                 add_dataframe(vm, vm->objstack, new_bool_false());
             }
             add_dataframe(vm, vm->objstack, new_bool_true());
-            break;
+            DISPATCH();
         }
         
-        case BINOP_IN:{
+        BINOP_IN:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             object* res=object_in_iter(left, right);
@@ -2155,19 +2249,19 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 add_dataframe(vm, vm->objstack, new_bool_false());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_ISNOT:{
+        BINOP_ISNOT:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=left==right ? new_bool_false() : new_bool_true();
             add_dataframe(vm, vm->objstack, ret);
-            break;
+            DISPATCH();
         }
         
-        case BINOP_FLDIV:{
+        BINOP_FLDIV:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
@@ -2178,23 +2272,23 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             }
-            break;
+            DISPATCH();
         }
 
-        case BINOP_IFLDIV:{
+        BINOP_IFLDIV:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_fldiv(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                return NULL;
+                DISPATCH();
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
-            break;
+            DISPATCH();
         }
 
-        case TERNARY_TEST:{
+        TERNARY_TEST:{
             object* expr1=pop_dataframe(vm->objstack);
             object* expr2=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
@@ -2204,28 +2298,28 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             else{
                 add_dataframe(vm, vm->objstack, expr1);
             }
-            break;
+            DISPATCH();
         }
 
-        case ANNOTATE_GLOBAL:{
+        ANNOTATE_GLOBAL:{
             object* tp=pop_dataframe(vm->objstack);
             annotate_global(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
-            break;
+            DISPATCH();
         }
 
-        case ANNOTATE_NAME:{
+        ANNOTATE_NAME:{
             object* tp=pop_dataframe(vm->objstack);
             annotate_var(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
-            break;
+            DISPATCH();
         }
 
-        case ANNOTATE_NONLOCAL:{
+        ANNOTATE_NONLOCAL:{
             object* tp=pop_dataframe(vm->objstack);
             annotate_nonlocal(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
-            break;
+            DISPATCH();
         } 
 
-        case STORE_ATTR_ANNOTATE: {
+        STORE_ATTR_ANNOTATE: {
             object* tp=pop_dataframe(vm->objstack); //Type to annotate
 
             object* obj=pop_dataframe(vm->objstack);
@@ -2243,20 +2337,21 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             dict_set(annon, attr, tp);
             
             if (ret==NULL || ret==CALL_ERR){ 
-                return CALL_ERR;
+                DISPATCH();
             }
             if (ret==TERM_PROGRAM){
                 return TERM_PROGRAM;
             }
-            break;
+            DISPATCH();
         }
 
-        case YIELD_VALUE: {
+        YIELD_VALUE: {
             object* o = pop_dataframe(vm->objstack);
+            GIL.unlock();
             return o;
         }
 
-        case MAKE_GENERATOR:{
+        MAKE_GENERATOR:{
             int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
             object* stargs=NULL;
             object* stkwargs=NULL;
@@ -2279,10 +2374,10 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
             add_dataframe(vm, vm->objstack, func);
-            break;
+            DISPATCH();
         }
 
-        case MAKE_CLOSURE_GENERATOR:{
+        MAKE_CLOSURE_GENERATOR:{
             int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
             object* stargs=NULL;
             object* stkwargs=NULL;
@@ -2304,216 +2399,98 @@ object* _vm_step(object* instruction, object* arg, struct vm* vm, uint32_t* ip, 
             
             object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
             add_dataframe(vm, vm->objstack, func);
-            break;
+            DISPATCH();
         }
 
-        case BUILD_SET: {
+        BUILD_SET: {
             object* set=new_set();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 set_append(set, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, set);
-            break;
+            DISPATCH();
         }
 
-        case ENTER_WHILE: {
+        ENTER_WHILE: {
             add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), WHILE_BLOCK);
-            break;
+            DISPATCH();
         }
 
-        case EXIT_WHILE: {
+        EXIT_WHILE: {
             pop_blockframe(vm->blockstack);
-            break;
+            DISPATCH();
         }
 
-        case ENTER_WITH: {
+        ENTER_WITH: {
             add_dataframe(vm, vm->objstack, object_enter_with(pop_dataframe(vm->objstack)));
-            break;
+            DISPATCH();
         }
 
-        case EXIT_WITH: {
+        EXIT_WITH: {
             add_dataframe(vm, vm->objstack, object_exit_with(pop_dataframe(vm->objstack)));
-            break;
+            DISPATCH();
         }
-        
-        default:
-            return NULL;
-            
-    };
-    return NULL;
-}
+    }
 
-object* run_vm(object* codeobj, uint32_t* ip, uint32_t* ip_){
-    object* code=CAST_CODE(codeobj)->co_code;
-    object* lines=CAST_CODE(codeobj)->co_lines;
-    
-    uint32_t linetup_cntr=0;
-    object* instruction;
-    uint32_t instructions=CAST_CODE(codeobj)->co_instructions;
-    object* linetup=list_index_int(lines, linetup_cntr++);
-    size_t len=CAST_LIST(lines)->size-1;
-    
-    vm->callstack->head->line=list_index_int(linetup, 2);
-
-    uint32_t i=0;
-    while ((*ip_)<instructions){
-        if (ip!=NULL){
-            (*ip)++;
-        }
-        instruction=list_index_int(code, (*ip_)++);
-        
-        if ((*ip_)-1>=(*CAST_INT(list_index_int(linetup, 1))->val)){
-            linetup=list_index_int(lines, linetup_cntr++);
-            vm->callstack->head->line=list_index_int(linetup, 2);
-        }
-
-        i++;
-        if (i==GIL_MAX_SWITCH){
-            //Free GIL
-            GIL.unlock();
-            //
-            i=0;
-            //Aquire GIL
-            GIL.lock();
-            //
-        }
-        
-        if (ip!=NULL){
-            (*ip)++;
-        }
-        
-        
-        object* obj=_vm_step(instruction, list_index_int(code, (*ip_)++), vm, ip_, &linetup_cntr, linetup);
-        if (linetup_cntr>len){
-            linetup_cntr=len;
-        }
-        if (obj==NULL && vm->exception==NULL){
-            continue;
-        }
-
-        if (obj==TERM_PROGRAM){
-            //Free GIL
-            GIL.unlock();
-            //
-            return TERM_PROGRAM;
-        }
-
-        if (obj==CALL_ERR){
-            struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
-            if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){// && frame->callstack_size==vm->callstack->size){
-                if (vm->callstack->size-frame->callstack_size!=0){
-                    //Free GIL
-                    GIL.unlock();
-                    //
-                    return NULL;
-                }
-                add_dataframe(vm, vm->objstack, vm->exception);
-                frame->obj=FPLINCREF(vm->exception);
-                if (vm->exception!=NULL){
-                    FPLDECREF(vm->exception);
-                }
-                vm->exception=NULL;
-                frame->other=linetup_cntr;
-                
-                (*ip_)=frame->arg+4; //skip jump
-                calculate_new_line(ip_, &linetup_cntr, &linetup);
-                frame->arg=1;
-                continue;
-            }
-
-            if (vm->exception==NULL){
+    exc:
+    if (vm->exception!=NULL){
+        struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
+        if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
+            if (vm->callstack->size-frame->callstack_size!=0){
                 //Free GIL
                 GIL.unlock();
                 //
                 return NULL;
             }
             
-            print_traceback();
+            add_dataframe(vm, vm->objstack, vm->exception);
+            frame->obj=FPLINCREF(vm->exception);
             
-            cout<<vm->exception->type->name->c_str();
-            if (CAST_EXCEPTION(vm->exception)->err!=NULL){
-                cout<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err);
-            }
-            cout<<endl;
-    
             if (vm->exception!=NULL){
                 FPLDECREF(vm->exception);
+                vm->exception=NULL;
             }
-            vm->exception=NULL;
             
-            //Free GIL
-            GIL.unlock();
-            //
-            return NULL;
-        }  
+            (*ip)=frame->arg+4; //skip jump
+            frame->arg=1;
+            DISPATCH();
+        }
+        else if (frame!=NULL && frame->obj!=NULL && frame->arg!=3){
+            print_traceback();
+            
+            cout<<frame->obj->type->name->c_str();
+            if (CAST_EXCEPTION(frame->obj)->err!=NULL){
+                cout<<": "<<object_cstr(CAST_EXCEPTION(frame->obj)->err);
+            }
+            cout<<endl;
+            if ((void*)frame->obj==(void*)vm->exception){ //Reraised
+                //Free GIL
+                GIL.unlock();
+                //
+                return NULL;
+            }
+            cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
+        }
+        
+        print_traceback();
+        
+        cout<<vm->exception->type->name->c_str();
+        if (CAST_EXCEPTION(vm->exception)->err!=NULL){
+            cout<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err);
+        }
+        cout<<endl;
 
-        if (obj!=NULL){
-            //Free GIL
-            GIL.unlock();
-            //
-            return obj;
+        if (vm->exception!=NULL){
+            FPLDECREF(vm->exception);
         }
-        else if (vm->exception!=NULL){
-            struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
-            if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
-                if (vm->callstack->size-frame->callstack_size!=0){
-                    //Free GIL
-                    GIL.unlock();
-                    //
-                    return NULL;
-                }
-                
-                add_dataframe(vm, vm->objstack, vm->exception);
-                frame->obj=FPLINCREF(vm->exception);
-                
-                if (vm->exception!=NULL){
-                    FPLDECREF(vm->exception);
-                    vm->exception=NULL;
-                }
-                frame->other=linetup_cntr;
-                
-                (*ip_)=frame->arg+4; //skip jump
-                calculate_new_line(ip_, &linetup_cntr, &linetup);
-                frame->arg=1;
-                continue;
-            }
-            else if (frame!=NULL && frame->obj!=NULL && frame->arg!=3){
-                print_traceback();
-                
-                cout<<frame->obj->type->name->c_str();
-                if (CAST_EXCEPTION(frame->obj)->err!=NULL){
-                    cout<<": "<<object_cstr(CAST_EXCEPTION(frame->obj)->err);
-                }
-                cout<<endl;
-                if ((void*)frame->obj==(void*)vm->exception){ //Reraised
-                    //Free GIL
-                    GIL.unlock();
-                    //
-                    return NULL;
-                }
-                cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
-            }
-            
-            print_traceback();
-            
-            cout<<vm->exception->type->name->c_str();
-            if (CAST_EXCEPTION(vm->exception)->err!=NULL){
-                cout<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err);
-            }
-            cout<<endl;
-    
-            if (vm->exception!=NULL){
-                FPLDECREF(vm->exception);
-            }
-            vm->exception=NULL;
-            
-            //Free GIL
-            GIL.unlock();
-            //
-            return NULL;
-        }
+        vm->exception=NULL;
+        
+        //Free GIL
+        GIL.unlock();
+        //
+        return NULL;
     }
-    
+
     //Free GIL
     GIL.unlock();
     //
