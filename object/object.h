@@ -167,7 +167,7 @@ bool hit_memory_error=false;
 Parser parser;
 
 
-inline bool FPLDECREF(struct object* object);
+inline void FPLDECREF(struct object* object);
 inline object* FPLINCREF(struct object* object);
 object* in_immutables(object* obj);
 object* new_object(TypeObject* type);

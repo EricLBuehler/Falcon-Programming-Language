@@ -4,7 +4,7 @@ inline void FPLDECREF(struct object* object){
         if (object->type->slot_del!=NULL){
             object->type->slot_del(object);
             if (object->refcnt>0){
-                return false;
+                return;
             }
         }
         
@@ -22,9 +22,9 @@ inline void FPLDECREF(struct object* object){
             free(object);
             immutable_size--;
         }
-        return true;
+        return;
     }
-    return false;
+    return;
 } 
 
 
