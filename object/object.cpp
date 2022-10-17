@@ -1,4 +1,4 @@
-inline bool FPLDECREF(struct object* object){
+inline void FPLDECREF(struct object* object){
     object->refcnt--;
     if (object->refcnt==0){
         if (object->type->slot_del!=NULL){
@@ -21,48 +21,6 @@ inline bool FPLDECREF(struct object* object){
             }
             free(object);
             immutable_size--;
-        }
-
-
-
-        //Delete now
-        else if (object->type->gc_trackable && no_outside_refs(object) ){ //No outside references, so we can free
-            if (((object_var*)object)->gc_ref - ((struct object*)object)->refcnt<0){
-                if (object->type->slot_del!=NULL){
-                    object->type->slot_del(object);
-                    if (object->refcnt>0){
-                        return false;
-                    }
-                }
-            }
-            if (object->gen!=2){                
-                if (object->gen==1){
-                    if (object->ob_prev!=NULL){
-                        object->ob_prev->ob_next=object->ob_next;
-                    }
-                    else{
-                        gc.gen1=object->ob_next;
-                    }                    
-                    if (object->ob_next!=NULL){
-                        object->ob_next->ob_prev=object->ob_prev;
-                    }
-                    gc.gen1_n--;
-                }
-                else{
-                    if (object->ob_prev!=NULL){
-                        object->ob_prev->ob_next=object->ob_next;
-                    }
-                    else{
-                        gc.gen0=object->ob_next;
-                    }   
-                    if (object->ob_next!=NULL){
-                        object->ob_next->ob_prev=object->ob_prev;
-                    }
-                    gc.gen0_n--;
-                }
-
-                free(object);
-            }        
         }
         return true;
     }
