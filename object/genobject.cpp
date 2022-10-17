@@ -91,7 +91,7 @@ object* gen_next(object* self){
     uint32_t blockstack_size=vm->blockstack->size;
     uint32_t realip=0;
 
-    object* ret=run_vm(CAST_FUNC(CAST_GEN(self)->func)->code, &realip, &(CAST_GEN(self)->ip));
+    object* ret=run_vm(CAST_FUNC(CAST_GEN(self)->func)->code, &(CAST_GEN(self)->ip));
 
     
     uint32_t datastack_size_=vm->objstack->size;
@@ -123,7 +123,7 @@ object* gen_next(object* self){
         CAST_GEN(self)->done=true;
     }
     
-    if (realip==0 || CAST_GEN(self)->done){
+    if (CAST_GEN(self)->done){
         CAST_GEN(self)->done=true;
         vm_add_err(&StopIteration, vm, "Iterator out of data");
 

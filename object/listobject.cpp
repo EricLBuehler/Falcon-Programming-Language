@@ -249,6 +249,7 @@ object* list_get(object* self, object* idx){
         lidx=lidx+(int)CAST_LIST(self)->size;
     }
     if ((int)CAST_LIST(self)->size<=lidx || lidx<0){
+        cout<<lidx;
         vm_add_err(&IndexError, vm, "List index out of range");
         return NULL;
     }

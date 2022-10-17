@@ -55,7 +55,7 @@ object* func_call(object* self, object* args, object* kwargs){
         goto make_gen;
     }
     
-    ret=run_vm(CAST_FUNC(self)->code, NULL, &ip);
+    ret=run_vm(CAST_FUNC(self)->code, &ip);
 
     for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
         FPLDECREF(k.first);
@@ -94,7 +94,7 @@ object* func_call_nostack(object* self, object* args, object* kwargs){
     setup_args(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs);
     uint32_t ip=0;
 
-    object* ret=run_vm(CAST_FUNC(self)->code, NULL, &ip);
+    object* ret=run_vm(CAST_FUNC(self)->code, &ip);
     return ret;
 }
 
