@@ -314,6 +314,7 @@ Help
 - <a href='https://github.com/davidcallanan/py-myopl-code'>py-myopl-code</a>
 - <a href='https://github.com/faheel/BigInt'>BigInt</a> (Used for ```int``` type)
 - <a href='https://github.com/python/cpython'>CPython</a>
+- <a href='https://eli.thegreenplace.net/2012/07/12/computed-goto-for-efficient-dispatch-tables'>Computed GOTOs</a>
 
 ### Licenses ###
 - [MIT License](LICENSE)
