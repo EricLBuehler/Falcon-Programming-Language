@@ -43,6 +43,7 @@ static NumberMethods socket_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
