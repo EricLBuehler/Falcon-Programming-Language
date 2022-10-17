@@ -14,14 +14,14 @@ object* thread_new(object* type, object* args, object* kwargs){
         return NULL;
     }
 
-    CAST_THREAD(obj)->callable=INCREF(callable);
+    CAST_THREAD(obj)->callable=FPLINCREF(callable);
     CAST_THREAD(obj)->thread=NULL;
 
     return obj;
 }
 
 void thread_del(object* self){
-    DECREF(CAST_THREAD(self)->callable);
+    FPLDECREF(CAST_THREAD(self)->callable);
     if (CAST_THREAD(self)->thread!=NULL){
         free(CAST_THREAD(self)->thread);
     }
@@ -60,21 +60,21 @@ void* _thread_start_wrap(void* args_){
         GIL.lock();
         object* v=object_call_nokwargs(args->callable, new_tuple());
         if (v!=NULL){
-            DECREF(v);
+            FPLDECREF(v);
         }
     }
     else if (args->args!=NULL && args->kwargs==NULL){
         GIL.lock();
         object* v=object_call_nokwargs(args->callable, args->args);
         if (v!=NULL){
-            DECREF(v);
+            FPLDECREF(v);
         }
     }
     else{
         GIL.lock();
         object* v=object_call(args->callable, args->args, args->kwargs);
         if (v!=NULL){
-            DECREF(v);
+            FPLDECREF(v);
         }
     }
     
@@ -91,8 +91,8 @@ object* thread_start_meth(object* self, object* args, object* kwargs){
         return NULL; 
     }
     
-    pthread_t* t=(pthread_t*)malloc(sizeof(pthread_t));
-    ThreadArgs* args_=(ThreadArgs*)malloc(sizeof(ThreadArgs));
+    pthread_t* t=(pthread_t*)fpl_malloc(sizeof(pthread_t));
+    ThreadArgs* args_=(ThreadArgs*)fpl_malloc(sizeof(ThreadArgs));
     memset(args_, 0, sizeof(ThreadArgs));
 
     object* kw=str_new_fromstr("kwargs");

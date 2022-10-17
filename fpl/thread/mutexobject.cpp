@@ -7,7 +7,7 @@ object* mutex_new(object* type, object* args, object* kwargs){
     
     object* obj=new_object(CAST_TYPE(type));
     
-    pthread_mutex_t* lock=(pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_t* lock=(pthread_mutex_t*)fpl_malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(lock, NULL);
     pthread_mutex_unlock(lock);
     

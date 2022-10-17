@@ -25,9 +25,11 @@ static NumberMethods mutex_num_methods{
     0, //slot_or
     0, //slot_lshift
     0, //slot_rshift
+    0, //slot_fldiv
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
