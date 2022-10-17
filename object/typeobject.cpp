@@ -22,6 +22,7 @@ static NumberMethods type_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)type_bool, //slot_bool
 };
@@ -109,6 +110,7 @@ object* newtp_bool(object* self);
 object* newtp_int(object* self);
 object* newtp_float(object* self);
 void newtp_post_tpcall(object* ob);
+object* newtp_abs(object* self);
 
 object* newtp_descrget(object* obj, object* self);
 object* newtp_descrset(object* obj, object* self, object* val);
@@ -135,8 +137,13 @@ NumberMethods newtp_number={
 
     //unaryops
     newtp_neg,
+    newtp_not,
+    newtp_abs,
 
+    //other
     newtp_bool,
+    newtp_int,
+    newtp_float,
 };
 
 typedef struct NewTypeObject{

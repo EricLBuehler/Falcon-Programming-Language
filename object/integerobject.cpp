@@ -356,6 +356,13 @@ object* int_rshift(object* self, object* other){
     return new_int_fromint(CAST_INT(self)->val->to_int() >> val);
 }
 
+object* int_abs(object* self){
+    if (*CAST_INT(self)->val<0){
+        return new_int_frombigint(new BigInt(*CAST_INT(self)->val*-1));
+    }
+    return FPLINCREF(self);
+}
+
 object* int_neg(object* self){
     return new_int_frombigint(new BigInt((*CAST_INT(self)->val)*-1));
 }

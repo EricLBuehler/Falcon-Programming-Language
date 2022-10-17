@@ -18,6 +18,7 @@ object* int_or(object* self, object* other);
 object* int_lshift(object* self, object* other);
 object* int_rshift(object* self, object* other);
 object* int_fldiv(object* self, object* other);
+object* int_abs(object* self);
 
 object* new_int_fromint(int v);
 object* new_int_fromstr(string* v);
@@ -43,6 +44,7 @@ static NumberMethods int_num_methods{
 
     (unaryfunc)int_neg, //slot_neg
     (unaryfunc)int_not, //slot_not
+    (unaryfunc)int_abs, //slot_abs
 
     (unaryfunc)int_bool, //slot_bool
     (unaryfunc)int_int, //slot_int
@@ -157,6 +159,7 @@ static NumberMethods str_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)str_bool, //slot_bool
     (unaryfunc)str_int, //slot_int
@@ -274,6 +277,7 @@ static NumberMethods list_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)list_bool, //slot_bool
 };
@@ -364,6 +368,7 @@ static NumberMethods dict_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)dict_bool, //slot_bool
 };
@@ -461,6 +466,7 @@ static NumberMethods code_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)code_bool, //slot_bool
 };
@@ -542,6 +548,7 @@ object* bool_not(object* self);
 object* bool_lshift(object* self, object* other);
 object* bool_rshift(object* self, object* other);
 object* bool_fldiv(object* self, object* other);
+object* bool_abs(object* self);
 
 object* new_bool_true();
 object* new_bool_false();
@@ -578,6 +585,7 @@ static NumberMethods bool_num_methods{
 
     (unaryfunc)bool_neg, //slot_neg
     (unaryfunc)bool_not, //slot_not
+    (unaryfunc)bool_abs, //slot_abs
 
     (unaryfunc)bool_bool, //slot_bool
     (unaryfunc)bool_int, //slot_int
@@ -677,6 +685,7 @@ static NumberMethods tuple_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)tuple_bool, //slot_bool
 };
@@ -777,6 +786,7 @@ static NumberMethods func_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)func_bool, //slot_bool
 };
@@ -861,6 +871,7 @@ static NumberMethods none_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)none_bool, //slot_bool
 };
@@ -950,6 +961,7 @@ static NumberMethods builtin_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)builtin_bool, //slot_bool
 };
@@ -1034,6 +1046,7 @@ static NumberMethods object_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)object_bool, //slot_bool
 };
@@ -1115,6 +1128,7 @@ static NumberMethods exception_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -1301,6 +1315,7 @@ static NumberMethods file_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -1515,6 +1530,7 @@ object* float_float(object* self);
 object* float_mod(object* self, object* other);
 object* float_pow(object* self, object* other);
 object* float_fldiv(object* self, object* other);
+object* float_abs(object* self);
 
 object* new_float_fromdouble(double v);
 object* new_float_fromstr(string* v);
@@ -1542,6 +1558,7 @@ static NumberMethods float_num_methods{
 
     (unaryfunc)float_neg, //slot_neg
     0, //slot_not
+    (unaryfunc)float_abs, //slot_abs
 
     (unaryfunc)float_bool, //slot_bool
     0, //slot_int
@@ -1632,6 +1649,7 @@ static NumberMethods list_iter_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)list_iter_bool, //slot_bool
 };
@@ -1719,6 +1737,7 @@ static NumberMethods tuple_iter_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)tuple_iter_bool, //slot_bool
 };
@@ -1805,6 +1824,7 @@ static NumberMethods dict_iter_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)dict_iter_bool, //slot_bool
 };
@@ -1889,6 +1909,7 @@ static NumberMethods str_iter_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)str_iter_bool, //slot_bool
 };
@@ -1971,6 +1992,7 @@ static NumberMethods module_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2055,6 +2077,7 @@ static NumberMethods slice_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2140,6 +2163,7 @@ static NumberMethods enum_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2224,6 +2248,7 @@ static NumberMethods range_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2308,6 +2333,7 @@ static NumberMethods zip_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2540,6 +2566,7 @@ static NumberMethods super_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2624,6 +2651,7 @@ static NumberMethods method_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2697,6 +2725,7 @@ static NumberMethods wrappermethod_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2781,6 +2810,7 @@ static NumberMethods staticmethod_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2865,6 +2895,7 @@ static NumberMethods classmethod_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -2959,6 +2990,7 @@ static NumberMethods map_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -3049,6 +3081,7 @@ static NumberMethods property_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -3138,6 +3171,7 @@ static NumberMethods gen_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     0, //slot_bool
 };
@@ -3230,6 +3264,7 @@ static NumberMethods set_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)set_bool, //slot_bool
 };
@@ -3319,6 +3354,7 @@ static NumberMethods set_iter_num_methods{
 
     0, //slot_neg
     0, //slot_not
+    0, //slot_abs
 
     (unaryfunc)set_iter_bool, //slot_bool
 };
@@ -3551,6 +3587,7 @@ void _inherit_number_slots(NumberMethods* m, TypeObject* base_tp){
     m->slot_lshift=base_tp->slot_number->slot_lshift;
     m->slot_rshift=base_tp->slot_number->slot_rshift;
     m->slot_fldiv=base_tp->slot_number->slot_fldiv;
+    m->slot_abs=base_tp->slot_number->slot_abs;
 
     m->slot_bool=base_tp->slot_number->slot_bool;
     m->slot_int=base_tp->slot_number->slot_int;
@@ -3738,6 +3775,12 @@ void inherit_type_dict(TypeObject* tp){
         }
         if (tp_tp->slot_number->slot_float){
             type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_float, "__float__");
+        }
+        if (tp_tp->slot_number->slot_abs){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_abs, "__abs__");
+        }
+        if (tp_tp->slot_number->slot_not){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_not, "__not__");
         }
     }
 
@@ -4153,7 +4196,16 @@ object* new_type(string* name, object* bases, object* dict){
         }
         else{
             number.slot_fldiv=(binopfunc)newtp_fldiv;
-        }    
+        }       
+
+        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__abs__"));
+        if (n==NULL){
+            FPLDECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_abs=(unaryfunc)newtp_abs;
+        }   
     }
     if (NEWTP_MAPPINGS_COPY){
         object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__getitem__"));

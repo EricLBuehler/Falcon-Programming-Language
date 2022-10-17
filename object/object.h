@@ -44,6 +44,7 @@ typedef struct{
     //unaryops
     unaryfunc slot_neg;
     unaryfunc slot_not;
+    unaryfunc slot_abs;
 
     //other
     unaryfunc slot_bool;
@@ -267,6 +268,8 @@ object* type_wrapper_bool(object* self, object* args, object* kwargs);
 object* type_wrapper_neg(object* self, object* args, object* kwargs);
 object* type_wrapper_int(object* self, object* args, object* kwargs);
 object* type_wrapper_float(object* self, object* args, object* kwargs);
+object* type_wrapper_abs(object* self, object* args, object* kwargs);
+object* type_wrapper_not(object* self, object* args, object* kwargs);
 
 object* type_wrapper_del(object* self, object* args, object* kwargs);
 object* type_wrapper_init(object* self, object* args, object* kwargs);

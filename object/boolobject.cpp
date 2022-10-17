@@ -209,6 +209,10 @@ object* bool_rshift(object* self, object* other){
     return new_int_fromint(CAST_BOOL(self)->val >> val);
 }
 
+object* bool_abs(object* self){
+    return new_int_fromint(CAST_BOOL(self)->val); 
+}
+
 object* bool_neg(object* self){
     return new_int_frombigint(new BigInt(CAST_BOOL(self)->val*-1));
 }

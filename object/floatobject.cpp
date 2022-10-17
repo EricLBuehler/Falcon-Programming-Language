@@ -186,6 +186,13 @@ object* float_fldiv(object* self, object* other){
     return new_float_fromdouble(res);
 }
 
+object* float_abs(object* self){
+    if (CAST_FLOAT(self)->val<0){
+        return new_float_fromdouble(CAST_FLOAT(self)->val*-1);
+    }
+    return FPLINCREF(self);
+}
+
 object* float_neg(object* self){
     return new_float_fromdouble(CAST_FLOAT(self)->val*-1);
 }

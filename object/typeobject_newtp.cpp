@@ -333,6 +333,16 @@ object* newtp_not(object* self){
     return val;
 }
 
+object* newtp_abs(object* self){
+    object* n=object_getattr(self, str_new_fromstr("__abs__"));
+    ERROR_RET(n);
+    
+    object* args=new_tuple();
+    
+    object* val=object_call_nokwargs(n, args);
+    return val;
+}
+
 object* newtp_bool(object* self){
     object* n=object_getattr(self, str_new_fromstr("__bool__"));
     ERROR_RET(n);

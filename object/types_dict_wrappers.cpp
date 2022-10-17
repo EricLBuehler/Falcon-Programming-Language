@@ -73,7 +73,7 @@ object* type_wrapper_neg(object* self, object* args, object* kwargs){
         return NULL;
     }
     
-    object* ret=CAST_TYPE(self)->slot_number->slot_bool(list_index_int(args, 0));
+    object* ret=CAST_TYPE(self)->slot_number->slot_neg(list_index_int(args, 0));
     if (ret==NULL){
         vm_add_err(&TypeError, vm, "Invalid unary operand -: '%s'.", self->type->name->c_str());
         return NULL;
@@ -145,7 +145,7 @@ object* type_wrapper_and(object* self, object* args, object* kwargs){
     
     object* ret=CAST_TYPE(self)->slot_number->slot_and(list_index_int(args, 0), list_index_int(args, 1));
     if (ret==NULL){
-        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Invalid operand types for &: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
     }
     return ret;
@@ -159,7 +159,7 @@ object* type_wrapper_or(object* self, object* args, object* kwargs){
     
     object* ret=CAST_TYPE(self)->slot_number->slot_or(list_index_int(args, 0), list_index_int(args, 1));
     if (ret==NULL){
-        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Invalid operand types for |: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
     }
     return ret;
@@ -173,7 +173,7 @@ object* type_wrapper_lshift(object* self, object* args, object* kwargs){
     
     object* ret=CAST_TYPE(self)->slot_number->slot_lshift(list_index_int(args, 0), list_index_int(args, 1));
     if (ret==NULL){
-        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Invalid operand types for <<: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
     }
     return ret;
@@ -187,7 +187,7 @@ object* type_wrapper_rshift(object* self, object* args, object* kwargs){
     
     object* ret=CAST_TYPE(self)->slot_number->slot_rshift(list_index_int(args, 0), list_index_int(args, 1));
     if (ret==NULL){
-        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Invalid operand types for >>: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
     }
     return ret;
@@ -201,7 +201,7 @@ object* type_wrapper_fldiv(object* self, object* args, object* kwargs){
     
     object* ret=CAST_TYPE(self)->slot_number->slot_fldiv(list_index_int(args, 0), list_index_int(args, 1));
     if (ret==NULL){
-        vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", self->type->name->c_str(), list_index_int(args, 1)->type->name->c_str());
         return NULL;
     }
     return ret;
@@ -427,4 +427,32 @@ object* type_wrapper_exit(object* self, object* args, object* kwargs){
     }
     
     return CAST_TYPE(self)->slot_exit(list_index_int(args, 0));
+}
+
+object* type_wrapper_abs(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    object* ret=CAST_TYPE(self)->slot_number->slot_abs(list_index_int(args, 0));
+    if (ret==NULL){
+        vm_add_err(&TypeError, vm, "Invalid operand type for absolute value: '%s'.",  list_index_int(args, 0)->type->name->c_str());
+        return NULL;
+    }
+    return ret;
+}
+
+object* type_wrapper_not(object* self, object* args, object* kwargs){
+    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+        return NULL;
+    }
+    
+    object* ret=CAST_TYPE(self)->slot_number->slot_not(list_index_int(args, 0));
+    if (ret==NULL){
+        vm_add_err(&TypeError, vm, "Invalid operand type for ~: '%s'.",  list_index_int(args, 0)->type->name->c_str());
+        return NULL;
+    }
+    return ret;
 }

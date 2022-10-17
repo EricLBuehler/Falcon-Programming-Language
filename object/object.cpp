@@ -754,6 +754,13 @@ object* object_float(object* left){
     return left->type->slot_number->slot_float(left);
 }
 
+object* object_abs(object* left){
+    if (left->type->slot_number==NULL || left->type->slot_number->slot_abs==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_abs(left);
+}
+
 object* generic_iter_iter(object* self){
     return self;
 }
