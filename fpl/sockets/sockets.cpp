@@ -352,7 +352,7 @@ object* socket_gethostbyname(object* selftp, object* args, object* kwargs){
     addr_list = (struct in_addr **) he->h_addr_list;
 
     for(int i = 0; addr_list[i] != NULL; i++){
-		strcpy(ip , inet_ntoa(*addr_list[i]) );
+		strncpy(ip , inet_ntoa(*addr_list[i]), 100);
 	}
     
     return str_new_fromstr(ip);
