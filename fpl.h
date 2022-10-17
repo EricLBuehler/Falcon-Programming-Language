@@ -26,11 +26,6 @@
 
 #include <iostream>
 
-auto time_nanoseconds() {
-    return std::chrono::steady_clock::now();//std::chrono::high_resolution_clock::now();
-}
-
-
 using namespace std;
 
 #define DEBUG
@@ -43,7 +38,7 @@ using namespace std;
 
 #define GIL_MAX_SWITCH 128
 
-#define FPL_VERSION 1.01
+#define FPL_VERSION 1.02
 
 std::mutex GIL;
 
@@ -99,7 +94,7 @@ void sigint(int sig) {
     }
     else{
         object* exc=vm_setup_err(&KeyboardInterrupt, vm, "");
-        DECREF(CAST_EXCEPTION(exc)->err);
+        FPLDECREF(CAST_EXCEPTION(exc)->err);
         CAST_EXCEPTION(exc)->err=NULL;
         vm->exception=exc;
     }
@@ -175,11 +170,11 @@ int execute(string data, bool objdump, bool verbose){
         cout<<"Code: "<<object_cstr(CAST_CODE(code)->co_code)<<"\n";
         cout<<"--------\n";
     }
-    auto a=time_nanoseconds();
-    object* returned=run_vm(code, NULL, &vm->ip);
-    auto b=time_nanoseconds();
-
+    
+    object* returned=run_vm(code, &vm->ip);
+    
     finalize_threads();
+    socket_cleanup();
 
     if (verbose){
         cout<<"--------";
@@ -202,8 +197,8 @@ int execute(string data, bool objdump, bool verbose){
             delete &lexer;
             compiler_del(compiler);
             vm_del(vm);
-            DECREF(code);
-            DECREF(returned);
+            FPLDECREF(code);
+            FPLDECREF(returned);
             return -1;
         }
 
