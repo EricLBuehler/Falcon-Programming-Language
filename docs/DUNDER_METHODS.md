@@ -29,11 +29,12 @@
 - ```__pow__(self, other)```
 - ```__floordiv__(self, other)```
 - ```__neg__(self)```
+- ```__abs__(self)```
 
 ## Call
 - ```__call__(self, ...)```
 
-## Boolean
+## Bitwise
 - ```__not__(self)```
 - ```__and__(self, other)```
 - ```__or__(self, other)```
