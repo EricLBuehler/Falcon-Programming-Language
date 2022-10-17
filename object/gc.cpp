@@ -45,6 +45,7 @@ void gc_collect(int gen){
                     }
                 }
             }
+            object* next=obj->ob_next;
             if (obj->gen!=2){                
                 if (obj->gen==1){
                     if (obj->ob_prev!=NULL){
@@ -72,10 +73,9 @@ void gc_collect(int gen){
                 }
 
                 free(obj);
-            }        
-            else{
-
-            }
+            } 
+            obj=next;
+            continue;
         }
         else{
             if (gen!=2){
