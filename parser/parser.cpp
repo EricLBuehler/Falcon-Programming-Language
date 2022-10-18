@@ -175,6 +175,8 @@ class Parser{
         parse_ret statements(){
             bool noassign=this->noassign;
             this->noassign=false;
+            bool multi=this->multi;
+            this->multi=false;
             parse_ret ret;
             ret.errornum=0;
             ret.nodes.clear();
@@ -203,6 +205,7 @@ class Parser{
 
             statements_return:
             this->noassign=noassign;
+            this->multi=multi;
             return ret;
         }
 
@@ -306,7 +309,7 @@ class Parser{
                 this->multi=b;
                 this->backadvance();
 
-                free(node->node);
+                fpl_free(node->node);
                 delete i->name;
 
                 AnnotatedIdentifier* i=(AnnotatedIdentifier*)fpl_malloc(sizeof(AnnotatedIdentifier));
@@ -1282,7 +1285,7 @@ class Parser{
                 this->noassign=noassign;
                 this->backadvance();
 
-                free(name->node);
+                fpl_free(name->node);
 
                 AnnotatedIdentifier* i=(AnnotatedIdentifier*)fpl_malloc(sizeof(AnnotatedIdentifier));
                 i->name=new string(_name);
@@ -1334,8 +1337,8 @@ class Parser{
                 this->noassign=noassign;
                 this->backadvance();
 
-                free(node->node);
-                free(g->name);
+                fpl_free(node->node);
+                fpl_free(g->name);
 
                 AnnotatedIdentifier* i=(AnnotatedIdentifier*)fpl_malloc(sizeof(AnnotatedIdentifier));
                 i->name=new string(_name);
@@ -2572,8 +2575,8 @@ class Parser{
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
-                free(n);
-                free(f);
+                fpl_free(n);
+                fpl_free(f);
                 return NULL;
             }
             this->advance();
@@ -2593,8 +2596,8 @@ class Parser{
             if (!this->current_tok_is(T_RCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
-                free(n);
-                free(f);
+                fpl_free(n);
+                fpl_free(f);
                 return NULL;
             }  
             
@@ -2634,8 +2637,8 @@ class Parser{
                 if (!this->current_tok_is(T_LCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
-                    free(n);
-                    free(f);
+                    fpl_free(n);
+                    fpl_free(f);
                     return NULL;
                 }
                 this->advance();
@@ -2654,8 +2657,8 @@ class Parser{
                 if (!this->current_tok_is(T_RCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
-                    free(n);
-                    free(f);
+                    fpl_free(n);
+                    fpl_free(f);
                     return NULL;
                 }  
 
@@ -2689,8 +2692,8 @@ class Parser{
                 if (!this->current_tok_is(T_LCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
-                    free(n);
-                    free(f);
+                    fpl_free(n);
+                    fpl_free(f);
                     return NULL;
                 }
                 this->advance();
@@ -2709,8 +2712,8 @@ class Parser{
                 if (!this->current_tok_is(T_RCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
-                    free(n);
-                    free(f);
+                    fpl_free(n);
+                    fpl_free(f);
                     return NULL;
                 }  
 
@@ -3007,7 +3010,6 @@ class Parser{
             w->elsen=elsen;
 
             node->node=w;
-
             return node;
         }
 

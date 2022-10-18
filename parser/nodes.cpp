@@ -373,12 +373,12 @@ void destroy_node(struct Node* node){
     else if (node->type==N_BINOP){
         destroy_node(((BinOp*)(node->node))->left);
         destroy_node(((BinOp*)(node->node))->right);
-        free(&((BinOp*)(node->node))->opr);
+        fpl_free(&((BinOp*)(node->node))->opr);
     }
 
     delete node->start;
     delete node->end;
 
-    free(node->node);
-    free(node);
+    fpl_free(node->node);
+    fpl_free(node);
 }
