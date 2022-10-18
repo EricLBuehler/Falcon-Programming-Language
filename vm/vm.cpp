@@ -48,7 +48,7 @@ inline struct object* pop_dataframe(struct datastack* stack){
     stack->size--;
     
     object* o=frame->obj;
-    free(frame);
+    fpl_free(frame);
     return o;
 }
 
@@ -58,7 +58,7 @@ void pop_blockframe(struct blockstack* stack){
     stack->head=frame->next;
     stack->size--;
 
-    free(frame);
+    fpl_free(frame);
 }
 
 struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type){
@@ -105,7 +105,7 @@ inline void pop_callframe(struct callstack* stack){
 
     FPLDECREF(frame->annotations);
     
-    free(frame);
+    fpl_free(frame);
 }
 
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {
@@ -134,7 +134,7 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
         FPLDECREF(CAST_EXCEPTION(vm->exception)->err);
     }
     CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(msg);
-    free(msg);
+    fpl_free(msg);
 }
 
 object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {  
@@ -211,13 +211,13 @@ void vm_del(struct vm* vm){
     while (i){
         struct callframe* i_=i->next;;
         FPLDECREF(i->locals);
-        free(i);
+        fpl_free(i);
         i=i_;
     }
     struct dataframe* j=vm->objstack->head;
     while (j){
         struct dataframe* j_=j->next;;
-        free(j);
+        fpl_free(j);
         j=j_;
     }
 
