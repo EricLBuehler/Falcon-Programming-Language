@@ -54,10 +54,36 @@ object* func_call(object* self, object* args, object* kwargs){
     setup_args_stars(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
     object* ret;
     if (CAST_FUNC(self)->isgen){
-        goto make_gen;
+        FPLINCREF(vm->callstack->head->locals);
+        pop_callframe(vm->callstack);
+        return new_generator_impl(self, vm->callstack->head->locals);
     }
     
+    uint32_t datastack_size=vm->objstack->size;
+    uint32_t callstack_size=vm->callstack->size;
+    uint32_t blockstack_size=vm->blockstack->size;
+    
     ret=run_vm(CAST_FUNC(self)->code, &ip);
+
+    uint32_t datastack_size_=vm->objstack->size;
+    uint32_t callstack_size_=vm->callstack->size;
+    uint32_t blockstack_size_=vm->blockstack->size;
+
+    if (datastack_size_>datastack_size){
+        while (vm->objstack->size>datastack_size){
+            pop_dataframe(vm->objstack);
+        }
+    }
+    if (callstack_size_>callstack_size){
+        while (vm->callstack->size>callstack_size){
+            pop_callframe(vm->callstack);
+        }
+    }
+    if (blockstack_size_>blockstack_size){
+        while (vm->blockstack->size>blockstack_size){
+            pop_blockframe(vm->blockstack);
+        }
+    }
 
     for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
         FPLDECREF(k.first);
@@ -67,12 +93,6 @@ object* func_call(object* self, object* args, object* kwargs){
         FPLDECREF(k.second);
     }
 
-    make_gen:
-    if (CAST_FUNC(self)->isgen){
-        FPLINCREF(vm->callstack->head->locals);
-        pop_callframe(vm->callstack);
-        return new_generator_impl(self, vm->callstack->head->locals);
-    }
     pop_callframe(vm->callstack);
     return ret;
 }
