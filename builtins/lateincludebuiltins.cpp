@@ -43,8 +43,8 @@ object* builtin_eval(object* self, object* args){
     
     ::vm->globals=glbls;
     ::vm->callstack->head->locals=locals;
-    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
-    ::vm->global_annotations=::vm->callstack->head->annontations;
+    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
+    ::vm->global_annotations=::vm->callstack->head->annotations;
 
     object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;

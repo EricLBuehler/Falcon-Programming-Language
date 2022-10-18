@@ -29,7 +29,8 @@ object* builtin___build_class__(object* self, object* args){
         return NULL;
     }
     
-    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, FPLINCREF(CAST_FUNC(function)->code), function);
+    uint32_t ip=0;
+    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, FPLINCREF(CAST_FUNC(function)->code), function, &ip);
     vm->callstack->head->locals=new_dict();
     
     object* kwargs=new_dict();
@@ -400,7 +401,7 @@ object* builtin_max(object* self, object* args){
     
 object* builtin_getannotation(object* self, object* args){
     object* nm=args->type->slot_mappings->slot_get(args, str_new_fromstr("name"));
-    object* anno=vm->callstack->head->annontations;
+    object* anno=vm->callstack->head->annotations;
 
     object* tp=dict_get(anno, nm);
     if (tp==NULL){
