@@ -86,7 +86,7 @@ inline void add_callframe(struct callstack* stack, object* line, string* name, o
     frame->locals=NULL;
     frame->filedata=vm->filedata;
     frame->callable=callable;
-    frame->annontations=new_dict();
+    frame->annotations=new_dict();
     frame->ip=ip;
 
     stack->size++;
@@ -103,7 +103,7 @@ inline void pop_callframe(struct callstack* stack){
     stack->head=frame->next;
     stack->size--;
 
-    FPLDECREF(frame->annontations);
+    FPLDECREF(frame->annotations);
     
     free(frame);
 }
@@ -201,7 +201,7 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL, &vm->ip);
     vm->globals=new_dict();
     vm->callstack->head->locals=FPLINCREF(vm->globals);
-    vm->global_annotations=vm->callstack->head->annontations;
+    vm->global_annotations=vm->callstack->head->annotations;
     
     return vm;
 }
@@ -386,6 +386,12 @@ void vm_del_var_nonlocal(struct vm* vm, object* name){
                 if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
                     ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
                 }
+                if (object_find_bool_dict_keys(frame->annotations, name)){
+                    if (CAST_DICT(frame->annotations)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(frame->annotations)->val->at(name))->gc_ref--;
+                    }
+                    dict_set(frame->annotations, name, NULL);
+                }
                 dict_set(frame->locals, name, NULL);
                 return;
             }
@@ -398,6 +404,12 @@ void vm_del_var_nonlocal(struct vm* vm, object* name){
             if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
                 if (CAST_DICT(closure)->val->at(name)->type->size==0){
                     ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
+                }
+                if (object_find_bool_dict_keys(CAST_FUNC(frame->callable)->closure_annotations, name)){
+                    if (CAST_DICT(CAST_FUNC(frame->callable)->closure_annotations)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(CAST_FUNC(frame->callable)->closure_annotations)->val->at(name))->gc_ref--;
+                    }
+                    dict_set(CAST_FUNC(frame->callable)->closure_annotations, name, NULL);
                 }
                 dict_set(closure, name, NULL);
 
@@ -527,8 +539,8 @@ object* import_name(string data, object* name){
     
     ::vm->globals=new_dict();
     ::vm->callstack->head->locals=FPLINCREF(::vm->globals);
-    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
-    ::vm->global_annotations=::vm->callstack->head->annontations;
+    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
+    ::vm->global_annotations=::vm->callstack->head->annotations;
 
     object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
@@ -543,8 +555,16 @@ object* import_name(string data, object* name){
 void vm_del_var_locals(struct vm* vm, object* name){
     for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
+            if (CAST_DICT(vm->callstack->head->locals)->val->at(name)->type->size==0){
+                ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
+            }
 
+            if (object_find_bool_dict_keys(vm->callstack->head->annotations, name)){
+                if (CAST_DICT(vm->callstack->head->annotations)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(vm->callstack->head->annotations)->val->at(name))->gc_ref--;
+                }
+                dict_set(vm->callstack->head->annotations, name, NULL);
+            }
             dict_set(vm->callstack->head->locals, name, NULL);
             return;
         }
@@ -556,8 +576,16 @@ void vm_del_var_locals(struct vm* vm, object* name){
 void vm_del_var_globals(struct vm* vm, object* name){
     for (auto k: (*CAST_DICT(vm->globals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
+            if (CAST_DICT(vm->globals)->val->at(name)->type->size==0){
+                ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
+            }
 
+            if (object_find_bool_dict_keys(vm->global_annotations, name)){
+                if (CAST_DICT(vm->global_annotations)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(vm->global_annotations)->val->at(k.first))->gc_ref--;
+                }
+                dict_set(vm->global_annotations, name, NULL);
+            }
             dict_set(vm->globals, name, NULL);
             return;
         }
@@ -595,7 +623,7 @@ dataframe* reverse(dataframe* head, int k){
 }
 
 void annotate_var(object* tp, object* name){
-    dict_set(vm->callstack->head->annontations, name, tp);
+    dict_set(vm->callstack->head->annotations, name, tp);
 }
 
 void annotate_global(object* tp, object* name){
@@ -910,7 +938,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, NULL);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -1562,7 +1590,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         BINOP_LTE: {
             object* right=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
-            
             object* ret=object_lte(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
@@ -2099,7 +2126,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, FPLINCREF(vm->callstack->head->annotations));
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2386,7 +2413,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, NULL);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2411,7 +2438,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, FPLINCREF(vm->callstack->head->annotations));
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
