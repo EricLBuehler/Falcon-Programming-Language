@@ -221,7 +221,7 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
 
 inline void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
 inline object* pop_dataframe(struct datastack* stack);
-inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable);
+inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable, uint32_t* ip);
 inline void pop_callframe(struct callstack* stack);
 void print_traceback();
 inline object* peek_dataframe(struct datastack* stack);
@@ -329,6 +329,7 @@ struct callframe{
     string* filedata;
     object* callable;
     object* annontations;
+    uint32_t* ip;
 };
 
 struct blockframe{
@@ -521,7 +522,7 @@ enum opcode{
 #define CMP_GTE 2
 #define CMP_LT 3
 #define CMP_LTE 4
-#define CMP_NE 4
+#define CMP_NE 5
 
 
 #define FUNC_STRICTARGS 0

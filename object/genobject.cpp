@@ -68,7 +68,7 @@ object* gen_next(object* self){
     if (CAST_GEN(self)->callstack->size>0){
         while (CAST_GEN(self)->callstack->size>0){
             add_callframe(vm->callstack, CAST_GEN(self)->callstack->head->line, CAST_GEN(self)->callstack->head->name,\
-                CAST_GEN(self)->callstack->head->code, CAST_GEN(self)->callstack->head->callable);
+                CAST_GEN(self)->callstack->head->code, CAST_GEN(self)->callstack->head->callable, CAST_GEN(self)->callstack->head->ip);
             FPLDECREF(vm->callstack->head->annontations);
             vm->callstack->head->annontations=FPLINCREF(CAST_GEN(self)->callstack->head->annontations);
             pop_callframe(CAST_GEN(self)->callstack);
@@ -82,7 +82,7 @@ object* gen_next(object* self){
         }
     }
 
-    add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(CAST_GEN(self)->func)->name)->val, CAST_FUNC(CAST_GEN(self)->func)->code, self);
+    add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(CAST_GEN(self)->func)->name)->val, CAST_FUNC(CAST_GEN(self)->func)->code, self, &(CAST_GEN(self)->ip));
     vm->callstack->head->locals=CAST_GEN(self)->locals;
 
     uint32_t ip_=CAST_GEN(self)->ip;
@@ -106,7 +106,7 @@ object* gen_next(object* self){
     if (callstack_size_>callstack_size){
         while (vm->callstack->size>callstack_size){
             add_callframe(CAST_GEN(self)->callstack, vm->callstack->head->line, vm->callstack->head->name,\
-                vm->callstack->head->code, vm->callstack->head->callable);
+                vm->callstack->head->code, vm->callstack->head->callable, vm->callstack->head->ip);
             FPLDECREF(CAST_GEN(self)->callstack->head->annontations);
             CAST_GEN(self)->callstack->head->annontations=FPLINCREF(vm->callstack->head->annontations);
             pop_callframe(vm->callstack);

@@ -23,7 +23,9 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     uint32_t kwargc=argc-posargc;
 
-    add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self);
+    uint32_t ip=0;
+
+    add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, &ip);
     vm->callstack->head->locals=new_dict();
     dict_set(vm->callstack->head->locals, str_new_fromstr("__annotations__"), vm->callstack->head->annontations);
     
@@ -49,7 +51,6 @@ object* func_call(object* self, object* args, object* kwargs){
     noerror:
     
     setup_args_stars(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
-    uint32_t ip=0;
     object* ret;
     if (CAST_FUNC(self)->isgen){
         goto make_gen;

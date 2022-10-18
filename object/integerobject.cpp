@@ -382,6 +382,7 @@ object* int_cmp(object* self, object* other, uint8_t type){
     if (otherv==NULL || !object_istype(otherv->type, &FloatType)){
         return NULL;
     }
+    
     //Other type is int
     if (type==CMP_EQ){
         if (CAST_FLOAT(selfv)->val==CAST_FLOAT(otherv)->val){
