@@ -51,7 +51,7 @@ void compiler_del(struct compiler* compiler){
     struct instruction* i=compiler->instructions->first;
     while (i){
         struct instruction* i_=i->next;
-        free(i);
+        fpl_free(i);
         i=i_;
     }
 }
@@ -187,9 +187,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (cmpexpr==0x100){
                 return cmpexpr;
             }
-            if (!ret){
-                compiler->keep_return=false;
-            }
+            compiler->keep_return=ret;
             
             switch (BINOP(expr->node)->opr){
                 case T_PLUS:
@@ -3435,7 +3433,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
     }
     
     if (!compiler_nofree){
-        free(expr);
+        fpl_free(expr);
     }
 
     return 0;
