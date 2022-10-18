@@ -77,7 +77,7 @@ struct object* peek_dataframe(struct datastack* stack){
     return stack->head->obj;
 }
 
-inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable){
+inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable, uint32_t* ip){
     struct callframe* frame=(struct callframe*)fpl_malloc(sizeof(struct callframe));
     frame->name=name;
     frame->next=stack->head;
@@ -87,6 +87,7 @@ inline void add_callframe(struct callstack* stack, object* line, string* name, o
     frame->filedata=vm->filedata;
     frame->callable=callable;
     frame->annontations=new_dict();
+    frame->ip=ip;
 
     stack->size++;
     stack->head=frame;
@@ -197,7 +198,7 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
         ::vm=vm;
     }
 
-    add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL);
+    add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL, &vm->ip);
     vm->globals=new_dict();
     vm->callstack->head->locals=FPLINCREF(vm->globals);
     vm->global_annotations=vm->callstack->head->annontations;
@@ -431,16 +432,29 @@ struct object* vm_get_var_globals(struct vm* vm, object* name){
     return NULL;
 }
 
+inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
+    for (int i=0; i<CAST_LIST(CAST_CODE(callframe->code)->co_lines)->size; i++){
+        object* tup=list_index_int(CAST_LIST(CAST_CODE(callframe->code)->co_lines), i);
+        if (ip<=(*CAST_INT(list_index_int(tup, 1))->val)){
+            return CAST_INT(list_index_int(tup, 2))->val->to_int();
+        }
+    }
+    return -1;
+}
+
 void print_traceback(){
     struct callframe* callframe=vm->callstack->head;
     while (callframe){    
         if (callframe->name==NULL){
             callframe=callframe->next;
         }
-        cout<<"In file '"+program/*object_cstr(CAST_CODE(callframe->code)->co_file)*/+"', line "+to_string(CAST_INT(callframe->line)->val->to_int())+", in "+(*callframe->name)<<endl;
+
+        int line_=calculate_line_fromip(*callframe->ip, callframe);
+
+        cout<<"In file '"+program+"', line "+to_string(line_+1)+", in "+(*callframe->name)<<endl;
         
         int line=0;
-        int target=CAST_INT(callframe->line)->val->to_int();
+        int target=line_;
         int startidx=0;
         int endidx=0;
         int idx=0;
@@ -1183,7 +1197,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (ret==NULL || ret==CALL_ERR){ 
+            if (ret==NULL || ret==CALL_ERR){
                 DISPATCH();
             }
             if (ret==TERM_PROGRAM){
@@ -2488,6 +2502,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
         //Free GIL
         GIL.unlock();
         //
+
+        return TERM_PROGRAM;
+        if (vm->callstack->size>1){
+            return CALL_ERR;
+        }
         return NULL;
     }
 
