@@ -328,7 +328,7 @@ struct callframe{
     object* code;
     string* filedata;
     object* callable;
-    object* annontations;
+    object* annotations;
     uint32_t* ip;
 };
 

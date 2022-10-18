@@ -5,9 +5,9 @@ void tuple_resize(TupleObject* obj, size_t size){
 
     obj->capacity=(size + (size >> 3) + 6) & ~3;
     
-    obj->array=(object**)realloc(obj->array, obj->capacity * sizeof(struct object*));
+    obj->array=(object**)fpl_realloc(obj->array, obj->capacity * sizeof(struct object*));
     memcpy(obj->array, buf, oldcap * sizeof(struct object*));
-    free(buf);
+    fpl_free(buf);
 }
 
 
@@ -185,7 +185,7 @@ void tuple_del(object* obj){
     for (size_t i=0; i<CAST_TUPLE(obj)->size; i++){
         FPLDECREF(CAST_TUPLE(obj)->array[i]);
     }
-    free(((TupleObject*)obj)->array);
+    fpl_free(((TupleObject*)obj)->array);
 }
 
 object* tuple_repr(object* self){
@@ -262,7 +262,7 @@ void tuple_iter_del(object* self){
     for (size_t i=0; i<CAST_TUPLEITER(self)->size; i++){
         FPLDECREF(CAST_TUPLEITER(self)->array[i]);
     }
-    free(CAST_TUPLEITER(self)->array);
+    fpl_free(CAST_TUPLEITER(self)->array);
 }
 
 object* tuple_iter_next(object* self){

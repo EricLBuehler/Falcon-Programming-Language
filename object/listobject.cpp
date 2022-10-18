@@ -5,9 +5,9 @@ void list_resize(ListObject* obj, size_t size){
 
     obj->capacity=(size + (size >> 3) + 6) & ~3;
     
-    obj->array=(object**)realloc(obj->array, obj->capacity * sizeof(struct object*));
+    obj->array=(object**)fpl_realloc(obj->array, obj->capacity * sizeof(struct object*));
     memcpy(obj->array, buf, oldcap * sizeof(struct object*));
-    free(buf);
+    fpl_free(buf);
 }
 
 object* new_list(){
@@ -384,7 +384,7 @@ void list_del(object* obj){
     for (size_t i=0; i<CAST_LIST(obj)->size; i++){
         FPLDECREF(CAST_LIST(obj)->array[i]);
     }
-    free(((ListObject*)obj)->array);
+    fpl_free(((ListObject*)obj)->array);
 }
 
 object* list_repr(object* self){
@@ -465,7 +465,7 @@ void list_iter_del(object* self){
     for (size_t i=0; i<CAST_LISTITER(self)->size; i++){
         FPLDECREF(CAST_LISTITER(self)->array[i]);
     }
-    free(CAST_LISTITER(self)->array);
+    fpl_free(CAST_LISTITER(self)->array);
 }
 
 object* list_iter_next(object* self){

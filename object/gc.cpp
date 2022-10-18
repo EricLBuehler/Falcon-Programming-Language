@@ -72,7 +72,7 @@ void gc_collect(int gen){
                     gc.gen0_n--;
                 }
 
-                free(obj);
+                fpl_free(obj);
             } 
             obj=next;
             continue;

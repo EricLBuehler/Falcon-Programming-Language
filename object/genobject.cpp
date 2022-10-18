@@ -69,8 +69,8 @@ object* gen_next(object* self){
         while (CAST_GEN(self)->callstack->size>0){
             add_callframe(vm->callstack, CAST_GEN(self)->callstack->head->line, CAST_GEN(self)->callstack->head->name,\
                 CAST_GEN(self)->callstack->head->code, CAST_GEN(self)->callstack->head->callable, CAST_GEN(self)->callstack->head->ip);
-            FPLDECREF(vm->callstack->head->annontations);
-            vm->callstack->head->annontations=FPLINCREF(CAST_GEN(self)->callstack->head->annontations);
+            FPLDECREF(vm->callstack->head->annotations);
+            vm->callstack->head->annotations=FPLINCREF(CAST_GEN(self)->callstack->head->annotations);
             pop_callframe(CAST_GEN(self)->callstack);
         }
     }
@@ -107,8 +107,8 @@ object* gen_next(object* self){
         while (vm->callstack->size>callstack_size){
             add_callframe(CAST_GEN(self)->callstack, vm->callstack->head->line, vm->callstack->head->name,\
                 vm->callstack->head->code, vm->callstack->head->callable, vm->callstack->head->ip);
-            FPLDECREF(CAST_GEN(self)->callstack->head->annontations);
-            CAST_GEN(self)->callstack->head->annontations=FPLINCREF(vm->callstack->head->annontations);
+            FPLDECREF(CAST_GEN(self)->callstack->head->annotations);
+            CAST_GEN(self)->callstack->head->annotations=FPLINCREF(vm->callstack->head->annotations);
             pop_callframe(vm->callstack);
         }
     }

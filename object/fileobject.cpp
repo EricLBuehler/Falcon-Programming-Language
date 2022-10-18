@@ -40,7 +40,7 @@ void file_del(object* self){
     if (CAST_FILE(self)->open){
         fclose(CAST_FILE(self)->file);
     }
-    free(CAST_FILE(self)->mode);
+    fpl_free(CAST_FILE(self)->mode);
 }
 
 object* file_repr(object* self){
