@@ -769,6 +769,7 @@ typedef struct FuncObject{
     object* stkwargs;
     object* annotations;
     bool isgen;
+    object* closure_annotations;
 }FuncObject;
 
 static NumberMethods func_num_methods{

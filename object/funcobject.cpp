@@ -1,5 +1,5 @@
 object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure, int type, int flags\
-    , object* stargs, object* stkwargs, object* annotations, bool isgen){
+    , object* stargs, object* stkwargs, object* annotations, bool isgen, object* closure_annotations){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
     CAST_FUNC(obj)->dict=new_dict();
@@ -14,6 +14,7 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->stkwargs=stkwargs;
     CAST_FUNC(obj)->annotations=annotations;
     CAST_FUNC(obj)->isgen=isgen;
+    CAST_FUNC(obj)->closure_annotations=closure_annotations;
 
     return obj;
 }
@@ -27,7 +28,7 @@ object* func_call(object* self, object* args, object* kwargs){
 
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, &ip);
     vm->callstack->head->locals=new_dict();
-    dict_set(vm->callstack->head->locals, str_new_fromstr("__annotations__"), vm->callstack->head->annontations);
+    dict_set(vm->callstack->head->locals, str_new_fromstr("__annotations__"), vm->callstack->head->annotations);
     
     
     int flags=CAST_FUNC(self)->flags;
@@ -146,6 +147,9 @@ void func_del(object* obj){
     FPLDECREF(CAST_FUNC(obj)->dict);
     if (CAST_FUNC(obj)->closure!=NULL){
         FPLDECREF(CAST_FUNC(obj)->closure);
+    }
+    if (CAST_FUNC(obj)->closure_annotations!=NULL){
+        FPLDECREF(CAST_FUNC(obj)->closure_annotations);
     }
 }
 
