@@ -194,72 +194,141 @@ int compile_expr(struct compiler* compiler, Node* expr){
             switch (BINOP(expr->node)->opr){
                 case T_PLUS:
                     add_instruction(compiler->instructions,BINOP_ADD,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_MINUS:
                     add_instruction(compiler->instructions,BINOP_SUB,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_MUL:
                     add_instruction(compiler->instructions,BINOP_MUL,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_DIV:
                     add_instruction(compiler->instructions,BINOP_DIV,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_IS:
                     add_instruction(compiler->instructions,BINOP_IS,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_EE:
                     add_instruction(compiler->instructions,BINOP_EE,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_NE:
                     add_instruction(compiler->instructions,BINOP_NE,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_GT:
                     add_instruction(compiler->instructions,BINOP_GT,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_GTE:
                     add_instruction(compiler->instructions,BINOP_GTE,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_LT:
                     add_instruction(compiler->instructions,BINOP_LT,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_LTE:
                     add_instruction(compiler->instructions,BINOP_LTE,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_PERCENT:
                     add_instruction(compiler->instructions,BINOP_MOD,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_POW:
                     add_instruction(compiler->instructions,BINOP_POW,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_AND:
                     add_instruction(compiler->instructions,BINOP_AND,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_OR:
                     add_instruction(compiler->instructions,BINOP_OR,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_AMPERSAND:
                     add_instruction(compiler->instructions,BITWISE_AND,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_VBAR:
                     add_instruction(compiler->instructions,BITWISE_OR,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_LSHIFT:
                     add_instruction(compiler->instructions,BITWISE_LSHIFT,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_RSHIFT:
                     add_instruction(compiler->instructions,BITWISE_RSHIFT,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_NOT:
                     add_instruction(compiler->instructions,BINOP_NOTIN,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_IN:
                     add_instruction(compiler->instructions,BINOP_IN,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_ISNOT:
                     add_instruction(compiler->instructions,BINOP_ISNOT,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_FLDIV:
                     add_instruction(compiler->instructions,BINOP_FLDIV,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
                     break;
                 case T_IADD: {
                     uint32_t idx;
@@ -452,9 +521,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
             
-            if (!compiler->keep_return){
-                add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
-            }
             break;
         }
 
