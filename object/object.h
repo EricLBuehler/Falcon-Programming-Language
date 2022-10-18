@@ -587,7 +587,6 @@ ostream& operator<<(ostream& os, TypeObject* o){
 
 void setup_types_consts(){
     fplbases.clear();
-
     setup_object_type(); 
 
     trueobj=_new_bool_true();

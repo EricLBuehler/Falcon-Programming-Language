@@ -3651,9 +3651,6 @@ object* finalize_type(TypeObject* newtype){
     //This is a slower method than could theoritically be done.
     //I could just use implied list indexing (uses my internal knowledge of ListObject), but this
     //also breaks fewer rules...
-    
-    
-
     NumberMethods* m=(NumberMethods*)fpl_malloc(sizeof(NumberMethods));
     memset(m, 0, sizeof(NumberMethods));
 
