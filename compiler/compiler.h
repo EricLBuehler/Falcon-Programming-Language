@@ -23,6 +23,7 @@ struct compiler{
     enum scope scope;
     object* lines;
     bool keep_return;
+    bool nofree;
 };
 
 #define INTLIT(node) ((IntLiteral*)(node))
@@ -76,7 +77,4 @@ uint32_t num_instructions(vector<Node*>* nodes, scope s);
 uint32_t num_instructions(Node* node, scope s);
 uint32_t num_instructions(vector<Node*>* nodes, scope s);
 uint32_t num_instructions(Node* node, scope s);
-
-bool compiler_nofree=false;
-
 #include "compiler.cpp"
