@@ -3642,7 +3642,7 @@ object* finalize_type(TypeObject* newtype){
     if (tp_tp->bases==NULL){
         tp_tp->bases=new_list();
     }
-
+    
     uint32_t total_bases = CAST_INT(list_len(tp_tp->bases))->val->to_long_long();
     if (total_bases==0 || CAST_TYPE(list_index_int(tp_tp->bases, total_bases-1))!=&ObjectType){
         list_append(tp_tp->bases, (object*)&ObjectType);

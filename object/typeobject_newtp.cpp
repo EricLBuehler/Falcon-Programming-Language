@@ -69,18 +69,15 @@ object* newtp_set(object* self, object* idx, object* val){
     args->type->slot_mappings->slot_append(args, idx);
     
     object* n=object_getattr(self, str_new_fromstr("__setitem__"));
-    ERROR_RET(n);
-    
     if (n==NULL){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
-        n=object_getattr(self, str_new_fromstr("__delitem__"));
-        ERROR_RET(n);
-    
+        n=object_getattr(self, str_new_fromstr("__delitem__"));    
     }
     else{
         args->type->slot_mappings->slot_append(args, val);
     }
+    ERROR_RET(n);
     
     return object_call_nokwargs(n, args);
 }
@@ -396,6 +393,7 @@ object* newtp_getattr(object* self, object* attr){
     else{
         FPLDECREF(vm->exception);
         vm->exception=NULL;
+        
         object* n=object_genericgetattr(self, attr);
         return n;
     }
