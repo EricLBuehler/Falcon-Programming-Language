@@ -2540,5 +2540,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
     //Free GIL
     GIL.unlock();
     //
+
     return new_none();
 }
