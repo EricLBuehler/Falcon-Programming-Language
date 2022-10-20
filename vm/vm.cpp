@@ -1659,39 +1659,29 @@ object* run_vm(object* codeobj, uint32_t* ip){
         UNPACK_SEQ: {
             object* o=peek_dataframe(vm->objstack);
 
+            object* one;
+            object* res;
+            object* ob;
+            uint32_t len=0;
+            object* iter;
+            
             if (o->type->slot_iter==NULL){
-                vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", o->type->name->c_str());
-                DISPATCH();
+                goto fail;
             }
             
-            object* iter=o->type->slot_iter(o);
+            iter=o->type->slot_iter(o);
             
             if (iter==NULL){
-                vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                DISPATCH();
+                goto fail;
             }
 
-            object* one=new_int_fromint(0);
-            object* res=NULL;
+            one=new_int_fromint(0);
+            res=NULL;
             
-            object* ob=iter->type->slot_next(iter);
-
-            uint32_t len=0;
+            ob=iter->type->slot_next(iter);
 
             while (vm->exception==NULL){
-                if (ob->type->slot_mappings->slot_len==NULL){
-                    add_dataframe(vm, vm->objstack, ob);
-                    goto cont;
-                }
-                
-                if (ob->type->slot_mappings->slot_get==NULL){
-                    FPLDECREF(iter);
-                    FPLDECREF(one);
-                    vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", ob->type->name->c_str());
-                    DISPATCH();
-                }
-                
-                add_dataframe(vm, vm->objstack, ob->type->slot_mappings->slot_get(ob, one));
+                add_dataframe(vm, vm->objstack, ob);
                 
                 cont:
                 ob=iter->type->slot_next(iter);
@@ -1702,16 +1692,16 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm->exception=NULL;
             }
             
+            fail:
             if (len>CAST_INT(arg)->val->to_int()){
-                vm_add_err(&ValueError, vm, "Too many values to unpack, expected %d", len, CAST_INT(arg)->val->to_int());
+                vm_add_err(&ValueError, vm, "Too many values to unpack, expected %d", CAST_INT(arg)->val->to_int());
                 DISPATCH();
             }
             if (len<CAST_INT(arg)->val->to_int()){
-                vm_add_err(&ValueError, vm, "Not enough values to unpack, expected %d", len, CAST_INT(arg)->val->to_int());
+                vm_add_err(&ValueError, vm, "Not enough values to unpack, expected %d", CAST_INT(arg)->val->to_int());
                 DISPATCH();
             }
-
-            vm->objstack->head=reverse(vm->objstack->head, len-1);
+            
             DISPATCH();
         }
 
