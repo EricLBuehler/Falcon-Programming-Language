@@ -76,6 +76,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 return cmpexpr;
             }
             if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
+                add_instruction(compiler->instructions,DUP_TOS,0, expr->start, expr->end);
                 add_instruction(compiler->instructions,UNPACK_SEQ,  MULTIIDENT(ASSIGN(expr->node)->name->node)->name->size(), expr->start, expr->end);
             }
 
@@ -146,7 +147,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_MULTIIDENT: {
             uint32_t idx;
-            for (string* s: (*MULTIIDENT(expr->node)->name) ){
+            for (int i=MULTIIDENT(expr->node)->name->size(); i>0; i--){
+                string* s=MULTIIDENT(expr->node)->name->at(i-1);
                 if (!_list_contains(compiler->names, s)){
                     //Create object
                     compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*s));
