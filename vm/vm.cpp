@@ -2476,18 +2476,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             add_dataframe(vm, vm->objstack, vm->exception);
             frame->obj=FPLINCREF(vm->exception);
-            
             if (vm->exception!=NULL){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
             }
             
+            frame->start_ip=(*ip);
             (*ip)=frame->arg+4; //skip jump
             frame->arg=1;
             DISPATCH();
         }
         else if (frame!=NULL && frame->obj!=NULL && frame->arg!=3){
+            uint32_t ip_=(*ip);
+            (*ip)=frame->start_ip;
             print_traceback();
+            (*ip)=ip_;
             
             cout<<frame->obj->type->name->c_str();
             if (CAST_EXCEPTION(frame->obj)->err!=NULL){
