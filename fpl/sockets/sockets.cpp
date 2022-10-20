@@ -241,12 +241,13 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
     return new_none();
 }
 
-object* socket_close(object* self, object* args, object* kwargs){
+object* socket_close(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=0 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
-        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 arguments, got %d", len);
         return NULL; 
     }
+    object* self=list_index_int(args, 0);
 
     if (!CAST_SOCKET(self)->closed){
         _socket_close(CAST_SOCKET(self)->fd);
@@ -278,10 +279,13 @@ object* socket_send(object* selftp, object* args, object* kwargs){
             return NULL;
         }
     }
-
-    const char* msg=object_cstr(v).c_str();
+    
+    string s=object_cstr(v).c_str();
+    char msg[s.size()+1];
+    strcpy(msg, s.c_str());
 
     int i=send(CAST_SOCKET(self)->fd, msg , strlen(msg), (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+    
     if (i==SOCKET_ERROR){
         #ifdef _WIN32
         int err=WSAGetLastError();
