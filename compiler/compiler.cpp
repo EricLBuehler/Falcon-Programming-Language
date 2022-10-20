@@ -1553,7 +1553,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }   
                 }
             }
-            break;
+            return 0x200;
         }
 
         case N_SUBSCR: {
@@ -1624,6 +1624,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_FINALLY: {
+            add_instruction(compiler->instructions,CLEAR_EXC,0, expr->start, expr->end); 
+            
             for (Node* n: (*FINALLY(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;        
@@ -1640,6 +1642,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }
+            add_instruction(compiler->instructions,FINISH_TRY,0, expr->start, expr->end);   
+
+            add_instruction(compiler->instructions,JUMP_DELTA,0, expr->start, expr->end);
             break;
         }
 
@@ -1725,6 +1730,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
 
+            add_instruction(compiler->instructions,JUMP_DELTA,0, expr->start, expr->end);
+
             break;
         }
 
@@ -1790,6 +1797,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                         }
                     }
+                    
+                    add_instruction(compiler->instructions,FINISH_TRY,0, expr->start, expr->end);   
+                    instrs+=2;
+
+                    if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type==N_FINALLY){
+                        add_instruction(compiler->instructions,JUMP_DELTA,4, tryn->start, tryn->end);
+                    }
+                    else{
+                        add_instruction(compiler->instructions,JUMP_DELTA,2, tryn->start, tryn->end); 
+                    }    
                     continue;
                 }
                 Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(i);
@@ -1883,7 +1900,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return 0x100;
                     }
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL && i!=0x200){
+                    if (compiler->lines!=NULL){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1893,12 +1910,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }            
                     
                 instrs+=2;
-                if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
-                    add_instruction(compiler->instructions,JUMP_DELTA,target-instrs+2, tryn->start, tryn->end);
-                }         
-                else{
-                    add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
-                }
+                
+                add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
 
 
             }
@@ -1907,7 +1920,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             add_instruction(compiler->instructions,FINISH_TRY,0, expr->start, expr->end);      
             
-            break;
+            return 0x200;
         }
 
         case N_FOR: {
