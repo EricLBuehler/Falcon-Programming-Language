@@ -176,7 +176,7 @@ class Parser{
             bool noassign=this->noassign;
             this->noassign=false;
             bool multi=this->multi;
-            this->multi=false;
+            this->multi=true;
             parse_ret ret;
             ret.errornum=0;
             ret.nodes.clear();
@@ -496,8 +496,8 @@ class Parser{
             }
             bool b=this->multi;
             bool noassign=this->noassign;
-            this->noassign=true;
-            this->multi=false;
+            this->noassign=false;
+            this->multi=true;
             Node* right=this->expr(ret, LOWEST);
             this->noassign=noassign;
             this->multi=b;
