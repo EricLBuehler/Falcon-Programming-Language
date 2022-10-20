@@ -8,6 +8,7 @@
 #else
   /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
   #include <sys/socket.h>
+  #include <sys/types.h>
   #include <arpa/inet.h>
   #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
   #include <unistd.h> /* Needed for close() */
@@ -81,7 +82,13 @@ object* socket_new(object* type, object* args, object* kwargs){
     CAST_SOCKET(o)->sock_kind=sock_kind;
     CAST_SOCKET(o)->fd=socket(af_family, sock_kind, 0);
     if (CAST_SOCKET(o)->fd==INVALID_SOCKET){
-        vm_add_err(&OSError, vm, "Could not create socket: %d" , WSAGetLastError());
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "Could not create socket: %d" , err);
         return NULL;
     }
     CAST_SOCKET(o)->closed=false;
@@ -136,7 +143,7 @@ void socket_del(object* self){
     if (!CAST_SOCKET(self)->closed){
         _socket_close(CAST_SOCKET(self)->fd);
         if (CAST_SOCKET(self)->server!=NULL){
-            free(CAST_SOCKET(self)->server);
+            fpl_free(CAST_SOCKET(self)->server);
         }
     }
 }
@@ -244,7 +251,7 @@ object* socket_close(object* self, object* args, object* kwargs){
     if (!CAST_SOCKET(self)->closed){
         _socket_close(CAST_SOCKET(self)->fd);
         if (CAST_SOCKET(self)->server!=NULL){
-            free(CAST_SOCKET(self)->server);
+            fpl_free(CAST_SOCKET(self)->server);
         }
     }
     return new_none();
@@ -276,7 +283,13 @@ object* socket_send(object* selftp, object* args, object* kwargs){
 
     int i=send(CAST_SOCKET(self)->fd, msg , strlen(msg), (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
     if (i==SOCKET_ERROR){
-        vm_add_err(&OSError, vm, "[Errno %d] send failed" , WSAGetLastError());
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] send failed" , err);
         return NULL;
     }
 
@@ -317,7 +330,13 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
     
     int i=recv(CAST_SOCKET(self)->fd, buf, buflen, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
     if (i==SOCKET_ERROR){
-        vm_add_err(&OSError, vm, "[Errno %d] send failed" , WSAGetLastError());
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] send failed" , err);
         return NULL;
     }
     
@@ -345,7 +364,13 @@ object* socket_gethostbyname(object* selftp, object* args, object* kwargs){
 
     he=gethostbyname(name);
     if (he==NULL){
-        vm_add_err(&OSError, vm, "[Errno %d] gethostbyname failed" , WSAGetLastError());
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] gethostbyname failed" , err);
         return NULL;
     }
 
@@ -437,7 +462,13 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
     
     int i=bind(CAST_SOCKET(self)->fd, (SOCKADDR *)CAST_SOCKET(self)->server, sizeof(SOCKADDR));
     if (i==SOCKET_ERROR){
-        vm_add_err(&OSError, vm, "[Errno %d] bind failed for IP '%s', port '%s'" , WSAGetLastError(), host_c, object_cstr(port_).c_str());
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] bind failed for IP '%s', port '%s'" , err, host_c, object_cstr(port_).c_str());
         return NULL;
     }
 
@@ -466,7 +497,13 @@ object* socket_listen(object* selftp, object* args, object* kwargs){
     
     int i=listen(CAST_SOCKET(self)->fd, max);
     if (i==SOCKET_ERROR){
-        vm_add_err(&OSError, vm, "[Errno %d] listen failed" , WSAGetLastError());
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] listen failed" , err);
         return NULL;
     }
     
@@ -488,27 +525,157 @@ object* socket_accept(object* selftp, object* args, object* kwargs){
     int c= sizeof(struct sockaddr_in);
     struct sockaddr_in client;
 
-
     SOCKET_T new_socket=accept(CAST_SOCKET(self)->fd, (struct sockaddr*)&client, &c);
     if (new_socket==INVALID_SOCKET){
-        vm_add_err(&OSError, vm, "[Errno %d] accept failed" , WSAGetLastError());
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] accept failed" , err);
         return NULL;
     }
 
     //Get IP and port of connection of client using:
-    /*
     char *client_ip = inet_ntoa(client.sin_addr);
     int client_port = ntohs(client.sin_port);
-    */
 
     object* o=new_object(&SocketType);
-    CAST_SOCKET(o)->af_family=CAST_SOCKET(o)->af_family;
-    CAST_SOCKET(o)->sock_kind=CAST_SOCKET(o)->sock_kind;
+    CAST_SOCKET(o)->af_family=CAST_SOCKET(self)->af_family;
+    CAST_SOCKET(o)->sock_kind=CAST_SOCKET(self)->sock_kind;
     CAST_SOCKET(o)->fd=new_socket;
     CAST_SOCKET(o)->closed=false;
     CAST_SOCKET(o)->server=NULL;
+
+    object* tup=new_tuple();
+    tuple_append(tup, o);
+    object* tup2=new_tuple();
+    tuple_append(tup2, str_new_fromstr(string(client_ip)));
+    tuple_append(tup2, new_int_fromint(client_port));
+    tuple_append(tup, tup2);
+    FPLDECREF(o);
+    FPLDECREF(tup2);
+    return tup;
+}
+
+object* socket_setsockopt(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=4 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 4 arguments, got %d", len);
+        return NULL; 
+    }
+
+    object* self=list_index_int(args, 0);
+    if (CAST_SOCKET(self)->closed){
+        vm_add_err(&InvalidOperationError, vm, "Socket closed");
+        return NULL; 
+    }
+
+    object* lvl=object_int(list_index_int(args, 1));
     
-    return o;
+    if (lvl==NULL || !object_istype(lvl->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
+        return NULL;
+    }
+
+    object* nm=object_int(list_index_int(args, 2));
+    
+    if (nm==NULL || !object_istype(nm->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
+        return NULL;
+    }
+
+    object* val=object_int(list_index_int(args, 3));
+    
+    if (val==NULL || !object_istype(val->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 3)->type->name->c_str());
+        return NULL;
+    }
+
+    int i=CAST_INT(val)->val->to_int();
+    int res=setsockopt(CAST_SOCKET(self)->fd, CAST_INT(lvl)->val->to_int(), CAST_INT(nm)->val->to_int(), (char*)&i, sizeof(int));
+    if (res<0){
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] setsockopt failed" , err);
+        return NULL;
+    }
+
+    return new_none();
+}
+
+object* socket_getsockopt(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if ((len!=4 && len!=3) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 3 or 4 arguments, got %d", len);
+        return NULL; 
+    }
+
+    object* self=list_index_int(args, 0);
+    if (CAST_SOCKET(self)->closed){
+        vm_add_err(&InvalidOperationError, vm, "Socket closed");
+        return NULL; 
+    }
+
+    object* lvl=object_int(list_index_int(args, 1));
+    
+    if (lvl==NULL || !object_istype(lvl->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
+        return NULL;
+    }
+
+    object* nm=object_int(list_index_int(args, 2));
+    
+    if (nm==NULL || !object_istype(nm->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
+        return NULL;
+    }
+
+    object* lenv=NULL;
+    
+    if (len==4){
+        lenv=object_int(list_index_int(args, 3));
+        
+        if (lenv==NULL || !object_istype(lenv->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 3)->type->name->c_str());
+            return NULL;
+        }
+    }
+
+    socklen_t i=sizeof(int);
+    if (lenv!=NULL){
+        i=(socklen_t)CAST_INT(lenv)->val->to_int();
+    }
+    char* buf=(char*)fpl_malloc(i);
+
+    int res=getsockopt(CAST_SOCKET(self)->fd, CAST_INT(lvl)->val->to_int(), CAST_INT(nm)->val->to_int(), buf, &i);
+    if (res<0){
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] setsockopt failed" , err);
+        return NULL;
+    }
+
+    if (lenv==NULL){
+        return new_int_fromint(*((char*)buf));
+    }
+
+
+    object* list=new_list();
+    for (int i=0; i<i; i++){
+        list_append(list, new_int_fromint(*((char*)(buf+sizeof(char)*i))));
+    }
+
+    return list;
 }
 
 object* socket_enter(object* self){
@@ -519,7 +686,7 @@ object* socket_exit(object* self){
     if (!CAST_SOCKET(self)->closed){
         _socket_close(CAST_SOCKET(self)->fd);
         if (CAST_SOCKET(self)->server!=NULL){
-            free(CAST_SOCKET(self)->server);
+            fpl_free(CAST_SOCKET(self)->server);
         }
     }
     return new_none();
@@ -562,10 +729,31 @@ object* new_socket_module(){
     dict_set(dict, str_new_fromstr("MSG_MORE"), new_int_fromint(MSG_MORE));
     dict_set(dict, str_new_fromstr("MSG_NOSIGNAL"), new_int_fromint(MSG_NOSIGNAL));
     dict_set(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
-    dict_set(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
     #endif
     dict_set(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
     dict_set(dict, str_new_fromstr("MSG_OOB"), new_int_fromint(MSG_OOB));
+
+    //Socket options (level)
+    dict_set(dict, str_new_fromstr("SOL_SOCKET"), new_int_fromint(SOL_SOCKET));
+
+    //Socket options (options)
+    dict_set(dict, str_new_fromstr("SO_DEBUG"), new_int_fromint(SO_DEBUG));
+    dict_set(dict, str_new_fromstr("SO_BROADCAST"), new_int_fromint(SO_BROADCAST));
+    dict_set(dict, str_new_fromstr("SO_REUSEADDR"), new_int_fromint(SO_REUSEADDR));
+    dict_set(dict, str_new_fromstr("SO_KEEPALIVE"), new_int_fromint(SO_KEEPALIVE));
+    dict_set(dict, str_new_fromstr("SO_LINGER"), new_int_fromint(SO_LINGER));
+    dict_set(dict, str_new_fromstr("SO_OOBINLINE"), new_int_fromint(SO_OOBINLINE));
+    dict_set(dict, str_new_fromstr("SO_SNDBUF"), new_int_fromint(SO_SNDBUF));
+    dict_set(dict, str_new_fromstr("SO_RCVBUF"), new_int_fromint(SO_RCVBUF));
+    dict_set(dict, str_new_fromstr("SO_DONTROUTE"), new_int_fromint(SO_DONTROUTE));
+    dict_set(dict, str_new_fromstr("SO_RCVLOWAT"), new_int_fromint(SO_RCVLOWAT));
+    dict_set(dict, str_new_fromstr("SO_RCVTIMEO"), new_int_fromint(SO_RCVTIMEO));
+    dict_set(dict, str_new_fromstr("SO_SNDLOWAT"), new_int_fromint(SO_SNDLOWAT));
+    dict_set(dict, str_new_fromstr("SO_SNDTIMEO"), new_int_fromint(SO_SNDTIMEO));
+    dict_set(dict, str_new_fromstr("SO_ENABLED"), new_int_fromint(1));
+    dict_set(dict, str_new_fromstr("SO_DISABLED"), new_int_fromint(0));
+    dict_set(dict, str_new_fromstr("SO_CONDITIONAL_ACCEPT"), new_int_fromint(SO_CONDITIONAL_ACCEPT));
+    
 
     socket_init();
 
