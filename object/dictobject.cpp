@@ -126,20 +126,22 @@ object* dict_set(object* self, object* key, object* val){
             //Do not FPLINCREF val!
             return new_none();
         } 
+        object* o=(*CAST_DICT(self)->val)[key];
         (*CAST_DICT(self)->val)[key]=FPLINCREF(val);
+        FPLDECREF(o);
         CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
         return new_none();
     }
     
     for (auto k: (*CAST_DICT(self)->val)){
-        
         if (istrue(object_cmp(key, k.first, CMP_EQ))){
             if (istrue(object_cmp(val, k.second, CMP_EQ))){ //Same val
                 //Do not FPLINCREF val!
                 return new_none();
             }
-            
-            (*CAST_DICT(self)->val)[key]=FPLINCREF(val);
+            object* o=(*CAST_DICT(self)->val)[k.first];
+            (*CAST_DICT(self)->val)[k.first]=FPLINCREF(val);
+            FPLDECREF(o);
             CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
             return new_none();
         }
@@ -147,6 +149,7 @@ object* dict_set(object* self, object* key, object* val){
     
     CAST_DICT(self)->keys->push_back(key);
 
+    
     (*CAST_DICT(self)->val)[FPLINCREF(key)]=FPLINCREF(val);
     CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
     return new_none();

@@ -805,6 +805,25 @@ object* object_in_iter(object* left, object* right){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
+
+    if (res==NULL){
+        object* itm=object_getattr(right, str_new_fromstr("find"));
+        if (itm==NULL){
+            FPLDECREF(vm->exception);
+            vm->exception=NULL;
+            return NULL;
+        }
+        
+        object* args=new_list();
+        list_append(args, left);
+        
+        object* o = object_call_nokwargs(itm, args);
+        ERROR_RET(o);
+        
+        object* b = o->type->slot_number->slot_bool(o);
+        FPLDECREF(o);
+        return b;
+    }
     return res;
 }
 
