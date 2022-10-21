@@ -303,7 +303,7 @@ object* socket_send(object* selftp, object* args, object* kwargs){
 object* socket_recv(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if ((len!=2 && len!=3)|| CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        vm_add_err(&ValueError, vm, "Expected 2 or 3 arguments, got %d", len);
         return NULL; 
     }
 
@@ -332,7 +332,7 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
         }
     }
     
-    int i=recv(CAST_SOCKET(self)->fd, buf, buflen, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+    int i=recv(CAST_SOCKET(self)->fd, buf, buflen-1, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
     if (i==SOCKET_ERROR){
         #ifdef _WIN32
         int err=WSAGetLastError();
@@ -340,11 +340,11 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
         int err=errno;
         errno=0;
         #endif
-        vm_add_err(&OSError, vm, "[Errno %d] send failed" , err);
+        vm_add_err(&OSError, vm, "[Errno %d] recv failed" , err);
         return NULL;
-    }
+    } 
     
-    return str_new_fromstr(buf);
+    return str_new_fromstr(string(buf));
 }
 
 object* socket_gethostbyname(object* selftp, object* args, object* kwargs){
