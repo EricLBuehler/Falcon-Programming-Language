@@ -1373,6 +1373,7 @@ class Parser{
             name->node=i;
 
             //Parse arguments
+            skip_newline;
             while (!this->current_tok_is(T_LCURLY)){
                 if (this->current_tok_is(T_MUL)){
                     this->advance();
@@ -1452,6 +1453,7 @@ class Parser{
             }
             //
             
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2070,6 +2072,7 @@ class Parser{
                 this->multi=b;
                 // this->advance(); // BACKADVANCE would cancel out
             }
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2179,6 +2182,7 @@ class Parser{
                 }
                 this->advance();
             }
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2263,6 +2267,7 @@ class Parser{
             Token t=this->current_tok;
             this->advance(); 
             
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2325,6 +2330,7 @@ class Parser{
             Token t=this->current_tok;
             this->advance(); 
             
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2417,6 +2423,7 @@ class Parser{
             this->noassign=noassign;
             this->multi=b;
             
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2472,6 +2479,7 @@ class Parser{
             this->noassign=noassign;
             this->multi=b;
             
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2572,6 +2580,7 @@ class Parser{
             TryExceptFinally* f=(TryExceptFinally*)fpl_malloc(sizeof(TryExceptFinally));
             
             //Parse try code
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -2634,6 +2643,7 @@ class Parser{
 
 
                 //Parse except code
+                skip_newline;
                 if (!this->current_tok_is(T_LCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
@@ -2689,6 +2699,7 @@ class Parser{
                 this->advance();
                 
                 //Parse except code
+                skip_newline;
                 if (!this->current_tok_is(T_LCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
@@ -2809,6 +2820,7 @@ class Parser{
                 Token t=this->current_tok;
                 this->advance(); 
                 
+                skip_newline;
                 if (!this->current_tok_is(T_LCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
@@ -2951,6 +2963,7 @@ class Parser{
                 Token t=this->current_tok;
                 this->advance(); 
                 
+                skip_newline;
                 if (!this->current_tok_is(T_LCURLY)){
                     this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                     this->advance();
@@ -3268,6 +3281,7 @@ class Parser{
             
             
             //Parse code
+            skip_newline;
             if (!this->current_tok_is(T_LCURLY)){
                 this->add_parsing_error(ret, "SyntaxError: Expected {, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
@@ -3308,6 +3322,8 @@ class Parser{
             w->name=name;
 
             node->node=w;
+            
+            this->advance();
 
             return node;
         }
