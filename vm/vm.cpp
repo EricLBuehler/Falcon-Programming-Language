@@ -234,7 +234,7 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
             if (CAST_DICT(vm->callstack->head->locals)->val->at(k.first)->type->size==0){
                 ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
             }
-            FPLDECREF(CAST_DICT(vm->callstack->head->locals)->val->at(k.first));
+            break;
         }
     }
 
@@ -290,7 +290,7 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
             if (CAST_DICT(vm->globals)->val->at(k.first)->type->size==0){
                 ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
             }
-            FPLDECREF(CAST_DICT(vm->globals)->val->at(k.first));
+            break;
         }
     }
     if (value->type->size==0){
@@ -339,7 +339,6 @@ void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
                 if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
                     ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
                 }
-                FPLDECREF(CAST_DICT(frame->locals)->val->at(name));
                 
                 if (val->type->size==0){
                     ((object_var*)val)->gc_ref++;
@@ -939,6 +938,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=pop_dataframe(vm->objstack); //<- Name
             
             object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, NULL);
+
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -1633,12 +1633,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         BREAK_LOOP: {
-            if (vm->blockstack->head==NULL){
+            if (vm->blockstack->head==NULL){    
                 DISPATCH();
             }
             if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK && vm->blockstack->head->type!=WHILE_BLOCK){
                 DISPATCH();
             }
+            
             (*ip)=vm->blockstack->head->arg;
             pop_blockframe(vm->blockstack);
             DISPATCH();
