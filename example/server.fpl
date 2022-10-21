@@ -1,0 +1,24 @@
+import socket
+
+
+data="Hello!!!"
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) s{
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind(("127.0.0.1", 8000))
+    s.listen(1)
+    
+    while True{
+        client,info=s.accept()
+        
+        response=client.recv(1024)
+        print(len(response))
+        n=client.send("HTTP/1.0 200 OK\r\n\r\nHello World!")
+        
+        if "favicon" in response{
+            print("FAV")
+        }
+        client.close()
+        print()
+    }
+}
