@@ -909,6 +909,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
             }
+            else{
+                if (!compiler->keep_return){
+                    add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                }
+            }
             break;
         }
 
@@ -1503,7 +1508,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (n->type==N_IF){
                     instrs+=num_instructions(IF(n->node)->code, compiler->scope)*2;
                     instrs+=num_instructions(IF(n->node)->expr, compiler->scope)*2;
-                    instrs+=4;
+                    instrs+=2;
                     
                     int cmpexpr=compile_expr_keep(compiler, IF(n->node)->expr);
                     if (cmpexpr==0x100){
@@ -1841,7 +1846,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     instrs+=2;
 
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL){
+                    if (compiler->lines!=NULL && i!=0x200){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1881,7 +1886,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     instrs+=2;
 
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL){
+                    if (compiler->lines!=NULL && i!=0x200){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1900,7 +1905,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return 0x100;
                     }
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL){
+                    if (compiler->lines!=NULL && i!=0x200){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -1934,7 +1939,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 return cmpexpr;
             }
             
-            if (compiler->lines!=NULL){
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -2080,7 +2085,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             add_instruction(compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(WHILE(expr->node)->code, compiler->scope)*2+2, expr->start, expr->end);
             
-            if (compiler->lines!=NULL){
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -3298,7 +3303,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,EXIT_WITH, 0, expr->start, expr->end);
             add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
 
-            break;
+            return 0x200;
         }
 
     }
@@ -3340,6 +3345,7 @@ uint32_t num_instructions(Node* node, scope s){
 struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_line){
     compiler->lines=new_list();
     object* lines=compiler->lines;
+    
     int i=0;
     for (Node* n: ast.nodes){
         uint32_t start=compiler->instructions->count*2;
