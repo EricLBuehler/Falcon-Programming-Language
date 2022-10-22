@@ -4238,6 +4238,13 @@ object* new_type(string* name, object* bases, object* dict){
         }
     }
 
+    if (repr_func==NULL && str_func!=NULL){
+        repr_func=str_func;
+    }
+    else if (repr_func!=NULL && str_func==NULL){
+        str_func=repr_func;
+    }
+
     uint32_t maxsize=0;
     uint32_t maxvarsize=0;
     uint32_t nfplbases=0;
