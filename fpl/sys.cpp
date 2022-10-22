@@ -35,5 +35,14 @@ object* new_sys_module(){
     object* getset=slotwrapper_new_fromfunc(sys_getpath, NULL, "path");
     dict_set(dict, str_new_fromstr("path"), getset);
 
+    //Argc and argv
+    dict_set(dict, str_new_fromstr("argc"), new_int_fromint(glblargc_raw));
+    object* argv=new_tuple();
+    for (int i=0; i<glblargc_raw; i++){
+        tuple_append(argv, str_new_fromstr(string(glblargv_raw[i])));
+    }
+    dict_set(dict, str_new_fromstr("argv"), argv);
+    FPLDECREF(argv);
+
     return module_new_fromdict(dict, str_new_fromstr("sys"));
 }
