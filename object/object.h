@@ -208,6 +208,8 @@ const bool NEWTP_PRIMARY_COPY=true;
 const bool NEWTP_NUMBER_COPY=true;
 const bool NEWTP_MAPPINGS_COPY=true;
 
+int glblargc_raw;
+char** glblargv_raw;
 
 vector<TypeObject*> fplbases;
 
