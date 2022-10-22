@@ -12,6 +12,11 @@ object* socket_listen(object* self, object* args, object* kwargs);
 object* socket_accept(object* self, object* args, object* kwargs);
 object* socket_setsockopt(object* self, object* args, object* kwargs);
 object* socket_getsockopt(object* self, object* args, object* kwargs);
+object* socket_getsockname(object* self, object* args, object* kwargs);
+object* socket_gethostname(object* self, object* args, object* kwargs);
+#ifndef _WIN32
+object* socket_sethostname(object* self, object* args, object* kwargs);
+#endif
 object* socket_enter(object* self);
 object* socket_exit(object* self);
 
@@ -24,10 +29,23 @@ typedef struct SocketObject{
     struct sockaddr_in* server;
 }SocketObject;
 
+#ifndef _WIN32
 Method socket_methods[]={{"connect",socket_connect}, {"close",socket_close}, {"send",socket_send}\
                         , {"recv",socket_recv}, {"gethostbyname",socket_gethostbyname}\
                         , {"bind",socket_bind}, {"listen",socket_listen}, {"accept",socket_accept}\
-                        , {"setsockopt",socket_setsockopt}, {"getsockopt",socket_getsockopt}, {NULL,NULL}};
+                        , {"setsockopt",socket_setsockopt}, {"getsockopt",socket_getsockopt}\
+                        , {"getsockname",socket_getsockname}, {"gethostname",socket_gethostname}\
+                        , {"sethostname",socket_sethostname}\
+                        , {NULL,NULL}};
+#else
+Method socket_methods[]={{"connect",socket_connect}, {"close",socket_close}, {"send",socket_send}\
+                        , {"recv",socket_recv}, {"gethostbyname",socket_gethostbyname}\
+                        , {"bind",socket_bind}, {"listen",socket_listen}, {"accept",socket_accept}\
+                        , {"setsockopt",socket_setsockopt}, {"getsockopt",socket_getsockopt}\
+                        , {"getsockname",socket_getsockname}, {"gethostname",socket_gethostname}\
+                        , {NULL,NULL}};
+#endif
+
 GetSets socket_getsets[]={{NULL,NULL}};
 OffsetMember socket_offsets[]={{NULL}};
 

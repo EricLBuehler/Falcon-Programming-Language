@@ -198,7 +198,13 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
 
     CAST_SOCKET(self)->server=(struct sockaddr_in*)fpl_malloc(sizeof(struct sockaddr_in));
 
-    const char* host_c=object_cstr(host).c_str();
+    string s=object_cstr(host).c_str();
+    char host_c[s.size()+1];
+    strcpy(host_c, s.c_str());
+
+    s=object_cstr(port).c_str();
+    char port_c[s.size()+1];
+    strcpy(port_c, s.c_str());
 
     CAST_SOCKET(self)->server->sin_addr.s_addr = inet_addr(host_c);
     
@@ -230,7 +236,7 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
     memset(&hints,0,sizeof(hints));
     hints.ai_family = CAST_SOCKET(self)->af_family; 
     hints.ai_socktype = CAST_SOCKET(self)->sock_kind;
-    int i=getaddrinfo(host_c,object_cstr(port).c_str(),&hints,&res);
+    int i=getaddrinfo(host_c,port_c,&hints,&res);
     if (i!=0){
         vm_add_err(&OSError, vm, "[Errno %d] getaddrinfo failed for IP '%s', port '%s'" , i, host_c, object_cstr(port_).c_str());
         return NULL;
@@ -360,7 +366,10 @@ object* socket_gethostbyname(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* v=list_index_int(args, 1);
-    const char* name=object_cstr(v).c_str();
+    
+    string s=object_cstr(v).c_str();
+    char name[s.size()+1];
+    strcpy(name, s.c_str());
     
 	char ip[100];
 	struct hostent *he;
@@ -437,7 +446,9 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
 
     CAST_SOCKET(self)->server=(struct sockaddr_in*)fpl_malloc(sizeof(struct sockaddr_in));
 
-    const char* host_c=object_cstr(host).c_str();
+    string s=object_cstr(host).c_str();
+    char host_c[s.size()+1];
+    strcpy(host_c, s.c_str());
 
     CAST_SOCKET(self)->server->sin_addr.s_addr = inet_addr(host_c);
     
@@ -681,6 +692,103 @@ object* socket_getsockopt(object* selftp, object* args, object* kwargs){
 
     return list;
 }
+
+object* socket_getsockname(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    object* self=list_index_int(args, 0);
+    if (CAST_SOCKET(self)->closed){
+        vm_add_err(&InvalidOperationError, vm, "Socket closed");
+        return NULL; 
+    }
+    struct sockaddr_in sa;
+    int sa_len=sizeof(sa);
+
+    int i=getsockname(CAST_SOCKET(self)->fd, (sockaddr*)&sa, &sa_len);
+    if (i!=0){
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] getsockname failed" , err);
+        return NULL;
+    }
+    
+    object* tup=new_tuple();
+    tuple_append(tup, str_new_fromstr(string(inet_ntoa(sa.sin_addr))));
+    tuple_append(tup, new_int_fromint((int) ntohs(sa.sin_port)));
+    return tup;
+}
+
+object* socket_gethostname(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    object* self=list_index_int(args, 0);
+    if (CAST_SOCKET(self)->closed){
+        vm_add_err(&InvalidOperationError, vm, "Socket closed");
+        return NULL; 
+    }
+    int i=100;
+    char buf[i];
+
+    int res=gethostname(buf, i);
+    if (res!=0){
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] getsockname failed" , err);
+        return NULL;
+    }
+
+    return str_new_fromstr(string(buf));
+}
+
+#ifndef _WIN32
+object* socket_sethostname(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+
+    object* self=list_index_int(args, 0);
+    if (CAST_SOCKET(self)->closed){
+        vm_add_err(&InvalidOperationError, vm, "Socket closed");
+        return NULL; 
+    }
+    string s=object_cstr(list_index_int(args, 1)).c_str();
+    int i=s.size();
+    char buf[i+1];
+    strcpy(buf, s.c_str());
+
+    int res=sethostname(buf, i);
+    if (res!=0){
+        #ifdef _WIN32
+        int err=WSAGetLastError();
+        #else
+        int err=errno;
+        errno=0;
+        #endif
+        vm_add_err(&OSError, vm, "[Errno %d] getsockname failed" , err);
+        return NULL;
+    }
+
+    return new_none();
+}
+#endif
 
 object* socket_enter(object* self){
     return self;
