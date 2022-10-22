@@ -1,24 +1,33 @@
 import socket
 
-
-data="Hello!!!"
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) s{
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(("127.0.0.1", 8000))
-    s.listen(1)
-    
-    while True{
-        client,info=s.accept()
+func display(data){
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) s{
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(("127.0.0.1", 8000))
+        s.listen(1)
         
-        response=client.recv(1024)
-        print(len(response))
-        n=client.send("HTTP/1.0 200 OK\r\n\r\nHello World!")
-        
-        if "favicon" in response{
-            print("FAV")
+        while True{
+            client,info=s.accept()
+            
+            response=client.recv(1024)
+            
+            request=response.split("\n")[0].split(" ")[1]
+            print(request)
+
+            if request=="/favicon.ico"{
+                n=client.send("HTTP/1.0 404 FILE NOT FOUND\r\n\r\n")
+                client.close()
+                continue
+            }
+            
+
+            n=client.send("HTTP/1.0 200 OK\r\n\r\n"+data)
+            
+            client.close()        
         }
-        client.close()
-        print()
     }
+}
+
+with file("file.html", "r") f{
+    display(f.read())
 }
