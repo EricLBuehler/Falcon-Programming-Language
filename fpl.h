@@ -28,7 +28,6 @@
 
 using namespace std;
 
-#define DEBUG
 #define CALL_ERR (object*)0x1000
 #define TERM_PROGRAM (object*)0x2000
 #define SUCCESS (object*)0x3000
@@ -103,7 +102,7 @@ void sigint(int sig) {
     hit_sigint=true;
 };
 
-int execute(string data, bool objdump, bool verbose){
+int execute(string data, bool objdump, bool verbose){   
     //Prep constants and types
     new_gc();
     setup_types_consts();
@@ -162,7 +161,7 @@ int execute(string data, bool objdump, bool verbose){
     }
 
     vm=new_vm(0, code, compiler->instructions, new string(data)); //data is still in scope...
-    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
+    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
 
     if (verbose){
         cout<<"Names: "<<object_cstr(CAST_CODE(code)->co_names)<<"\n";

@@ -28,12 +28,16 @@ int main(int argc, char** argv) {
     kwds.push_back("lambda");
     kwds.push_back("yield");
     kwds.push_back("with");
+
+    glblargc_raw=argc;
+    glblargv_raw=argv;
     
     if (argc==1){
         try{
             cout<<"Falcon Programming Language V"<<FPL_VERSION<<endl;
             cout<<"Eric Buehler 2022"<<endl;
             cout<<"Type copyright() for copyright and license information, exit() to exit"<<endl<<endl;
+            
             //Prep constants and types
             new_gc();
             setup_types_consts();
@@ -41,7 +45,7 @@ int main(int argc, char** argv) {
 
             struct compiler* compiler = new_compiler();
             vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
-            dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annontations);
+            dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
             
             while (true){
                 struct vm* vm_=vm;
@@ -94,9 +98,7 @@ int main(int argc, char** argv) {
                 vm->callstack->head->code=code;
                 vm->ip=0;
                 
-                auto a=time_nanoseconds();
-                object* returned=run_vm(code, NULL, &vm->ip);
-                auto b=time_nanoseconds();
+                object* returned=run_vm(code, &vm->ip);
                 
                 socket_cleanup();
 
@@ -125,8 +127,6 @@ int main(int argc, char** argv) {
             cout<<"FPL V1\n";
             cout<<"Eric Buehler 2022\n\n";
             cout<<"Standard run: fpl [PROGRAM NAME]\n";
-            cout<<"Verbose run: fpl [PROGRAM NAME] -v\n";
-            cout<<"Object dump run: fpl [PROGRAM NAME] -o\n";
             cout<<"Enter REPL: fpl \n";
             cout<<"Help: fpl -h\n";
             cout<<"Licenses: fpl -l\n";
@@ -139,25 +139,10 @@ int main(int argc, char** argv) {
         }
         program=argv[1];
     }
-    if (argc==3){
-        program=argv[1];
-        if ((string)argv[2]==(string)"-v"){
-            verbose=true;
-        }
-        if ((string)argv[2]==(string)"-o"){
-            objdump=true;
-        }
-    }
 
-    if (argc==4){
-        program=argv[1];
-        if ((string)argv[2]==(string)"-v" || (string)argv[3]==(string)"-v"){
-            verbose=true;
-        }
-        if ((string)argv[2]==(string)"-o" || (string)argv[3]==(string)"-o"){
-            objdump=true;
-        }
-    } 
+    #ifdef DEBUG
+    verbose=true;
+    #endif
     
     try{
         execute(loadFile(program), objdump, verbose);
