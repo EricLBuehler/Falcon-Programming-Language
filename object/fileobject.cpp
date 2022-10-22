@@ -90,6 +90,7 @@ object* file_read_meth(object* selftp, object* args, object* kwargs){
     fseek(CAST_FILE(self)->file, 0, SEEK_SET);  /* same as rewind(f); */
 
     char *s = (char*)fpl_malloc(fsize + 1);
+    memset(s, 0, fsize);
     size_t i=fread(s, fsize, 1, CAST_FILE(self)->file);
     if (i==0 && fsize>0 && ferror(CAST_FILE(self)->file)){
         vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
