@@ -137,6 +137,8 @@ int main(int argc, char** argv) {
             cout<<FPL_LICENSE;
             return 0;
         }
+    }
+    if (argc>=2){
         program=argv[1];
     }
 
