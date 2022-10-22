@@ -884,7 +884,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand types for ==: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(vm->exception);
+                vm->exception=NULL;
+                add_dataframe(vm, vm->objstack, new_bool_false());
             }
             DISPATCH();
         }
@@ -898,7 +900,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, ret);
             }
             else{
-                vm_add_err(&TypeError, vm, "Invalid operand types for !=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(vm->exception);
+                vm->exception=NULL;
+                add_dataframe(vm, vm->objstack, new_bool_false());
             }
             DISPATCH();
         }
