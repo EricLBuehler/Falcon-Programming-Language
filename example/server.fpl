@@ -1,4 +1,5 @@
 import socket
+import sys
 
 func display(data){
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) s{
@@ -27,7 +28,7 @@ func display(data){
         }
     }
 }
-
-with file("file.html", "r") f{
+assert sys.argc==3
+with file(sys.argv[2], "r") f{
     display(f.read())
 }
