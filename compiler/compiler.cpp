@@ -2661,7 +2661,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_ASSERT: {
-            compile_expr(compiler, ASSERT(expr->node)->expr);
+            compile_expr_keep(compiler, ASSERT(expr->node)->expr);
             add_instruction(compiler->instructions,POP_JMP_TOS_TRUE, 2, expr->start, expr->end);
             add_instruction(compiler->instructions,RAISE_ASSERTIONERR, 0, expr->start, expr->end);
             break;            
