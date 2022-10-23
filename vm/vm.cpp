@@ -781,7 +781,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&EXIT_WHILE,
         &&ENTER_WITH,
         &&EXIT_WITH,
-        &&LIST_APPEND,
+        &&SEQ_APPEND,
+        &&DICT_SET,
     };
     
     object** code_array=CAST_LIST(code)->array;
@@ -2470,12 +2471,22 @@ object* run_vm(object* codeobj, uint32_t* ip){
             DISPATCH();
         }
 
-        LIST_APPEND: {
+        SEQ_APPEND: {
             dataframe* d=vm->objstack->head;
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 d=d->next;
             }
-            list_append(d->obj, pop_dataframe(vm->objstack));
+            d->obj->type->slot_mappings->slot_append(d->obj, pop_dataframe(vm->objstack));
+            DISPATCH();
+        }
+
+        DICT_SET: {
+            dataframe* d=vm->objstack->head;
+            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+                d=d->next;
+            }
+            object* v=pop_dataframe(vm->objstack);
+            dict_set(d->obj, pop_dataframe(vm->objstack), v);
             DISPATCH();
         }
     }
