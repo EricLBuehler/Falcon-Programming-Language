@@ -3386,7 +3386,19 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions_keep(LISTCOMP(expr->node)->ident, compiler->scope)*2+2, expr->start, expr->end);
             }
 
-            compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
+
+            start_=compiler->instructions->count*2;
+            int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            } 
 
             add_instruction(compiler->instructions,LIST_APPEND, 2, expr->start, expr->end);
             add_instruction(compiler->instructions,JUMP_TO, start, expr->start, expr->end);
