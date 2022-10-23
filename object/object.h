@@ -310,6 +310,7 @@ enum blocktype{
     TRY_BLOCK,
     FOR_BLOCK,
     WHILE_BLOCK,
+    WITH_BLOCK,
 };
 void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint32_t arg, enum blocktype tp);
 void pop_blockframe(struct blockstack* stack);
@@ -475,6 +476,7 @@ enum opcode{
     EXIT_WHILE,
     ENTER_WITH,
     EXIT_WITH,
+    LIST_APPEND,
 };
 
 

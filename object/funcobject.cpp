@@ -40,7 +40,7 @@ object* func_call(object* self, object* args, object* kwargs){
         if (flags==FUNC_STARARGS && CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()!=posargc){
             goto noerror;
         }
-        //If we are starkwargs and positonal differs, no error
+        //If we are starkwargs and kwd differs, no error
         if (flags==FUNC_STARKWARGS && CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()!=kwargc){
             goto noerror;
         }
@@ -81,6 +81,9 @@ object* func_call(object* self, object* args, object* kwargs){
     }
     if (blockstack_size_>blockstack_size){
         while (vm->blockstack->size>blockstack_size){
+            if (vm->blockstack->head->type==WITH_BLOCK){
+                object_exit_with(vm->blockstack->head->obj);
+            }
             pop_blockframe(vm->blockstack);
         }
     }

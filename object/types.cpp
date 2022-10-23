@@ -2677,8 +2677,8 @@ TypeObject MethodType={
     NULL, //bases
     0, //dict_offset
     NULL, //dict
-    0, //slot_getattr
-    0, //slot_setattr
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
 
     0, //slot_init
     method_new, //slot_new

@@ -5,8 +5,8 @@ void module_del(object* self){
 
 object* module_new_fromdict(object* dict, object* name){
     object* m=new_object(&ModuleType);
-    CAST_MODULE(m)->dict=dict;
-    CAST_MODULE(m)->name=name;
+    CAST_MODULE(m)->dict=FPLINCREF(dict);
+    CAST_MODULE(m)->name=FPLINCREF(name);
     return m;
 }
 

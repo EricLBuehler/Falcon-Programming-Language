@@ -408,8 +408,11 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         }
     }
     else{
-        for (int i=0; i<selfarglen; i++){
+        for (int i=0; i<arglen; i++){
+            object* o=list_index_int(selfargs, argn);
+            dict->type->slot_mappings->slot_set(dict, o, list_index_int(args, i));
             names->type->slot_mappings->slot_append(names, list_index_int(selfargs, argn));
+            argn++;
         }
     }
     

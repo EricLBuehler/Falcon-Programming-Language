@@ -78,6 +78,7 @@ object* gen_next(object* self){
     if (CAST_GEN(self)->blockstack->size>0){
         while (CAST_GEN(self)->blockstack->size>0){
             add_blockframe(&(CAST_GEN(self)->blockstack->head->start_ip), vm, vm->blockstack, CAST_GEN(self)->blockstack->head->arg, CAST_GEN(self)->blockstack->head->type);
+            vm->blockstack->head->obj=CAST_GEN(self)->blockstack->head->obj;
             pop_blockframe(CAST_GEN(self)->blockstack);
         }
     }
@@ -98,6 +99,39 @@ object* gen_next(object* self){
     uint32_t callstack_size_=vm->callstack->size;
     uint32_t blockstack_size_=vm->blockstack->size;
 
+    
+    
+    if (*CAST_INT(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_code, CAST_GEN(self)->ip-2))->val == RETURN_VAL){
+        CAST_GEN(self)->done=true;
+    }
+    
+    if (CAST_GEN(self)->done){
+        if (datastack_size_>datastack_size){
+            while (vm->objstack->size>datastack_size){
+                pop_dataframe(vm->objstack);
+            }
+        }
+        if (callstack_size_>callstack_size){
+            while (vm->callstack->size>callstack_size){
+                pop_callframe(vm->callstack);
+            }
+        }
+        if (blockstack_size_>blockstack_size){
+            while (vm->blockstack->size>blockstack_size){
+                if (vm->blockstack->head->type==WITH_BLOCK){
+                    object_exit_with(vm->blockstack->head->obj);
+                }
+                pop_blockframe(vm->blockstack);
+            }
+        }
+        
+        CAST_GEN(self)->done=true;
+        vm_add_err(&StopIteration, vm, "Iterator out of data");
+
+        pop_callframe(vm->callstack);
+        return NULL;
+    }
+
     if (datastack_size_>datastack_size){
         while (vm->objstack->size>datastack_size){
             add_dataframe(vm, CAST_GEN(self)->objstack, pop_dataframe(vm->objstack));
@@ -115,20 +149,9 @@ object* gen_next(object* self){
     if (blockstack_size_>blockstack_size){
         while (vm->blockstack->size>blockstack_size){
             add_blockframe(&(vm->blockstack->head->start_ip), vm, CAST_GEN(self)->blockstack, vm->blockstack->head->arg, vm->blockstack->head->type);
+            CAST_GEN(self)->blockstack->head->obj=vm->blockstack->head->obj;
             pop_blockframe(vm->blockstack);
         }
-    }
-    
-    if (*CAST_INT(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_code, CAST_GEN(self)->ip-2))->val == RETURN_VAL){
-        CAST_GEN(self)->done=true;
-    }
-    
-    if (CAST_GEN(self)->done){
-        CAST_GEN(self)->done=true;
-        vm_add_err(&StopIteration, vm, "Iterator out of data");
-
-        pop_callframe(vm->callstack);
-        return NULL;
     }
 
     pop_callframe(vm->callstack);
