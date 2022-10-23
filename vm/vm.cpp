@@ -539,14 +539,16 @@ object* import_name(string data, object* name){
     ::vm->globals=new_dict();
     ::vm->callstack->head->locals=FPLINCREF(::vm->globals);
     dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
+    dict_set(::vm->globals, str_new_fromstr("__name__"), name);
     ::vm->global_annotations=::vm->callstack->head->annotations;
 
     object* ret=run_vm(code, &::vm->ip);
     object* dict=::vm->callstack->head->locals;
-    vm_del(::vm);
-    ::vm=vm_;
 
     object* o=module_new_fromdict(dict, name);
+    
+    vm_del(::vm);
+    ::vm=vm_;
 
     return o;
 }
@@ -779,6 +781,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&EXIT_WHILE,
         &&ENTER_WITH,
         &&EXIT_WITH,
+        &&LIST_APPEND,
     };
     
     object** code_array=CAST_LIST(code)->array;
@@ -1374,10 +1377,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (ret==NULL || ret==CALL_ERR){ 
+            if (ret==CALL_ERR){ 
                 DISPATCH();
             }
-            if (ret==TERM_PROGRAM){
+            if (ret==NULL || ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1406,7 +1409,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         BUILD_DICT: {
-            
             object* dict=new_dict();
             for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
                 object* name=pop_dataframe(vm->objstack);
@@ -1612,21 +1614,18 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         FOR_TOS_ITER: {
             if (vm->blockstack->size==0 || vm->blockstack->head->type!=FOR_BLOCK || (vm->blockstack->head->type==FOR_BLOCK && vm->blockstack->head->arg!=CAST_INT(arg)->val->to_int()) ){
-                object* idx=pop_dataframe(vm->objstack);
                 add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), FOR_BLOCK);
-                vm->blockstack->head->obj=FPLINCREF(idx);
             }
-            else{
-                object* idx=pop_dataframe(vm->objstack);
-            }
+            
             object* it=peek_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, it->type->slot_next(it));
             if (vm->exception!=NULL && object_istype(vm->exception->type, &StopIteration)){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
-                (*ip)=CAST_INT(vm->blockstack->head->obj)->val->to_long();
-                FPLDECREF(vm->blockstack->head->obj);
+                (*ip)=vm->blockstack->head->arg;
                 pop_blockframe(vm->blockstack);
+                pop_dataframe(vm->objstack);
+                pop_dataframe(vm->objstack);
             }
             DISPATCH();
         }
@@ -2060,6 +2059,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (int i=strs.size(); i>0; i--){
                 s+=strs.at(i-1);
             }
+            
             add_dataframe(vm, vm->objstack, str_new_fromstr(s));
             DISPATCH();
         }
@@ -2458,12 +2458,24 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         ENTER_WITH: {
+            add_blockframe(ip, vm, vm->blockstack, 0, WITH_BLOCK);
+            vm->blockstack->head->obj=peek_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, object_enter_with(pop_dataframe(vm->objstack)));
             DISPATCH();
         }
 
         EXIT_WITH: {
+            pop_blockframe(vm->blockstack);
             add_dataframe(vm, vm->objstack, object_exit_with(pop_dataframe(vm->objstack)));
+            DISPATCH();
+        }
+
+        LIST_APPEND: {
+            dataframe* d=vm->objstack->head;
+            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+                d=d->next;
+            }
+            list_append(d->obj, pop_dataframe(vm->objstack));
             DISPATCH();
         }
     }
