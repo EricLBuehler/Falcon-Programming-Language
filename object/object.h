@@ -476,7 +476,8 @@ enum opcode{
     EXIT_WHILE,
     ENTER_WITH,
     EXIT_WITH,
-    LIST_APPEND,
+    SEQ_APPEND,
+    DICT_SET,
 };
 
 
