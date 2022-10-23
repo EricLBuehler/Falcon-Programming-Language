@@ -53,6 +53,10 @@ enum nodetype{
     N_YIELD,
     N_SET, //No data struct (List)
     N_WITH,
+    N_LISTCOMP,
+    N_TUPLECOMP, //No data struct (N_TUPLECOMP)
+    N_SETCOMP, //No data struct (N_TUPLECOMP)
+    N_DICTCOMP
 };
 
 enum precedence {
@@ -362,6 +366,20 @@ struct With{
     vector<Node*>* code;
 };
 
+struct ListComp{
+    Node* left;
+    Node* ident;
+    Node* expr;
+    Node* condition;
+};
+
+struct DictComp{
+    Node* left;
+    Node* right;
+    Node* ident;
+    Node* expr;
+    Node* condition;
+};
 
 void destroy_node(struct Node* node){
     if (node->type==N_INT){
