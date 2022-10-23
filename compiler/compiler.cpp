@@ -653,19 +653,26 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             //
             
-            //Setup kwargs (code object)
+            //Setup kwargs (code object) backwards
             for (Node* n: (*FUNCT(expr->node)->kwargs)){
-                argc++;
                 if (n->type==N_ASSIGN){
                     args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
-                    int cmpexpr=compile_expr(compiler, ASSIGN(n->node)->right);
+                }
+                else{
+                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
+                }
+            }
+            
+            for (auto n =  (*FUNCT(expr->node)->kwargs).rbegin(); n != (*FUNCT(expr->node)->kwargs).rend(); ++n){
+                argc++;
+                if ((*n)->type==N_ASSIGN){
+                    int cmpexpr=compile_expr_keep(compiler, ASSIGN((*n)->node)->right);
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
                 }
                 else{
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
-                    int cmpexpr=compile_expr(compiler, ASSIGN(n->node)->right);
+                    int cmpexpr=compile_expr_keep(compiler, ASSIGN((*n)->node)->right);
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
@@ -737,13 +744,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (n->type!=N_ASSIGN){
                     n_anno++; 
                     
-                    int cmpexpr=compile_expr_keep(compiler, ASSIGN(n->node)->name); //Push data
+                    int cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(n->node)->name->node)->tp); //Push data
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
 
                     uint32_t idx;
-                    if (!_list_contains(compiler->consts, ANONIDENT(ASSIGN(n->node)->name->node)->name )){
+                    if (!_list_contains(compiler->consts, ANONIDENT(ASSIGN(n->node)->name->node)->name)){
                         //Create object
                         compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
                         idx = NAMEIDX(compiler->consts);
@@ -1054,7 +1061,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_CLASS: {
-
             //Name
             uint32_t nameidx;
             if (!_list_contains(compiler->consts, IDENTI(CLASS(expr->node)->name->node)->name )){
@@ -1135,13 +1141,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             uint32_t nbases=CLASS(expr->node)->bases->size();
             for (Node* n: *CLASS(expr->node)->bases){
-                int cmpexpr=compile_expr(compiler, n);
+                int cmpexpr=compile_expr_keep(compiler, n);
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
             }
             add_instruction(compiler->instructions,BUILD_LIST, nbases, expr->start, expr->end);
-
+            
             object* stargs=new_tuple();
             object* stkwargs=new_tuple();
 
@@ -1155,6 +1161,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             
             add_instruction(compiler->instructions,LOAD_CONST,idx, expr->start, expr->end);
+            
 
             if (!object_find_bool(compiler->consts,stkwargs)){
                 //Create object
@@ -1185,13 +1192,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             //Store class
             uint32_t nameidxstore;
-            if (!_list_contains(compiler->names, IDENTI(FUNCT(expr->node)->name->node)->name )){
+            if (!_list_contains(compiler->names, IDENTI(CLASS(expr->node)->name->node)->name )){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(CLASS(expr->node)->name->node)->name));
                 nameidxstore = NAMEIDX(compiler->names);
             }
             else{
-                nameidxstore=object_find(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                nameidxstore=object_find(compiler->names, str_new_fromstr(*IDENTI(CLASS(expr->node)->name->node)->name));
             }
             switch (compiler->scope){
                 case SCOPE_GLOBAL:
@@ -1507,8 +1514,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*CONTROL(expr->node)->bases)){
                 if (n->type==N_IF){
                     instrs+=num_instructions(IF(n->node)->code, compiler->scope)*2;
-                    instrs+=num_instructions(IF(n->node)->expr, compiler->scope)*2;
-                    instrs+=2;
+                    instrs+=num_instructions_keep(IF(n->node)->expr, compiler->scope)*2;
+                    instrs+=4;
                     
                     int cmpexpr=compile_expr_keep(compiler, IF(n->node)->expr);
                     if (cmpexpr==0x100){
@@ -1946,12 +1953,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
                 compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
             } 
-
-            uint32_t start=compiler->instructions->count*2;
             
             add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
             size_t target=0;
             
+            uint32_t start=compiler->instructions->count*2;
+
             size_t n_elsen=0;
             if (FOR(expr->node)->elsen!=NULL){
                 n_elsen=num_instructions(ELSE(FOR(expr->node)->elsen->node)->code, compiler->scope)*2;
@@ -1964,20 +1971,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
             else{
                 target+=compiler->instructions->count*2+num_instructions(FOR(expr->node)->code, compiler->scope)*2+8+num_instructions(FOR(expr->node)->ident, compiler->scope)*2;
             }
-            object* num=new_int_fromint(target-n_elsen+2);
             
+            add_instruction(compiler->instructions,FOR_TOS_ITER, target-n_elsen, expr->start, expr->end);
             uint32_t idx;
-            if (!object_find_bool(compiler->consts, num)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, num);
-                idx = NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, num);
-            }
-            add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
-            add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end);
-
             if (FOR(expr->node)->ident->type==N_IDENT){
                 if (!_list_contains(compiler->names, IDENTI(FOR(expr->node)->ident->node)->name)){
                     //Create object
@@ -2012,7 +2008,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*FOR(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;
-                int i=compile_expr_keep(compiler, n);
+                int i=compile_expr(compiler, n);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -2033,7 +2029,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 for (Node* n: (*ELSE(FOR(expr->node)->elsen->node)->code)){
                     uint32_t start=compiler->instructions->count*2;
                     long line=n->start->line;
-                    int i=compile_expr_keep(compiler, n);
+                    int i=compile_expr(compiler, n);
                     if (i==0x100){
                         return 0x100;
                     }
@@ -2577,7 +2573,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     if (data[i]!='\0'){
                         i++;
                     }
-
                     
                     Lexer lexer(segment,kwds);
                     lexer.pos=Position(program);
@@ -2597,7 +2592,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return 0x100;
                     }
 
-                    int cmpexpr=compile_expr(compiler, ast.nodes.at(0));
+                    int cmpexpr=compile_expr_keep(compiler, ast.nodes.at(0));
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
@@ -2628,7 +2623,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 else{
                     string segment="";
-                    while (data[i]!='{'){
+                    while (data[i]!='{' && data[i]!='\0'){
                         segment+=data[i++];
                     }
 
@@ -2653,6 +2648,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     else{
                         idx=object_find(compiler->consts, falseobj);
                     }
+                    
                     add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
                 }  
             }
@@ -2710,7 +2706,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             for (size_t i_=decorators.size(); i_>0; i_--){
                 size_t i=i_-1;
-                compile_expr(compiler, DECORATOR(decorators.at(i))->name);
+                compile_expr_keep(compiler, DECORATOR(decorators.at(i))->name);
             }
             
             //Make a FUNCTION!
@@ -2748,24 +2744,32 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             //
             
-            //Setup kwargs (code object)
+            //Setup kwargs (code object) backwards
             for (Node* n: (*FUNCT(DECORATOR(decorators.back())->function->node)->kwargs)){
-                argc++;
                 if (n->type==N_ASSIGN){
                     args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
-                    int cmpexpr=compile_expr(compiler, ASSIGN(n->node)->right);
+                }
+                else{
+                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
+                }
+            }
+
+            for (auto n =  (*FUNCT(DECORATOR(decorators.back())->function->node)->kwargs).rbegin(); n != (*FUNCT(DECORATOR(decorators.back())->function->node)->kwargs).rend(); ++n){
+                argc++;
+                if ((*n)->type==N_ASSIGN){
+                    int cmpexpr=compile_expr_keep(compiler, ASSIGN((*n)->node)->right);
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
                 }
                 else{
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
-                    int cmpexpr=compile_expr(compiler, ASSIGN(n->node)->right);
+                    int cmpexpr=compile_expr_keep(compiler, ASSIGN((*n)->node)->right);
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
                 }
             }
+            
             //
             add_instruction(compiler->instructions,BUILD_TUPLE, FUNCT(DECORATOR(decorators.back())->function->node)->kwargs->size(), expr->start, expr->end);
             
@@ -2831,17 +2835,18 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
                 }
             }
+            
             for (Node* n: (*FUNCT(DECORATOR(decorators.back())->function->node)->kwargs)){
                 if (n->type!=N_ASSIGN){
                     n_anno++; 
                     
-                    int cmpexpr=compile_expr_keep(compiler, ASSIGN(n->node)->name); //Push data
+                    int cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(n->node)->name->node)->tp); //Push data
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
 
                     uint32_t idx;
-                    if (!_list_contains(compiler->consts, ANONIDENT(ASSIGN(n->node)->name->node)->name )){
+                    if (!_list_contains(compiler->consts, ANONIDENT(ASSIGN(n->node)->name->node)->name)){
                         //Create object
                         compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
                         idx = NAMEIDX(compiler->consts);
@@ -2852,7 +2857,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
                 }
             }
-            
             add_instruction(compiler->instructions,BUILD_DICT, n_anno, expr->start, expr->end);
 
             //
@@ -2984,6 +2988,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     add_instruction(compiler->instructions,MAKE_GENERATOR, argc, expr->start, expr->end);
                 }
             }
+
             
             //TOS is now the function!
             object* stargs=new_tuple();
@@ -3306,6 +3311,88 @@ int compile_expr(struct compiler* compiler, Node* expr){
             return 0x200;
         }
 
+        case N_LISTCOMP: {
+            add_instruction(compiler->instructions,BUILD_LIST, 0, expr->start, expr->end);
+
+            uint32_t start_=compiler->instructions->count*2;
+            uint32_t target=start_;
+            target+=num_instructions_keep(LISTCOMP(expr->node)->expr, compiler->scope)*2;
+            target+=num_instructions_keep(LISTCOMP(expr->node)->left, compiler->scope)*2;
+            target+=12; //All the other stuff
+            if (LISTCOMP(expr->node)->condition!=NULL){
+                target+=num_instructions_keep(LISTCOMP(expr->node)->condition, compiler->scope)*2;
+                target+=2;
+            }
+            
+            bool ret=compiler->keep_return;
+            long line=LISTCOMP(expr->node)->expr->start->line;
+
+            int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            } 
+            
+            add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
+
+            uint32_t start=compiler->instructions->count*2;
+            add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end);
+            
+            uint32_t idx;
+            if (!_list_contains(compiler->names, IDENTI(LISTCOMP(expr->node)->ident->node)->name)){
+                //Create object
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+                idx=NAMEIDX(compiler->names);
+            }
+            else{
+                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+            }
+
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                    break;
+            }
+            add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            
+            if (LISTCOMP(expr->node)->condition!=NULL){
+                uint32_t start_=compiler->instructions->count*2;
+
+                int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->condition);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
+                
+                if (compiler->lines!=NULL && cmpexpr!=0x200){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                } 
+                
+                
+                add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions_keep(LISTCOMP(expr->node)->ident, compiler->scope)*2+2, expr->start, expr->end);
+            }
+
+            compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
+
+            add_instruction(compiler->instructions,LIST_APPEND, 2, expr->start, expr->end);
+            add_instruction(compiler->instructions,JUMP_TO, start, expr->start, expr->end);
+            break;
+        }
+
     }
     
     if (!compiler->nofree){
@@ -3335,6 +3422,19 @@ uint32_t num_instructions(Node* node, scope s){
     comp->scope=s;  
     comp->nofree=true;
     int cmpexpr=compile_expr(comp, node);
+    if (cmpexpr==0x100){
+        return -1;
+    }
+    
+    return comp->instructions->count;
+}
+
+uint32_t num_instructions_keep(Node* node, scope s){
+    struct compiler* comp=new_compiler(); 
+    comp->lines=NULL;   
+    comp->scope=s;  
+    comp->nofree=true;
+    int cmpexpr=compile_expr_keep(comp, node);
     if (cmpexpr==0x100){
         return -1;
     }

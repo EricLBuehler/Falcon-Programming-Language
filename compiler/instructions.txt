@@ -183,6 +183,8 @@ ENTER_WHILE - Enter while loop
 
 EXIT_WHILE - Exit while loop
 
-ENTER_WHILE - Implements TOS.__enter__()
+ENTER_WITH - Implements TOS.__enter__()
 
-EXIT_WHILE - Implements TOS.__exit__()
+EXIT_WITH - Implements TOS.__exit__()
+
+LIST_APPEND(i) - Appends TOS to list at TOS-i. Used for list comprehension
