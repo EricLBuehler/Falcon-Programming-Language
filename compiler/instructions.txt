@@ -187,4 +187,6 @@ ENTER_WITH - Implements TOS.__enter__()
 
 EXIT_WITH - Implements TOS.__exit__()
 
-LIST_APPEND(i) - Appends TOS to list at TOS-i. Used for list comprehension
+LIST_APPEND(i) - Appends TOS to list at TOS-i. Used for list, set, and tuple comprehension
+
+DICT_SET(i) - Sets value TOS to key TOS-1 in dict at TOS-i. Used for dict comprehension

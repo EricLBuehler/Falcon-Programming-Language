@@ -3388,7 +3388,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
 
             start_=compiler->instructions->count*2;
-            int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
+            cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
             if (cmpexpr==0x100){
                 return cmpexpr;
             }
@@ -3400,10 +3400,307 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
             } 
 
-            add_instruction(compiler->instructions,LIST_APPEND, 2, expr->start, expr->end);
+            add_instruction(compiler->instructions,SEQ_APPEND, 2, expr->start, expr->end);
             add_instruction(compiler->instructions,JUMP_TO, start, expr->start, expr->end);
             break;
         }
+
+        case N_TUPLECOMP: {
+            add_instruction(compiler->instructions,BUILD_TUPLE, 0, expr->start, expr->end);
+
+            uint32_t start_=compiler->instructions->count*2;
+            uint32_t target=start_;
+            target+=num_instructions_keep(LISTCOMP(expr->node)->expr, compiler->scope)*2;
+            target+=num_instructions_keep(LISTCOMP(expr->node)->left, compiler->scope)*2;
+            target+=12; //All the other stuff
+            if (LISTCOMP(expr->node)->condition!=NULL){
+                target+=num_instructions_keep(LISTCOMP(expr->node)->condition, compiler->scope)*2;
+                target+=2;
+            }
+            
+            bool ret=compiler->keep_return;
+            long line=LISTCOMP(expr->node)->expr->start->line;
+
+            int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            } 
+            
+            add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
+
+            uint32_t start=compiler->instructions->count*2;
+            add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end);
+            
+            uint32_t idx;
+            if (!_list_contains(compiler->names, IDENTI(LISTCOMP(expr->node)->ident->node)->name)){
+                //Create object
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+                idx=NAMEIDX(compiler->names);
+            }
+            else{
+                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+            }
+
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                    break;
+            }
+            add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            
+            if (LISTCOMP(expr->node)->condition!=NULL){
+                uint32_t start_=compiler->instructions->count*2;
+
+                int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->condition);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
+                
+                if (compiler->lines!=NULL && cmpexpr!=0x200){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                } 
+                
+                
+                add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions_keep(LISTCOMP(expr->node)->ident, compiler->scope)*2+2, expr->start, expr->end);
+            }
+
+
+            start_=compiler->instructions->count*2;
+            cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            } 
+
+            add_instruction(compiler->instructions,SEQ_APPEND, 2, expr->start, expr->end);
+            add_instruction(compiler->instructions,JUMP_TO, start, expr->start, expr->end);
+            break;
+        }
+
+        case N_SETCOMP: {
+            add_instruction(compiler->instructions,BUILD_SET, 0, expr->start, expr->end);
+
+            uint32_t start_=compiler->instructions->count*2;
+            uint32_t target=start_;
+            target+=num_instructions_keep(LISTCOMP(expr->node)->expr, compiler->scope)*2;
+            target+=num_instructions_keep(LISTCOMP(expr->node)->left, compiler->scope)*2;
+            target+=12; //All the other stuff
+            if (LISTCOMP(expr->node)->condition!=NULL){
+                target+=num_instructions_keep(LISTCOMP(expr->node)->condition, compiler->scope)*2;
+                target+=2;
+            }
+            
+            bool ret=compiler->keep_return;
+            long line=LISTCOMP(expr->node)->expr->start->line;
+
+            int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            } 
+            
+            add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
+
+            uint32_t start=compiler->instructions->count*2;
+            add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end);
+            
+            uint32_t idx;
+            if (!_list_contains(compiler->names, IDENTI(LISTCOMP(expr->node)->ident->node)->name)){
+                //Create object
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+                idx=NAMEIDX(compiler->names);
+            }
+            else{
+                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+            }
+
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                    break;
+            }
+            add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            
+            if (LISTCOMP(expr->node)->condition!=NULL){
+                uint32_t start_=compiler->instructions->count*2;
+
+                int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->condition);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
+                
+                if (compiler->lines!=NULL && cmpexpr!=0x200){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                } 
+                
+                
+                add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions_keep(LISTCOMP(expr->node)->ident, compiler->scope)*2+2, expr->start, expr->end);
+            }
+
+
+            start_=compiler->instructions->count*2;
+            cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            } 
+
+            add_instruction(compiler->instructions,SEQ_APPEND, 2, expr->start, expr->end);
+            add_instruction(compiler->instructions,JUMP_TO, start, expr->start, expr->end);
+            break;
+        }
+
+        case N_DICTCOMP: {
+            add_instruction(compiler->instructions,BUILD_DICT, 0, expr->start, expr->end);
+
+            uint32_t start_=compiler->instructions->count*2;
+            uint32_t target=start_;
+            target+=num_instructions_keep(DICTCOMP(expr->node)->expr, compiler->scope)*2;
+            target+=num_instructions_keep(DICTCOMP(expr->node)->left, compiler->scope)*2;
+            target+=num_instructions_keep(DICTCOMP(expr->node)->right, compiler->scope)*2;
+            target+=12; //All the other stuff
+            if (DICTCOMP(expr->node)->condition!=NULL){
+                target+=num_instructions_keep(DICTCOMP(expr->node)->condition, compiler->scope)*2;
+                target+=2;
+            }
+            
+            bool ret=compiler->keep_return;
+            long line=DICTCOMP(expr->node)->expr->start->line;
+
+            int cmpexpr=compile_expr_keep(compiler, DICTCOMP(expr->node)->expr);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            } 
+            
+            add_instruction(compiler->instructions,EXTRACT_ITER,0, expr->start, expr->end);
+
+            uint32_t start=compiler->instructions->count*2;
+            add_instruction(compiler->instructions,FOR_TOS_ITER, target, expr->start, expr->end);
+            
+            uint32_t idx;
+            if (!_list_contains(compiler->names, IDENTI(DICTCOMP(expr->node)->ident->node)->name)){
+                //Create object
+                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(DICTCOMP(expr->node)->ident->node)->name));
+                idx=NAMEIDX(compiler->names);
+            }
+            else{
+                idx=object_find(compiler->names, str_new_fromstr(*IDENTI(DICTCOMP(expr->node)->ident->node)->name));
+            }
+
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler->instructions,STORE_GLOBAL, idx, expr->start, expr->end);
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler->instructions,STORE_NAME, idx, expr->start, expr->end);
+                    break;
+            }
+            add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+            
+            if (DICTCOMP(expr->node)->condition!=NULL){
+                uint32_t start_=compiler->instructions->count*2;
+
+                int cmpexpr=compile_expr_keep(compiler, DICTCOMP(expr->node)->condition);
+                if (cmpexpr==0x100){
+                    return cmpexpr;
+                }
+                
+                if (compiler->lines!=NULL && cmpexpr!=0x200){
+                    object* tuple=new_tuple();
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                } 
+                
+                
+                add_instruction(compiler->instructions,POP_JMP_TOS_FALSE, num_instructions_keep(DICTCOMP(expr->node)->ident, compiler->scope)*2+2, expr->start, expr->end);
+            }
+
+
+            start_=compiler->instructions->count*2;
+            cmpexpr=compile_expr_keep(compiler, DICTCOMP(expr->node)->left);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            }
+
+            start_=compiler->instructions->count*2;
+            cmpexpr=compile_expr_keep(compiler, DICTCOMP(expr->node)->right);
+            if (cmpexpr==0x100){
+                return cmpexpr;
+            }
+            if (compiler->lines!=NULL && cmpexpr!=0x200){
+                object* tuple=new_tuple();
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
+                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+            }  
+
+            add_instruction(compiler->instructions,DICT_SET, 3, expr->start, expr->end);
+            add_instruction(compiler->instructions,JUMP_TO, start, expr->start, expr->end);
+            break;
+        }
+
 
     }
     

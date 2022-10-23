@@ -69,6 +69,7 @@ struct compiler{
 #define YIELD(node) ((Yield*)node)
 #define WITH(node) ((With*)node)
 #define LISTCOMP(node) ((ListComp*)node)
+#define DICTCOMP(node) ((DictComp*)node)
 
 #define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
 
