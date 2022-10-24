@@ -46,6 +46,7 @@ int main(int argc, char** argv) {
             struct compiler* compiler = new_compiler();
             vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
             dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
+            dict_set(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
             
             while (true){
                 struct vm* vm_=vm;
@@ -60,9 +61,6 @@ int main(int argc, char** argv) {
                     hit_sigint=false;
                     vm=vm_;
                     continue;
-                }
-                if (data=="!exit"){
-                    break;
                 }
                 
                 Lexer lexer(data,kwds);
@@ -99,10 +97,11 @@ int main(int argc, char** argv) {
                 vm->ip=0;
                 
                 object* returned=run_vm(code, &vm->ip);
-                
-                socket_cleanup();
 
-                if (returned==TERM_PROGRAM){
+                if (returned==TERM_PROGRAM && vm->exception==NULL){
+                    finalize_threads();
+                        
+                    socket_cleanup();
                     return 0;
                 }
                 
@@ -116,6 +115,8 @@ int main(int argc, char** argv) {
             }
 
             finalize_threads();
+                
+            socket_cleanup();
             return 0;
         }
         catch (std::bad_alloc){
