@@ -52,6 +52,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```sys```
 - ```os```
 - ```sockets```
+- ```simpleserver```
 
 <details>
 <summary>Exceptions</summary>
