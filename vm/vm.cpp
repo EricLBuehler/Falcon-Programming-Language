@@ -983,50 +983,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     //pop dict, insert values
                     object* ob=pop_dataframe(vm->objstack);
                     
-                    if (ob->type->slot_iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+                    if (!object_istype(ob->type, &DictType)){
+                        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", ob->type->name->c_str());
                         DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
-                    
-                    if (iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        DISPATCH();
-                    }
 
-                    object* one=new_int_fromint(0);
-                    object* two=new_int_fromint(1);
                     object* res=NULL;
                     
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        if (o->type->slot_mappings->slot_len==NULL){
-                            vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            DISPATCH();
-                        }
-                        int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
-                        if (len!=2){
-                            vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            DISPATCH();
-                        }
-                        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-                            DISPATCH();
-                        }
-                        object* a=o->type->slot_mappings->slot_get(o, one);
-                        ERROR_RET(a);
-                        object* b=o->type->slot_mappings->slot_get(o, two);
-                        ERROR_RET(b);
-
-                        dict_set(kwargs, a, b);
+                        v=ob->type->slot_mappings->slot_get(ob, o);
+                        ERROR_RET(v);
+                        dict_set(kwargs, o, v);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -1043,17 +1014,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     //pop dict, insert values
                     object* ob=pop_dataframe(vm->objstack);
                     
-                    if (ob->type->slot_iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+                    if (!object_istype(ob->type, &ListType) && !object_istype(ob->type, &TupleType)){
+                        vm_add_err(&TypeError, vm, "Expected list or tuple object, got '%s' object", ob->type->name->c_str());
                         DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
-                    
-                    if (iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        DISPATCH();
-                    }
 
                     object* one=new_int_fromint(0);
                     object* two=new_int_fromint(1);
@@ -1135,50 +1101,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     //pop dict, insert values
                     object* ob=pop_dataframe(vm->objstack);
                     
-                    if (ob->type->slot_iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+                    if (!object_istype(ob->type, &DictType)){
+                        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", ob->type->name->c_str());
                         DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
-                    
-                    if (iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        DISPATCH();
-                    }
 
-                    object* one=new_int_fromint(0);
-                    object* two=new_int_fromint(1);
                     object* res=NULL;
                     
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        if (o->type->slot_mappings->slot_len==NULL){
-                            vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            DISPATCH();
-                        }
-                        int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
-                        if (len!=2){
-                            vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            DISPATCH();
-                        }
-                        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-                            DISPATCH();
-                        }
-                        object* a=o->type->slot_mappings->slot_get(o, one);
-                        ERROR_RET(a);
-                        object* b=o->type->slot_mappings->slot_get(o, two);
-                        ERROR_RET(b);
-
-                        dict_set(kwargs, a, b);
+                        v=ob->type->slot_mappings->slot_get(ob, o);
+                        ERROR_RET(v);
+                        dict_set(kwargs, o, v);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -1195,17 +1132,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     //pop dict, insert values
                     object* ob=pop_dataframe(vm->objstack);
                     
-                    if (ob->type->slot_iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+                    if (!object_istype(ob->type, &ListType) && !object_istype(ob->type, &TupleType)){
+                        vm_add_err(&TypeError, vm, "Expected list or tuple object, got '%s' object", ob->type->name->c_str());
                         DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
-                    
-                    if (iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        DISPATCH();
-                    }
 
                     object* one=new_int_fromint(0);
                     object* two=new_int_fromint(1);
@@ -1273,50 +1205,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     //pop dict, insert values
                     object* ob=pop_dataframe(vm->objstack);
                     
-                    if (ob->type->slot_iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+                    if (!object_istype(ob->type, &DictType)){
+                        vm_add_err(&TypeError, vm, "Expected dict or tuple object, got '%s' object", ob->type->name->c_str());
                         DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
-                    
-                    if (iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        DISPATCH();
-                    }
 
-                    object* one=new_int_fromint(0);
-                    object* two=new_int_fromint(1);
                     object* res=NULL;
                     
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        if (o->type->slot_mappings->slot_len==NULL){
-                            vm_add_err(&TypeError, vm, "'%s' object has no __len__", o->type->name->c_str());
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            DISPATCH();
-                        }
-                        int len=CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int();
-                        if (len!=2){
-                            vm_add_err(&TypeError, vm, "Expected 2 elements, got %d", len);
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            DISPATCH();
-                        }
-                        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-                            FPLDECREF(iter);
-                            FPLDECREF(one);
-                            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-                            DISPATCH();
-                        }
-                        object* a=o->type->slot_mappings->slot_get(o, one);
-                        ERROR_RET(a);
-                        object* b=o->type->slot_mappings->slot_get(o, two);
-                        ERROR_RET(b);
-
-                        dict_set(kwargs, a, b);
+                        v=ob->type->slot_mappings->slot_get(ob, o);
+                        ERROR_RET(v);
+                        dict_set(kwargs, o, v);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -1333,17 +1236,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     //pop dict, insert values
                     object* ob=pop_dataframe(vm->objstack);
                     
-                    if (ob->type->slot_iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+                    if (!object_istype(ob->type, &ListType) && !object_istype(ob->type, &TupleType)){
+                        vm_add_err(&TypeError, vm, "Expected list or tuple object, got '%s' object", ob->type->name->c_str());
                         DISPATCH();
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
-                    
-                    if (iter==NULL){
-                        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
-                        DISPATCH();
-                    }
 
                     object* one=new_int_fromint(0);
                     object* two=new_int_fromint(1);
