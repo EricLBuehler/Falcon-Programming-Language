@@ -279,10 +279,7 @@ object* dict_iter_next(object* self){
         vm_add_err(&StopIteration, vm, "Iterator out of data");
         return NULL;
     }
-    object* l=new_list();
-    list_append(l, (*CAST_DICTITER(self)->keys)[CAST_DICTITER(self)->idx++]);
-    list_append(l, CAST_DICTITER(self)->val->at((*CAST_DICTITER(self)->keys)[CAST_DICTITER(self)->idx-1]));
-    return l;
+    return (*CAST_DICTITER(self)->keys)[CAST_DICTITER(self)->idx++];
 }
 
 object* dict_iter_cmp(object* self, object* other, uint8_t type){
