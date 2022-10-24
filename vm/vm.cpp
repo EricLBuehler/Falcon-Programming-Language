@@ -2448,8 +2448,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         //Free GIL
         GIL.unlock();
         //
-
-        return TERM_PROGRAM;
+        
         if (vm->callstack->size>1){
             return CALL_ERR;
         }
