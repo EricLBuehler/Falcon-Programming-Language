@@ -1,0 +1,47 @@
+import socket
+
+class App{
+    func __init__(self, name){
+        self.name=name
+        self.pages=[]
+    }
+
+    func page(self, route, methods=[]){
+        return lambda x{return simpleserver.Page(x, route, methods, self)}
+    }
+
+    func __str__(self){
+        return f"<App {self.name}>"
+    }
+
+    func start(self, port=8000, info=True){
+        print("kwargs is",port,info)
+        if info{
+            print(f"Starting server at {simpleserver.socket.socket.gethostbyname(simpleserver.socket.socket.gethostname())} : {port}")
+        }
+        with simpleserver.socket.socket(simpleserver.socket.AF_INET, simpleserver.socket.SOCK_STREAM) sock{
+            sock.setsockopt(simpleserver.socket.SOL_SOCKET, simpleserver.socket.SO_REUSEADDR, 1)
+            sock.bind((simpleserver.socket.socket.gethostbyname(simpleserver.socket.socket.gethostname()), port))
+            sock.listen(1)
+        }
+        print("Closing server")
+    }
+}
+
+class Page{
+    func __init__(self, funct, route, methods, app){
+        self.route=route
+        self.methods=methods
+        self.funct=funct
+        self.app=app
+        self.app.pages.append(self)
+    }
+    
+    func __call__(self){
+        self.__dict__["funct"]()
+    }
+    
+    func __str__(self){
+        return f"<Page '{self.route}' {self.__dict__['funct']}>"
+    }
+}
