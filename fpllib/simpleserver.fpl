@@ -6,12 +6,21 @@ class App{
         self.pages=[]
     }
 
-    func page(self, route, methods=[]){
+    func page(self, route, methods=["GET"]){
         return lambda x{return simpleserver.Page(x, route, methods, self)}
     }
 
     func __str__(self){
         return f"<App {self.name}>"
+    }
+
+    func extract_data(self, method: str, request: str, args: list){ 
+        for page in self.pages{
+            if request==page.route and method in page.methods{
+                return ("200 OK", page(**args))
+            }
+        }
+        return ("404 NOT FOUND", "")
     }
 
     func start(self, port=8000, info=True){
@@ -23,6 +32,32 @@ class App{
             sock.setsockopt(simpleserver.socket.SOL_SOCKET, simpleserver.socket.SO_REUSEADDR, 1)
             sock.bind((simpleserver.socket.socket.gethostbyname(simpleserver.socket.socket.gethostname()), port))
             sock.listen(1)
+
+            while True{
+                client, info=sock.accept()
+
+                response=client.recv(1024)
+
+                raw=response.split("\n")[0]
+                method=raw.split(" ")[0]
+                request="".join(raw.split(" ")[1])
+                args={}
+                if "?" in request{
+                    args_=raw.split(" ")[1].split("?")[1].split("&")
+                    for itm in args_{
+                        if "=" in itm{
+                            args[itm[0:itm.find("=")-1]]=itm[itm.find("=")+1:]
+                        }
+                    }
+                    request=request[0:request.find("?")-1]
+                }
+
+                type, data=self.extract_data(method,request,args)
+
+                n=client.send(f"HTTP/1.0 {type}\r\n\r\n{data}")
+            
+                client.close()       
+            }
         }
         print("Closing server")
     }
@@ -37,8 +72,8 @@ class Page{
         self.app.pages.append(self)
     }
     
-    func __call__(self){
-        self.__dict__["funct"]()
+    func __call__(self, **args){
+        return self.__dict__["funct"](**args)
     }
     
     func __str__(self){
