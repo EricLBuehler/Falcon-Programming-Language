@@ -42,6 +42,7 @@ struct compiler* new_compiler(){
     compiler->scope=SCOPE_GLOBAL;
     compiler->keep_return=false;
     compiler->nofree=false;
+    compiler->inclass=false;
     
     return compiler;
 }
@@ -876,7 +877,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
 
             //Create callable
-            if (compiler->scope!=SCOPE_GLOBAL){
+            if (compiler->scope!=SCOPE_GLOBAL && !compiler->inclass){
                 if (!isgen){
                     add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
                 }
@@ -1104,6 +1105,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             c.nodes=(*CLASS(expr->node)->code);
             struct compiler* comp=new_compiler();
             comp->scope=SCOPE_LOCAL;
+            comp->inclass=true;
             struct compiler* compiler_=compiler;
             compiler=comp;
             object* code=compile(comp, c, expr->start->line);
@@ -2972,7 +2974,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler->instructions,LOAD_CONST, idx, expr->start, expr->end);
 
             //Create callable
-            if (compiler->scope!=SCOPE_GLOBAL){
+            if (compiler->scope!=SCOPE_GLOBAL && !compiler->inclass){
                 if (!isgen){
                     add_instruction(compiler->instructions,MAKE_CLOSURE, argc, expr->start, expr->end);
                 }
