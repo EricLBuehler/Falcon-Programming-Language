@@ -1924,10 +1924,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }            
                     
                 instrs+=2;
-                
-                add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
-
-
+                if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
+                    add_instruction(compiler->instructions,JUMP_DELTA,target-instrs+2, tryn->start, tryn->end);
+                }
+                else{
+                    add_instruction(compiler->instructions,JUMP_DELTA,target-instrs, tryn->start, tryn->end);
+                }
             }
             if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
                 add_instruction(compiler->instructions,RAISE_EXC,0, expr->start, expr->end); 
