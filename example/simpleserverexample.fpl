@@ -1,0 +1,14 @@
+import simpleserver
+
+app=simpleserver.App(__name__)
+
+print(app)
+
+@app.page("/")
+func f(**args){
+    with file("file.html", "r") f{
+        return f.read()
+    }
+}
+
+app.start()
