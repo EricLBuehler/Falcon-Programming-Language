@@ -54,7 +54,7 @@ class App{
 
                 type, data=self.extract_data(method,request,args)
 
-                n=client.send(f"HTTP/1.0 {type}\r\n\r\n{data}")
+                n=client.sendall(f"HTTP/1.0 {type}\r\n\r\n{data}")
             
                 client.close()       
             }
