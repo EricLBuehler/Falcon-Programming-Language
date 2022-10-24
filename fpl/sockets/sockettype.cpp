@@ -14,6 +14,7 @@ object* socket_setsockopt(object* self, object* args, object* kwargs);
 object* socket_getsockopt(object* self, object* args, object* kwargs);
 object* socket_getsockname(object* self, object* args, object* kwargs);
 object* socket_gethostname(object* self, object* args, object* kwargs);
+object* socket_sendall(object* self, object* args, object* kwargs);
 #ifndef _WIN32
 object* socket_sethostname(object* self, object* args, object* kwargs);
 #endif
@@ -43,7 +44,7 @@ Method socket_methods[]={{"connect",socket_connect}, {"close",socket_close}, {"s
                         , {"bind",socket_bind}, {"listen",socket_listen}, {"accept",socket_accept}\
                         , {"setsockopt",socket_setsockopt}, {"getsockopt",socket_getsockopt}\
                         , {"getsockname",socket_getsockname}, {"gethostname",socket_gethostname}\
-                        , {NULL,NULL}};
+                        , {"sendall",socket_sendall}, {NULL,NULL}};
 #endif
 
 GetSets socket_getsets[]={{NULL,NULL}};

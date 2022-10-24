@@ -790,6 +790,57 @@ object* socket_sethostname(object* selftp, object* args, object* kwargs){
 }
 #endif
 
+object* socket_sendall(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if ((len!=2 && len!=3) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    
+    object* self=list_index_int(args, 0);
+    object* v=list_index_int(args, 1);
+    if (CAST_SOCKET(self)->closed){
+        vm_add_err(&InvalidOperationError, vm, "Socket closed");
+        return NULL; 
+    }
+    object* flags=NULL;
+    if (len==3){
+        flags=object_int(list_index_int(args, 2));
+        if (flags==NULL || !object_istype(flags->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
+            return NULL;
+        }
+    }
+    
+    string s=object_cstr(v).c_str();
+    char msg[s.size()+1];
+    strcpy(msg, s.c_str());
+
+    //Inspiration https://beej.us/guide/bgnet/html/
+    int total = 0;
+    const int len_msg=s.size();
+    int bytesleft = len_msg;
+    int n;
+
+    while(total < len_msg) {
+        n = send(CAST_SOCKET(self)->fd, msg + total, bytesleft, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+        if (n==SOCKET_ERROR){
+            #ifdef _WIN32
+            int err=WSAGetLastError();
+            #else
+            int err=errno;
+            errno=0;
+            #endif
+            vm_add_err(&OSError, vm, "[Errno %d] send failed" , err);
+            return NULL;
+        }
+        total += n;
+        bytesleft -= n;
+    }
+
+    return new_int_fromint(total);
+}
+
 object* socket_enter(object* self){
     return self;
 }
@@ -803,6 +854,8 @@ object* socket_exit(object* self){
     }
     return new_none();
 }
+
+
 
 object* new_socket_module(){
     SocketType=(*(TypeObject*)finalize_type(&SocketType));
