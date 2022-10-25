@@ -836,6 +836,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -850,6 +851,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -864,6 +866,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();  
         }
@@ -878,6 +881,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -932,6 +936,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid unary operand -: '%s'.", right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -996,7 +1001,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     
                     if (!object_istype(ob->type, &DictType)){
                         vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", ob->type->name->c_str());
-                        DISPATCH();
+                        goto exc;
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
@@ -1061,13 +1066,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
 
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL){
-                DISPATCH();
+                goto exc;
             }
             if (ret==TERM_PROGRAM|| ret==CALL_ERR){
                 GIL.unlock();
@@ -1090,7 +1095,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
 
             int stkwargsidx=0;
@@ -1145,7 +1150,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     
                     if (!object_istype(ob->type, &ListType) && !object_istype(ob->type, &TupleType)){
                         vm_add_err(&TypeError, vm, "Expected list or tuple object, got '%s' object", ob->type->name->c_str());
-                        DISPATCH();
+                        goto exc;
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
@@ -1177,7 +1182,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL){
-                DISPATCH();
+                goto exc;
             }
             if (ret==TERM_PROGRAM || ret==CALL_ERR){
                 GIL.unlock();
@@ -1218,7 +1223,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     
                     if (!object_istype(ob->type, &DictType)){
                         vm_add_err(&TypeError, vm, "Expected dict or tuple object, got '%s' object", ob->type->name->c_str());
-                        DISPATCH();
+                        goto exc;
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
@@ -1282,13 +1287,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* function=pop_dataframe(vm->objstack);
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
             if (ret==NULL){ 
-                DISPATCH();
+                goto exc;
             }
             if (ret==TERM_PROGRAM || ret==CALL_ERR){
                 GIL.unlock();
@@ -1339,10 +1344,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
-            if (ret==NULL || ret==CALL_ERR){ 
-                DISPATCH();
+            if (ret==NULL){ 
+                goto exc;
             }
-            if (ret==TERM_PROGRAM){
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+                GIL.unlock();
                 return TERM_PROGRAM;
             }
             
@@ -1355,12 +1361,15 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
-            if (ret==NULL || ret==CALL_ERR){ 
-                DISPATCH();
+            
+            if (ret==NULL){
+                goto exc;
             }
-            if (ret==TERM_PROGRAM){
+            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
+                GIL.unlock();
                 return TERM_PROGRAM;
             }
+
             add_dataframe(vm, vm->objstack, ret);
             DISPATCH();
         }  
@@ -1371,12 +1380,15 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_setattr(obj, attr, val);
             
-            if (ret==NULL || ret==CALL_ERR){ 
-                DISPATCH();
+            
+            if (ret==NULL){
+                goto exc;
             }
-            if (ret==TERM_PROGRAM){
+            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
+                GIL.unlock();
                 return TERM_PROGRAM;
             }
+
             DISPATCH();
         }
 
@@ -1405,7 +1417,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         RAISE_EXC: {
             if (!object_issubclass(peek_dataframe(vm->objstack), &ExceptionType)){
                 vm_add_err(&TypeError, vm, "Exceptions must be subclass of Exception");
-                DISPATCH();
+                goto exc;
             }
             if (vm->exception!=NULL){
                 FPLDECREF(vm->exception);
@@ -1471,6 +1483,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -1485,6 +1498,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for >=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -1499,6 +1513,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for <: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -1512,6 +1527,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for <=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -1609,11 +1625,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             fail:
             if (len>CAST_INT(arg)->val->to_int()){
                 vm_add_err(&ValueError, vm, "Too many values to unpack, expected %d", CAST_INT(arg)->val->to_int());
-                DISPATCH();
+                goto exc;
             }
             if (len<CAST_INT(arg)->val->to_int()){
                 vm_add_err(&ValueError, vm, "Not enough values to unpack, expected %d", CAST_INT(arg)->val->to_int());
-                DISPATCH();
+                goto exc;
             }
             
             DISPATCH();
@@ -1626,7 +1642,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_add(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
@@ -1639,7 +1655,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_sub(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
@@ -1652,7 +1668,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_mul(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();  
@@ -1665,7 +1681,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_div(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
@@ -1724,7 +1740,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                                 FILE* f=fopen((nm+"/"+string(en->d_name)).c_str(), "rb");
                                 if (f==NULL){
                                     vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+string(en->d_name)).c_str());
-                                    DISPATCH();
+                                    goto exc;
                                 }
 
 
@@ -1736,7 +1752,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                                 int i=fread(s, fsize, 1, f);
                                 if (i==0 && fsize>0){
                                     vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
-                                    DISPATCH();
+                                    goto exc;
                                 }
                                 s[fsize] = 0;
                                 string str(s);
@@ -1766,7 +1782,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         int i=fread(s, fsize, 1, f);
                         if (i==0 && fsize>0){
                             vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
-                            DISPATCH();
+                            goto exc;
                         }
                         s[fsize] = 0;
                         string str(s);
@@ -1793,7 +1809,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
 
             vm_add_err(&ImportError, vm, "'%s' not found", nm_plain.c_str());
-            DISPATCH();
+            goto exc;
         }
 
         IMPORT_FROM_MOD: {
@@ -1808,17 +1824,15 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (uint32_t i=0; i<len; i++){
                 object* o=object_getattr(lib, list_index_int(names, i));
             
-                if (o==CALL_ERR){ 
-                    DISPATCH();
-                }
-                if (o==TERM_PROGRAM){
+                if (o==TERM_PROGRAM || o==CALL_ERR){
+                    GIL.unlock();
                     return TERM_PROGRAM;
                 }
                 if (o==NULL){
                     FPLDECREF(vm->exception);
                     vm->exception=NULL;
                     vm_add_err(&ImportError,vm, "Cannot import name '%s' from '%s'",CAST_STRING(list_index_int(names, i))->val->c_str(), CAST_STRING(CAST_MODULE(lib)->name)->val->c_str());
-                    DISPATCH();
+                    goto exc;
                 }
                 vm_add_var_locals(vm, list_index_int(names, i), o);
             }
@@ -1855,6 +1869,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for %: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -1868,6 +1883,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -1879,7 +1895,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_pow(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
@@ -1892,7 +1908,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_mod(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
@@ -1998,10 +2014,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_setattr(obj, attr, NULL);
             
-            if (ret==NULL || ret==CALL_ERR){ 
-                DISPATCH()
+            if (ret==NULL){
+                goto exc;
             }
-            if (ret==TERM_PROGRAM){
+            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
+                GIL.unlock();
                 return TERM_PROGRAM;
             }
             DISPATCH();
@@ -2056,6 +2073,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand ~: '%s'.", right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -2070,6 +2088,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -2084,6 +2103,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -2098,6 +2118,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -2112,6 +2133,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -2123,6 +2145,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_and(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
@@ -2135,6 +2158,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_or(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
@@ -2148,6 +2172,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_lshift(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
@@ -2161,6 +2186,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_rshift(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
@@ -2213,6 +2239,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
@@ -2224,7 +2251,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_fldiv(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                DISPATCH();
+                goto exc;
             }
             vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
@@ -2278,10 +2305,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             dict_set(annon, attr, tp);
             
-            if (ret==NULL || ret==CALL_ERR){ 
-                DISPATCH();
+            if (ret==NULL){
+                goto exc;
             }
-            if (ret==TERM_PROGRAM){
+            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
+                GIL.unlock();
                 return TERM_PROGRAM;
             }
             DISPATCH();
@@ -2405,6 +2433,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for ^: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                goto exc;
             }
             DISPATCH();
         }
