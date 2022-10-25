@@ -3,7 +3,6 @@ import socket
 class App{
     func __init__(self, name){
         self.name=name
-        print(socket)
         self.pages=[]
     }
 
