@@ -31,7 +31,7 @@ class App{
         with simpleserver.socket.socket(simpleserver.socket.AF_INET, simpleserver.socket.SOCK_STREAM) sock{
             sock.setsockopt(simpleserver.socket.SOL_SOCKET, simpleserver.socket.SO_REUSEADDR, 1)
             sock.bind((simpleserver.socket.socket.gethostbyname(simpleserver.socket.socket.gethostname()), port))
-            sock.listen(1)
+            sock.listen(simpleserver.socket.SOMAXCONN)
 
             while True{
                 client, info=sock.accept()
