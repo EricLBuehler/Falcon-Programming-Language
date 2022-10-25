@@ -280,6 +280,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
                     }
                     break;
+                case T_CARET:
+                    add_instruction(compiler->instructions,BITWISE_XOR,0, expr->start, expr->end);
+                    if (!compiler->keep_return){
+                        add_instruction(compiler->instructions,POP_TOS, 0, expr->start, expr->end);
+                    }
+                    break;
                 case T_AMPERSAND:
                     add_instruction(compiler->instructions,BITWISE_AND,0, expr->start, expr->end);
                     if (!compiler->keep_return){
