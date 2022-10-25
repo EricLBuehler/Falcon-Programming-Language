@@ -691,7 +691,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
     object* code=CAST_CODE(codeobj)->co_code;
     object* lines=CAST_CODE(codeobj)->co_lines;
 
-    object* arg;
+    uint32_t arg;
     
     static void* dispatch_table[]={
         &&LOAD_CONST,
@@ -797,32 +797,32 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&BITWISE_XOR,
     };
     
-    object** code_array=CAST_LIST(code)->array;
+    uint32_t* code_array=CAST_CODE(codeobj)->code;
     
     DISPATCH();
     while(1){
         LOAD_CONST:{
-            add_dataframe(vm, vm->objstack, list_get(CAST_CODE(vm->callstack->head->code)->co_consts, arg));
+            add_dataframe(vm, vm->objstack, list_index_int(CAST_CODE(vm->callstack->head->code)->co_consts, arg));
             DISPATCH();
         }
 
         STORE_GLOBAL:{
-            vm_add_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            vm_add_var_globals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
             DISPATCH();
         }
 
         LOAD_GLOBAL:{
-            add_dataframe(vm, vm->objstack, vm_get_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            add_dataframe(vm, vm->objstack, vm_get_var_globals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
             DISPATCH();
         }
 
         STORE_NAME:{
-            vm_add_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
             DISPATCH();
         }
 
         LOAD_NAME:{
-            add_dataframe(vm, vm->objstack, vm_get_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            add_dataframe(vm, vm->objstack, vm_get_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
             DISPATCH();
         }
 
@@ -961,7 +961,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* args=pop_dataframe(vm->objstack); //<- Args
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, NULL, vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, NULL, vm->globals, vm->global_annotations);
 
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
@@ -973,7 +973,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         CALL_METHOD: {
-            uint32_t argc=CAST_INT(arg)->val->to_int();
+            uint32_t argc=arg;
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
             uint32_t kwargc=argc-posargc;
 
@@ -1086,7 +1086,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         CALL_FUNCTION: {
             object* function=pop_dataframe(vm->objstack);
             
-            uint32_t argc=CAST_INT(arg)->val->to_int();
+            uint32_t argc=arg;
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
             uint32_t kwargc=argc-posargc;
 
@@ -1195,7 +1195,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         CALL_FUNCTION_BOTTOM: {
-            uint32_t argc=CAST_INT(arg)->val->to_int();
+            uint32_t argc=arg;
             uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
             uint32_t kwargc=argc-posargc;
 
@@ -1307,7 +1307,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         BUILD_LIST: {
             object* list=new_list();
-            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+            for (int i=0; i<arg; i++){
                 list_append(list, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, list);
@@ -1316,7 +1316,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         BUILD_TUPLE: {
             object* tuple=new_tuple();
-            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+            for (int i=0; i<arg; i++){
                 tuple_append(tuple, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, tuple);
@@ -1325,7 +1325,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         BUILD_DICT: {
             object* dict=new_dict();
-            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+            for (int i=0; i<arg; i++){
                 object* name=pop_dataframe(vm->objstack);
                 
                 dict_set(dict, name, pop_dataframe(vm->objstack));
@@ -1341,7 +1341,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         LOAD_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
-            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
             if (ret==NULL){ 
@@ -1358,7 +1358,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         LOAD_METHOD: {
             object* obj=peek_dataframe(vm->objstack);
-            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
             
@@ -1377,7 +1377,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         STORE_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
-            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_setattr(obj, attr, val);
             
             
@@ -1396,14 +1396,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* o=pop_dataframe(vm->objstack);
             object* val=object_istruthy(o);
             if (!istrue(val)){
-                (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
+                (*ip)=(*ip)+arg;
                 DISPATCH();
             }
             DISPATCH();
         }
 
         JUMP_DELTA: {
-            (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
+            (*ip)=(*ip)+arg;
             DISPATCH();
         }
 
@@ -1453,7 +1453,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         SETUP_TRY: {
-            add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), TRY_BLOCK);
+            add_blockframe(ip, vm, vm->blockstack, arg, TRY_BLOCK);
             DISPATCH();
         }
 
@@ -1539,8 +1539,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         FOR_TOS_ITER: {
-            if (vm->blockstack->size==0 || vm->blockstack->head->type!=FOR_BLOCK || (vm->blockstack->head->type==FOR_BLOCK && vm->blockstack->head->arg!=CAST_INT(arg)->val->to_int()) ){
-                add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), FOR_BLOCK);
+            if (vm->blockstack->size==0 || vm->blockstack->head->type!=FOR_BLOCK || (vm->blockstack->head->type==FOR_BLOCK && vm->blockstack->head->arg!=arg) ){
+                add_blockframe(ip, vm, vm->blockstack, arg, FOR_BLOCK);
             }
             
             object* it=peek_dataframe(vm->objstack);
@@ -1557,7 +1557,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         JUMP_TO: {
-            (*ip)=CAST_INT(arg)->val->to_long();
+            (*ip)=arg;
             DISPATCH();
         }
 
@@ -1623,12 +1623,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
             fail:
-            if (len>CAST_INT(arg)->val->to_int()){
-                vm_add_err(&ValueError, vm, "Too many values to unpack, expected %d", CAST_INT(arg)->val->to_int());
+            if (len>arg){
+                vm_add_err(&ValueError, vm, "Too many values to unpack, expected %d", arg);
                 goto exc;
             }
-            if (len<CAST_INT(arg)->val->to_int()){
-                vm_add_err(&ValueError, vm, "Not enough values to unpack, expected %d", CAST_INT(arg)->val->to_int());
+            if (len<arg){
+                vm_add_err(&ValueError, vm, "Not enough values to unpack, expected %d", arg);
                 goto exc;
             }
             
@@ -1644,7 +1644,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -1657,7 +1657,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -1670,7 +1670,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();  
         }
 
@@ -1683,12 +1683,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
         }
 
         IMPORT_NAME: {
-            object* name=CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* name=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             string nm_plain=*CAST_STRING(name)->val;
 
             string data="";
@@ -1855,7 +1855,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         DEL_NAME: {
-            vm_del_var_locals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            vm_del_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
             DISPATCH();
         }
 
@@ -1897,7 +1897,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -1910,7 +1910,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -1968,7 +1968,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             string s="";
             vector<string> strs;
             strs.clear();
-            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+            for (int i=0; i<arg; i++){
                 object* flag = pop_dataframe(vm->objstack);
                 object* o=pop_dataframe(vm->objstack);
                 if (istrue(flag)){
@@ -1990,7 +1990,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* o=pop_dataframe(vm->objstack);
             object* val=object_istruthy(o);
             if (istrue(val)){
-                (*ip)=(*ip)+CAST_INT(arg)->val->to_long();
+                (*ip)=arg;
                 DISPATCH();
             }
             DISPATCH();
@@ -2005,13 +2005,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }        
 
         DEL_GLBL: {
-            vm_del_var_globals(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            vm_del_var_globals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
             DISPATCH();
         }
 
         DEL_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
-            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_setattr(obj, attr, NULL);
             
             if (ret==NULL){
@@ -2044,23 +2044,23 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, FPLINCREF(vm->callstack->head->annotations), vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, FPLINCREF(vm->callstack->head->annotations), vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
 
         LOAD_NONLOCAL:{
-            add_dataframe(vm, vm->objstack, vm_get_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            add_dataframe(vm, vm->objstack, vm_get_var_nonlocal(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
             DISPATCH();
         }
 
         STORE_NONLOCAL:{
-            vm_add_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            vm_add_var_nonlocal(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
             DISPATCH();
         }
 
         DEL_NONLOCAL:{
-            vm_del_var_nonlocal(vm, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            vm_del_var_nonlocal(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
             DISPATCH();
         }
         
@@ -2147,7 +2147,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -2160,7 +2160,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
             DISPATCH();
         }
@@ -2174,7 +2174,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
             DISPATCH();
         }
@@ -2188,7 +2188,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             
             DISPATCH();
         }
@@ -2253,7 +2253,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, CAST_CODE(vm->callstack->head->code)->co_names->type->slot_mappings->slot_get(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -2272,19 +2272,19 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         ANNOTATE_GLOBAL:{
             object* tp=pop_dataframe(vm->objstack);
-            annotate_global(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            annotate_global(tp, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
             DISPATCH();
         }
 
         ANNOTATE_NAME:{
             object* tp=pop_dataframe(vm->objstack);
-            annotate_var(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            annotate_var(tp, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
             DISPATCH();
         }
 
         ANNOTATE_NONLOCAL:{
             object* tp=pop_dataframe(vm->objstack);
-            annotate_nonlocal(tp, list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            annotate_nonlocal(tp, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
             DISPATCH();
         } 
 
@@ -2293,7 +2293,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             object* obj=pop_dataframe(vm->objstack);
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
-            object* attr=list_get(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
             object* ret=object_setattr(obj, attr, val);
             
             object* annon=object_getattr(obj, str_new_fromstr("__annotations__"));
@@ -2342,7 +2342,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, NULL, vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, NULL, vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2367,14 +2367,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, FPLINCREF(vm->callstack->head->annotations), vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, FPLINCREF(vm->callstack->head->annotations), vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
 
         BUILD_SET: {
             object* set=new_set();
-            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+            for (int i=0; i<arg; i++){
                 set_append(set, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, set);
@@ -2382,7 +2382,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         ENTER_WHILE: {
-            add_blockframe(ip, vm, vm->blockstack, CAST_INT(arg)->val->to_int(), WHILE_BLOCK);
+            add_blockframe(ip, vm, vm->blockstack, arg, WHILE_BLOCK);
             DISPATCH();
         }
 
@@ -2406,7 +2406,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         SEQ_APPEND: {
             dataframe* d=vm->objstack->head;
-            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+            for (int i=0; i<arg; i++){
                 d=d->next;
             }
             d->obj->type->slot_mappings->slot_append(d->obj, pop_dataframe(vm->objstack));
@@ -2415,7 +2415,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         DICT_SET: {
             dataframe* d=vm->objstack->head;
-            for (int i=0; i<CAST_INT(arg)->val->to_int(); i++){
+            for (int i=0; i<arg; i++){
                 d=d->next;
             }
             object* v=pop_dataframe(vm->objstack);
