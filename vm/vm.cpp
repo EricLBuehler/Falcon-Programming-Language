@@ -783,6 +783,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&EXIT_WITH,
         &&SEQ_APPEND,
         &&DICT_SET,
+        &&BITWISE_XOR,
     };
     
     object** code_array=CAST_LIST(code)->array;
@@ -2385,6 +2386,20 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             object* v=pop_dataframe(vm->objstack);
             dict_set(d->obj, pop_dataframe(vm->objstack), v);
+            DISPATCH();
+        }
+        
+        BITWISE_XOR:{
+            struct object* right=pop_dataframe(vm->objstack);
+            struct object* left=pop_dataframe(vm->objstack);
+            
+            object* ret=object_xor(left, right);
+            if (ret!=NULL){
+                add_dataframe(vm, vm->objstack, ret);
+            }
+            else{
+                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for ^: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            }
             DISPATCH();
         }
     }
