@@ -68,6 +68,7 @@ enum precedence {
     EQUALS,         
     LESSGREATER,
     BITWISE_OR_PREC,
+    BITWISE_XOR_PREC,
     BITWISE_AND_PREC,
     BITWISE_SHIFT_PREC,
     SUM,          
@@ -136,6 +137,8 @@ enum precedence get_precedence(Token t){
             return BITWISE_SHIFT_PREC;
         case T_QMARK:
             return TERNARY;
+        case T_CARET:
+            return BITWISE_XOR_PREC;
         default:
             return LOWEST;
     }

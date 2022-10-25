@@ -2178,6 +2178,7 @@ class Parser{
                     case T_IN:
                     case T_FLDIV:
                     case T_IFLDIV:
+                    case T_CARET:
                         left=make_binop(ret, left, this->current_tok.type);
                         break;
                     
