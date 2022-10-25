@@ -1991,6 +1991,8 @@ object* module_repr(object* self);
 object* module_cmp(object* self, object* other, uint8_t type);
 object* module_new_fromdict(object* dict, object* name);
 object* module_dict(object* self);
+object* module_getattr(object* self, object* attr);
+object* module_setattr(object* self, object* attr, object* val);
 
 typedef struct ModuleObject{
     OBJHEAD_EXTRA
@@ -2042,8 +2044,8 @@ TypeObject ModuleType={
     NULL, //bases
     offsetof(ModuleObject, dict), //dict_offset
     NULL, //dict
-    object_genericgetattr, //slot_getattr
-    object_genericsetattr, //slot_setattr
+    module_getattr, //slot_getattr
+    module_setattr, //slot_setattr
     0, //slot_init
     0, //slot_new
     0, //slot_del
