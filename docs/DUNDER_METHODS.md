@@ -38,6 +38,7 @@
 - ```__not__(self)```
 - ```__and__(self, other)```
 - ```__or__(self, other)```
+- ```__xor__(self, other```
 - ```__lshift__(self, number)```
 - ```__rshift__(self, number)```
 
