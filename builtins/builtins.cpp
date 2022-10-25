@@ -28,6 +28,10 @@ object* builtin___build_class__(object* self, object* args){
         vm_add_err(&TypeError, vm, "expected function");
         return NULL;
     }
+    if (!object_istype(name->type, &StrType)){
+        vm_add_err(&TypeError, vm, "expected str");
+        return NULL;
+    }
     
     uint32_t ip=0;
     add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, FPLINCREF(CAST_FUNC(function)->code), function, &ip);
@@ -41,9 +45,7 @@ object* builtin___build_class__(object* self, object* args){
 
     dict=FPLINCREF(vm->callstack->head->locals);
     pop_callframe(vm->callstack);
-    if (ret==NULL){
-        return NULL;
-    }
+    ERROR_RET(ret);
     
     object* t=new_type(CAST_STRING(name)->val, args->type->slot_mappings->slot_get(args, str_new_fromstr("bases")), dict);
     return t;
@@ -136,10 +138,11 @@ object* builtin_locals(object* self, object* args){
 object* builtin_alllocals(object* self, object* args){
     object* locals=new_list();
     struct callframe* c=vm->callstack->head;
-    while(c){
+    while(c && c->next!=NULL){
         list_append(locals, c->locals);
         c=c->next;
     }
+    list_append(locals, vm->globals);
     return locals;
 }
     
