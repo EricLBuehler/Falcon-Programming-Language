@@ -449,3 +449,21 @@ object* builtin_sum(object* self, object* args){
     }
     return val;
 }
+
+object* builtin_hasattr(object* self, object* args){
+    object* ob=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* attr=args->type->slot_mappings->slot_get(args, str_new_fromstr("attr"));
+    
+    if (!object_istype(attr->type, &StrType)){
+        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", attr->type->name->c_str());
+        return NULL;
+    }
+    attr=object_getattr(ob, attr);
+    if (attr==NULL && vm->exception!=NULL && object_issubclass(vm->exception, &ExceptionType)){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+        return new_bool_false();
+    }
+    FPLDECREF(attr);
+    return new_bool_true();
+}
