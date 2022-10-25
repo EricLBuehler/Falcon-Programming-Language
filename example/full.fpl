@@ -134,3 +134,7 @@ while i<10{
 print(True and False)
 print(True or False)
 print(not 1==1)
+
+print(100^2)
+print(100^2*3)
+print(100^6)
