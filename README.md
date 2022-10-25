@@ -43,6 +43,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```property```
 - ```getannotation```
 - ```sum```
+- ```hasattr```
 
 ### Builtin libraries ###
 - ```time```
