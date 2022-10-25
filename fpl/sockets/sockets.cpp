@@ -815,7 +815,7 @@ object* socket_sendall(object* selftp, object* args, object* kwargs){
     string s=object_cstr(v).c_str();
     char msg[s.size()+1];
     strcpy(msg, s.c_str());
-
+    
     //Inspiration https://beej.us/guide/bgnet/html/
     int total = 0;
     const int len_msg=s.size();
@@ -918,6 +918,9 @@ object* new_socket_module(){
     dict_set(dict, str_new_fromstr("SO_ENABLED"), new_int_fromint(1));
     dict_set(dict, str_new_fromstr("SO_DISABLED"), new_int_fromint(0));
     dict_set(dict, str_new_fromstr("SO_CONDITIONAL_ACCEPT"), new_int_fromint(SO_CONDITIONAL_ACCEPT));
+
+    //Other
+    dict_set(dict, str_new_fromstr("SOMAXCONN"), new_int_fromint(SOMAXCONN));
     
 
     socket_init();
