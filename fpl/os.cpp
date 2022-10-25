@@ -1,10 +1,10 @@
 object* os_chdir(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 1);
+    object* val=list_index_int(args, 0);
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -24,11 +24,11 @@ object* os_chdir(object* self, object* args, object* kwargs){
 
 object* os_mkdir(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 1);
+    object* val=list_index_int(args, 0);
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -49,8 +49,8 @@ object* os_mkdir(object* self, object* args, object* kwargs){
 
 object* os_getcwd(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if (len!=0 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
         return NULL; 
     }
 
@@ -68,11 +68,11 @@ object* os_getcwd(object* self, object* args, object* kwargs){
 
 object* os_rmdir(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 1);
+    object* val=list_index_int(args, 0);
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -91,6 +91,12 @@ object* os_rmdir(object* self, object* args, object* kwargs){
 }
 
 object* os_listdir(object* self, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=0 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
+        return NULL; 
+    }
+
     char buffer[PATH_MAX];
     if (getcwd(buffer, sizeof(buffer)) == NULL) {
         vm_add_err(&FileNotFoundError, vm, "[ERRNO: %d]: Cannot get current working directory", errno);
@@ -120,11 +126,11 @@ object* os_listdir(object* self, object* args, object* kwargs){
 
 object* os_system(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 1);
+    object* val=list_index_int(args, 0);
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 

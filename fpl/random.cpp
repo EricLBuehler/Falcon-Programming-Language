@@ -13,13 +13,13 @@ double fRand(double lo, double hi)
 
 object* random_randint(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
 
-    object* low=object_int(list_index_int(args, 1));
-    object* high=object_int(list_index_int(args, 2));
+    object* low=object_int(list_index_int(args, 0));
+    object* high=object_int(list_index_int(args, 1));
 
     if (low==NULL || !object_istype(low->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
@@ -41,16 +41,16 @@ object* random_randint(object* self, object* args, object* kwargs){
 
 object* random_random(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if ((len!=3 && len!=1) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 or 3 arguments, got %d", len);
+    if ((len!=2 && len!=0) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 0 or 2 arguments, got %d", len);
         return NULL; 
     }
 
     double lo=0;
     double hi=1;
     if (len==2){
-        object* low=object_int(list_index_int(args, 1));
-        object* high=object_int(list_index_int(args, 2));
+        object* low=object_int(list_index_int(args, 0));
+        object* high=object_int(list_index_int(args, 1));
 
         if (low==NULL || !object_istype(low->type, &IntType)){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
@@ -73,12 +73,12 @@ object* random_random(object* self, object* args, object* kwargs){
 
 object* random_choice(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
 
-    object* ob=list_index_int(args, 1);
+    object* ob=list_index_int(args, 0);
     if (ob->type->slot_mappings==NULL || ob->type->slot_mappings->slot_get==NULL\
      || ob->type->slot_mappings->slot_len==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());

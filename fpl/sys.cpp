@@ -1,10 +1,10 @@
 object* sys_getsizeof(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 1);
+    object* val=list_index_int(args, 0);
 
     if (val->type->size==0){
         return new_int_frombigint(new BigInt(val->type->var_base_size));        
@@ -14,11 +14,11 @@ object* sys_getsizeof(object* self, object* args, object* kwargs){
 
 object* sys_getrefcnt(object* self, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-    object* val=list_index_int(args, 1);
+    object* val=list_index_int(args, 0);
 
     return new_int_fromint(val->refcnt);
 }
