@@ -522,6 +522,7 @@ object* import_name(string data, object* name){
 
     string* g=glblfildata;
     glblfildata=new string(data);
+    compiler->scope=SCOPE_LOCAL;
     object* code=compile(compiler, ast, 0);
     glblfildata=g;
     
