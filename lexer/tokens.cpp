@@ -60,6 +60,7 @@ enum token_type{
     T_IFLDIV,
     T_QMARK,
     T_AT,
+    T_CARET,
 };
 
 string token_type_to_str(enum token_type type){
@@ -120,6 +121,7 @@ string token_type_to_str(enum token_type type){
     case T_IFLDIV:return "//=";
     case T_QMARK:return "?";
     case T_AT:return "@";
+    case T_CARET:return "^";
     }
     return "";
 }
