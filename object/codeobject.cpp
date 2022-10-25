@@ -13,6 +13,12 @@ object* code_new_fromargs(object* args){
     CAST_CODE(obj)->co_code=FPLINCREF(list_index_int(args, 2));
     CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
     CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
+
+    const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
+    CAST_CODE(obj)->code=new uint32_t[len];
+    for (int i=0; i<len; i++){
+        CAST_CODE(obj)->code[i]=CAST_INT(list_index_int(CAST_CODE(obj)->co_code, i))->val->to_int();
+    }
     
     return obj;
 }

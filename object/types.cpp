@@ -454,6 +454,7 @@ typedef struct CodeObject{
     object* co_lines;
     uint32_t co_instructions;
     string* filedata;
+    uint32_t* code;
 }CodeObject;
 
 static NumberMethods code_num_methods{
