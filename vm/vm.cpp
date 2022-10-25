@@ -247,15 +247,6 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
 }
 
 struct object* vm_get_var_locals(struct vm* vm, object* name){
-    if (vm->callstack->head->callable!=NULL && object_istype(vm->callstack->head->callable->type, &FuncType)\
-    && CAST_FUNC(vm->callstack->head->callable)->closure!=NULL){
-        object* closure=CAST_FUNC(vm->callstack->head->callable)->closure;
-        //Check if name in closure
-        if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-            return CAST_DICT(closure)->val->at(name);
-        }
-    }
-    
     struct callframe* frame=vm->callstack->head;
     while(frame){
         for (auto k: (*CAST_DICT(frame->locals)->val)){
@@ -264,9 +255,18 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
             }
         }
 
+        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
+        && CAST_FUNC(frame->callable)->closure!=NULL){
+            object* closure=CAST_FUNC(frame->callable)->closure;
+            //Check if name in closure
+            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                return CAST_DICT(closure)->val->at(name);
+            }
+        }
+
         frame=frame->next;
     }
-    
+
     for (size_t i=0; i<nbuiltins; i++){
         if (object_istype(builtins[i]->type, &BuiltinType)){
             if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
@@ -277,6 +277,13 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
             if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
                 return builtins[i];
             } 
+        }
+    }
+
+    
+    for (auto k: (*CAST_DICT(vm->globals)->val)){
+        if (istrue(object_cmp(name, k.first, CMP_EQ))){
+            return  CAST_DICT(vm->globals)->val->at(k.first);
         }
     }
 
@@ -544,6 +551,9 @@ object* import_name(string data, object* name){
     ::vm->global_annotations=::vm->callstack->head->annotations;
 
     object* ret=run_vm(code, &::vm->ip);
+
+    ERROR_RET(ret);
+
     object* dict=::vm->callstack->head->locals;
 
     object* o=module_new_fromdict(dict, name);
@@ -946,8 +956,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* args=pop_dataframe(vm->objstack); //<- Args
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
-            
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, NULL);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, NULL, vm->globals, vm->global_annotations);
 
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
@@ -1057,10 +1066,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (ret==NULL || ret==CALL_ERR){
+            if (ret==NULL){
                 DISPATCH();
             }
-            if (ret==TERM_PROGRAM){
+            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1167,10 +1176,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (ret==NULL || ret==CALL_ERR){
+            if (ret==NULL){
                 DISPATCH();
             }
-            if (ret==TERM_PROGRAM){
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1278,10 +1287,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
-            if (ret==CALL_ERR){ 
+            if (ret==NULL){ 
                 DISPATCH();
             }
-            if (ret==NULL || ret==TERM_PROGRAM){
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1733,9 +1742,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                                 string str(s);
                                 
                                 object* o=import_name(str, str_new_fromstr(filename));
-                                if (o==TERM_PROGRAM){
-                                    return TERM_PROGRAM;
-                                }
+                                ERROR_RET(o);
                                 dict_set(dict, str_new_fromstr(filename), o);
                             }
                             closedir(dr);
@@ -1780,9 +1787,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 }
                 
                 object* o=import_name(data, name);
-                if (o==TERM_PROGRAM){
-                    return TERM_PROGRAM;
-                }
+                ERROR_RET(o);
                 add_dataframe(vm, vm->objstack, o);
                 DISPATCH();
             }
@@ -2022,7 +2027,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, FPLINCREF(vm->callstack->head->annotations));
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, FPLINCREF(vm->callstack->head->annotations), vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2309,7 +2314,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, NULL);
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, NULL, vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2334,7 +2339,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, FPLINCREF(vm->callstack->head->annotations));
+            object* func=func_new_code(code, args, kwargs, CAST_INT(arg)->val->to_int(), name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, FPLINCREF(vm->callstack->head->annotations), vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2455,6 +2460,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             cout<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err);
         }
         cout<<endl;
+        /*
+        if (vm->callstack->size>1){
+            return CALL_ERR;
+        */
 
         if (vm->exception!=NULL){
             FPLDECREF(vm->exception);
@@ -2464,10 +2473,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         //Free GIL
         GIL.unlock();
         //
-        
-        if (vm->callstack->size>1){
-            return CALL_ERR;
-        }
         return NULL;
     }
 
