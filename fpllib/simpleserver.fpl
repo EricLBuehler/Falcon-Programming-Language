@@ -24,7 +24,6 @@ class App{
     }
 
     func start(self, port=8000, info=True){
-        print("kwargs is",port,info)
         if info{
             print(f"Starting server at {simpleserver.socket.socket.gethostbyname(simpleserver.socket.socket.gethostname())}:{port}")
         }
