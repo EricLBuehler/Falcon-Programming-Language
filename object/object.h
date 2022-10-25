@@ -40,6 +40,7 @@ typedef struct{
     binopfunc slot_lshift;
     binopfunc slot_rshift;
     binopfunc slot_fldiv;
+    binopfunc slot_xor;
 
     //unaryops
     unaryfunc slot_neg;
@@ -265,6 +266,7 @@ object* type_wrapper_or(object* self, object* args, object* kwargs);
 object* type_wrapper_lshift(object* self, object* args, object* kwargs);
 object* type_wrapper_rshift(object* self, object* args, object* kwargs);
 object* type_wrapper_fldiv(object* self, object* args, object* kwargs);
+object* type_wrapper_xor(object* self, object* args, object* kwargs);
 
 object* type_wrapper_bool(object* self, object* args, object* kwargs);
 object* type_wrapper_neg(object* self, object* args, object* kwargs);
@@ -478,6 +480,7 @@ enum opcode{
     EXIT_WITH,
     SEQ_APPEND,
     DICT_SET,
+    BITWISE_XOR,
 };
 
 

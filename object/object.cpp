@@ -225,6 +225,13 @@ object* object_or(object* left, object* right){
     return left->type->slot_number->slot_or(left, right);
 }
 
+object* object_xor(object* left, object* right){
+    if (right->type->slot_number==NULL || right->type->slot_number->slot_or==NULL || left->type->slot_number==NULL || left->type->slot_number->slot_or==NULL){
+        return NULL;
+    }
+    return left->type->slot_number->slot_xor(left, right);
+}
+
 object* object_lshift(object* left, object* right){
     if (right->type->slot_number==NULL || right->type->slot_number->slot_lshift==NULL || left->type->slot_number==NULL || left->type->slot_number->slot_lshift==NULL){
         return NULL;
@@ -773,28 +780,9 @@ object* object_in_iter(object* left, object* right){
     object* one=new_int_fromint(0);
     object* res=NULL;
     
-    object* o=o=iter->type->slot_next(iter);
-    object* v;
-    while (vm->exception==NULL){
-        if (o->type->slot_mappings->slot_len==NULL){
-            if (istrue(object_cmp(o, left, CMP_EQ))){
-                FPLDECREF(iter);
-                FPLDECREF(one);
-                res=new_bool_true();
-                break;
-            }
-            goto cont;
-        }
-        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-            FPLDECREF(iter);
-            FPLDECREF(one);
-            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-            return NULL;
-        }
-        v=o->type->slot_mappings->slot_get(o, one);
-        ERROR_RET(v);
-        
-        if (istrue(object_cmp(v, left, CMP_EQ))){
+    object* o=iter->type->slot_next(iter);
+    while (vm->exception==NULL){        
+        if (istrue(object_cmp(o, left, CMP_EQ))){
             FPLDECREF(one);
             FPLDECREF(iter);
             res=new_bool_true();

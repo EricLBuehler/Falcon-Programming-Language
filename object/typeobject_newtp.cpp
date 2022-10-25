@@ -313,6 +313,18 @@ object* newtp_or(object* self, object* other){
     return val;
 }
 
+object* newtp_xor(object* self, object* other){
+    object* n=object_getattr(self, str_new_fromstr("__xor__"));
+    ERROR_RET(n);
+    
+    object* args=new_tuple();
+    
+    args->type->slot_mappings->slot_append(args, other);
+    object* val=object_call_nokwargs(n, args);
+    ERROR_RET(val);
+    return val;
+}
+
 object* newtp_lshift(object* self, object* other){
     object* n=object_getattr(self, str_new_fromstr("__lshift__"));
     ERROR_RET(n);

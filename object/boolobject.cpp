@@ -172,6 +172,19 @@ object* bool_or(object* self, object* other){
     return res;
 }
 
+object* bool_xor(object* self, object* other){
+    if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
+        return NULL;
+    }
+    object* otherv=object_int(other);
+    if (otherv==NULL || !object_istype(otherv->type, &IntType)){
+        return NULL;
+    }
+    object* res=new_int_fromint(CAST_BOOL(self)->val ^ CAST_INT(otherv)->val->to_int());
+    FPLDECREF(otherv);
+    return res;
+}
+
 object* bool_lshift(object* self, object* other){
     if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
         return NULL;
