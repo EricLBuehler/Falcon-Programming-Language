@@ -779,6 +779,8 @@ typedef struct FuncObject{
     object* annotations;
     bool isgen;
     object* closure_annotations;
+    object* globals;
+    object* global_anno;
 }FuncObject;
 
 static NumberMethods func_num_methods{
@@ -3510,14 +3512,13 @@ object* type_call(object* self, object* args, object* kwargs){
     }
     
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
+    ERROR_RET(o);
     if (o != NULL && o->type->slot_posttpcall!=NULL){
         o->type->slot_posttpcall(o);
     }
     if (o != NULL && o->type->slot_init!=NULL){
         object* v=o->type->slot_init(o, args, kwargs);
-        if (v==NULL){
-            return v;
-        }
+        ERROR_RET(v);
     }
     return o;
 }

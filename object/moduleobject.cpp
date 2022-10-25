@@ -63,6 +63,7 @@ object* module_getattr(object* obj, object* attr){
             }
         }
     }
+    
     if (res==NULL){
         vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
     }

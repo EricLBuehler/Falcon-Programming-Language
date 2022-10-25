@@ -1,5 +1,5 @@
 object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure, int type, int flags\
-    , object* stargs, object* stkwargs, object* annotations, bool isgen, object* closure_annotations){
+    , object* stargs, object* stkwargs, object* annotations, bool isgen, object* closure_annotations, object* globals, object* global_anno){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
     CAST_FUNC(obj)->dict=new_dict();
@@ -15,6 +15,9 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->annotations=annotations;
     CAST_FUNC(obj)->isgen=isgen;
     CAST_FUNC(obj)->closure_annotations=closure_annotations;
+    CAST_FUNC(obj)->globals=globals;
+    CAST_FUNC(obj)->global_anno=global_anno;
+
 
     return obj;
 }
@@ -29,6 +32,11 @@ object* func_call(object* self, object* args, object* kwargs){
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, &ip);
     vm->callstack->head->locals=new_dict();
     dict_set(vm->callstack->head->locals, str_new_fromstr("__annotations__"), vm->callstack->head->annotations);
+    object* globals=vm->globals;
+    object* global_anno=vm->global_annotations;
+
+    vm->globals=CAST_FUNC(self)->globals;
+    vm->global_annotations=CAST_FUNC(self)->global_anno;
     
     
     int flags=CAST_FUNC(self)->flags;
@@ -97,6 +105,11 @@ object* func_call(object* self, object* args, object* kwargs){
     }
 
     pop_callframe(vm->callstack);
+
+    vm->globals=globals;
+    vm->global_annotations=global_anno;
+
+    ERROR_RET(ret);
     return ret;
 }
 
@@ -104,6 +117,11 @@ object* func_call_nostack(object* self, object* args, object* kwargs){
     uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
     uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     uint32_t kwargc=argc-posargc;
+    object* globals=vm->globals;
+    object* global_anno=vm->global_annotations;
+
+    vm->globals=CAST_FUNC(self)->globals;
+    vm->global_annotations=CAST_FUNC(self)->global_anno;
 
     if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
     || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
@@ -120,6 +138,9 @@ object* func_call_nostack(object* self, object* args, object* kwargs){
     uint32_t ip=0;
 
     object* ret=run_vm(CAST_FUNC(self)->code, &ip);
+
+    vm->globals=globals;
+    vm->global_annotations=global_anno;
     return ret;
 }
 
