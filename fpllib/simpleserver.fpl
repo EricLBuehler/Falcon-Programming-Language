@@ -3,11 +3,12 @@ import socket
 class App{
     func __init__(self, name){
         self.name=name
+        print(socket)
         self.pages=[]
     }
 
     func page(self, route, methods=[]){
-        return lambda x{return simpleserver.Page(x, route, methods, self)}
+        return lambda x{return Page(x, route, methods, self)}
     }
 
     func __str__(self){
