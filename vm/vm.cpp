@@ -1429,7 +1429,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 FPLDECREF(vm->exception);
             }
             vm->exception=pop_dataframe(vm->objstack);
-            DISPATCH();
+            goto exc;
         }
 
         CLEAR_EXC: {
