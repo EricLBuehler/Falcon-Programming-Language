@@ -1995,7 +1995,6 @@ object* module_cmp(object* self, object* other, uint8_t type);
 object* module_new_fromdict(object* dict, object* name);
 object* module_dict(object* self);
 object* module_getattr(object* self, object* attr);
-object* module_setattr(object* self, object* attr, object* val);
 
 typedef struct ModuleObject{
     OBJHEAD_EXTRA
@@ -2048,7 +2047,7 @@ TypeObject ModuleType={
     offsetof(ModuleObject, dict), //dict_offset
     NULL, //dict
     module_getattr, //slot_getattr
-    module_setattr, //slot_setattr
+    object_genericsetattr, //slot_setattr
     0, //slot_init
     0, //slot_new
     0, //slot_del
@@ -3513,13 +3512,13 @@ object* type_call(object* self, object* args, object* kwargs){
     }
     
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
-    ERROR_RET(o);
+    ERROR_RET_NOCALLERR(o);
     if (o != NULL && o->type->slot_posttpcall!=NULL){
         o->type->slot_posttpcall(o);
     }
     if (o != NULL && o->type->slot_init!=NULL){
         object* v=o->type->slot_init(o, args, kwargs);
-        ERROR_RET(v);
+        ERROR_RET_NOCALLERR(v);
     }
     return o;
 }

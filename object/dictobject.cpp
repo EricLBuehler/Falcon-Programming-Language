@@ -22,8 +22,14 @@ object* dict_new(object* type, object* args, object* kwargs){
     if (CAST_LIST(args)->size!=0 && object_istype(list_index_int(args, 0)->type, &DictType)){
         return FPLINCREF(list_index_int(args, 0));
     }
-    if (CAST_LIST(args)->size!=0 && list_index_int(args, 0)->type->slot_iter!=NULL){
+    if (CAST_LIST(args)->size!=0){
         object* o=list_index_int(args, 0);
+        
+        if (o->type->slot_next==NULL){
+            vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", o->type->name->c_str());
+            return NULL;
+        }
+
         object* iter=o->type->slot_iter(o);
         
         if (iter->type->slot_next==NULL){

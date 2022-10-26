@@ -89,8 +89,8 @@ typedef struct object_type{
     size_t var_base_size;
     bool gc_trackable;
     object* bases;
-    size_t dict_offset; //If 0, no dict
-    object* dict; //None if no dict
+    size_t dict_offset; //BULL if no dict
+    object* dict; //NULL if no dict
     getattrfunc slot_getattr;
     setattrfunc slot_setattr;
 
