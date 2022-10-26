@@ -32,12 +32,12 @@ using namespace std;
 #define TERM_PROGRAM (object*)0x2000
 #define SUCCESS (object*)0x3000
 
-#define ERROR_RET(v) if (v==NULL){return CALL_ERR;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
+#define ERROR_RET(v) if (v==NULL || v==CALL_ERR){return CALL_ERR;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
 #define LIST_TUP_LEN(l) CAST_TUPLE(l)->size
 
 #define GIL_MAX_SWITCH 128
 
-#define FPL_VERSION 1.02
+#define FPL_VERSION "1.2.5"
 
 std::mutex GIL;
 
