@@ -108,8 +108,7 @@ object* func_call(object* self, object* args, object* kwargs){
 
     vm->globals=globals;
     vm->global_annotations=global_anno;
-
-    ERROR_RET(ret);
+    
     return ret;
 }
 
