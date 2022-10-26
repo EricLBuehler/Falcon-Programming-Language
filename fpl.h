@@ -28,11 +28,13 @@
 
 using namespace std;
 
-#define CALL_ERR (object*)0x1000
-#define TERM_PROGRAM (object*)0x2000
+#define CALL_ERR (object*)0x1000 //Signal that there was an error in a call, and a termination is necessary
+#define TERM_PROGRAM (object*)0x2000 //Terminate the program
+//Null is for error
 #define SUCCESS (object*)0x3000
 
 #define ERROR_RET(v) if (v==NULL || v==CALL_ERR){return CALL_ERR;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
+#define ERROR_RET_NOCALLERR(v) if (v==NULL){return NULL;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
 #define LIST_TUP_LEN(l) CAST_TUPLE(l)->size
 
 #define GIL_MAX_SWITCH 128
