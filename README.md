@@ -1,4 +1,4 @@
-# Falcon Programming Language - Version 1.02
+# Falcon Programming Language - Version 1.2.5
 ### Eric Buehler 2022 ###
 
 <img src="logo.png"/>
@@ -111,6 +111,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - [Types of functions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/FUNCTIONS.md)
 - [Equivalent C++ Types to Falcon Types](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPE_CPPBASE.md)
 - [Builtin type methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPE_DOCS.md)
+- [Conventions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/CONVENTIONS.md)
 
 ### Sample Program ###
 
