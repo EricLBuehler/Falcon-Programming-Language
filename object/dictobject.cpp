@@ -353,6 +353,10 @@ object* dict_keys_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
+    if (!object_istype(self->type, &DictType)){
+        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", self->type->name->c_str());
+        return NULL; 
+    }
 
     object* list=new_list();
     for (object* o: *CAST_DICT(self)->keys){
@@ -368,6 +372,10 @@ object* dict_values_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
+    if (!object_istype(self->type, &DictType)){
+        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", self->type->name->c_str());
+        return NULL; 
+    }
 
     object* list=new_list();
     for (object* o: *CAST_DICT(self)->keys){
@@ -383,6 +391,11 @@ object* dict_flip_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
+    if (!object_istype(self->type, &DictType)){
+        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", self->type->name->c_str());
+        return NULL; 
+    }
+    
     object* dict=new_dict();
     for (object* o: *CAST_DICT(self)->keys){
         dict_set(dict, CAST_DICT(self)->val->at(o), o);

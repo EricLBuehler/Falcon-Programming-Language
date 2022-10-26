@@ -443,6 +443,10 @@ object* list_append_meth(object* selftp, object* args, object* kwargs){
     }
     
     object* self=list_index_int(args, 0);
+    if (object_istype(self->type, &ListType)){
+        vm_add_err(&TypeError, vm, "Expected list object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
     list_append(self, list_index_int(args, 1));
     return new_none();
 }
@@ -519,6 +523,10 @@ object* list_pop_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=list_index_int(args, 0);
+    if (object_istype(self->type, &ListType)){
+        vm_add_err(&TypeError, vm, "Expected list object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
     if (len==2){
         object* idx=list_index_int(args, 1);
         
@@ -592,6 +600,10 @@ object* list_replace_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
+    if (object_istype(self->type, &ListType)){
+        vm_add_err(&TypeError, vm, "Expected list object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
     object* replace=tuple_index_int(args, 1);
     object* replacewi=tuple_index_int(args, 2);
 
@@ -613,7 +625,11 @@ object* list_find_meth(object* selftp, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
-    object* self=tuple_index_int(args, 0);  
+    object* self=tuple_index_int(args, 0); 
+    if (object_istype(self->type, &ListType)){
+        vm_add_err(&TypeError, vm, "Expected list object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    } 
     object* val=tuple_index_int(args, 1);  
 
     for (size_t i=0; i<CAST_LIST(self)->size; i++){
@@ -632,6 +648,10 @@ object* list_remove_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);  
+    if (object_istype(self->type, &ListType)){
+        vm_add_err(&TypeError, vm, "Expected list object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
     object* val=tuple_index_int(args, 1);  
 
     for (size_t idx=0; idx<CAST_LIST(self)->size; idx++){
@@ -655,7 +675,11 @@ object* list_insert_meth(object* selftp, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
         return NULL; 
     }
-    object* self=tuple_index_int(args, 0);  
+    object* self=tuple_index_int(args, 0); 
+    if (object_istype(self->type, &ListType)){
+        vm_add_err(&TypeError, vm, "Expected list object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    } 
     object* idx_=tuple_index_int(args, 1);   
     object* val=tuple_index_int(args, 2);  
 
