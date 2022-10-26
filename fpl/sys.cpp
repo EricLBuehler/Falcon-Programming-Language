@@ -43,6 +43,8 @@ object* new_sys_module(){
     }
     dict_set(dict, str_new_fromstr("argv"), argv);
     FPLDECREF(argv);
+    
+    dict_set(dict, str_new_fromstr("version"), str_new_fromstr(FPL_VERSION));
 
     return module_new_fromdict(dict, str_new_fromstr("sys"));
 }
