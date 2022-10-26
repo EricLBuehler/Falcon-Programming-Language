@@ -86,6 +86,12 @@ volatile bool hit_sigint=false;
 
 #include <signal.h>
 
+void fpl_startup(){
+    new_gc();
+    setup_types_consts();
+    setup_modules();
+}
+
 
 void sigint(int sig) {
     signal(sig, SIG_IGN);
@@ -106,9 +112,7 @@ void sigint(int sig) {
 
 int execute(string data, bool objdump, bool verbose){   
     //Prep constants and types
-    new_gc();
-    setup_types_consts();
-    setup_modules();
+    fpl_startup();
 
     Lexer lexer(data,kwds);
     lexer.pos=Position(program);

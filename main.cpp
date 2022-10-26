@@ -39,9 +39,7 @@ int main(int argc, char** argv) {
             cout<<"Type copyright() for copyright and license information, exit() to exit"<<endl<<endl;
             
             //Prep constants and types
-            new_gc();
-            setup_types_consts();
-            setup_modules();
+            fpl_startup();
 
             struct compiler* compiler = new_compiler();
             vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
