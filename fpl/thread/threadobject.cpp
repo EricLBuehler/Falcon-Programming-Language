@@ -21,9 +21,13 @@ object* thread_new(object* type, object* args, object* kwargs){
 }
 
 void thread_del(object* self){
+    if (object_istype(self->type, &ThreadType)){
+        vm_add_err(&TypeError, vm, "Expected thread object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
     FPLDECREF(CAST_THREAD(self)->callable);
     if (CAST_THREAD(self)->thread!=NULL){
-        free(CAST_THREAD(self)->thread);
+        fpl_free(CAST_THREAD(self)->thread);
     }
 }
 
@@ -47,6 +51,10 @@ object* thread_cmp(object* self, object* other, uint8_t type){
 }
 
 object* thread_repr(object* self){
+    if (object_istype(self->type, &ThreadType)){
+        vm_add_err(&TypeError, vm, "Expected thread object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
     string s="";
     s+="<Thread ";
     s+=object_cstr(CAST_THREAD(self)->callable);
@@ -82,7 +90,7 @@ void* _thread_start_wrap(void* args_){
     return NULL;
 }
 
-object* thread_start_meth(object* self, object* args, object* kwargs){
+object* thread_start_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if ((len!=3 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 2) &&\
     (len!=2 && CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 1) &&\
@@ -104,8 +112,12 @@ object* thread_start_meth(object* self, object* args, object* kwargs){
     if (object_find_bool_dict_keys(kwargs, ar)){
         args_->args=kwargs->type->slot_mappings->slot_get(kwargs, ar);
     }
-
-    args_->callable=CAST_THREAD(tuple_index_int(args,0))->callable;
+    object* self=tuple_index_int(args, 0);
+    if (object_istype(self->type, &ThreadType)){
+        vm_add_err(&TypeError, vm, "Expected thread object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
+    args_->callable=CAST_THREAD(self)->callable;
 
     pthread_create(t, NULL, &_thread_start_wrap, (void*)args_);
     fpl_threads.push_back(t);
@@ -117,7 +129,7 @@ object* thread_start_meth(object* self, object* args, object* kwargs){
     return new_none();
 }
 
-object* thread_join_meth(object* self, object* args, object* kwargs){
+object* thread_join_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);

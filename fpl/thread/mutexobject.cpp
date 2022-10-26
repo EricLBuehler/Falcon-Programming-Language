@@ -18,14 +18,22 @@ object* mutex_new(object* type, object* args, object* kwargs){
 }
 
 void mutex_del(object* self){
+    if (object_istype(self->type, &MutexType)){
+        vm_add_err(&TypeError, vm, "Expected mutex object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
     pthread_mutex_unlock(CAST_MUTEX(self)->lock);
     pthread_mutex_destroy(CAST_MUTEX(self)->lock);
     if (CAST_MUTEX(self)->lock!=NULL){
-        free(CAST_MUTEX(self)->lock);
+        fpl_free(CAST_MUTEX(self)->lock);
     }
 }
 
 object* mutex_repr(object* self){
+    if (object_istype(self->type, &MutexType)){
+        vm_add_err(&TypeError, vm, "Expected mutex object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
     string s="";
     s+="<Mutex ";
     if (CAST_MUTEX(self)->locked){
@@ -38,24 +46,28 @@ object* mutex_repr(object* self){
     return str_new_fromstr(s);
 }
 
-object* mutex_acquire_meth(object* self, object* args, object* kwargs){
+object* mutex_acquire_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-
-    if (CAST_MUTEX(tuple_index_int(args,0))->locked){
+    object* self=tuple_index_int(args,0);
+    if (object_istype(self->type, &MutexType)){
+        vm_add_err(&TypeError, vm, "Expected mutex object, got '%s' object", self->type->name->c_str());
+        return NULL;
+    }
+    if (CAST_MUTEX(self)->locked){
         return new_bool_false();
     }
 
-    pthread_mutex_lock(CAST_MUTEX(tuple_index_int(args,0))->lock);
+    pthread_mutex_lock(CAST_MUTEX(self)->lock);
     
-    CAST_MUTEX(tuple_index_int(args,0))->locked=true;
+    CAST_MUTEX(self)->locked=true;
     return new_bool_true();
 }
 
-object* mutex_release_meth(object* self, object* args, object* kwargs){
+object* mutex_release_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);

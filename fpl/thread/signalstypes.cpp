@@ -1,8 +1,8 @@
 void mutex_del(object* self);
 object* mutex_new(object* type, object* args, object* kwargs);
 object* mutex_repr(object* self);
-object* mutex_release_meth(object* self, object* args, object* kwargs);
-object* mutex_acquire_meth(object* self, object* args, object* kwargs);
+object* mutex_release_meth(object* selftp, object* args, object* kwargs);
+object* mutex_acquire_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct MutexObject{
     OBJHEAD_EXTRA
@@ -26,6 +26,7 @@ static NumberMethods mutex_num_methods{
     0, //slot_lshift
     0, //slot_rshift
     0, //slot_fldiv
+    0, //slot_xor
 
     0, //slot_neg
     0, //slot_not

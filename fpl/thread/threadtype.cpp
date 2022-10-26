@@ -2,8 +2,8 @@ void thread_del(object* self);
 object* thread_new(object* type, object* args, object* kwargs);
 object* thread_cmp(object* self, object* other, uint8_t type);
 object* thread_repr(object* self);
-object* thread_start_meth(object* self, object* args, object* kwargs);
-object* thread_join_meth(object* self, object* args, object* kwargs);
+object* thread_start_meth(object* selftp, object* args, object* kwargs);
+object* thread_join_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct ThreadObject{
     OBJHEAD_VAR
@@ -27,6 +27,7 @@ static NumberMethods thread_num_methods{
     0, //slot_lshift
     0, //slot_rshift
     0, //slot_fldiv
+    0, //slot_xor
 
     0, //slot_neg
     0, //slot_not
