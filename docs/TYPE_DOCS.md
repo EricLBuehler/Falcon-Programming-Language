@@ -462,7 +462,7 @@ Returns the union of set ```self``` and set ```other```.
 ### Example
 ```
 a={1,2,3}
-a=a.union({4})
+a=a.union({4,})
 a == {1,2,3,4} == True
 ```
 #### Returns
