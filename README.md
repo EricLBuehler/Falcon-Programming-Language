@@ -256,6 +256,10 @@ while i<10{
 print(True and False)
 print(True or False)
 print(not 1==1)
+
+print(100^2)
+print(100^2*3)
+print(100^6)
 ```
 
 </details>
@@ -296,6 +300,9 @@ I is 50!
 False
 True
 False
+102
+98
+98
 ```
 
 </details>
