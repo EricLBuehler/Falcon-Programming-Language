@@ -1071,6 +1071,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
             if (ret==NULL){
                 goto exc;
             }
@@ -1181,6 +1183,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
             if (ret==NULL){
                 goto exc;
             }
@@ -1292,6 +1296,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
             if (ret==NULL){ 
                 goto exc;
             }
@@ -1699,6 +1705,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 string name_=object_cstr(list_index_int(vm->path, i))+name_plain;
                 string nm=object_cstr(list_index_int(vm->path, i))+nm_plain;
                 struct stat st;
+                bool foundfpl=false;
                 if( stat(nm.c_str(),&st) == 0 || stat(name_.c_str(),&st) == 0 ){
                     if( st.st_mode & S_IFDIR ){//Directory
                         object* dict=new_dict();
@@ -1733,6 +1740,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                                 if (extension!="fpl"){
                                     continue;
                                 }
+                                foundfpl=true;
 
                                 //try en->d_name
                                 //Later try nm as folder
@@ -1763,11 +1771,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                             }
                             closedir(dr);
                         }
-                        
-                        object* o=module_new_fromdict(dict, str_new_fromstr(string(nm_plain)));
-                        add_dataframe(vm, vm->objstack, o);
+                        if (foundfpl){
+                            object* o=module_new_fromdict(dict, str_new_fromstr(string(nm_plain)));
+                            add_dataframe(vm, vm->objstack, o);
 
-                        DISPATCH();
+                            DISPATCH();
+                        }
+                        goto builtin;
                     }
                     else{ //File
                         //try nm.fpl
@@ -1790,6 +1800,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                 }
                 else{
+                    builtin:
                     bool done=false;
                     for (int i=0; i<nmodules; i++){
                         if (istrue(object_cmp(name, CAST_MODULE(modules[i])->name, CMP_EQ))){
