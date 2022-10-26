@@ -402,3 +402,68 @@ Writes ```val.__str__()``` to open, writeable file object.
 ```file("test.txt", "w").write(123).read() == "123" == True```
 #### Returns
 File object - ```file```
+
+
+
+
+## ```set```
+
+### ```set.find```
+Find and return index of first occurance of argument ```needle```, or -1.
+```set.find(self, needle)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle     |
+### Example
+```{1,2,2,3}.find(2) == 1 == True```
+#### Returns
+Index - ```int```
+
+### ```set.add```
+Adds ```item``` to set if the item does not exist
+```set.add(self, item)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```item```  | item to add     |
+### Example
+```{1,2,2,3}.add(4) == {1,2,2,3,4} == True```
+#### Returns
+None - ```None```
+
+### ```set.remove```
+Tries to remove ```item``` from the set. On failure, raise ```KeyError```
+```set.remove(self, item)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```item```  | item to remove     |
+### Example
+```
+a={1,2,3}
+a.remove(3)
+a == {1,2} == True
+```
+#### Returns
+None - ```None```
+
+### ```set.union```
+Returns the union of set ```self``` and set ```other```.
+```set.union(self, item)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```other```  | other set     |
+### Example
+```
+a={1,2,3}
+a=a.union({4})
+a == {1,2,3,4} == True
+```
+#### Returns
+None - ```None```
