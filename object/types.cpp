@@ -3281,6 +3281,7 @@ object* set_iter(object* self);
 object* set_find_meth(object* selftp, object* args, object* kwargs);
 object* set_add_meth(object* selftp, object* args, object* kwargs);
 object* set_remove_meth(object* selftp, object* args, object* kwargs);
+object* set_union_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct SetObject{
     OBJHEAD_VAR
@@ -3316,7 +3317,7 @@ static Mappings set_mappings{
     set_append, //slot_append
 };
 
-Method set_methods[]={{"find", (cwrapperfunc)set_find_meth}, {"add", (cwrapperfunc)set_add_meth}, {"remove", (cwrapperfunc)set_remove_meth}, {NULL,NULL}};
+Method set_methods[]={{"find", (cwrapperfunc)set_find_meth}, {"add", (cwrapperfunc)set_add_meth}, {"remove", (cwrapperfunc)set_remove_meth}, {"union", (cwrapperfunc)set_union_meth}, {NULL,NULL}};
 GetSets set_getsets[]={{NULL,NULL}};
 OffsetMember set_offsets[]={{NULL}};
 
