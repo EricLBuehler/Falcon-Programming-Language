@@ -17,7 +17,8 @@ object* time_sleep(object* self, object* args, object* kwargs){
     else{
         object* otherint=object_int(val);
         if (otherint==NULL || !object_istype(otherint->type, &IntType)){
-            return NULL;
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
+            return NULL; 
         }
         time=CAST_INT(otherint)->val->to_long();
         FPLDECREF(otherint);
@@ -43,7 +44,8 @@ object* time_sleep_ms(object* self, object* args, object* kwargs){
     else{
         object* otherint=object_int(val);
         if (otherint==NULL || !object_istype(otherint->type, &IntType)){
-            return NULL;
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
+            return NULL; 
         }
         time=CAST_INT(otherint)->val->to_long();
         FPLDECREF(otherint);
