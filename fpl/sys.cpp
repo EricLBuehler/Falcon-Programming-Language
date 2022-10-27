@@ -1,24 +1,13 @@
-object* sys_getsizeof(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL; 
-    }
-    object* val=list_index_int(args, 0);
-
+object* sys_getsizeof(object* self, object* args){
+    object* val=dict_get(args, str_new_fromstr("obj"));
     if (val->type->size==0){
         return new_int_frombigint(new BigInt(val->type->var_base_size));        
     }
     return new_int_frombigint(new BigInt(val->type->size));
 }
 
-object* sys_getrefcnt(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL; 
-    }
-    object* val=list_index_int(args, 0);
+object* sys_getrefcnt(object* self, object* args){
+    object* val=dict_get(args, str_new_fromstr("obj"));
 
     return new_int_fromint(val->refcnt);
 }
@@ -30,8 +19,18 @@ object* sys_getpath(object* sys){
 object* new_sys_module(){
     object* dict=new_dict();
 
-    dict_set(dict, str_new_fromstr("getsizeof"), cwrapper_new_fromfunc_null((cwrapperfunc)sys_getsizeof, "getsizeof"));
-    dict_set(dict, str_new_fromstr("getrefcnt"), cwrapper_new_fromfunc_null((cwrapperfunc)sys_getrefcnt, "getrefcnt"));
+    object* emptykw_args=new_tuple();
+
+    object* args=new_tuple();
+    args->type->slot_mappings->slot_append(args, str_new_fromstr("obj"));
+    object* ob=new_builtin(sys_getsizeof, str_new_fromstr("getsizeof"), args, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("getsizeof"), ob);
+    
+    
+    ob=new_builtin(sys_getrefcnt, str_new_fromstr("getrefcnt"), args, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("getrefcnt"), ob);
+    
+
     object* getset=slotwrapper_new_fromfunc(sys_getpath, NULL, "path");
     dict_set(dict, str_new_fromstr("path"), getset);
 

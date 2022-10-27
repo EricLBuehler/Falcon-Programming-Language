@@ -1,10 +1,5 @@
-object* os_chdir(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL; 
-    }
-    object* val=list_index_int(args, 0);
+object* os_chdir(object* self, object* args){
+    object* val=dict_get(args, str_new_fromstr("dir"));
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -22,13 +17,8 @@ object* os_chdir(object* self, object* args, object* kwargs){
     return NULL;
 }
 
-object* os_mkdir(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL; 
-    }
-    object* val=list_index_int(args, 0);
+object* os_mkdir(object* self, object* args){
+    object* val=dict_get(args, str_new_fromstr("dir"));
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -47,13 +37,7 @@ object* os_mkdir(object* self, object* args, object* kwargs){
 }
 
 
-object* os_getcwd(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=0 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
-        return NULL; 
-    }
-
+object* os_getcwd(object* self, object* args){
     char buffer[PATH_MAX];
     if (getcwd(buffer, sizeof(buffer)) != NULL) {
         return str_new_fromstr(string(buffer));
@@ -66,13 +50,8 @@ object* os_getcwd(object* self, object* args, object* kwargs){
 }
 
 
-object* os_rmdir(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL; 
-    }
-    object* val=list_index_int(args, 0);
+object* os_rmdir(object* self, object* args){
+    object* val=dict_get(args, str_new_fromstr("dir"));
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -90,13 +69,7 @@ object* os_rmdir(object* self, object* args, object* kwargs){
     return NULL;
 }
 
-object* os_listdir(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=0 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
-        return NULL; 
-    }
-
+object* os_listdir(object* self, object* args){
     char buffer[PATH_MAX];
     if (getcwd(buffer, sizeof(buffer)) == NULL) {
         vm_add_err(&FileNotFoundError, vm, "[ERRNO: %d]: Cannot get current working directory", errno);
@@ -124,13 +97,8 @@ object* os_listdir(object* self, object* args, object* kwargs){
 }
 
 
-object* os_system(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL; 
-    }
-    object* val=list_index_int(args, 0);
+object* os_system(object* self, object* args){
+    object* val=dict_get(args, str_new_fromstr("cmd"));
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -143,13 +111,36 @@ object* os_system(object* self, object* args, object* kwargs){
 
 object* new_os_module(){
     object* dict=new_dict();
+
+    object* dirargs=new_tuple();
+    dirargs->type->slot_mappings->slot_append(dirargs, str_new_fromstr("dir"));
+    object* emptykw_args=new_tuple();
     
-    dict_set(dict, str_new_fromstr("chdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_chdir, "chdir"));
-    dict_set(dict, str_new_fromstr("mkdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_mkdir, "mkdir"));
-    dict_set(dict, str_new_fromstr("getcwd"), cwrapper_new_fromfunc_null((cwrapperfunc)os_getcwd, "getcwd"));
-    dict_set(dict, str_new_fromstr("rmdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_rmdir, "rmdir"));
-    dict_set(dict, str_new_fromstr("listdir"), cwrapper_new_fromfunc_null((cwrapperfunc)os_listdir, "listdir"));
-    dict_set(dict, str_new_fromstr("system"), cwrapper_new_fromfunc_null((cwrapperfunc)os_system, "system"));
+    object* ob=new_builtin(os_chdir, str_new_fromstr("chdir"), dirargs, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("chdir"), ob);
+    
+
+    ob=new_builtin(os_mkdir, str_new_fromstr("mkdir"), dirargs, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("mkdir"), ob);
+    
+
+    ob=new_builtin(os_getcwd, str_new_fromstr("getcwd"), emptykw_args, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("getcwd"), ob);
+    
+
+    ob=new_builtin(os_rmdir, str_new_fromstr("rmdir"), dirargs, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("rmdir"), ob);
+    
+
+    ob=new_builtin(os_listdir, str_new_fromstr("listdir"), emptykw_args, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("listdir"), ob);
+    
+
+    object* systemargs=new_tuple();
+    systemargs->type->slot_mappings->slot_append(systemargs, str_new_fromstr("cmd"));
+    ob=new_builtin(os_system, str_new_fromstr("system"), systemargs, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("system"), ob);
+    
 
     return module_new_fromdict(dict, str_new_fromstr("os"));
 }

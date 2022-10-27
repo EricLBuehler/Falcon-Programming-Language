@@ -11,22 +11,16 @@ double fRand(double lo, double hi)
     return lo + f * (hi - lo);
 }
 
-object* random_randint(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
-        return NULL; 
-    }
-
-    object* low=object_int(list_index_int(args, 0));
-    object* high=object_int(list_index_int(args, 1));
+object* random_randint(object* self, object* args){
+    object* low=dict_get(args, str_new_fromstr("lo"));
+    object* high=dict_get(args, str_new_fromstr("hi"));
 
     if (low==NULL || !object_istype(low->type, &IntType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", low->type->name->c_str());
         return NULL; 
     }
     if (high==NULL || !object_istype(high->type, &IntType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", high->type->name->c_str());
         return NULL; 
     }
     
@@ -39,46 +33,31 @@ object* random_randint(object* self, object* args, object* kwargs){
     return res;
 }
 
-object* random_random(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if ((len!=2 && len!=0) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 0 or 2 arguments, got %d", len);
+object* random_random(object* self, object* args){
+    double lo;
+    double hi;     
+
+    object* low=dict_get(args, str_new_fromstr("lo"));
+    object* high=dict_get(args, str_new_fromstr("hi"));
+
+    if (low==NULL || !object_istype(low->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", low->type->name->c_str());
         return NULL; 
     }
-
-    double lo=0;
-    double hi=1;
-    if (len==2){
-        object* low=object_int(list_index_int(args, 0));
-        object* high=object_int(list_index_int(args, 1));
-
-        if (low==NULL || !object_istype(low->type, &IntType)){
-            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
-            return NULL; 
-        }
-        if (high==NULL || !object_istype(high->type, &IntType)){
-            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
-            return NULL; 
-        }
-        
-        lo=CAST_INT(low)->val->to_int();
-        hi=CAST_INT(high)->val->to_int();
-
-        FPLDECREF(low);
-        FPLDECREF(high);
+    if (high==NULL || !object_istype(high->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", high->type->name->c_str());
+        return NULL; 
     }
+    
+    lo=CAST_INT(low)->val->to_int();
+    hi=CAST_INT(high)->val->to_int();
+    
 
     return new_float_fromdouble(fRand(lo, hi));
 }
 
-object* random_choice(object* self, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL; 
-    }
-
-    object* ob=list_index_int(args, 0);
+object* random_choice(object* self, object* args){
+    object* ob=dict_get(args, str_new_fromstr("iter"));
     if (ob->type->slot_mappings==NULL || ob->type->slot_mappings->slot_get==NULL\
      || ob->type->slot_mappings->slot_len==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
@@ -96,14 +75,25 @@ object* new_random_module(){
 
     object* dict=new_dict();
 
-    object* randint=cwrapper_new_fromfunc_null((cwrapperfunc)random_randint, "randint");
-    dict_set(dict, str_new_fromstr("randint"), randint);
+    object* emptykw_args=new_tuple();
 
-    object* random=cwrapper_new_fromfunc_null((cwrapperfunc)random_random, "random");
-    dict_set(dict, str_new_fromstr("random"), random);
-
-    object* choice=cwrapper_new_fromfunc_null((cwrapperfunc)random_choice, "choice");
-    dict_set(dict, str_new_fromstr("choice"), choice);
+    object* randintargs=new_tuple();
+    randintargs->type->slot_mappings->slot_append(randintargs, str_new_fromstr("lo"));
+    randintargs->type->slot_mappings->slot_append(randintargs, str_new_fromstr("hi"));
+    object* ob=new_builtin(random_randint, str_new_fromstr("randint"), randintargs, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("randint"), ob);
+    
+    object* randkwargs=new_tuple();
+    randkwargs->type->slot_mappings->slot_append(randkwargs, new_int_fromint(0));
+    randkwargs->type->slot_mappings->slot_append(randkwargs, new_int_fromint(1));
+    ob=new_builtin(random_random, str_new_fromstr("random"), randintargs, randkwargs, 1, false);
+    dict_set(dict, str_new_fromstr("randint"), ob);
+    
+    object* randchoiceargs=new_tuple();
+    randchoiceargs->type->slot_mappings->slot_append(randchoiceargs, str_new_fromstr("iter"));
+    ob=new_builtin(random_choice, str_new_fromstr("choice"), randchoiceargs, emptykw_args, 1, false);
+    dict_set(dict, str_new_fromstr("choice"), ob);
+    
     
     dict_set(dict, str_new_fromstr("RAND_MAX"), new_int_fromint(RAND_MAX));
 
