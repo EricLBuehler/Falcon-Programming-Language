@@ -219,10 +219,6 @@ object* string_join_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
-    if (object_istype(self->type, &StrType)){
-        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* arg=tuple_index_int(args, 1);
 
     if (arg->type->slot_iter==NULL){
@@ -288,10 +284,6 @@ object* string_replace_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
-    if (object_istype(self->type, &StrType)){
-        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* replace_=tuple_index_int(args, 1);
     object* substr_=tuple_index_int(args, 2);
 
@@ -333,10 +325,6 @@ object* string_find_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);  
-    if (object_istype(self->type, &StrType)){
-        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* val=tuple_index_int(args, 1);   
 
     if (!object_istype(val->type, &StrType)){
@@ -359,10 +347,6 @@ object* string_split_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0); 
-    if (object_istype(self->type, &StrType)){
-        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* val;
     if (len==2){ 
         val=tuple_index_int(args, 1);   
@@ -417,10 +401,6 @@ object* string_upper_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);  
-    if (object_istype(self->type, &StrType)){
-        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     return str_new_fromstr(to_upper_((*CAST_STRING(self)->val)));
 }
 
@@ -430,11 +410,7 @@ object* string_lower_meth(object* selftp, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
-    object* self=tuple_index_int(args, 0); 
-    if (object_istype(self->type, &StrType)){
-        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    } 
+    object* self=tuple_index_int(args, 0);  
     return str_new_fromstr(to_lower_((*CAST_STRING(self)->val)));
 }
 
@@ -616,10 +592,6 @@ object* string_contains_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);  
-    if (object_istype(self->type, &StrType)){
-        vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* val=tuple_index_int(args, 1);   
 
     if (!object_istype(val->type, &StrType)){

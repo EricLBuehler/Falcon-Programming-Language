@@ -11,7 +11,8 @@ object* wrappermethod_call(object* self, object* args, object* kwargs){
     for (int i=0; i<CAST_LIST(args)->size; i++){
         args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
     }
-    object* val=CAST_METHOD(self)->function->type->slot_call(CAST_METHOD(self)->function, args_, kwargs);
+    object* cwrapper=CAST_METHOD(self)->function;
+    object* val=CAST_CWRAPPER(cwrapper)->function(CAST_CWRAPPER(cwrapper)->tp, args_, kwargs);
     return val;
 }
 

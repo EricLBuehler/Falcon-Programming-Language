@@ -469,7 +469,7 @@ object* newtp_setattr(object* self, object* attr, object* val){
     return res;
 }
 
-object* newtp_descrget(object* obj, object* self){    
+object* newtp_descrget(object* obj, object* self, object* owner){    
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, obj);
     
@@ -482,8 +482,14 @@ object* newtp_descrget(object* obj, object* self){
         vm->exception=NULL;
         return NULL;
     }
-
-    object* res=object_call_nokwargs(n, args);
+    object* kwargs=new_dict();
+    if (owner==NULL){
+        dict_set(kwargs, str_new_fromstr("owner"), new_none());
+    }
+    else{
+        dict_set(kwargs, str_new_fromstr("owner"), owner);
+    }
+    object* res=object_call(n, args, kwargs);
     return res;
 }
 

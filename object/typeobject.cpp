@@ -114,7 +114,7 @@ object* newtp_float(object* self);
 void newtp_post_tpcall(object* ob);
 object* newtp_abs(object* self);
 
-object* newtp_descrget(object* obj, object* self);
+object* newtp_descrget(object* obj, object* self, object* owner);
 object* newtp_descrset(object* obj, object* self, object* val);
 
 object* newtp_getattr(object* self, object* attr);

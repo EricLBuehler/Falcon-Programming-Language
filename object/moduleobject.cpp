@@ -25,26 +25,6 @@ object* module_repr(object* self){
     return str_new_fromstr(s);
 }
 
-object* module_self_getattr(object* obj, object* attr){
-    //Check dict
-    if (obj->type->dict_offset!=0){
-        object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
-        cout<<dict<<obj;
-        if (object_find_bool_dict_keys(dict, attr)){
-            return dict_get(dict, attr);
-        }
-    }
-    //Check type dict
-    if (obj->type->dict!=0){
-        object* dict = obj->type->dict;
-        if (object_find_bool_dict_keys(dict, attr)){
-            return dict_get(dict, attr);
-        }
-    }
-
-    return NULL;
-}
-
 object* module_getattr(object* obj, object* attr){
     //Check dict
     if (obj->type->dict_offset!=0){

@@ -59,7 +59,10 @@ object* func_call(object* self, object* args, object* kwargs){
     }
     noerror:
     
-    setup_args_stars(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
+    object* res=setup_args_stars(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
+    if (res==NULL){
+        return res;
+    }
     object* ret;
     if (CAST_FUNC(self)->isgen){
         FPLINCREF(vm->callstack->head->locals);
@@ -196,6 +199,10 @@ void func_del(object* obj){
     }
 }
 
-object* func_descrget(object* obj, object* self){
+object* func_descrget(object* obj, object* self, object* owner){
+    if (owner==NULL || object_istype(owner->type, &NoneType)){
+        return FPLINCREF(self);
+    }
+    
     return method_new_impl(self, obj);
 }

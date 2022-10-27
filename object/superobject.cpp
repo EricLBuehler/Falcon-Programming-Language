@@ -24,7 +24,7 @@ object* super_getattr(object* self, object* attr){
         object* ob=object_getattr_type(tuple_index_int(bases, i), attr);
         if (ob!=NULL){
             if (ob->type->slot_descrget!=NULL){
-                ob=ob->type->slot_descrget(CAST_SUPER(self)->ob, ob);
+                ob=ob->type->slot_descrget(CAST_SUPER(self)->ob, ob, obj);
             }
             return ob;
         }

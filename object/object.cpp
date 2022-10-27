@@ -518,7 +518,7 @@ object* object_genericgetattr_notype(object* obj, object* attr){
     }
     else{
         if (res->type->slot_descrget!=NULL){
-            object* r=res->type->slot_descrget(obj, res);
+            object* r=res->type->slot_descrget(obj, res, (object*)(obj->type));
             return r;
         }
     }
@@ -549,7 +549,7 @@ object* object_genericgetattr(object* obj, object* attr){
     }
     else{
         if (res->type->slot_descrget!=NULL){
-            object* r=res->type->slot_descrget(obj, res);
+            object* r=res->type->slot_descrget(obj, res, (object*)(obj->type));
             return r;
         }
     }

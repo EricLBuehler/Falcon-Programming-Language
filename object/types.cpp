@@ -762,7 +762,7 @@ object* func_call(object* self, object* args, object* callfunc);
 object* func_bool(object* self);
 object* func_call_nostack(object* self, object* args, object* kwargs);
 object* func_run(object* self, object* args, object* kwargs);
-object* func_descrget(object* obj, object* self);
+object* func_descrget(object* obj, object* self, object* owner);
 
 typedef struct FuncObject{
     OBJHEAD_EXTRA
@@ -950,6 +950,9 @@ object* builtin_cmp(object* self, object* other, uint8_t type);
 object* builtin_call(object* self, object* args, object* kwargs);
 object* builtin_bool(object* self);
 
+
+typedef object* (*builtinfunc)(object*, object*);
+object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs);
 
 typedef struct BuiltinObject{
     OBJHEAD_EXTRA
@@ -1415,7 +1418,7 @@ object* cwrapper_new_fromfunc(cwrapperfunc func, string name, object* tp);
 object* cwrapper_repr(object* self);
 void cwrapper_del(object* self);
 object* cwrapper_new_fromfunc_null(cwrapperfunc func, string name);
-object* cwrapper_descrget(object* obj, object* self);
+object* cwrapper_descrget(object* obj, object* self, object* owner);
 
 typedef struct CWrapperObject{
     OBJHEAD_EXTRA
@@ -1478,7 +1481,7 @@ object* slotwrapper_new_fromfunc(getter get, setter set, string name);
 object* slotwrapper_new(object* type, object* args, object* kwargs);    
 object* slotwrapper_repr(object* self);
 object* slotwrapper_str(object* self);
-object* slotwrapper_descrget(object* obj, object* self);
+object* slotwrapper_descrget(object* obj, object* self, object* owner);
 object* slotwrapper_descrset(object* obj, object* self, object* val);
 
 typedef struct SlotWrapperObject{
@@ -2419,7 +2422,7 @@ void setup_zip_type(){
 
 object* offsetwrapper_new_fromoffset(string name, size_t offset, bool readonly);
 object* offsetwrapper_repr(object* self);
-object* offsetwrapper_descrget(object* obj, object* self);
+object* offsetwrapper_descrget(object* obj, object* self, object* owner);
 object* offsetwrapper_descrset(object* obj, object* self, object* val);
 
 typedef struct OffsetWrapperObject{
@@ -2819,7 +2822,7 @@ void setup_wrappermethod_type(){
 }
 
 
-object* staticmethod_descrget(object* instance, object* self);
+object* staticmethod_descrget(object* instance, object* self, object* owner);
 object* staticmethod_repr(object* self);
 object* staticmethod_new(object* cls, object* args, object* kwargs);
 void staticmethod_del(object* self);
@@ -2909,7 +2912,7 @@ object* classmethod_repr(object* self);
 object* classmethod_new(object* cls, object* args, object* kwargs);
 void classmethod_del(object* self);
 object* classmethod_cmp(object* self, object* other, uint8_t type);
-object* classmethod_descrget(object* instance, object* self);
+object* classmethod_descrget(object* instance, object* self, object* owner);
 
 Method classmethod_methods[]={{NULL,NULL}};
 GetSets classmethod_getsets[]={{NULL,NULL}};
@@ -3085,7 +3088,7 @@ object* property_new(object* type, object* args, object* kwargs);
 object* property_cmp(object* self, object* other, uint8_t type);
 object* property_call(object* self, object* args, object* kwargs);
 object* property_repr(object* self);
-object* property_descrget(object* instance, object* self);
+object* property_descrget(object* instance, object* self, object* owner);
 object* property_descrset(object* instance, object* self, object* value);
 object* property_getter(object* self, object* args, object* kwargs);
 object* property_setter(object* self, object* args, object* kwargs);
@@ -3535,9 +3538,11 @@ object* type_get(object* self, object* attr){
     //First check metatype
     
     //Check type dict
+    TypeObject* tpfound=NULL;
     if (self->type->dict!=0){
         object* dict = self->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
+            tpfound=self->type;
             res=dict_get(dict, attr);
         }
     }
@@ -3552,9 +3557,17 @@ object* type_get(object* self, object* attr){
                 object* dict = base_tp->dict;
                 if (object_find_bool_dict_keys(dict, attr)){
                     res=dict_get(dict, attr);
+                    tpfound=base_tp;
                     break;
                 }
             }
+        }
+    }
+
+    if (res!=NULL){
+        if (res->type->slot_descrget!=NULL){
+            object* r=res->type->slot_descrget(self, res, (object*)tpfound);
+            return r;
         }
     }
     
@@ -3588,7 +3601,7 @@ object* type_get(object* self, object* attr){
     }
     else{
         if (res->type->slot_descrget!=NULL){
-            object* r=res->type->slot_descrget(self, res);
+            object* r=res->type->slot_descrget(self, res, (object*)tpfound);
             return r;
         }
     }

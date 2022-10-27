@@ -1,5 +1,15 @@
-object* cwrapper_call(object* self, object* args, object* kwargs){
-    return CAST_CWRAPPER(self)->function(CAST_CWRAPPER(self)->tp, args, kwargs);
+object* cwrapper_call(object* selftp, object* args, object* kwargs){
+    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    if (len<1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected at least 1 argument, got %d", len);
+        return NULL;    
+    }
+    object* self=list_index_int(args,0);
+    if (!object_issubclass(self, CAST_TYPE(CAST_CWRAPPER(selftp)->tp))){
+        vm_add_err(&ValueError, vm, "Descriptor '%s' expected '%s' object, got '%s' object.", CAST_CWRAPPER(selftp)->name->c_str(), CAST_TYPE(CAST_CWRAPPER(selftp)->tp)->name->c_str(), self->type->name->c_str());
+        return NULL;
+    }
+    return CAST_CWRAPPER(selftp)->function(CAST_CWRAPPER(selftp)->tp, args, kwargs);
 }
 
 object* cwrapper_new_fromfunc(cwrapperfunc func, string name, object* tp){
@@ -38,6 +48,9 @@ void cwrapper_del(object* self){
     }
 }
 
-object* cwrapper_descrget(object* obj, object* self){
+object* cwrapper_descrget(object* obj, object* self, object* owner){
+    if (owner==NULL || object_istype(owner->type, &NoneType)){
+        return FPLINCREF(self);
+    }
     return wrappermethod_new_impl(self, obj);
 }

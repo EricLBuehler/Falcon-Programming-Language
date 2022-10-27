@@ -21,7 +21,7 @@ typedef object* (*cwrapperfunc)(object*, object*, object*);
 typedef object* (*getter)(object*);
 typedef object* (*setter)(object*, object*);
 
-typedef object* (*descrgetfunc)(object*, object*);
+typedef object* (*descrgetfunc)(object*, object*, object*); //Last is owner
 typedef object* (*descrsetfunc)(object*, object*, object*);
 
 typedef void (*posttpcall)(object*);

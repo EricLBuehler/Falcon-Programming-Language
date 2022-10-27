@@ -356,10 +356,6 @@ object* tuple_find_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0); 
-    if (object_istype(self->type, &TupleType)){
-        vm_add_err(&TypeError, vm, "Expected tuple object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    } 
     object* val=tuple_index_int(args, 1);  
 
     for (size_t i=0; i<CAST_TUPLE(self)->size; i++){

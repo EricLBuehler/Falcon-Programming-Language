@@ -76,10 +76,6 @@ object* file_read_meth(object* selftp, object* args, object* kwargs){
         return NULL;
     }
     object* self=list_index_int(args, 0);
-    if (object_istype(self->type, &FileType)){
-        vm_add_err(&TypeError, vm, "Expected file object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     if (!CAST_FILE(self)->open){
         vm_add_err(&ValueError, vm, "Attempting to read from a closed file");
         return NULL;
@@ -108,10 +104,6 @@ object* file_seek_meth(object* selftp, object* args, object* kwargs){
         return NULL;
     }
     object* self=list_index_int(args, 0);
-    if (object_istype(self->type, &FileType)){
-        vm_add_err(&TypeError, vm, "Expected file object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     if (!CAST_FILE(self)->open){
         vm_add_err(&ValueError, vm, "Attempting to seek in a closed file");
         return NULL;
@@ -134,10 +126,6 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
     }
      
     object* self=list_index_int(args, 0);
-    if (object_istype(self->type, &FileType)){
-        vm_add_err(&TypeError, vm, "Expected file object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     if (!CAST_FILE(self)->open){
         vm_add_err(&ValueError, vm, "Attempting to write to a closed file");
         return NULL;
@@ -160,10 +148,6 @@ object* file_close_meth(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (object_istype(self->type, &FileType)){
-        vm_add_err(&TypeError, vm, "Expected file object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     fclose(CAST_FILE(self)->file);
     CAST_FILE(self)->open=false;
     return new_none();

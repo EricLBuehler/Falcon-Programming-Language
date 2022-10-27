@@ -231,10 +231,6 @@ object* set_find_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);  
-    if (object_istype(self->type, &SetType)){
-        vm_add_err(&TypeError, vm, "Expected set object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* val=tuple_index_int(args, 1);  
 
     int i=0;
@@ -255,10 +251,6 @@ object* set_add_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);  
-    if (object_istype(self->type, &SetType)){
-        vm_add_err(&TypeError, vm, "Expected set object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* val=tuple_index_int(args, 1);  
     set_append(self, val);
     return new_none();
@@ -271,10 +263,6 @@ object* set_remove_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);  
-    if (object_istype(self->type, &SetType)){
-        vm_add_err(&TypeError, vm, "Expected set object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* val=tuple_index_int(args, 1);  
 
     for (object* o: ((*CAST_SET(self)->vec))){

@@ -1,6 +1,3 @@
-typedef object* (*builtinfunc)(object*, object*);
-object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs);
-
 void setup_builtins(){
     object* printargs=new_tuple();
     printargs->type->slot_mappings->slot_append(printargs, str_new_fromstr("end"));

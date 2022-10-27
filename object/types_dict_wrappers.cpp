@@ -370,12 +370,15 @@ object* type_wrapper_str(object* self, object* args, object* kwargs){
 }
 
 object* type_wrapper_descrget(object* self, object* args, object* kwargs){
-    if (*CAST_INT(args->type->slot_mappings->slot_len(args))->val!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+    BigInt len=*CAST_INT(args->type->slot_mappings->slot_len(args))->val;
+    if ((len!=2 && len!=3) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 2 or 3 arguments, got %d",CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
         return NULL;
     }
-    
-    return CAST_TYPE(self)->slot_descrget(list_index_int(args, 0), list_index_int(args, 1));
+    if (len==3){
+        return CAST_TYPE(self)->slot_descrget(list_index_int(args, 0), list_index_int(args, 1), list_index_int(args, 2));
+    }
+    return CAST_TYPE(self)->slot_descrget(list_index_int(args, 0), list_index_int(args, 1), NULL);
 }
 
 object* type_wrapper_descrset(object* self, object* args, object* kwargs){

@@ -21,7 +21,10 @@ object* classmethod_repr(object* self){
     return str_new_fromstr(s);
 }
 
-object* classmethod_descrget(object* instance, object* self){
+object* classmethod_descrget(object* instance, object* self, object* owner){
+    if (owner==NULL || object_istype(owner->type, &NoneType)){
+        return FPLINCREF(self);
+    }
     return method_new_impl(CAST_STATICMETHOD(self)->function, (object*)instance->type);
 }
 

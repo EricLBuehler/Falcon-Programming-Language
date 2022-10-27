@@ -134,7 +134,9 @@ object* dict_set(object* self, object* key, object* val){
         } 
         object* o=(*CAST_DICT(self)->val)[key];
         (*CAST_DICT(self)->val)[key]=FPLINCREF(val);
-        FPLDECREF(o);
+        if (!istrue(object_cmp((*CAST_DICT(self)->val)[key], o, CMP_EQ))){
+            FPLDECREF(o);
+        }
         CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
         return new_none();
     }
@@ -353,10 +355,6 @@ object* dict_keys_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
-    if (!object_istype(self->type, &DictType)){
-        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
 
     object* list=new_list();
     for (object* o: *CAST_DICT(self)->keys){
@@ -372,10 +370,6 @@ object* dict_values_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
-    if (!object_istype(self->type, &DictType)){
-        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
 
     object* list=new_list();
     for (object* o: *CAST_DICT(self)->keys){
@@ -391,10 +385,6 @@ object* dict_flip_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);
-    if (!object_istype(self->type, &DictType)){
-        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
     
     object* dict=new_dict();
     for (object* o: *CAST_DICT(self)->keys){

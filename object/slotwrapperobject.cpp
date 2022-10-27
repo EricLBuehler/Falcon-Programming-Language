@@ -50,7 +50,10 @@ object* slotwrapper_str(object* self){
     return str_new_fromstr(s);
 }
 
-object* slotwrapper_descrget(object* obj, object* self){
+object* slotwrapper_descrget(object* obj, object* self, object* owner){
+    if (owner==NULL || object_istype(owner->type, &NoneType)){
+        return FPLINCREF(self);
+    }
     return CAST_SLOTWRAPPER(self)->get(obj);
 }
 
