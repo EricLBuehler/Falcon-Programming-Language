@@ -1,5 +1,5 @@
 class a{
-    func __get__(self, other){
+    func __get__(self, other, owner=None){
         print("GET")
         return 100
     }
