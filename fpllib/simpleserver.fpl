@@ -1,7 +1,8 @@
 import socket
-
+print(socket)
 class App{
     func __init__(self, name){
+        print("APP")
         self.name=name
         self.pages=[]
     }
@@ -25,11 +26,11 @@ class App{
 
     func start(self, port=8000, info=True){
         if info{
-            print(f"Starting server at {simpleserver.socket.socket.gethostbyname(simpleserver.socket.socket.gethostname())}:{port}")
+            print(f"Starting server at {simpleserver.socket.gethostbyname(simpleserver.socket.gethostname())}:{port}")
         }
         with simpleserver.socket.socket(simpleserver.socket.AF_INET, simpleserver.socket.SOCK_STREAM) sock{
             sock.setsockopt(simpleserver.socket.SOL_SOCKET, simpleserver.socket.SO_REUSEADDR, 1)
-            sock.bind((simpleserver.socket.socket.gethostbyname(simpleserver.socket.socket.gethostname()), port))
+            sock.bind((simpleserver.socket.gethostbyname(simpleserver.socket.gethostname()), port))
             sock.listen(simpleserver.socket.SOMAXCONN)
 
             while True{
