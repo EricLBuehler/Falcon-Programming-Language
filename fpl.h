@@ -39,7 +39,7 @@ using namespace std;
 
 #define GIL_MAX_SWITCH 128
 
-#define FPL_VERSION "1.1.1"
+#define FPL_VERSION "1.1.2"
 
 std::mutex GIL;
 
