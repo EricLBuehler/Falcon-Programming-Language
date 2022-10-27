@@ -121,10 +121,6 @@ object* socket_cmp(object* self, object* other, uint8_t type){
 }
 
 object* socket_repr(object* self){
-    if (object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
 
     char fd[4];
     sprintf(fd, "%d",CAST_SOCKET(self)->fd);
@@ -145,10 +141,6 @@ object* socket_repr(object* self){
 }
 
 void socket_del(object* self){
-    if (object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     if (!CAST_SOCKET(self)->closed){
         _socket_close(CAST_SOCKET(self)->fd);
         if (CAST_SOCKET(self)->server!=NULL){
@@ -165,16 +157,9 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     object* iter_=list_index_int(args, 1);
 
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
@@ -272,10 +257,7 @@ object* socket_close(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
 
     if (!CAST_SOCKET(self)->closed){
         _socket_close(CAST_SOCKET(self)->fd);
@@ -294,10 +276,7 @@ object* socket_send(object* selftp, object* args, object* kwargs){
     }
     
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     object* v=list_index_int(args, 1);
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
@@ -340,10 +319,7 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
         return NULL; 
@@ -391,10 +367,7 @@ object* socket_gethostbyname(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
         return NULL; 
@@ -438,10 +411,7 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     object* iter_=list_index_int(args, 1);
     
     if (CAST_SOCKET(self)->closed){
@@ -536,10 +506,7 @@ object* socket_listen(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
         return NULL; 
@@ -575,10 +542,7 @@ object* socket_accept(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
         return NULL; 
@@ -628,10 +592,7 @@ object* socket_setsockopt(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
         return NULL; 
@@ -682,10 +643,7 @@ object* socket_getsockopt(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
         return NULL; 
@@ -784,22 +742,7 @@ object* socket_getsockname(object* selftp, object* args, object* kwargs){
     return tup;
 }
 
-object* socket_gethostname(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
-        return NULL; 
-    }
-
-    object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
-    if (CAST_SOCKET(self)->closed){
-        vm_add_err(&InvalidOperationError, vm, "Socket closed");
-        return NULL; 
-    }
+object* socket_gethostname(object* selftp, object* args){
     int i=100;
     char buf[i];
 
@@ -819,22 +762,7 @@ object* socket_gethostname(object* selftp, object* args, object* kwargs){
 }
 
 #ifndef _WIN32
-object* socket_sethostname(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
-        return NULL; 
-    }
-
-    object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
-    if (CAST_SOCKET(self)->closed){
-        vm_add_err(&InvalidOperationError, vm, "Socket closed");
-        return NULL; 
-    }
+object* socket_sethostname(object* selftp, object* args){
     string s=object_cstr(list_index_int(args, 1)).c_str();
     int i=s.size();
     char buf[i+1];
@@ -864,10 +792,7 @@ object* socket_sendall(object* selftp, object* args, object* kwargs){
     }
     
     object* self=list_index_int(args, 0);
-    if (!object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL; 
-    }
+    
     object* v=list_index_int(args, 1);
     if (CAST_SOCKET(self)->closed){
         vm_add_err(&InvalidOperationError, vm, "Socket closed");
@@ -912,18 +837,10 @@ object* socket_sendall(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_enter(object* self){
-    if (object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     return self;
 }
 
 object* socket_exit(object* self){
-    if (object_istype(self->type, &SocketType)){
-        vm_add_err(&TypeError, vm, "Expected socket object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     if (!CAST_SOCKET(self)->closed){
         _socket_close(CAST_SOCKET(self)->fd);
         if (CAST_SOCKET(self)->server!=NULL){
@@ -944,7 +861,6 @@ object* new_socket_module(){
     setup_type_methods(&SocketType);
 
     object* dict=new_dict();
-    
     dict_set(dict, str_new_fromstr("socket"), (object*)&SocketType);
     
     //Address family types
@@ -999,6 +915,19 @@ object* new_socket_module(){
 
     //Other
     dict_set(dict, str_new_fromstr("SOMAXCONN"), new_int_fromint(SOMAXCONN));
+    
+    //Builtin objects
+    object* emptyargs_kwargs=new_tuple();
+
+    object* ob=new_builtin(socket_gethostname, str_new_fromstr("gethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
+    dict_set(dict, str_new_fromstr("gethostname"), ob);
+    
+
+    #ifndef _WIN32
+    ob=new_builtin(socket_sethostname, str_new_fromstr("sethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
+    dict_set(dict, str_new_fromstr("sethostname"), ob);
+    
+    #endif
     
 
     socket_init();
