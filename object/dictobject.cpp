@@ -166,7 +166,6 @@ object* dict_repr(object* self){
     s+="{";
     int i=0;
     for (object* o: *CAST_DICT(self)->keys ){
-        cout<<"REPR"<<o<<"  ";
         s+=object_crepr(o);
         s+=": ";
         s+=object_crepr(CAST_DICT(self)->val->at(o));
