@@ -134,9 +134,7 @@ object* dict_set(object* self, object* key, object* val){
         } 
         object* o=(*CAST_DICT(self)->val)[key];
         (*CAST_DICT(self)->val)[key]=FPLINCREF(val);
-        if (!istrue(object_cmp((*CAST_DICT(self)->val)[key], o, CMP_EQ))){
-            FPLDECREF(o);
-        }
+        FPLDECREF(o);
         CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
         return new_none();
     }
@@ -168,6 +166,7 @@ object* dict_repr(object* self){
     s+="{";
     int i=0;
     for (object* o: *CAST_DICT(self)->keys ){
+        cout<<"REPR"<<o<<"  ";
         s+=object_crepr(o);
         s+=": ";
         s+=object_crepr(CAST_DICT(self)->val->at(o));
