@@ -446,6 +446,7 @@ struct object* vm_get_var_globals(struct vm* vm, object* name){
             }
         }
     }
+    
     vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
     return NULL;
 }
@@ -466,8 +467,11 @@ void print_traceback(){
         if (callframe->name==NULL){
             callframe=callframe->next;
         }
+        object* tup=dict_get(CAST_CODE(callframe->code)->co_detailed_lines, new_int_fromint((*callframe->ip)));
+        int line_=CAST_INT(tuple_index_int(tup, 2))->val->to_int();
+        int startcol=CAST_INT(tuple_index_int(tup, 0))->val->to_int();
+        int endcol=CAST_INT(tuple_index_int(tup, 1))->val->to_int();
 
-        int line_=calculate_line_fromip(*callframe->ip, callframe);
 
         cout<<"In file '"+program+"', line "+to_string(line_+1)+", in "+(*callframe->name)<<endl;
         
@@ -497,7 +501,18 @@ void print_traceback(){
             snippet+=(*CAST_CODE(callframe->code)->filedata)[i];
         }
 
+        string arrows="";
+        for (int i=0; i<snippet.size(); i++){
+            if (i>=startcol && i<=endcol){
+                arrows+="^";
+            }
+            else{
+                arrows+=" ";
+            }
+        }
+
         cout<<"    "<<remove_spaces(snippet)<<endl;
+        cout<<"    "<<arrows<<endl;
         
         callframe=callframe->next;
     }
@@ -554,7 +569,7 @@ object* import_name(string data, object* name){
 
     ERROR_RET(ret);
 
-    object* dict=::vm->callstack->head->locals;
+    object* dict=FPLINCREF(::vm->callstack->head->locals);
 
     object* o=module_new_fromdict(dict, name);
     
@@ -812,7 +827,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         LOAD_GLOBAL:{
-            add_dataframe(vm, vm->objstack, vm_get_var_globals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            object* v=vm_get_var_globals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) );
+            if (v==NULL){
+                goto exc;
+            }
+            add_dataframe(vm, vm->objstack, v);
             DISPATCH();
         }
 
@@ -822,7 +841,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         LOAD_NAME:{
-            add_dataframe(vm, vm->objstack, vm_get_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            object* v=vm_get_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) );
+            if (v==NULL){
+                goto exc;
+            }
+            add_dataframe(vm, vm->objstack, v);
             DISPATCH();
         }
 
@@ -1417,6 +1440,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, object_get(base, idx));
+            if (peek_dataframe(vm->objstack)==NULL){
+                goto exc;
+            }
             DISPATCH();
         }
 
@@ -2061,7 +2087,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         LOAD_NONLOCAL:{
-            add_dataframe(vm, vm->objstack, vm_get_var_nonlocal(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) ));
+            object* v=vm_get_var_nonlocal(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) );
+            if (v==NULL){
+                goto exc;
+            }
+            add_dataframe(vm, vm->objstack, v);
             DISPATCH();
         }
 
@@ -2452,6 +2482,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
     exc:
     if (vm->exception!=NULL){
+        (*ip)-=2;
         struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
         if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
             if (vm->callstack->size-frame->callstack_size!=0){
