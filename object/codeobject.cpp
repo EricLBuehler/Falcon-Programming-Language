@@ -4,7 +4,7 @@ object* code_init(object* self, object* args, object* kwargs){
 
 object* code_new_fromargs(object* args){
     object* obj=new_object(&CodeType);
-    if (CAST_LIST(args)->size!=5){
+    if (CAST_LIST(args)->size!=6){
         //Error
         return NULL;
     }
@@ -13,6 +13,7 @@ object* code_new_fromargs(object* args){
     CAST_CODE(obj)->co_code=FPLINCREF(list_index_int(args, 2));
     CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
     CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
+    CAST_CODE(obj)->co_detailed_lines=FPLINCREF(list_index_int(args, 5));
 
     const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
     CAST_CODE(obj)->code=new uint32_t[len];
@@ -37,6 +38,14 @@ object* code_new(object* type, object* args, object* kwargs){
     CAST_CODE(obj)->co_code=FPLINCREF(list_index_int(args, 2));
     CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
     CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
+    CAST_CODE(obj)->co_detailed_lines=FPLINCREF(list_index_int(args, 5));
+    
+    const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
+    CAST_CODE(obj)->code=new uint32_t[len];
+    for (int i=0; i<len; i++){
+        CAST_CODE(obj)->code[i]=CAST_INT(list_index_int(CAST_CODE(obj)->co_code, i))->val->to_int();
+    }
+
     return obj;
 }
 
@@ -46,6 +55,7 @@ void code_del(object* obj){
     FPLDECREF(CAST_CODE(obj)->co_code);
     FPLDECREF(CAST_CODE(obj)->co_lines);
     FPLDECREF(CAST_CODE(obj)->co_file);
+    delete CAST_CODE(obj)->code;
 }
 
 object* code_repr(object* self){

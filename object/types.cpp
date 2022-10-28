@@ -455,6 +455,7 @@ typedef struct CodeObject{
     uint32_t co_instructions;
     string* filedata;
     uint32_t* code;
+    object* co_detailed_lines;
 }CodeObject;
 
 static NumberMethods code_num_methods{
@@ -4429,7 +4430,7 @@ object* code_co_code(object* code){
 }
 
 object* code_co_lines(object* code){
-    return CAST_CODE(code)->co_lines;    
+    return CAST_CODE(code)->co_detailed_lines;    
 }
 
 
