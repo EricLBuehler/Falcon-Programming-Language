@@ -276,7 +276,7 @@ class Parser{
             Node* node=make_node(N_IDENT);
             
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+            
 
             if (this->next_next_tok_is(T_IDENTIFIER) && this->next_tok_is(T_COMMA) && this->multi){
                 vector<string*>* names=new vector<string*>;
@@ -289,6 +289,8 @@ class Parser{
                     names->push_back(new string(this->current_tok.data));
                 }
                 
+                node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+
                 MultiIdentifier* i=(MultiIdentifier*)fpl_malloc(sizeof(MultiIdentifier));
                 i->name=names;
                 node->node=i;
@@ -319,12 +321,16 @@ class Parser{
                 fpl_free(node->node);
                 delete i->name;
 
+                node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+
                 AnnotatedIdentifier* i=(AnnotatedIdentifier*)fpl_malloc(sizeof(AnnotatedIdentifier));
                 i->name=new string(_name);
                 i->tp=tp;
                 node->node=i;   
                 node->type=N_ANONIDENT;    
             }
+
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
 
             return node;
         }
@@ -444,7 +450,7 @@ class Parser{
             if (left->type==N_DOT){
                 Node* node=make_node(N_DOTASSIGN);
                 node->start=left->start;
-                node->end=left->end;
+                node->end=node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);;
 
                 DotAssign* assign=(DotAssign*)fpl_malloc(sizeof(DotAssign));
                 assign->dot=left;
@@ -477,7 +483,7 @@ class Parser{
             if (left->type==N_ANONIDENT || left->type==N_ANONGLBL_IDENT || left->type==N_ANONNONLOCAL || left->type==N_ANONDOT){
                 Node* node=make_node(N_ANONASSIGN);
                 node->start=left->start;
-                node->end=left->end;
+                
 
                 Assign* assign=(Assign*)fpl_malloc(sizeof(Assign));
                 assign->name=left;
@@ -502,13 +508,14 @@ class Parser{
                 }
                 assign->right=right;
 
+                node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);;
+
                 node->node=assign;
                 return node;
             }
 
             Node* node=make_node(N_ASSIGN);
             node->start=left->start;
-            node->end=left->end;
 
             Assign* assign=(Assign*)fpl_malloc(sizeof(Assign));
             assign->name=left;
@@ -533,6 +540,7 @@ class Parser{
                 return NULL;
             }
             assign->right=right;
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
 
             node->node=assign;
             return node;
@@ -556,7 +564,7 @@ class Parser{
             this->anno=anno;
             this->backadvance();
 
-            node->end=right->end;
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
 
             UnaryOp* unary=(UnaryOp*)fpl_malloc(sizeof(UnaryOp));
             unary->right=right;
@@ -584,7 +592,7 @@ class Parser{
             this->anno=anno;
             this->backadvance();
 
-            node->end=right->end;
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
 
             UnaryOp* unary=(UnaryOp*)fpl_malloc(sizeof(UnaryOp));
             unary->right=right;
@@ -615,7 +623,7 @@ class Parser{
             this->multi=b;
             this->anno=anno;
 
-            node->end=right->end;
+            node->end=node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);;
 
             UnaryOp* unary=(UnaryOp*)fpl_malloc(sizeof(UnaryOp));
             unary->right=right;
@@ -2198,7 +2206,6 @@ class Parser{
                         }
                         Node* newnode=make_node(N_DOT);
                         newnode->start=left->start;
-                        newnode->end=left->end;
                         Dot* d=(Dot*)fpl_malloc(sizeof(Dot));
                         d->names=new vector<Node*>;
                         d->names->clear();
@@ -2247,6 +2254,8 @@ class Parser{
                             this->advance(); 
                                      
                         }
+
+                        newnode->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);;
 
                         left=newnode;
                         break;
