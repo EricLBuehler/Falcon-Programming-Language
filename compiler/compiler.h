@@ -25,6 +25,7 @@ struct compiler{
     bool keep_return;
     bool nofree;
     bool inclass;
+    object* lines_detailed;
 };
 
 #define INTLIT(node) ((IntLiteral*)(node))
