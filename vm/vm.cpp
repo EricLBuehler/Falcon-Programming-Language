@@ -500,19 +500,20 @@ void print_traceback(){
         for (int i=startidx; i<endidx; i++){
             snippet+=(*CAST_CODE(callframe->code)->filedata)[i];
         }
+        
 
-        string arrows="";
+        cout<<"    ";
+        snippet=remove_spaces(snippet);
         for (int i=0; i<snippet.size(); i++){
             if (i>=startcol && i<=endcol){
-                arrows+="^";
+                red_color();
             }
             else{
-                arrows+=" ";
             }
+            cout<<snippet.at(i);
+            reset_color();
         }
-
-        cout<<"    "<<remove_spaces(snippet)<<endl;
-        cout<<"    "<<arrows<<endl;
+        cout<<endl;
         
         callframe=callframe->next;
     }
