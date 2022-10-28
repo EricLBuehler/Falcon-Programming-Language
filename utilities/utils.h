@@ -1,5 +1,6 @@
 #include "files.cpp"
 #include "strings.cpp"
+#include "text.cpp"
 
 
 void memory_error();
