@@ -228,7 +228,7 @@ void vm_del(struct vm* vm){
     }
 }
 
-void vm_add_var_locals(struct vm* vm, object* name, object* value){
+inline void vm_add_var_locals(struct vm* vm, object* name, object* value){
     for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
             if (CAST_DICT(vm->callstack->head->locals)->val->at(k.first)->type->size==0){
@@ -246,7 +246,7 @@ void vm_add_var_locals(struct vm* vm, object* name, object* value){
     dict_set(vm->callstack->head->locals, name, value); //If globals is same obj as locals then this will still update both
 }
 
-struct object* vm_get_var_locals(struct vm* vm, object* name){
+inline object* vm_get_var_locals(struct vm* vm, object* name){
     struct callframe* frame=vm->callstack->head;
     while(frame){
         for (auto k: (*CAST_DICT(frame->locals)->val)){
@@ -291,7 +291,7 @@ struct object* vm_get_var_locals(struct vm* vm, object* name){
     return NULL;
 }
 
-void vm_add_var_globals(struct vm* vm, object* name, object* value){
+inline void vm_add_var_globals(struct vm* vm, object* name, object* value){
     for (auto k: (*CAST_DICT(vm->globals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
             if (CAST_DICT(vm->globals)->val->at(k.first)->type->size==0){
@@ -306,7 +306,7 @@ void vm_add_var_globals(struct vm* vm, object* name, object* value){
     dict_set(vm->globals, name, value); //If globals is same obj as locals then this will still update both
 }
 
-object* vm_get_var_nonlocal(struct vm* vm, object* name){
+inline object* vm_get_var_nonlocal(struct vm* vm, object* name){
     int i=0;
     struct callframe* frame=vm->callstack->head->next;
     while (frame){
@@ -334,7 +334,7 @@ object* vm_get_var_nonlocal(struct vm* vm, object* name){
     return NULL;
 }
 
-void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
+inline void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
     int i=0;
     struct callframe* frame=vm->callstack->head->next;
     while (frame){
@@ -380,7 +380,7 @@ void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
     vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
 }
 
-void vm_del_var_nonlocal(struct vm* vm, object* name){
+inline void vm_del_var_nonlocal(struct vm* vm, object* name){
     int i=0;
     struct callframe* frame=vm->callstack->head;
     while (frame){
@@ -428,7 +428,7 @@ void vm_del_var_nonlocal(struct vm* vm, object* name){
     vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
 }
 
-struct object* vm_get_var_globals(struct vm* vm, object* name){
+inline struct object* vm_get_var_globals(struct vm* vm, object* name){
     for (auto k: (*CAST_DICT(vm->globals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
             return  CAST_DICT(vm->globals)->val->at(k.first);
