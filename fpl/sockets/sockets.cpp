@@ -921,12 +921,13 @@ object* new_socket_module(){
 
     object* ob=new_builtin(socket_gethostname, str_new_fromstr("gethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
     dict_set(dict, str_new_fromstr("gethostname"), ob);
+    FPLDECREF(ob);
     
 
     #ifndef _WIN32
     ob=new_builtin(socket_sethostname, str_new_fromstr("sethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
     dict_set(dict, str_new_fromstr("sethostname"), ob);
-    
+    FPLDECREF(ob);    
     #endif
     
 
