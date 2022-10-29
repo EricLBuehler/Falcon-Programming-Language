@@ -93,7 +93,7 @@ object* new_time_module(){
     FPLDECREF(ob);    
     
 
-    ob=new_builtin(time_time, str_new_fromstr("time"), emptykw_args, emptykw_args, 1, false);
+    ob=new_builtin(time_time, str_new_fromstr("time"), emptykw_args, emptykw_args, 0, false);
     dict_set(dict, str_new_fromstr("time"), ob);
     FPLDECREF(ob);    
     
@@ -105,7 +105,7 @@ object* new_time_module(){
     FPLDECREF(ob);    
     
     
-    ob=new_builtin(time_timens, str_new_fromstr("time_ns"), emptykw_args, emptykw_args, 1, false);
+    ob=new_builtin(time_timens, str_new_fromstr("time_ns"), emptykw_args, emptykw_args, 0, false);
     dict_set(dict, str_new_fromstr("time_ns"), ob);
     FPLDECREF(ob);    
     
