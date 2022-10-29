@@ -80,14 +80,14 @@ object* new_random_module(){
     object* randintargs=new_tuple();
     randintargs->type->slot_mappings->slot_append(randintargs, str_new_fromstr("lo"));
     randintargs->type->slot_mappings->slot_append(randintargs, str_new_fromstr("hi"));
-    object* ob=new_builtin(random_randint, str_new_fromstr("randint"), randintargs, emptykw_args, 1, false);
+    object* ob=new_builtin(random_randint, str_new_fromstr("randint"), randintargs, emptykw_args, 2, false);
     dict_set(dict, str_new_fromstr("randint"), ob);
     FPLDECREF(ob);    
 
     object* randkwargs=new_tuple();
     randkwargs->type->slot_mappings->slot_append(randkwargs, new_int_fromint(0));
     randkwargs->type->slot_mappings->slot_append(randkwargs, new_int_fromint(1));
-    ob=new_builtin(random_random, str_new_fromstr("random"), randintargs, randkwargs, 1, false);
+    ob=new_builtin(random_random, str_new_fromstr("random"), randintargs, randkwargs, 2, false);
     dict_set(dict, str_new_fromstr("random"), ob);
     FPLDECREF(ob);    
     
