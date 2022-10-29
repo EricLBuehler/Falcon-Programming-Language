@@ -1831,7 +1831,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     bool done=false;
                     for (int i=0; i<nmodules; i++){
                         if (istrue(object_cmp(name, CAST_MODULE(modules[i])->name, CMP_EQ))){
-                            add_dataframe(vm, vm->objstack, modules[i]);
+                            add_dataframe(vm, vm->objstack, FPLINCREF(modules[i]));
                             done=true;
                             DISPATCH();
                         }
@@ -2009,17 +2009,16 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (int i=0; i<arg; i++){
                 object* flag = pop_dataframe(vm->objstack);
                 object* o=pop_dataframe(vm->objstack);
-                if (istrue(flag)){
+                if (istrue(FPLINCREF(flag))){
                     strs.push_back(object_crepr(o));
                     continue;
                 }
                 strs.push_back(object_cstr(o));
             }
-
+            
             for (int i=strs.size(); i>0; i--){
                 s+=strs.at(i-1);
             }
-            
             add_dataframe(vm, vm->objstack, str_new_fromstr(s));
             DISPATCH();
         }
