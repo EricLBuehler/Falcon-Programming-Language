@@ -25,10 +25,12 @@ object* new_sys_module(){
     args->type->slot_mappings->slot_append(args, str_new_fromstr("obj"));
     object* ob=new_builtin(sys_getsizeof, str_new_fromstr("getsizeof"), args, emptykw_args, 1, false);
     dict_set(dict, str_new_fromstr("getsizeof"), ob);
+    FPLDECREF(ob);    
     
     
     ob=new_builtin(sys_getrefcnt, str_new_fromstr("getrefcnt"), args, emptykw_args, 1, false);
     dict_set(dict, str_new_fromstr("getrefcnt"), ob);
+    FPLDECREF(ob);    
     
 
     object* getset=slotwrapper_new_fromfunc(sys_getpath, NULL, "path");
