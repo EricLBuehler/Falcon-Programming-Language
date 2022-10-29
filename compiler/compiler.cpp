@@ -1261,6 +1261,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                 add_instruction(compiler, compiler->instructions,LOAD_ATTR, idx, GET_ANNO_N(names->at(i)));
             }
+            if (!compiler->keep_return){
+                add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
+            }
             break;
         }
 
@@ -2179,8 +2182,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_IMPORT: {
             for (uint32_t i=0; i<IMPORT(expr->node)->libnames->size(); i++){
                 Node* libname=IMPORT(expr->node)->libnames->at(i);
-                Node* name=IMPORT(expr->node)->names->at(i);
-                
+                Node* name=IMPORT(expr->node)->names->at(i);                
+
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(libname->node)->name)){
                     //Create object
