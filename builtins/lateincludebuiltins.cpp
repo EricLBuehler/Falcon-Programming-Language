@@ -42,12 +42,12 @@ object* builtin_eval(object* self, object* args){
     ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
     
     ::vm->globals=glbls;
-    ::vm->callstack->head->locals=locals;
-    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
-    ::vm->global_annotations=::vm->callstack->head->annotations;
+    ::callstack_head(vm->callstack).locals=locals;
+    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
+    ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
 
     object* ret=run_vm(code, &::vm->ip);
-    object* dict=::vm->callstack->head->locals;
+    object* dict=::callstack_head(vm->callstack).locals;
     
     vm_del(::vm);
     ::vm=vm_;

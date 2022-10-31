@@ -35,7 +35,7 @@ object* builtin___build_class__(object* self, object* args){
     
     uint32_t ip=0;
     add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, FPLINCREF(CAST_FUNC(function)->code), function, &ip);
-    vm->callstack->head->locals=new_dict();
+    callstack_head(vm->callstack).locals=new_dict();
     
     object* kwargs=new_dict();
     object* fargs=new_list();   
@@ -43,7 +43,7 @@ object* builtin___build_class__(object* self, object* args){
     FPLDECREF(kwargs);
     FPLDECREF(fargs);
 
-    dict=FPLINCREF(vm->callstack->head->locals);
+    dict=FPLINCREF(callstack_head(vm->callstack).locals);
     pop_callframe(vm->callstack);
     ERROR_RET(ret);
     
@@ -132,15 +132,13 @@ object* builtin_globals(object* self, object* args){
 }
     
 object* builtin_locals(object* self, object* args){
-    return vm->callstack->head->locals;
+    return callstack_head(vm->callstack).locals;
 }
     
 object* builtin_alllocals(object* self, object* args){
     object* locals=new_list();
-    struct callframe* c=vm->callstack->head;
-    while(c && c->next!=NULL){
-        list_append(locals, c->locals);
-        c=c->next;
+    for (int i=0; i<vm->callstack->size-1; i++){
+        list_append(locals, vm->callstack->data[vm->callstack->size].locals);
     }
     list_append(locals, vm->globals);
     return locals;
@@ -404,7 +402,7 @@ object* builtin_max(object* self, object* args){
     
 object* builtin_getannotation(object* self, object* args){
     object* nm=args->type->slot_mappings->slot_get(args, str_new_fromstr("name"));
-    object* anno=vm->callstack->head->annotations;
+    object* anno=callstack_head(vm->callstack).annotations;
 
     object* tp=dict_get(anno, nm);
     if (tp==NULL){
