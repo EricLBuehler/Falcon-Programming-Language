@@ -4,7 +4,7 @@ object* code_init(object* self, object* args, object* kwargs){
 
 object* code_new_fromargs(object* args){
     object* obj=new_object(&CodeType);
-    if (CAST_LIST(args)->size!=7){
+    if (CAST_LIST(args)->size!=8){
         //Error
         return NULL;
     }
@@ -15,6 +15,7 @@ object* code_new_fromargs(object* args){
     CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
     CAST_CODE(obj)->co_detailed_lines=FPLINCREF(list_index_int(args, 5));
     CAST_CODE(obj)->co_stack_size=FPLINCREF(list_index_int(args, 6));
+    CAST_CODE(obj)->co_blockstack_size=FPLINCREF(list_index_int(args, 7));
 
     const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
     CAST_CODE(obj)->code=new uint32_t[len];
@@ -30,8 +31,8 @@ object* code_new(object* type, object* args, object* kwargs){
     if (args==NULL){
         return obj;
     }
-    if (CAST_LIST(args)->size!=7){
-        vm_add_err(&ValueError, vm, "Expected 7 arguments, got %d", CAST_LIST(args)->size);
+    if (CAST_LIST(args)->size!=8){
+        vm_add_err(&ValueError, vm, "Expected 8 arguments, got %d", CAST_LIST(args)->size);
         return NULL;
     }
     CAST_CODE(obj)->co_names=FPLINCREF(list_index_int(args, 0));
@@ -41,6 +42,7 @@ object* code_new(object* type, object* args, object* kwargs){
     CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
     CAST_CODE(obj)->co_detailed_lines=FPLINCREF(list_index_int(args, 5));
     CAST_CODE(obj)->co_stack_size=FPLINCREF(list_index_int(args, 6));
+    CAST_CODE(obj)->co_blockstack_size=FPLINCREF(list_index_int(args, 7));
     
     const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
     CAST_CODE(obj)->code=new uint32_t[len];
@@ -59,6 +61,7 @@ void code_del(object* obj){
     FPLDECREF(CAST_CODE(obj)->co_file);
     FPLDECREF(CAST_CODE(obj)->co_detailed_lines);
     FPLDECREF(CAST_CODE(obj)->co_stack_size);
+    FPLDECREF(CAST_CODE(obj)->co_blockstack_size);
     delete CAST_CODE(obj)->code;
 }
 
