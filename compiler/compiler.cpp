@@ -22,6 +22,340 @@ struct instructions* new_instructions(){
     return instr;
 }
 
+void compile_expr_cleanup(int* compiler_ss, int* ss){
+    if (*compiler_ss<*ss){
+        *compiler_ss=*ss;
+    }
+}
+
+
+//If stack size grows after instruction is executed, return that number
+//Otherwise, return 0.
+int get_stack_size_inc(enum opcode opcode, uint32_t arg){
+    switch (opcode){
+        case LOAD_CONST: {
+            return 1;
+        }
+        case STORE_NAME: {
+            return 0;
+        }
+        case LOAD_NAME: {
+            return 1;
+        }
+        case STORE_GLOBAL: {
+            return 0;
+        }
+        case LOAD_GLOBAL: {
+            return 1;
+        }
+        case BINOP_ADD: {
+            return 0;
+        }
+        case BINOP_SUB: {
+            return 0;
+        }
+        case UNARY_NEG: {
+            return 0;
+        }
+        case BINOP_MUL: {
+            return 0;
+        }
+        case BINOP_DIV: {
+            return 0;
+        }
+        case MAKE_FUNCTION: {
+            return 0;
+        }
+        case RETURN_VAL: {
+            return 0;
+        }
+        case CALL_FUNCTION: {
+            return 0;
+        }
+        case BUILD_TUPLE: {
+            if (arg==0){
+                return 1;
+            }
+            return 0;
+        }
+        case BUILD_DICT: {
+            if (arg==0){
+                return 1;
+            }
+            return 0;
+        }
+        case LOAD_BUILD_CLASS: {
+            return 1;
+        }
+        case LOAD_ATTR: {
+            return 0;
+        }
+        case STORE_ATTR: {
+            return 0;
+        }
+        case CALL_METHOD: {
+            return 0;
+        }
+        case BUILD_LIST: {
+            if (arg==0){
+                return 1;
+            }
+            return 0;
+        }
+        case BINOP_IS: {
+            return 0;
+        }
+        case BINOP_EE: {
+            return 0;
+        }
+        case POP_JMP_TOS_FALSE: {
+            return 0;
+        }
+        case JUMP_DELTA: {
+            return 0;
+        }
+        case BINOP_SUBSCR: {
+            return 0;
+        }
+        case RAISE_EXC: {
+            return 0;
+        }
+        case STORE_SUBSCR: {
+            return 0;
+        }
+        case DUP_TOS: {
+            return 1;
+        }
+        case POP_TOS: {
+            return 0;
+        }
+        case SETUP_TRY: {
+            return 0;
+        }
+        case FINISH_TRY: {
+            return 0;
+        }
+        case BINOP_EXC_CMP: {
+            return 0;
+        }
+        case BINOP_GT: {
+            return 0;
+        }
+        case BINOP_GTE: {
+            return 0;
+        }
+        case BINOP_LT: {
+            return 0;
+        }
+        case BINOP_LTE: {
+            return 0;
+        }
+        case FOR_TOS_ITER: {
+            return 0;
+        }
+        case JUMP_TO: {
+            return 0;
+        }
+        case EXTRACT_ITER: {
+            return 0;
+        }
+        case BREAK_LOOP: {
+            return 0;
+        }
+        case CONTINUE_LOOP: {
+            return 0;
+        }
+        case UNPACK_SEQ: {
+            return arg;
+        }
+        case BINOP_IADD: {
+            return 0;
+        }
+        case BINOP_ISUB: {
+            return 0;
+        }
+        case BINOP_IMUL: {
+            return 0;
+        }
+        case BINOP_IDIV: {
+            return 0;
+        }
+        case IMPORT_NAME: {
+            return 1;
+        }
+        case IMPORT_FROM_MOD: {
+            return 0;
+        }
+        case MAKE_SLICE: {
+            return 0;
+        }
+        case BINOP_NE: {
+            return 0;
+        }
+        case DEL_SUBSCR: {
+            return 0;
+        }
+        case DEL_NAME: {
+            return 0;
+        }
+        case BINOP_MOD: {
+            return 0;
+        }
+        case BINOP_POW: {
+            return 0;
+        }
+        case BINOP_IPOW: {
+            return 0;
+        }
+        case BINOP_IMOD: {
+            return 0;
+        }
+        case BINOP_AND: {
+            return 0;
+        }
+        case BINOP_OR: {
+            return 0;
+        }
+        case UNARY_NOT: {
+            return 0;
+        }
+        case BUILD_STRING: {
+            if (arg==0){
+                return 1;
+            }
+            return 0;
+        }
+        case POP_JMP_TOS_TRUE: {
+            return 0;
+        }
+        case RAISE_ASSERTIONERR: {
+            return 0;
+        }
+        case DEL_GLBL: {
+            return 0;
+        }
+        case DEL_ATTR: {
+            return 0;
+        }
+        case MAKE_CLOSURE: {
+            return 0;
+        }
+        case LOAD_NONLOCAL: {
+            return 1;
+        }
+        case STORE_NONLOCAL: {
+            return 0;
+        }
+        case DEL_NONLOCAL: {
+            return 0;
+        }
+        case BITWISE_NOT: {
+            return 0;
+        }
+        case BITWISE_AND: {
+            return 0;
+        }
+        case BITWISE_OR: {
+            return 0;
+        }
+        case BITWISE_LSHIFT: {
+            return 0;
+        }
+        case BITWISE_RSHIFT: {
+            return 0;
+        }
+        case BINOP_IAND: {
+            return 0;
+        }
+        case BINOP_IOR: {
+            return 0;
+        }
+        case BINOP_ILSH: {
+            return 0;
+        }
+        case BINOP_IRSH: {
+            return 0;
+        }
+        case BINOP_NOTIN: {
+            return 0;
+        }
+        case BINOP_IN: {
+            return 0;
+        }
+        case BINOP_ISNOT: {
+            return 0;
+        }
+        case BINOP_FLDIV: {
+            return 0;
+        }
+        case BINOP_IFLDIV: {
+            return 0;
+        }
+        case LOAD_METHOD: {
+            return 1;
+        }
+        case TERNARY_TEST: {
+            return 0;
+        }
+        case CALL_FUNCTION_BOTTOM: {
+            return 0;
+        }
+        case ANNOTATE_GLOBAL: {
+            return 0;
+        }
+        case ANNOTATE_NAME: {
+            return 0;
+        }
+        case ANNOTATE_NONLOCAL: {
+            return 0;
+        }
+        case STORE_ATTR_ANNOTATE: {
+            return 0;
+        }
+        case YIELD_VALUE: {
+            return 0;
+        }
+        case MAKE_GENERATOR: {
+            return 0;
+        }
+        case MAKE_CLOSURE_GENERATOR: {
+            return 0;
+        }
+        case BUILD_SET: {
+            if (arg==0){
+                return 1;
+            }
+            return 0;
+        }
+        case CLEAR_EXC: {
+            return 0;
+        }
+        case ENTER_WHILE: {
+            return 0;
+        }
+        case EXIT_WHILE: {
+            return 0;
+        }
+        case ENTER_WITH: {
+            return 0;
+        }
+        case EXIT_WITH: {
+            return 0;
+        }
+        case SEQ_APPEND: {
+            return 0;
+        }
+        case DICT_SET: {
+            return 0;
+        }
+        case BITWISE_XOR: {
+            return 0;
+        }
+    }
+
+    return 0;
+}
+
 void add_instruction(struct compiler* compiler, struct instructions* instructions, enum opcode opcode, uint32_t arg, int startcol, int endcol, int line){
     struct instruction* instr=(struct instruction*)fpl_malloc(sizeof(struct instruction));
     instr->arg=arg;
@@ -34,6 +368,8 @@ void add_instruction(struct compiler* compiler, struct instructions* instruction
     tuple_append(tup, new_int_fromint(line));
     dict_set(compiler->lines_detailed, new_int_fromint(instructions->count*2), tup);
     FPLDECREF(tup);
+
+    compiler->stack_size+=get_stack_size_inc(opcode, arg);
 
     instructions->first=instr;
     instructions->count++;
@@ -49,6 +385,7 @@ struct compiler* new_compiler(){
     compiler->nofree=false;
     compiler->inclass=false;
     compiler->lines_detailed=new_dict();
+    compiler->stack_size=0;
     return compiler;
 }
 
@@ -1495,7 +1832,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*IF(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;
+                int _stack_size=compiler->stack_size;
+                compiler->stack_size=0;
                 int i=compile_expr(compiler, n);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -1526,7 +1866,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*ELSE(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;
+                int _stack_size=compiler->stack_size;
+                compiler->stack_size=0;
                 int i=compile_expr(compiler, n);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -1565,7 +1908,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     for (Node* n: (*IF(n->node)->code)){
                         uint32_t start=compiler->instructions->count*2;
                         long line=n->start->line;
+                        int _stack_size=compiler->stack_size;
+                        compiler->stack_size=0;
                         int i=compile_expr(compiler, n);
+                        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                         if (i==0x100){
                             return 0x100;
                         }
@@ -1587,7 +1933,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     for (Node* n: (*ELSE(n->node)->code)){
                         uint32_t start=compiler->instructions->count*2;
                         long line=n->start->line;
+                        int _stack_size=compiler->stack_size;
+                        compiler->stack_size=0;
                         int i=compile_expr(compiler, n);
+                        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                         if (i==0x100){
                             return 0x100;
                         }
@@ -1655,7 +2004,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*TRY(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;
+                int _stack_size=compiler->stack_size;
+                compiler->stack_size=0;
                 int i=compile_expr(compiler, n);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -1678,7 +2030,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*FINALLY(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;        
+                int _stack_size=compiler->stack_size;
+                compiler->stack_size=0;
                 int i=compile_expr(compiler, n);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -1765,7 +2120,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*EXCEPT(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;        
+                int _stack_size=compiler->stack_size;
+                compiler->stack_size=0;
                 int i=compile_expr(compiler, n);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -1806,7 +2164,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     for (Node* n: (*TRY(tryn->node)->code)){
                         uint32_t start=compiler->instructions->count*2;
                         long line=n->start->line;
+                        int _stack_size=compiler->stack_size;
+                        compiler->stack_size=0;
                         int i=compile_expr(compiler, n);
+                        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                         if (i==0x100){
                             return 0x100;
                         }
@@ -1833,7 +2194,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     for (Node* n: (*FINALLY(tryn->node)->code)){
                         uint32_t start=compiler->instructions->count*2;
                         long line=n->start->line;
+                        int _stack_size=compiler->stack_size;
+                        compiler->stack_size=0;
                         int i=compile_expr(compiler, n);
+                        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                         if (i==0x100){
                             return 0x100;
                         }
@@ -1939,7 +2303,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 for (Node* n: (*EXCEPT(tryn->node)->code)){
                     uint32_t start=compiler->instructions->count*2;
                     long line=n->start->line;
+                    int _stack_size=compiler->stack_size;
+                    compiler->stack_size=0;
                     int i=compile_expr(compiler, n);
+                    compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                     if (i==0x100){
                         return 0x100;
                     }
@@ -1964,7 +2331,9 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
                 add_instruction(compiler, compiler->instructions,RAISE_EXC,0, GET_ANNO_N(expr)); 
             }
-            add_instruction(compiler, compiler->instructions,FINISH_TRY,0, GET_ANNO_N(expr));      
+            add_instruction(compiler, compiler->instructions,FINISH_TRY,0, GET_ANNO_N(expr));   
+               
+            
             
             return 0x200;
         }
@@ -2046,7 +2415,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*FOR(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;
+                int _stack_size=compiler->stack_size;
+                compiler->stack_size=0;
                 int i=compile_expr(compiler, n);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -2067,7 +2439,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 for (Node* n: (*ELSE(FOR(expr->node)->elsen->node)->code)){
                     uint32_t start=compiler->instructions->count*2;
                     long line=n->start->line;
+                    int _stack_size=compiler->stack_size;
+                    compiler->stack_size=0;
                     int i=compile_expr(compiler, n);
+                    compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                     if (i==0x100){
                         return 0x100;
                     }
@@ -2082,6 +2457,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }   
             }
 
+            
+            
             return 0x200;
         }
 
@@ -2137,7 +2514,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*WHILE(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;
+                int _stack_size=compiler->stack_size;
+                compiler->stack_size=0;
                 int i=compile_expr(compiler, n);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -2161,7 +2541,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 for (Node* n: (*ELSE(WHILE(expr->node)->elsen->node)->code)){
                     uint32_t start=compiler->instructions->count*2;
                     long line=n->start->line;
+                    int _stack_size=compiler->stack_size;
+                    compiler->stack_size=0;
                     int i=compile_expr(compiler, n);
+                    compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                     if (i==0x100){
                         return 0x100;
                     }
@@ -2175,6 +2558,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                 }   
             }
+
+            
             
             return 0x200;
         }
@@ -2688,12 +3073,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
-                        idx=object_find(compiler->consts, falseobj);
+                        idx=object_find(compiler->consts, new_bool_false());
                     }
                     
                     add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
                 }  
             }
+            cout<<x<<"X";
             add_instruction(compiler, compiler->instructions,BUILD_STRING, x, GET_ANNO_N(expr));
             break;
         }
@@ -3345,7 +3731,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*WITH(expr->node)->code)){
                 uint32_t start=compiler->instructions->count*2;
                 long line=n->start->line;        
+                int _stack_size=compiler->stack_size;
+                compiler->stack_size=0;
                 int i=compile_expr(compiler, n);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -3361,6 +3750,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             add_instruction(compiler, compiler->instructions,EXIT_WITH, 0, GET_ANNO_N(expr));
             add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
+
+            
 
             return 0x200;
         }
@@ -3844,7 +4235,11 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
         uint32_t start=compiler->instructions->count*2;
         
         int line=n->start->line;
+
+        int _stack_size=compiler->stack_size;
+        compiler->stack_size=0;
         int i=compile_expr(compiler, n);
+        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
 
         if (i==0x100){
             return NULL;
@@ -3869,8 +4264,10 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
         idx=object_find(compiler->consts, new_none());
     }
     
+    int siz=compiler->stack_size;
     add_instruction(compiler, compiler->instructions, LOAD_CONST, idx, 0, 0, 0);
     add_instruction(compiler, compiler->instructions, RETURN_VAL, 0,  0, 0, 0);
+    compiler->stack_size=siz;
 
     if (ast.nodes.size()>0){
         object* tuple=new_tuple();
@@ -3906,6 +4303,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
     CAST_LIST(list)->type->slot_mappings->slot_append(list, object_repr(str_new_fromstr(program)));
     CAST_LIST(list)->type->slot_mappings->slot_append(list, lines);
     CAST_LIST(list)->type->slot_mappings->slot_append(list, compiler->lines_detailed);
+    CAST_LIST(list)->type->slot_mappings->slot_append(list, new_int_fromint(compiler->stack_size));
     
     object* code=code_new_fromargs(list);
     CAST_CODE(code)->co_instructions=CAST_INT(instructions->type->slot_mappings->slot_len(instructions))->val->to_int();

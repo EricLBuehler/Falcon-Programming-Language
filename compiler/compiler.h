@@ -26,6 +26,7 @@ struct compiler{
     bool nofree;
     bool inclass;
     object* lines_detailed;
+    int stack_size;
 };
 
 #define INTLIT(node) ((IntLiteral*)(node))
