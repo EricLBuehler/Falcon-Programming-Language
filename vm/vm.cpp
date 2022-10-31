@@ -17,6 +17,7 @@ struct blockstack* new_blockstack(int size){
     struct blockstack* block=(struct blockstack*)fpl_malloc(sizeof(struct blockstack));
     block->data=(blockframe*)fpl_malloc(sizeof(blockframe)*size);
     block->capacity=size;
+    block->size=0;
     return block;
 }
 
