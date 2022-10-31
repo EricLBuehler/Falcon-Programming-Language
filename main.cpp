@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 
             struct compiler* compiler = new_compiler();
             vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
-            dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
+            dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
             dict_set(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
             
             while (true){
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
                 }
                 vm=vm_;
 
-                vm->callstack->head->code=code;
+                callstack_head(vm->callstack).code=code;
                 vm->ip=0;
                 
                 object* returned=run_vm(code, &vm->ip);
