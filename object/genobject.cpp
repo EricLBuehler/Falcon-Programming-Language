@@ -6,9 +6,9 @@ object* new_generator_impl(object* func, object* locals){
     CAST_GEN(obj)->ip=0;
     CAST_GEN(obj)->done=false;
     
-    CAST_GEN(obj)->objstack=new_datastack();
+    CAST_GEN(obj)->objstack=new_datastack(CAST_INT(CAST_CODE(CAST_FUNC(func)->code)->co_stack_size)->val->to_int());
     CAST_GEN(obj)->callstack=new_callstack();
-    CAST_GEN(obj)->blockstack=new_blockstack();
+    CAST_GEN(obj)->blockstack=new_blockstack(CAST_INT(CAST_CODE(CAST_FUNC(func)->code)->co_blockstack_size)->val->to_int());
 
     return obj;
 }
@@ -67,24 +67,24 @@ object* gen_next(object* self){
 
     if (CAST_GEN(self)->callstack->size>0){
         while (CAST_GEN(self)->callstack->size>0){
-            add_callframe(vm->callstack, CAST_GEN(self)->callstack->head->line, CAST_GEN(self)->callstack->head->name,\
-                CAST_GEN(self)->callstack->head->code, CAST_GEN(self)->callstack->head->callable, CAST_GEN(self)->callstack->head->ip);
-            FPLDECREF(vm->callstack->head->annotations);
-            vm->callstack->head->annotations=FPLINCREF(CAST_GEN(self)->callstack->head->annotations);
+            add_callframe(vm->callstack, callstack_head(CAST_GEN(self)->callstack).line, callstack_head(CAST_GEN(self)->callstack).name,\
+                callstack_head(CAST_GEN(self)->callstack).code, callstack_head(CAST_GEN(self)->callstack).callable, callstack_head(CAST_GEN(self)->callstack).ip);
+            FPLDECREF(callstack_head(vm->callstack).annotations);
+            callstack_head(vm->callstack).annotations=FPLINCREF(callstack_head(CAST_GEN(self)->callstack).annotations);
             pop_callframe(CAST_GEN(self)->callstack);
         }
     }
 
     if (CAST_GEN(self)->blockstack->size>0){
         while (CAST_GEN(self)->blockstack->size>0){
-            add_blockframe(&(CAST_GEN(self)->blockstack->head->start_ip), vm, vm->blockstack, CAST_GEN(self)->blockstack->head->arg, CAST_GEN(self)->blockstack->head->type);
-            vm->blockstack->head->obj=CAST_GEN(self)->blockstack->head->obj;
+            add_blockframe(&(blockstack_head(CAST_GEN(self)->blockstack).start_ip), vm, vm->blockstack, blockstack_head(CAST_GEN(self)->blockstack).arg, blockstack_head(CAST_GEN(self)->blockstack).type);
+            blockstack_head(vm->blockstack).obj=blockstack_head(CAST_GEN(self)->blockstack).obj;
             pop_blockframe(CAST_GEN(self)->blockstack);
         }
     }
 
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(CAST_GEN(self)->func)->name)->val, CAST_FUNC(CAST_GEN(self)->func)->code, self, &(CAST_GEN(self)->ip));
-    vm->callstack->head->locals=CAST_GEN(self)->locals;
+    callstack_head(vm->callstack).locals=CAST_GEN(self)->locals;
 
     uint32_t ip_=CAST_GEN(self)->ip;
     uint32_t datastack_size=vm->objstack->size;
@@ -118,8 +118,8 @@ object* gen_next(object* self){
         }
         if (blockstack_size_>blockstack_size){
             while (vm->blockstack->size>blockstack_size){
-                if (vm->blockstack->head->type==WITH_BLOCK){
-                    object_exit_with(vm->blockstack->head->obj);
+                if (blockstack_head(vm->blockstack).type==WITH_BLOCK){
+                    object_exit_with(blockstack_head(vm->blockstack).obj);
                 }
                 pop_blockframe(vm->blockstack);
             }
@@ -139,17 +139,17 @@ object* gen_next(object* self){
     }
     if (callstack_size_>callstack_size){
         while (vm->callstack->size>callstack_size){
-            add_callframe(CAST_GEN(self)->callstack, vm->callstack->head->line, vm->callstack->head->name,\
-                vm->callstack->head->code, vm->callstack->head->callable, vm->callstack->head->ip);
-            FPLDECREF(CAST_GEN(self)->callstack->head->annotations);
-            CAST_GEN(self)->callstack->head->annotations=FPLINCREF(vm->callstack->head->annotations);
+            add_callframe(CAST_GEN(self)->callstack, callstack_head(vm->callstack).line, callstack_head(vm->callstack).name,\
+                callstack_head(vm->callstack).code, callstack_head(vm->callstack).callable, callstack_head(vm->callstack).ip);
+            FPLDECREF(callstack_head(CAST_GEN(self)->callstack).annotations);
+            callstack_head(CAST_GEN(self)->callstack).annotations=FPLINCREF(callstack_head(vm->callstack).annotations);
             pop_callframe(vm->callstack);
         }
     }
     if (blockstack_size_>blockstack_size){
         while (vm->blockstack->size>blockstack_size){
-            add_blockframe(&(vm->blockstack->head->start_ip), vm, CAST_GEN(self)->blockstack, vm->blockstack->head->arg, vm->blockstack->head->type);
-            CAST_GEN(self)->blockstack->head->obj=vm->blockstack->head->obj;
+            add_blockframe(&(blockstack_head(vm->blockstack).start_ip), vm, CAST_GEN(self)->blockstack, blockstack_head(vm->blockstack).arg, blockstack_head(vm->blockstack).type);
+            blockstack_head(CAST_GEN(self)->blockstack).obj=blockstack_head(vm->blockstack).obj;
             pop_blockframe(vm->blockstack);
         }
     }

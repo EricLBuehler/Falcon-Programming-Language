@@ -91,7 +91,8 @@ object* code_cmp(object* self, object* other, uint8_t type){
         istrue(object_cmp(CAST_CODE(self)->co_names, CAST_CODE(other)->co_names, type)) && \
         istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type)) && \
         istrue(object_cmp(CAST_CODE(self)->co_detailed_lines, CAST_CODE(other)->co_detailed_lines, type)) && \
-        istrue(object_cmp(CAST_CODE(self)->co_stack_size, CAST_CODE(other)->co_stack_size, type))){
+        istrue(object_cmp(CAST_CODE(self)->co_stack_size, CAST_CODE(other)->co_stack_size, type)) && \
+        istrue(object_cmp(CAST_CODE(self)->co_stack_size, CAST_CODE(other)->co_blockstack_size, type))){
             return new_bool_true();
         }
         return new_bool_false();
@@ -100,9 +101,10 @@ object* code_cmp(object* self, object* other, uint8_t type){
         if (!istrue(object_cmp(CAST_CODE(self)->co_file, CAST_CODE(other)->co_file, type)) || \
         !istrue(object_cmp(CAST_CODE(self)->co_consts, CAST_CODE(other)->co_consts, type)) || \
         !istrue(object_cmp(CAST_CODE(self)->co_names, CAST_CODE(other)->co_names, type)) || \
-        !istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type)) && \
-        !istrue(object_cmp(CAST_CODE(self)->co_detailed_lines, CAST_CODE(other)->co_detailed_lines, type)) && \
-        !istrue(object_cmp(CAST_CODE(self)->co_stack_size, CAST_CODE(other)->co_stack_size, type))){
+        !istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type)) || \
+        !istrue(object_cmp(CAST_CODE(self)->co_detailed_lines, CAST_CODE(other)->co_detailed_lines, type)) || \
+        !istrue(object_cmp(CAST_CODE(self)->co_stack_size, CAST_CODE(other)->co_stack_size, type)) || \
+        !istrue(object_cmp(CAST_CODE(self)->co_stack_size, CAST_CODE(other)->co_blockstack_size, type))){
             return new_bool_true();
         }
         return new_bool_false();

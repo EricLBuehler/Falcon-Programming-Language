@@ -222,16 +222,13 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
 object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
 
-inline void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj);
-inline object* pop_dataframe(struct datastack* stack);
 inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable, uint32_t* ip);
 inline void pop_callframe(struct callstack* stack);
 void print_traceback();
-inline object* peek_dataframe(struct datastack* stack);
 
-struct datastack* new_datastack();
+struct datastack* new_datastack(int size);
 struct callstack* new_callstack();
-struct blockstack* new_blockstack();
+struct blockstack* new_blockstack(int size);
 
 void finalize_threads();
 
@@ -320,10 +317,6 @@ void pop_blockframe(struct blockstack* stack);
 
 struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type);
 
-struct dataframe{
-    struct object* obj;
-    struct dataframe* next;
-};
 
 struct callframe{
     object* line;
@@ -348,18 +341,20 @@ struct blockframe{
 };
 
 struct callstack{
-    struct callframe* head;
+    struct callframe* data;
     uint32_t size;
 };
 
 struct blockstack{
-    struct blockframe* head;
+    struct blockframe* data;
     uint32_t size;
+    uint32_t capacity;
 };
 
 struct datastack{
-    struct dataframe* head;
+    object** data;
     uint32_t size;
+    uint32_t capacity;
 };
 
 struct vm{
@@ -552,6 +547,8 @@ ostream& operator<<(ostream& os, TypeObject* o){
     return os;
 }
 #endif
+
+#include "../vm/vm_stack_manip.cpp"
 
 #include "typeobject.cpp"
 #include "types.cpp"

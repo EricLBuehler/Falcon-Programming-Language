@@ -30,8 +30,8 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t ip=0;
 
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, &ip);
-    vm->callstack->head->locals=new_dict();
-    dict_set(vm->callstack->head->locals, str_new_fromstr("__annotations__"), vm->callstack->head->annotations);
+    callstack_head(vm->callstack).locals=new_dict();
+    dict_set(callstack_head(vm->callstack).locals, str_new_fromstr("__annotations__"), callstack_head(vm->callstack).annotations);
     object* globals=vm->globals;
     object* global_anno=vm->global_annotations;
 
@@ -59,15 +59,15 @@ object* func_call(object* self, object* args, object* kwargs){
     }
     noerror:
     
-    object* res=setup_args_stars(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
+    object* res=setup_args_stars(callstack_head(vm->callstack).locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
     if (res==NULL){
         return res;
     }
     object* ret;
     if (CAST_FUNC(self)->isgen){
-        FPLINCREF(vm->callstack->head->locals);
+        FPLINCREF(callstack_head(vm->callstack).locals);
         pop_callframe(vm->callstack);
-        return new_generator_impl(self, vm->callstack->head->locals);
+        return new_generator_impl(self, callstack_head(vm->callstack).locals);
     }
     
     uint32_t datastack_size=vm->objstack->size;
@@ -92,14 +92,14 @@ object* func_call(object* self, object* args, object* kwargs){
     }
     if (blockstack_size_>blockstack_size){
         while (vm->blockstack->size>blockstack_size){
-            if (vm->blockstack->head->type==WITH_BLOCK){
-                object_exit_with(vm->blockstack->head->obj);
+            if (blockstack_head(vm->blockstack).type==WITH_BLOCK){
+                object_exit_with(blockstack_head(vm->blockstack).obj);
             }
             pop_blockframe(vm->blockstack);
         }
     }
 
-    for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
+    for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
         FPLDECREF(k.first);
         if (k.second->type->size==0){
             ((object_var*)k.second)->gc_ref--;
@@ -136,7 +136,7 @@ object* func_call_nostack(object* self, object* args, object* kwargs){
         return NULL;
     }
 
-    setup_args(vm->callstack->head->locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs);
+    setup_args(callstack_head(vm->callstack).locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs);
     uint32_t ip=0;
 
     object* ret=run_vm(CAST_FUNC(self)->code, &ip);
