@@ -13,7 +13,7 @@ struct instruction{
 
 struct instructions{
     struct instruction* first;
-    uint32_t count;
+    uint32_t count; 
 };
 
 struct compiler{
@@ -27,6 +27,7 @@ struct compiler{
     bool inclass;
     object* lines_detailed;
     int stack_size;
+    int blockstack_size;
 };
 
 #define INTLIT(node) ((IntLiteral*)(node))
