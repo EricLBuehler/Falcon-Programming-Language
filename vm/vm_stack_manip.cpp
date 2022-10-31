@@ -13,7 +13,7 @@ uint32_t MAX_RECURSION=500;
 #define blockstack_head(stack) stack->data[stack->size-1]
 
 //void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint32_t arg, enum blocktype tp)
-#define add_blockframe(ip, vm, stack, arg_, tp)  stack->data[stack->size].type=tp;\
+#define add_blockframe(ip, vm, stack, arg_, tp) stack->data[stack->size].type=tp;\
                                                 stack->data[stack->size].arg=arg_;\
                                                 stack->data[stack->size].obj=NULL;\
                                                 stack->data[stack->size].callstack_size=vm->callstack->size;\

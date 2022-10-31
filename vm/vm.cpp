@@ -373,7 +373,6 @@ void print_traceback(){
         int startcol=CAST_INT(tuple_index_int(tup, 0))->val->to_int();
         int endcol=CAST_INT(tuple_index_int(tup, 1))->val->to_int();
 
-
         cout<<"In file '"+program+"', line "+to_string(line_+1)+", in "+(*callframe.name)<<endl;
         
         int line=0;
@@ -2367,7 +2366,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
         }
-        
         print_traceback();
         
         cout<<vm->exception->type->name->c_str();
