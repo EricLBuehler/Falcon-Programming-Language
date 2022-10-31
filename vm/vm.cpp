@@ -1,111 +1,33 @@
-struct datastack* new_datastack(){
+struct datastack* new_datastack(int size){
     struct datastack* data=(struct datastack*)fpl_malloc(sizeof(struct datastack));
-    data->head=NULL;
+    data->data=(object**)fpl_malloc(sizeof(object*)*size);
     data->size=0;
+    data->capacity=size;
     return data;
 }
 
 struct callstack* new_callstack(){
     struct callstack* call=(struct callstack*)fpl_malloc(sizeof(struct callstack));
-    call->head=NULL;
+    call->data=(callframe*)fpl_malloc(sizeof(object*)*MAX_RECURSION);
     call->size=0;
     return call;
 }
 
-struct blockstack* new_blockstack(){
+struct blockstack* new_blockstack(int size){
     struct blockstack* block=(struct blockstack*)fpl_malloc(sizeof(struct blockstack));
-    block->head=NULL;
-    block->size=0;
+    block->data=(blockframe*)fpl_malloc(sizeof(blockframe)*size);
+    block->capacity=size;
     return block;
 }
 
-void add_blockframe(uint32_t* ip, struct vm* vm, struct blockstack* stack, uint32_t arg, enum blocktype tp){
-    struct blockframe* frame=(struct blockframe*)fpl_malloc(sizeof(struct blockframe));
-    frame->next=stack->head;
-    frame->type=tp;
-    frame->arg=arg;
-    frame->obj=NULL;
-    frame->callstack_size=vm->callstack->size;
-    frame->start_ip=(*ip);
-
-    stack->size++;
-    stack->head=frame;
-}
-
-inline void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
-    struct dataframe* frame=(struct dataframe*)fpl_malloc(sizeof(struct dataframe));
-    frame->next=stack->head;
-    frame->obj=obj;
-
-    stack->size++;
-    stack->head=frame;
-}
-
-inline struct object* pop_dataframe(struct datastack* stack){
-    struct dataframe* frame=stack->head;
-
-    stack->head=frame->next;
-    stack->size--;
-    
-    object* o=frame->obj;
-    fpl_free(frame);
-    return o;
-}
-
-void pop_blockframe(struct blockstack* stack){
-    struct blockframe* frame=stack->head;
-
-    stack->head=frame->next;
-    stack->size--;
-
-    fpl_free(frame);
-}
-
 struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type){
-    struct blockframe* frame=stack->head;
-
-    while (frame){
-        if (frame->type==type){
-            return frame;
+    for (int i=0; i<stack->size; i++){
+        struct blockframe frame = stack->data[i];
+        if (frame.type==type){
+            return (struct blockframe*)(stack->data+(sizeof(struct blockframe)*i));
         }
-        frame=frame->next;
     }
     return NULL;
-}
-
-struct object* peek_dataframe(struct datastack* stack){    
-    return stack->head->obj;
-}
-
-inline void add_callframe(struct callstack* stack, object* line, string* name, object* code, object* callable, uint32_t* ip){
-    struct callframe* frame=(struct callframe*)fpl_malloc(sizeof(struct callframe));
-    frame->name=name;
-    frame->next=stack->head;
-    frame->line=line;
-    frame->code=code;
-    frame->locals=NULL;
-    frame->filedata=vm->filedata;
-    frame->callable=callable;
-    frame->annotations=new_dict();
-    frame->ip=ip;
-
-    stack->size++;
-    stack->head=frame;
-    
-    if (stack->size-2==MAX_RECURSION){
-        vm_add_err(&RecursionError, vm, "Maximum stack depth exceeded.");
-    }
-}
-
-inline void pop_callframe(struct callstack* stack){
-    struct callframe* frame=stack->head;
-
-    stack->head=frame->next;
-    stack->size--;
-
-    FPLDECREF(frame->annotations);
-    
-    fpl_free(frame);
 }
 
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) {
@@ -171,9 +93,9 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->id=id;
     vm->ret_val=0;
     vm->ip=0;
-    vm->objstack=new_datastack();
+    vm->objstack=new_datastack(CAST_INT(CAST_CODE(code)->co_stack_size)->val->to_int());
     vm->callstack=new_callstack();
-    vm->blockstack=new_blockstack();
+    vm->blockstack=new_blockstack(CAST_INT(CAST_CODE(code)->co_blockstack_size)->val->to_int());
     
     vm->exception=NULL;
 
@@ -200,26 +122,14 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL, &vm->ip);
     vm->globals=new_dict();
-    vm->callstack->head->locals=FPLINCREF(vm->globals);
-    vm->global_annotations=vm->callstack->head->annotations;
+    callstack_head(vm->callstack).locals=FPLINCREF(vm->globals);
+    vm->global_annotations=callstack_head(vm->callstack).annotations;
     
     return vm;
 }
 
 void vm_del(struct vm* vm){
-    struct callframe* i=vm->callstack->head;
-    while (i){
-        struct callframe* i_=i->next;;
-        FPLDECREF(i->locals);
-        fpl_free(i);
-        i=i_;
-    }
-    struct dataframe* j=vm->objstack->head;
-    while (j){
-        struct dataframe* j_=j->next;;
-        fpl_free(j);
-        j=j_;
-    }
+    free(vm->objstack->data);
 
     FPLDECREF(vm->globals);
     delete vm->filedata;
@@ -229,10 +139,10 @@ void vm_del(struct vm* vm){
 }
 
 inline void vm_add_var_locals(struct vm* vm, object* name, object* value){
-    for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
+    for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            if (CAST_DICT(vm->callstack->head->locals)->val->at(k.first)->type->size==0){
-                ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
             }
             break;
         }
@@ -243,28 +153,26 @@ inline void vm_add_var_locals(struct vm* vm, object* name, object* value){
     }
     
 
-    dict_set(vm->callstack->head->locals, name, value); //If globals is same obj as locals then this will still update both
+    dict_set(callstack_head(vm->callstack).locals, name, value); //If globals is same obj as locals then this will still update both
 }
 
 inline object* vm_get_var_locals(struct vm* vm, object* name){
-    struct callframe* frame=vm->callstack->head;
-    while(frame){
-        for (auto k: (*CAST_DICT(frame->locals)->val)){
+    for (int i=vm->callstack->size-1; i>=0; i--){
+        struct callframe frame=vm->callstack->data[i];
+        for (auto k: (*CAST_DICT(frame.locals)->val)){
             if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                return  CAST_DICT(frame->locals)->val->at(k.first);
+                return  CAST_DICT(frame.locals)->val->at(k.first);
             }
         }
 
-        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
-        && CAST_FUNC(frame->callable)->closure!=NULL){
-            object* closure=CAST_FUNC(frame->callable)->closure;
+        if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
+        && CAST_FUNC(frame.callable)->closure!=NULL){
+            object* closure=CAST_FUNC(frame.callable)->closure;
             //Check if name in closure
             if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
                 return CAST_DICT(closure)->val->at(name);
             }
         }
-
-        frame=frame->next;
     }
 
     for (size_t i=0; i<nbuiltins; i++){
@@ -308,7 +216,7 @@ inline void vm_add_var_globals(struct vm* vm, object* name, object* value){
 
 inline object* vm_get_var_nonlocal(struct vm* vm, object* name){
     int i=0;
-    struct callframe* frame=vm->callstack->head->next;
+    struct callframe* frame=callstack_head(vm->callstack).next;
     while (frame){
         if (frame->next==NULL){
             break;
@@ -336,7 +244,7 @@ inline object* vm_get_var_nonlocal(struct vm* vm, object* name){
 
 inline void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
     int i=0;
-    struct callframe* frame=vm->callstack->head->next;
+    struct callframe* frame=callstack_head(vm->callstack).next;
     while (frame){
         if (frame->next==NULL){
             break;
@@ -381,48 +289,43 @@ inline void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
 }
 
 inline void vm_del_var_nonlocal(struct vm* vm, object* name){
-    int i=0;
-    struct callframe* frame=vm->callstack->head;
-    while (frame){
-        if (frame->next==NULL){
-            break;
-        }
+    
+    for (int i=vm->callstack->size-1; i>=0; i--){
+        struct callframe frame=vm->callstack->data[i];
         if (i==0){
-            if (find(CAST_DICT(frame->locals)->keys->begin(), CAST_DICT(frame->locals)->keys->end(), name) != CAST_DICT(frame->locals)->keys->end()){
-                if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
+            if (find(CAST_DICT(frame.locals)->keys->begin(), CAST_DICT(frame.locals)->keys->end(), name) != CAST_DICT(frame.locals)->keys->end()){
+                if (CAST_DICT(frame.locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(frame.locals)->val->at(name))->gc_ref--;
                 }
-                if (object_find_bool_dict_keys(frame->annotations, name)){
-                    if (CAST_DICT(frame->annotations)->val->at(name)->type->size==0){
-                        ((object_var*)CAST_DICT(frame->annotations)->val->at(name))->gc_ref--;
+                if (object_find_bool_dict_keys(frame.annotations, name)){
+                    if (CAST_DICT(frame.annotations)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(frame.annotations)->val->at(name))->gc_ref--;
                     }
-                    dict_set(frame->annotations, name, NULL);
+                    dict_set(frame.annotations, name, NULL);
                 }
-                dict_set(frame->locals, name, NULL);
+                dict_set(frame.locals, name, NULL);
                 return;
             }
         }
-        i+=1;
-        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
-        && CAST_FUNC(frame->callable)->closure!=NULL){
-            object* closure=CAST_FUNC(frame->callable)->closure;
+        if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
+        && CAST_FUNC(frame.callable)->closure!=NULL){
+            object* closure=CAST_FUNC(frame.callable)->closure;
             //Check if name in closure
             if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
                 if (CAST_DICT(closure)->val->at(name)->type->size==0){
                     ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
                 }
-                if (object_find_bool_dict_keys(CAST_FUNC(frame->callable)->closure_annotations, name)){
-                    if (CAST_DICT(CAST_FUNC(frame->callable)->closure_annotations)->val->at(name)->type->size==0){
-                        ((object_var*)CAST_DICT(CAST_FUNC(frame->callable)->closure_annotations)->val->at(name))->gc_ref--;
+                if (object_find_bool_dict_keys(CAST_FUNC(frame.callable)->closure_annotations, name)){
+                    if (CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name))->gc_ref--;
                     }
-                    dict_set(CAST_FUNC(frame->callable)->closure_annotations, name, NULL);
+                    dict_set(CAST_FUNC(frame.callable)->closure_annotations, name, NULL);
                 }
                 dict_set(closure, name, NULL);
 
                 return;
             }
         }
-        frame=frame->next;
     }
 
     vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
@@ -462,18 +365,15 @@ inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
 }
 
 void print_traceback(){
-    struct callframe* callframe=vm->callstack->head;
-    while (callframe){    
-        if (callframe->name==NULL){
-            callframe=callframe->next;
-        }
-        object* tup=dict_get(CAST_CODE(callframe->code)->co_detailed_lines, new_int_fromint((*callframe->ip)));
+    for (int i=0; i<vm->callstack->size; i++){    
+        struct callframe callframe=vm->callstack->data[i];
+        object* tup=dict_get(CAST_CODE(callframe.code)->co_detailed_lines, new_int_fromint((*callframe.ip)));
         int line_=CAST_INT(tuple_index_int(tup, 2))->val->to_int();
         int startcol=CAST_INT(tuple_index_int(tup, 0))->val->to_int();
         int endcol=CAST_INT(tuple_index_int(tup, 1))->val->to_int();
 
 
-        cout<<"In file '"+program+"', line "+to_string(line_+1)+", in "+(*callframe->name)<<endl;
+        cout<<"In file '"+program+"', line "+to_string(line_+1)+", in "+(*callframe.name)<<endl;
         
         int line=0;
         int target=line_;
@@ -486,11 +386,11 @@ void print_traceback(){
                 startidx=idx;
                 entered=true;
             }
-            if (entered && ((*CAST_CODE(callframe->code)->filedata)[idx]=='\n' || (*CAST_CODE(callframe->code)->filedata)[idx]=='\0')){
+            if (entered && ((*CAST_CODE(callframe.code)->filedata)[idx]=='\n' || (*CAST_CODE(callframe.code)->filedata)[idx]=='\0')){
                 endidx=idx;
                 break;
             }
-            else if ((*CAST_CODE(callframe->code)->filedata)[idx]=='\n'){
+            else if ((*CAST_CODE(callframe.code)->filedata)[idx]=='\n'){
                 line++;
             }
             idx++;
@@ -498,7 +398,7 @@ void print_traceback(){
 
         string snippet="";
         for (int i=startidx; i<endidx; i++){
-            snippet+=(*CAST_CODE(callframe->code)->filedata)[i];
+            snippet+=(*CAST_CODE(callframe.code)->filedata)[i];
         }
         
 
@@ -514,8 +414,6 @@ void print_traceback(){
             reset_color();
         }
         cout<<endl;
-        
-        callframe=callframe->next;
     }
 }
 
@@ -561,16 +459,16 @@ object* import_name(string data, object* name){
     ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
     
     ::vm->globals=new_dict();
-    ::vm->callstack->head->locals=FPLINCREF(::vm->globals);
-    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::vm->callstack->head->annotations);
+    ::callstack_head(vm->callstack).locals=FPLINCREF(::vm->globals);
+    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
     dict_set(::vm->globals, str_new_fromstr("__name__"), name);
-    ::vm->global_annotations=::vm->callstack->head->annotations;
+    ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
 
     object* ret=run_vm(code, &::vm->ip);
 
     ERROR_RET(ret);
 
-    object* dict=FPLINCREF(::vm->callstack->head->locals);
+    object* dict=FPLINCREF(::callstack_head(vm->callstack).locals);
 
     object* o=module_new_fromdict(dict, name);
     
@@ -581,19 +479,19 @@ object* import_name(string data, object* name){
 }
 
 void vm_del_var_locals(struct vm* vm, object* name){
-    for (auto k: (*CAST_DICT(vm->callstack->head->locals)->val)){
+    for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
         if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            if (CAST_DICT(vm->callstack->head->locals)->val->at(name)->type->size==0){
-                ((object_var*)CAST_DICT(vm->callstack->head->locals)->val->at(k.first))->gc_ref--;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
             }
 
-            if (object_find_bool_dict_keys(vm->callstack->head->annotations, name)){
-                if (CAST_DICT(vm->callstack->head->annotations)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(vm->callstack->head->annotations)->val->at(name))->gc_ref--;
+            if (object_find_bool_dict_keys(callstack_head(vm->callstack).annotations, name)){
+                if (CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name))->gc_ref--;
                 }
-                dict_set(vm->callstack->head->annotations, name, NULL);
+                dict_set(callstack_head(vm->callstack).annotations, name, NULL);
             }
-            dict_set(vm->callstack->head->locals, name, NULL);
+            dict_set(callstack_head(vm->callstack).locals, name, NULL);
             return;
         }
     }
@@ -622,36 +520,8 @@ void vm_del_var_globals(struct vm* vm, object* name){
     return;
 }
 
-dataframe* reverse(dataframe* head, int k){
-    // base case
-    if (!head)
-        return NULL;
-    dataframe* current = head;
-    dataframe* next = NULL;
-    dataframe* prev = NULL;
-    int count = 0;
-  
-    /*reverse first k nodes of the linked list */
-    while (current != NULL && count < k) {
-        next = current->next;
-        current->next = prev;
-        prev = current;
-        current = next;
-        count++;
-    }
-  
-    /* next is now a pointer to (k+1)th node
-    Recursively call for the list starting from current.
-    And make rest of the list as next of first node */
-    if (next != NULL)
-        head->next = reverse(next, k);
-  
-    /* prev is new head of the input list */
-    return prev;
-}
-
 void annotate_var(object* tp, object* name){
-    dict_set(vm->callstack->head->annotations, name, tp);
+    dict_set(callstack_head(vm->callstack).annotations, name, tp);
 }
 
 void annotate_global(object* tp, object* name){
@@ -659,31 +529,26 @@ void annotate_global(object* tp, object* name){
 }
 
 void annotate_nonlocal(object* tp, object* name){
-    int i=0;
-    struct callframe* frame=vm->callstack->head;
-    while (frame){
-        if (frame->next==NULL){
-            break;
-        }
+    for (int i=vm->callstack->size-1; i>=0; i--){
+        struct callframe frame=vm->callstack->data[i];
         if (i==0){
-            if (find(CAST_DICT(frame->locals)->keys->begin(), CAST_DICT(frame->locals)->keys->end(), name) != CAST_DICT(frame->locals)->keys->end()){
-                if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
+            if (find(CAST_DICT(frame.locals)->keys->begin(), CAST_DICT(frame.locals)->keys->end(), name) != CAST_DICT(frame.locals)->keys->end()){
+                if (CAST_DICT(frame.locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(frame.locals)->val->at(name))->gc_ref--;
                 }
-                FPLDECREF(CAST_DICT(frame->locals)->val->at(name));
+                FPLDECREF(CAST_DICT(frame.locals)->val->at(name));
                 
                 if (tp->type->size==0){
                     ((object_var*)tp)->gc_ref++;
                 }
-                dict_set(frame->locals, name, tp);
+                dict_set(frame.locals, name, tp);
 
                 return;
             }
         }
-        i+=1;
-        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
-        && CAST_FUNC(frame->callable)->closure!=NULL){
-            object* closure=CAST_FUNC(frame->callable)->closure;
+        if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
+        && CAST_FUNC(frame.callable)->closure!=NULL){
+            object* closure=CAST_FUNC(frame.callable)->closure;
             //Check if name in closure
             if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
                 if (CAST_DICT(closure)->val->at(name)->type->size==0){
@@ -699,7 +564,6 @@ void annotate_nonlocal(object* tp, object* name){
                 return;
             }
         }
-        frame=frame->next;
     }
 }
 
@@ -818,17 +682,17 @@ object* run_vm(object* codeobj, uint32_t* ip){
     DISPATCH();
     while(1){
         LOAD_CONST:{
-            add_dataframe(vm, vm->objstack, list_index_int(CAST_CODE(vm->callstack->head->code)->co_consts, arg));
+            add_dataframe(vm, vm->objstack, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_consts, arg));
             DISPATCH();
         }
 
         STORE_GLOBAL:{
-            vm_add_var_globals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            vm_add_var_globals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), peek_dataframe(vm->objstack));
             DISPATCH();
         }
 
         LOAD_GLOBAL:{
-            object* v=vm_get_var_globals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) );
+            object* v=vm_get_var_globals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg) );
             if (v==NULL){
                 goto exc;
             }
@@ -837,12 +701,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         STORE_NAME:{
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), peek_dataframe(vm->objstack));
             DISPATCH();
         }
 
         LOAD_NAME:{
-            object* v=vm_get_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) );
+            object* v=vm_get_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg) );
             if (v==NULL){
                 goto exc;
             }
@@ -1371,7 +1235,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         LOAD_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
-            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
             if (ret==NULL){ 
@@ -1388,7 +1252,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         LOAD_METHOD: {
             object* obj=peek_dataframe(vm->objstack);
-            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
             
@@ -1407,7 +1271,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         STORE_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
-            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_setattr(obj, attr, val);
             
             
@@ -1572,7 +1436,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         FOR_TOS_ITER: {
-            if (vm->blockstack->size==0 || vm->blockstack->head->type!=FOR_BLOCK || (vm->blockstack->head->type==FOR_BLOCK && vm->blockstack->head->arg!=arg) ){
+            if (vm->blockstack->size==0 || blockstack_head(vm->blockstack).type!=FOR_BLOCK || (blockstack_head(vm->blockstack).type==FOR_BLOCK && blockstack_head(vm->blockstack).arg!=arg) ){
                 add_blockframe(ip, vm, vm->blockstack, arg, FOR_BLOCK);
             }
             
@@ -1581,7 +1445,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (vm->exception!=NULL && object_istype(vm->exception->type, &StopIteration)){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
-                (*ip)=vm->blockstack->head->arg;
+                (*ip)=blockstack_head(vm->blockstack).arg;
                 pop_blockframe(vm->blockstack);
                 pop_dataframe(vm->objstack);
                 pop_dataframe(vm->objstack);
@@ -1595,26 +1459,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         BREAK_LOOP: {
-            if (vm->blockstack->head==NULL){    
-                DISPATCH();
-            }
-            if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK && vm->blockstack->head->type!=WHILE_BLOCK){
-                DISPATCH();
-            }
-            
-            (*ip)=vm->blockstack->head->arg;
+            (*ip)=blockstack_head(vm->blockstack).arg;
             pop_blockframe(vm->blockstack);
             DISPATCH();
         }
 
         CONTINUE_LOOP: {
-            if (vm->blockstack->head==NULL){
-                DISPATCH();
-            }
-            if (vm->blockstack->head!=NULL && vm->blockstack->head->type!=FOR_BLOCK && vm->blockstack->head->type!=WHILE_BLOCK){
-                DISPATCH();
-            }
-            (*ip)=vm->blockstack->head->start_ip;
+            (*ip)=blockstack_head(vm->blockstack).start_ip;
             pop_blockframe(vm->blockstack);
             DISPATCH();
         }
@@ -1677,7 +1528,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -1690,7 +1541,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -1703,7 +1554,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             DISPATCH();  
         }
 
@@ -1716,12 +1567,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             DISPATCH();
         }
 
         IMPORT_NAME: {
-            object* name=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             string nm_plain=*CAST_STRING(name)->val;
 
             string data="";
@@ -1893,7 +1744,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         DEL_NAME: {
-            vm_del_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            vm_del_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
             DISPATCH();
         }
 
@@ -1935,7 +1786,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -1948,7 +1799,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -2042,13 +1893,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }        
 
         DEL_GLBL: {
-            vm_del_var_globals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            vm_del_var_globals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
             DISPATCH();
         }
 
         DEL_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
-            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_setattr(obj, attr, NULL);
             
             if (ret==NULL){
@@ -2081,13 +1932,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, arg, name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, FPLINCREF(vm->callstack->head->annotations), vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, FPLINCREF(callstack_head(vm->callstack).locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, FPLINCREF(callstack_head(vm->callstack).annotations), vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
 
         LOAD_NONLOCAL:{
-            object* v=vm_get_var_nonlocal(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg) );
+            object* v=vm_get_var_nonlocal(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg) );
             if (v==NULL){
                 goto exc;
             }
@@ -2096,12 +1947,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         STORE_NONLOCAL:{
-            vm_add_var_nonlocal(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), peek_dataframe(vm->objstack));
+            vm_add_var_nonlocal(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), peek_dataframe(vm->objstack));
             DISPATCH();
         }
 
         DEL_NONLOCAL:{
-            vm_del_var_nonlocal(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            vm_del_var_nonlocal(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
             DISPATCH();
         }
         
@@ -2188,7 +2039,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -2201,7 +2052,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             
             DISPATCH();
         }
@@ -2215,7 +2066,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             
             DISPATCH();
         }
@@ -2229,7 +2080,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             
             DISPATCH();
         }
@@ -2294,7 +2145,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg), ret);
+            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
             DISPATCH();
         }
 
@@ -2313,19 +2164,19 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         ANNOTATE_GLOBAL:{
             object* tp=pop_dataframe(vm->objstack);
-            annotate_global(tp, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            annotate_global(tp, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
             DISPATCH();
         }
 
         ANNOTATE_NAME:{
             object* tp=pop_dataframe(vm->objstack);
-            annotate_var(tp, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            annotate_var(tp, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
             DISPATCH();
         }
 
         ANNOTATE_NONLOCAL:{
             object* tp=pop_dataframe(vm->objstack);
-            annotate_nonlocal(tp, list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg));
+            annotate_nonlocal(tp, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
             DISPATCH();
         } 
 
@@ -2334,7 +2185,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             object* obj=pop_dataframe(vm->objstack);
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
-            object* attr=list_index_int(CAST_CODE(vm->callstack->head->code)->co_names, arg);
+            object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_setattr(obj, attr, val);
             
             object* annon=object_getattr(obj, str_new_fromstr("__annotations__"));
@@ -2408,7 +2259,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, arg, name, FPLINCREF(vm->callstack->head->locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, FPLINCREF(vm->callstack->head->annotations), vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, FPLINCREF(callstack_head(vm->callstack).locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, FPLINCREF(callstack_head(vm->callstack).annotations), vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2434,7 +2285,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         ENTER_WITH: {
             add_blockframe(ip, vm, vm->blockstack, 0, WITH_BLOCK);
-            vm->blockstack->head->obj=peek_dataframe(vm->objstack);
+            blockstack_head(vm->blockstack).obj=peek_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, object_enter_with(pop_dataframe(vm->objstack)));
             DISPATCH();
         }
@@ -2446,21 +2297,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         SEQ_APPEND: {
-            dataframe* d=vm->objstack->head;
-            for (int i=0; i<arg; i++){
-                d=d->next;
-            }
-            d->obj->type->slot_mappings->slot_append(d->obj, pop_dataframe(vm->objstack));
+            object* o=vm->objstack->data[vm->objstack->size-1-arg];
+            o->type->slot_mappings->slot_append(o, pop_dataframe(vm->objstack));
             DISPATCH();
         }
 
         DICT_SET: {
-            dataframe* d=vm->objstack->head;
-            for (int i=0; i<arg; i++){
-                d=d->next;
-            }
             object* v=pop_dataframe(vm->objstack);
-            dict_set(d->obj, pop_dataframe(vm->objstack), v);
+            dict_set(vm->objstack->data[vm->objstack->size-1-arg], pop_dataframe(vm->objstack), v);
             DISPATCH();
         }
         
@@ -2491,7 +2335,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 //
                 return NULL;
             }
-            
             add_dataframe(vm, vm->objstack, vm->exception);
             frame->obj=FPLINCREF(vm->exception);
             if (vm->exception!=NULL){
