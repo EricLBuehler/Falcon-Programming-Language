@@ -22,9 +22,14 @@ struct instructions* new_instructions(){
     return instr;
 }
 
-void compile_expr_cleanup(int* compiler_ss, int* ss){
+void compile_expr_cleanup(int* compiler_ss, int* ss, int* compiler_bss, int* bss){
     if (*compiler_ss<*ss){
         *compiler_ss=*ss;
+    }
+
+    
+    if (*compiler_bss<*bss){
+        *compiler_bss=*bss;
     }
 }
 
@@ -356,6 +361,26 @@ int get_stack_size_inc(enum opcode opcode, uint32_t arg){
     return 0;
 }
 
+//If stack size grows after instruction is executed, return that number
+//Otherwise, return 0.
+int get_blockstack_size_inc(enum opcode opcode, uint32_t arg){
+    switch (opcode){
+        case SETUP_TRY: {
+            return 1;
+        }
+        case FOR_TOS_ITER: {
+            return 1;
+        }
+        case ENTER_WHILE: {
+            return 1;
+        }
+        case ENTER_WITH: {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void add_instruction(struct compiler* compiler, struct instructions* instructions, enum opcode opcode, uint32_t arg, int startcol, int endcol, int line){
     struct instruction* instr=(struct instruction*)fpl_malloc(sizeof(struct instruction));
     instr->arg=arg;
@@ -370,6 +395,7 @@ void add_instruction(struct compiler* compiler, struct instructions* instruction
     FPLDECREF(tup);
 
     compiler->stack_size+=get_stack_size_inc(opcode, arg);
+    compiler->blockstack_size+=get_blockstack_size_inc(opcode, arg);
 
     instructions->first=instr;
     instructions->count++;
@@ -386,6 +412,7 @@ struct compiler* new_compiler(){
     compiler->inclass=false;
     compiler->lines_detailed=new_dict();
     compiler->stack_size=0;
+    compiler->blockstack_size=0;
     return compiler;
 }
 
@@ -1141,7 +1168,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
             bool isgen=false;
-            compile_expr_cleanup(&comp->stack_size, &compiler->stack_size);
+            compile_expr_cleanup(&comp->stack_size, &compiler->stack_size, &comp->blockstack_size, &compiler->blockstack_size);
             
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_code)->size; i+=2){
                 if (*CAST_INT(list_index_int(CAST_CODE(code)->co_code, i))->val==YIELD_VALUE){
@@ -1474,7 +1501,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
-            compile_expr_cleanup(&comp->stack_size, &compiler->stack_size);
+            compile_expr_cleanup(&comp->stack_size, &compiler->stack_size, &comp->blockstack_size, &compiler->blockstack_size);
 
             FPLDECREF(CAST_CODE(code)->co_file);
             CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
@@ -1836,8 +1863,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 long line=n->start->line;
                 int _stack_size=compiler->stack_size;
                 compiler->stack_size=0;
+                int _blockstack_size=compiler->blockstack_size;
+                compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
-                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -1870,8 +1899,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 long line=n->start->line;
                 int _stack_size=compiler->stack_size;
                 compiler->stack_size=0;
+                int _blockstack_size=compiler->blockstack_size;
+                compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
-                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -1912,8 +1943,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         long line=n->start->line;
                         int _stack_size=compiler->stack_size;
                         compiler->stack_size=0;
+                        int _blockstack_size=compiler->blockstack_size;
+                        compiler->blockstack_size=0;
                         int i=compile_expr(compiler, n);
-                        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                        compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                         if (i==0x100){
                             return 0x100;
                         }
@@ -1937,8 +1970,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         long line=n->start->line;
                         int _stack_size=compiler->stack_size;
                         compiler->stack_size=0;
+                        int _blockstack_size=compiler->blockstack_size;
+                        compiler->blockstack_size=0;
                         int i=compile_expr(compiler, n);
-                        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                        compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                         if (i==0x100){
                             return 0x100;
                         }
@@ -2008,8 +2043,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 long line=n->start->line;
                 int _stack_size=compiler->stack_size;
                 compiler->stack_size=0;
+                int _blockstack_size=compiler->blockstack_size;
+                compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
-                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -2034,8 +2071,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 long line=n->start->line;        
                 int _stack_size=compiler->stack_size;
                 compiler->stack_size=0;
+                int _blockstack_size=compiler->blockstack_size;
+                compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
-                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -2124,8 +2163,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 long line=n->start->line;        
                 int _stack_size=compiler->stack_size;
                 compiler->stack_size=0;
+                int _blockstack_size=compiler->blockstack_size;
+                compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
-                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -2168,8 +2209,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         long line=n->start->line;
                         int _stack_size=compiler->stack_size;
                         compiler->stack_size=0;
+                        int _blockstack_size=compiler->blockstack_size;
+                        compiler->blockstack_size=0;
                         int i=compile_expr(compiler, n);
-                        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                        compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                         if (i==0x100){
                             return 0x100;
                         }
@@ -2198,8 +2241,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         long line=n->start->line;
                         int _stack_size=compiler->stack_size;
                         compiler->stack_size=0;
+                        int _blockstack_size=compiler->blockstack_size;
+                        compiler->blockstack_size=0;
                         int i=compile_expr(compiler, n);
-                        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                        compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                         if (i==0x100){
                             return 0x100;
                         }
@@ -2307,8 +2352,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     long line=n->start->line;
                     int _stack_size=compiler->stack_size;
                     compiler->stack_size=0;
+                    int _blockstack_size=compiler->blockstack_size;
+                    compiler->blockstack_size=0;
                     int i=compile_expr(compiler, n);
-                    compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                    compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                     if (i==0x100){
                         return 0x100;
                     }
@@ -2419,8 +2466,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 long line=n->start->line;
                 int _stack_size=compiler->stack_size;
                 compiler->stack_size=0;
+                int _blockstack_size=compiler->blockstack_size;
+                compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
-                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -2443,8 +2492,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     long line=n->start->line;
                     int _stack_size=compiler->stack_size;
                     compiler->stack_size=0;
+                    int _blockstack_size=compiler->blockstack_size;
+                    compiler->blockstack_size=0;
                     int i=compile_expr(compiler, n);
-                    compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                    compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                     if (i==0x100){
                         return 0x100;
                     }
@@ -2518,8 +2569,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 long line=n->start->line;
                 int _stack_size=compiler->stack_size;
                 compiler->stack_size=0;
+                int _blockstack_size=compiler->blockstack_size;
+                compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
-                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -2545,8 +2598,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     long line=n->start->line;
                     int _stack_size=compiler->stack_size;
                     compiler->stack_size=0;
+                    int _blockstack_size=compiler->blockstack_size;
+                    compiler->blockstack_size=0;
                     int i=compile_expr(compiler, n);
-                    compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                    compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                     if (i==0x100){
                         return 0x100;
                     }
@@ -3315,7 +3370,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, DECORATOR(decorators.back())->function->start->line);
             compiler=compiler_;
-            compile_expr_cleanup(&comp->stack_size, &compiler->stack_size);
+            compile_expr_cleanup(&comp->stack_size, &compiler->stack_size, &comp->blockstack_size, &compiler->blockstack_size);
 
             bool isgen=false;
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_code)->size; i+=2){
@@ -3737,8 +3792,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 long line=n->start->line;        
                 int _stack_size=compiler->stack_size;
                 compiler->stack_size=0;
+                int _blockstack_size=compiler->blockstack_size;
+                compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
-                compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+                compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
                 if (i==0x100){
                     return 0x100;
                 }
@@ -4242,8 +4299,10 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
 
         int _stack_size=compiler->stack_size;
         compiler->stack_size=0;
+        int _blockstack_size=compiler->blockstack_size;
+        compiler->blockstack_size=0;
         int i=compile_expr(compiler, n);
-        compile_expr_cleanup(&compiler->stack_size, &_stack_size);
+        compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
 
         if (i==0x100){
             return NULL;
@@ -4308,6 +4367,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
     CAST_LIST(list)->type->slot_mappings->slot_append(list, lines);
     CAST_LIST(list)->type->slot_mappings->slot_append(list, compiler->lines_detailed);
     CAST_LIST(list)->type->slot_mappings->slot_append(list, new_int_fromint(compiler->stack_size));
+    CAST_LIST(list)->type->slot_mappings->slot_append(list, new_int_fromint(compiler->blockstack_size));
     
     object* code=code_new_fromargs(list);
     CAST_CODE(code)->co_instructions=CAST_INT(instructions->type->slot_mappings->slot_len(instructions))->val->to_int();
