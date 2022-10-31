@@ -1141,6 +1141,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
             bool isgen=false;
+            compile_expr_cleanup(comp->stack_size, compiler->stack_size);
             
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_code)->size; i+=2){
                 if (*CAST_INT(list_index_int(CAST_CODE(code)->co_code, i))->val==YIELD_VALUE){
@@ -1473,6 +1474,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, expr->start->line);
             compiler=compiler_;
+            compile_expr_cleanup(comp->stack_size, compiler->stack_size);
 
             FPLDECREF(CAST_CODE(code)->co_file);
             CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
@@ -3313,6 +3315,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, DECORATOR(decorators.back())->function->start->line);
             compiler=compiler_;
+            compile_expr_cleanup(comp->stack_size, compiler->stack_size);
+            
             bool isgen=false;
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_code)->size; i+=2){
                 if (*CAST_INT(list_index_int(CAST_CODE(code)->co_code, i))->val==YIELD_VALUE){
