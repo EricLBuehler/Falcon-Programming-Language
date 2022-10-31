@@ -444,6 +444,7 @@ object* code_co_consts(object* code);
 object* code_co_code(object* code);
 object* code_co_file(object* code);
 object* code_co_lines(object* code);
+object* code_co_stack_size(object* code);
 
 typedef struct CodeObject{
     OBJHEAD_EXTRA
@@ -456,6 +457,7 @@ typedef struct CodeObject{
     string* filedata;
     uint32_t* code;
     object* co_detailed_lines;
+    object* co_stack_size;
 }CodeObject;
 
 static NumberMethods code_num_methods{
@@ -488,7 +490,7 @@ static Mappings code_mappings{
 Method code_methods[]={{NULL,NULL}};
 GetSets code_getsets[]={{"co_names", (getter)code_co_names}, {"co_consts", (getter)code_co_consts}, \
 {"co_code", (getter)code_co_code}, {"co_file", (getter)code_co_file}, {"co_lines", (getter)code_co_lines}, \
-{NULL,NULL}};
+{"co_stack_size", (getter)code_co_stack_size}, {NULL,NULL}};
 OffsetMember code_offsets[]={{NULL}};
 
 TypeObject CodeType={
@@ -4431,6 +4433,10 @@ object* code_co_code(object* code){
 
 object* code_co_lines(object* code){
     return CAST_CODE(code)->co_detailed_lines;    
+}
+
+object* code_co_stack_size(object* code){
+    return CAST_CODE(code)->co_stack_size;    
 }
 
 

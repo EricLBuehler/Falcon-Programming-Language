@@ -4,7 +4,7 @@ object* code_init(object* self, object* args, object* kwargs){
 
 object* code_new_fromargs(object* args){
     object* obj=new_object(&CodeType);
-    if (CAST_LIST(args)->size!=6){
+    if (CAST_LIST(args)->size!=7){
         //Error
         return NULL;
     }
@@ -14,6 +14,7 @@ object* code_new_fromargs(object* args){
     CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
     CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
     CAST_CODE(obj)->co_detailed_lines=FPLINCREF(list_index_int(args, 5));
+    CAST_CODE(obj)->co_stack_size=FPLINCREF(list_index_int(args, 6));
 
     const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
     CAST_CODE(obj)->code=new uint32_t[len];
@@ -29,8 +30,8 @@ object* code_new(object* type, object* args, object* kwargs){
     if (args==NULL){
         return obj;
     }
-    if (CAST_LIST(args)->size!=5){
-        vm_add_err(&ValueError, vm, "Expected 6 arguments, got %d", CAST_LIST(args)->size);
+    if (CAST_LIST(args)->size!=7){
+        vm_add_err(&ValueError, vm, "Expected 7 arguments, got %d", CAST_LIST(args)->size);
         return NULL;
     }
     CAST_CODE(obj)->co_names=FPLINCREF(list_index_int(args, 0));
@@ -39,6 +40,7 @@ object* code_new(object* type, object* args, object* kwargs){
     CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
     CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
     CAST_CODE(obj)->co_detailed_lines=FPLINCREF(list_index_int(args, 5));
+    CAST_CODE(obj)->co_stack_size=FPLINCREF(list_index_int(args, 6));
     
     const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
     CAST_CODE(obj)->code=new uint32_t[len];
@@ -55,6 +57,8 @@ void code_del(object* obj){
     FPLDECREF(CAST_CODE(obj)->co_code);
     FPLDECREF(CAST_CODE(obj)->co_lines);
     FPLDECREF(CAST_CODE(obj)->co_file);
+    FPLDECREF(CAST_CODE(obj)->co_detailed_lines);
+    FPLDECREF(CAST_CODE(obj)->co_stack_size);
     delete CAST_CODE(obj)->code;
 }
 
@@ -82,7 +86,9 @@ object* code_cmp(object* self, object* other, uint8_t type){
         if (istrue(object_cmp(CAST_CODE(self)->co_file, CAST_CODE(other)->co_file, type)) && \
         istrue(object_cmp(CAST_CODE(self)->co_consts, CAST_CODE(other)->co_consts, type)) && \
         istrue(object_cmp(CAST_CODE(self)->co_names, CAST_CODE(other)->co_names, type)) && \
-        istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type))){
+        istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type)) && \
+        istrue(object_cmp(CAST_CODE(self)->co_detailed_lines, CAST_CODE(other)->co_detailed_lines, type)) && \
+        istrue(object_cmp(CAST_CODE(self)->co_stack_size, CAST_CODE(other)->co_stack_size, type))){
             return new_bool_true();
         }
         return new_bool_false();
@@ -91,7 +97,9 @@ object* code_cmp(object* self, object* other, uint8_t type){
         if (!istrue(object_cmp(CAST_CODE(self)->co_file, CAST_CODE(other)->co_file, type)) || \
         !istrue(object_cmp(CAST_CODE(self)->co_consts, CAST_CODE(other)->co_consts, type)) || \
         !istrue(object_cmp(CAST_CODE(self)->co_names, CAST_CODE(other)->co_names, type)) || \
-        !istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type))){
+        !istrue(object_cmp(CAST_CODE(self)->co_code, CAST_CODE(other)->co_code, type)) && \
+        !istrue(object_cmp(CAST_CODE(self)->co_detailed_lines, CAST_CODE(other)->co_detailed_lines, type)) && \
+        !istrue(object_cmp(CAST_CODE(self)->co_stack_size, CAST_CODE(other)->co_stack_size, type))){
             return new_bool_true();
         }
         return new_bool_false();
