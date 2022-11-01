@@ -30,7 +30,7 @@ object* cwrapper_new_fromfunc_null(cwrapperfunc func, string name){
 
 object* cwrapper_repr(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
 
     string s="<";
     s+=self->type->name->c_str();

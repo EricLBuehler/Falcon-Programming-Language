@@ -5,7 +5,7 @@ object* object_new(object* type, object* args, object* kwargs){
 
 object* object_repr_(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
 
     string s="<";
     s+=self->type->name->c_str();

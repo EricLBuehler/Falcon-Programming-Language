@@ -67,7 +67,7 @@ void code_del(object* obj){
 
 object* code_repr(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
 
     string s="<code ";
     s+=" @ ";

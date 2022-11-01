@@ -14,7 +14,7 @@ object* slotwrapper_new_fromfunc(getter get, setter set, string name){
 
 object* slotwrapper_repr(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
     string s="<";
     s+=self->type->name->c_str();
     s+=" '";
@@ -27,7 +27,7 @@ object* slotwrapper_repr(object* self){
 
 object* slotwrapper_str(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
     if (CAST_SLOTWRAPPER(self)->get==NULL){
         string s="<";
         s+=self->type->name->c_str();

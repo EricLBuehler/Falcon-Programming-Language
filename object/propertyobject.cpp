@@ -62,7 +62,7 @@ object* property_cmp(object* self, object* other, uint8_t type){
 }
 object* property_repr(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
 
     string s="<property ";
     s+=buf;

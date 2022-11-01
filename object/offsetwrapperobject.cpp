@@ -13,7 +13,7 @@ object* offsetwrapper_new_fromoffset(string name, size_t offset, bool readonly){
 
 object* offsetwrapper_repr(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
     string s="<";
     s+=self->type->name->c_str();
     s+=" '";

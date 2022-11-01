@@ -148,7 +148,7 @@ object* func_call_nostack(object* self, object* args, object* kwargs){
 
 object* func_repr(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
 
     string s="";
     s+="<function ";

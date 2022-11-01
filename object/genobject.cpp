@@ -20,7 +20,7 @@ void gen_del(object* self){
 
 object* gen_repr(object* self){
     char buf[32];
-    sprintf(buf, "0x%x", self);
+    sprintf(buf, "0x%p", self);
 
     string s="";
     s+="<generator ";
