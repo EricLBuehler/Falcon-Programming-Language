@@ -67,6 +67,7 @@ object* builtin_input(object* self, object* args){
         cin.clear();
         while (!hit_sigint){}
         hit_sigint=false;
+        return NULL;
     }
     return str_new_fromstr(s);
 }
