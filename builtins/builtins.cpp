@@ -54,7 +54,7 @@ object* builtin___build_class__(object* self, object* args){
 object* builtin_id(object* self, object* args){
     object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
     char buf[32];
-    sprintf(buf, "%d", obj);
+    sprintf(buf, "%ld", (size_t)obj);
     return new_int_fromstr(new string(buf));
 }
 
