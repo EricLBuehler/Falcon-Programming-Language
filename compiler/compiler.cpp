@@ -3131,7 +3131,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
                 }  
             }
-            cout<<x<<"X";
             add_instruction(compiler, compiler->instructions,BUILD_STRING, x, GET_ANNO_N(expr));
             break;
         }
