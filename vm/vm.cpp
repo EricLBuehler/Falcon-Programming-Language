@@ -139,156 +139,6 @@ void vm_del(struct vm* vm){
     }
 }
 
-inline void vm_add_var_locals(struct vm* vm, object* name, object* value){
-    for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-        if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-            }
-            break;
-        }
-    }
-
-    if (value->type->size==0){
-        ((object_var*)value)->gc_ref++;
-    }
-    
-
-    dict_set(callstack_head(vm->callstack).locals, name, value); //If globals is same obj as locals then this will still update both
-}
-
-inline object* vm_get_var_locals(struct vm* vm, object* name){
-    for (int i=vm->callstack->size-1; i>=0; i--){
-        struct callframe frame=vm->callstack->data[i];
-        for (auto k: (*CAST_DICT(frame.locals)->val)){
-            if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                return  CAST_DICT(frame.locals)->val->at(k.first);
-            }
-        }
-
-        if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
-        && CAST_FUNC(frame.callable)->closure!=NULL){
-            object* closure=CAST_FUNC(frame.callable)->closure;
-            //Check if name in closure
-            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-                return CAST_DICT(closure)->val->at(name);
-            }
-        }
-    }
-
-    for (size_t i=0; i<nbuiltins; i++){
-        if (object_istype(builtins[i]->type, &BuiltinType)){
-            if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
-                return builtins[i];
-            }
-        }
-        if (object_istype(builtins[i]->type, &TypeType)){
-            if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
-                return builtins[i];
-            } 
-        }
-    }
-
-    
-    for (auto k: (*CAST_DICT(vm->globals)->val)){
-        if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            return  CAST_DICT(vm->globals)->val->at(k.first);
-        }
-    }
-
-    vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
-    return NULL;
-}
-
-inline void vm_add_var_globals(struct vm* vm, object* name, object* value){
-    for (auto k: (*CAST_DICT(vm->globals)->val)){
-        if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            if (CAST_DICT(vm->globals)->val->at(k.first)->type->size==0){
-                ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
-            }
-            break;
-        }
-    }
-    if (value->type->size==0){
-        ((object_var*)value)->gc_ref++;
-    }
-    dict_set(vm->globals, name, value); //If globals is same obj as locals then this will still update both
-}
-
-inline object* vm_get_var_nonlocal(struct vm* vm, object* name){
-    int i=0;
-    struct callframe* frame=callstack_head(vm->callstack).next;
-    while (frame){
-        if (frame->next==NULL){
-            break;
-        }
-        if (i==0){
-            if (find(CAST_DICT(frame->locals)->keys->begin(), CAST_DICT(frame->locals)->keys->end(), name) != CAST_DICT(frame->locals)->keys->end()){
-                return CAST_DICT(frame->locals)->val->at(name);
-            }
-        }
-        i+=1;
-        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
-        && CAST_FUNC(frame->callable)->closure!=NULL){
-            object* closure=CAST_FUNC(frame->callable)->closure;
-            //Check if name in closure
-            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-                return CAST_DICT(closure)->val->at(name);
-            }
-        }
-        frame=frame->next;
-    }
-
-    vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
-    return NULL;
-}
-
-inline void vm_add_var_nonlocal(struct vm* vm, object* name, object* val){
-    int i=0;
-    struct callframe* frame=callstack_head(vm->callstack).next;
-    while (frame){
-        if (frame->next==NULL){
-            break;
-        }
-        if (i==0){
-            if (find(CAST_DICT(frame->locals)->keys->begin(), CAST_DICT(frame->locals)->keys->end(), name) != CAST_DICT(frame->locals)->keys->end()){
-                if (CAST_DICT(frame->locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(frame->locals)->val->at(name))->gc_ref--;
-                }
-                
-                if (val->type->size==0){
-                    ((object_var*)val)->gc_ref++;
-                }
-                dict_set(frame->locals, name, val);
-
-                return;
-            }
-        }
-        i+=1;
-        if (frame->callable!=NULL && object_istype(frame->callable->type, &FuncType)\
-        && CAST_FUNC(frame->callable)->closure!=NULL){
-            object* closure=CAST_FUNC(frame->callable)->closure;
-            //Check if name in closure
-            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-                if (CAST_DICT(closure)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
-                }
-                FPLDECREF(CAST_DICT(closure)->val->at(name));
-                
-                if (val->type->size==0){
-                    ((object_var*)val)->gc_ref++;
-                }
-                dict_set(closure, name, val);
-
-                return;
-            }
-        }
-        frame=frame->next;
-    }
-
-    vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
-}
-
 inline void vm_del_var_nonlocal(struct vm* vm, object* name){
     
     for (int i=vm->callstack->size-1; i>=0; i--){
@@ -330,29 +180,6 @@ inline void vm_del_var_nonlocal(struct vm* vm, object* name){
     }
 
     vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
-}
-
-inline struct object* vm_get_var_globals(struct vm* vm, object* name){
-    for (auto k: (*CAST_DICT(vm->globals)->val)){
-        if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            return  CAST_DICT(vm->globals)->val->at(k.first);
-        }
-    }
-    for (size_t i=0; i<nbuiltins; i++){
-        if (object_istype(builtins[i]->type, &BuiltinType)){
-            if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
-                return builtins[i];
-            }
-        }
-        if (object_istype(builtins[i]->type, &TypeType)){
-            if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
-                return builtins[i];
-            }
-        }
-    }
-    
-    vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
-    return NULL;
 }
 
 inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
@@ -687,31 +514,120 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         STORE_GLOBAL:{
-            vm_add_var_globals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), peek_dataframe(vm->objstack));
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=peek_dataframe(vm->objstack);
+            for (auto k: (*CAST_DICT(vm->globals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(vm->globals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            dict_set(vm->globals, name, value);
             DISPATCH();
         }
 
         LOAD_GLOBAL:{
-            object* v=vm_get_var_globals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg) );
-            if (v==NULL){
-                goto exc;
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+
+            for (auto k: (*CAST_DICT(vm->globals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
+                    DISPATCH();
+                }
             }
-            add_dataframe(vm, vm->objstack, v);
-            DISPATCH();
+            for (size_t i=0; i<nbuiltins; i++){
+                if (object_istype(builtins[i]->type, &BuiltinType)){
+                    if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
+                        add_dataframe(vm, vm->objstack, builtins[i]);
+                        DISPATCH();
+                    }
+                }
+                if (object_istype(builtins[i]->type, &TypeType)){
+                    if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+                        add_dataframe(vm, vm->objstack, builtins[i]);
+                        DISPATCH();
+                    }
+                }
+            }
+            
+            vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+            goto exc;
         }
 
         STORE_NAME:{
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), peek_dataframe(vm->objstack));
-            DISPATCH();
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=peek_dataframe(vm->objstack);
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
         }
 
         LOAD_NAME:{
-            object* v=vm_get_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg) );
-            if (v==NULL){
-                goto exc;
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+
+            for (int i=vm->callstack->size-1; i>=0; i--){
+                struct callframe frame=vm->callstack->data[i];
+                for (auto k: (*CAST_DICT(frame.locals)->val)){
+                    if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                        add_dataframe(vm, vm->objstack, CAST_DICT(frame.locals)->val->at(name));
+                        DISPATCH();
+                    }
+                }
+
+                if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
+                && CAST_FUNC(frame.callable)->closure!=NULL){
+                    object* closure=CAST_FUNC(frame.callable)->closure;
+                    //Check if name in closure
+                    if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                        add_dataframe(vm, vm->objstack, CAST_DICT(closure)->val->at(name));
+                        DISPATCH();
+                    }
+                }
             }
-            add_dataframe(vm, vm->objstack, v);
-            DISPATCH();
+
+            for (size_t i=0; i<nbuiltins; i++){
+                if (object_istype(builtins[i]->type, &BuiltinType)){
+                    if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
+                        add_dataframe(vm, vm->objstack, builtins[i]);
+                        DISPATCH();
+                    }
+                }
+                if (object_istype(builtins[i]->type, &TypeType)){
+                    if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+                        add_dataframe(vm, vm->objstack, builtins[i]);
+                        DISPATCH();
+                    } 
+                }
+            }
+
+            
+            for (auto k: (*CAST_DICT(vm->globals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(k.first));
+                    DISPATCH();
+                }
+            }
+
+            vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+            goto exc;
         }
 
         BINOP_ADD:{
@@ -1528,7 +1444,24 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -1541,7 +1474,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -1554,7 +1505,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();  
         }
 
@@ -1567,7 +1536,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -1707,7 +1694,24 @@ object* run_vm(object* codeobj, uint32_t* ip){
             uint32_t len=CAST_INT(names->type->slot_mappings->slot_len(names))->val->to_int();
             if (len==0){
                 for (auto k: *CAST_DICT(CAST_MODULE(lib)->dict)->val){
-                    vm_add_var_locals(vm, k.first, k.second);
+                    object* name=k.first;
+                    object* value=k.second;
+                    
+                    for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                        if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                                ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (value->type->size==0){
+                        ((object_var*)value)->gc_ref++;
+                    }
+
+                    dict_set(callstack_head(vm->callstack).locals, name, value);
+                    DISPATCH();
                 }
             }
             for (uint32_t i=0; i<len; i++){
@@ -1723,7 +1727,26 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     vm_add_err(&ImportError,vm, "Cannot import name '%s' from '%s'",CAST_STRING(list_index_int(names, i))->val->c_str(), CAST_STRING(CAST_MODULE(lib)->name)->val->c_str());
                     goto exc;
                 }
-                vm_add_var_locals(vm, list_index_int(names, i), o);
+
+                object* name=list_index_int(names, i);
+                object* value=o;
+                
+                for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                    if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                        if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                            ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                        }
+                        break;
+                    }
+                }
+
+                if (value->type->size==0){
+                    ((object_var*)value)->gc_ref++;
+                }
+
+                dict_set(callstack_head(vm->callstack).locals, name, value);
+                DISPATCH();
+                
             }
             DISPATCH();
         }
@@ -1786,7 +1809,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -1799,7 +1840,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -1938,17 +1997,97 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         LOAD_NONLOCAL:{
-            object* v=vm_get_var_nonlocal(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg) );
-            if (v==NULL){
-                goto exc;
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+
+            for (int i=vm->callstack->size-1; i>=0; i--){
+                struct callframe frame=vm->callstack->data[i];
+                if (i==vm->callstack->size-1){
+                    for (auto k: (*CAST_DICT(frame.locals)->val)){
+                        if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                            add_dataframe(vm, vm->objstack, CAST_DICT(frame.locals)->val->at(name));
+                            DISPATCH();
+                        }
+                    }
+                }
+
+                if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
+                && CAST_FUNC(frame.callable)->closure!=NULL){
+                    object* closure=CAST_FUNC(frame.callable)->closure;
+                    //Check if name in closure
+                    if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                        add_dataframe(vm, vm->objstack, CAST_DICT(closure)->val->at(name));
+                        DISPATCH();
+                    }
+                }
             }
-            add_dataframe(vm, vm->objstack, v);
-            DISPATCH();
+
+            for (size_t i=0; i<nbuiltins; i++){
+                if (object_istype(builtins[i]->type, &BuiltinType)){
+                    if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
+                        add_dataframe(vm, vm->objstack, builtins[i]);
+                        DISPATCH();
+                    }
+                }
+                if (object_istype(builtins[i]->type, &TypeType)){
+                    if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+                        add_dataframe(vm, vm->objstack, builtins[i]);
+                        DISPATCH();
+                    } 
+                }
+            }
+
+            
+            for (auto k: (*CAST_DICT(vm->globals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(k.first));
+                    DISPATCH();
+                }
+            }
+
+            vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+            goto exc;
         }
 
         STORE_NONLOCAL:{
-            vm_add_var_nonlocal(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), peek_dataframe(vm->objstack));
-            DISPATCH();
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* val=peek_dataframe(vm->objstack);
+
+            for (int i=vm->callstack->size-1; i>=0; i--){
+                struct callframe frame=vm->callstack->data[i];
+                if (i==vm->callstack->size-1){
+                    if (find(CAST_DICT(frame.locals)->keys->begin(), CAST_DICT(frame.locals)->keys->end(), name) != CAST_DICT(frame.locals)->keys->end()){
+                        if (CAST_DICT(frame.locals)->val->at(name)->type->size==0){
+                            ((object_var*)CAST_DICT(frame.locals)->val->at(name))->gc_ref--;
+                        }
+                        
+                        if (val->type->size==0){
+                            ((object_var*)val)->gc_ref++;
+                        }
+                        dict_set(frame.locals, name, val);
+                        DISPATCH();
+                    }
+                }
+                if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
+                && CAST_FUNC(frame.callable)->closure!=NULL){
+                    object* closure=CAST_FUNC(frame.callable)->closure;
+                    //Check if name in closure
+                    if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                        if (CAST_DICT(closure)->val->at(name)->type->size==0){
+                            ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
+                        }
+                        FPLDECREF(CAST_DICT(closure)->val->at(name));
+                        
+                        if (val->type->size==0){
+                            ((object_var*)val)->gc_ref++;
+                        }
+                        dict_set(closure, name, val);
+
+                        DISPATCH();
+                    }
+                }
+            }
+
+            vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
         }
 
         DEL_NONLOCAL:{
@@ -2039,7 +2178,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -2052,7 +2209,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             
             DISPATCH();
         }
@@ -2066,7 +2241,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             
             DISPATCH();
         }
@@ -2080,7 +2273,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             
             DISPATCH();
         }
@@ -2145,7 +2356,25 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
                 goto exc;
             }
-            vm_add_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg), ret);
+            
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            object* value=ret;
+            
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+                    break;
+                }
+            }
+
+            if (value->type->size==0){
+                ((object_var*)value)->gc_ref++;
+            }
+            
+
+            dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
