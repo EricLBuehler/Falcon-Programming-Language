@@ -1,3 +1,7 @@
+#ifndef _WIN32
+#include <sys/types.h>
+#endif
+
 object* os_chdir(object* self, object* args){
     object* val=dict_get(args, str_new_fromstr("dir"));
     if (!object_istype(val->type, &StrType)){
@@ -26,7 +30,11 @@ object* os_mkdir(object* self, object* args){
 
     string dir=*CAST_STRING(val)->val;
 
+    #ifdef _WIN32
     int res=mkdir(dir.c_str());
+    #else
+    int res=mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    #endif
     if (res==0){
         return new_none();
     }
