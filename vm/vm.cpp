@@ -403,12 +403,12 @@ void print_traceback(){
         
 
         cout<<"    ";
+        int diff=snippet.size();
         snippet=remove_spaces(snippet);
+        diff-=snippet.size();
         for (int i=0; i<snippet.size(); i++){
-            if (i>=startcol && i<=endcol){
+            if (i>=startcol-diff && i<=endcol-diff){
                 red_color();
-            }
-            else{
             }
             cout<<snippet.at(i);
             reset_color();
