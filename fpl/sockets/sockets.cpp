@@ -16,6 +16,10 @@
 
 typedef int SOCKET_T;
 
+#ifndef SOCKET_ERROR
+#define SOCKET_ERROR SO_ERROR
+#endif
+
 
 #include "sockettype.cpp"
 
@@ -81,7 +85,11 @@ object* socket_new(object* type, object* args, object* kwargs){
     CAST_SOCKET(o)->af_family=af_family;
     CAST_SOCKET(o)->sock_kind=sock_kind;
     CAST_SOCKET(o)->fd=socket(af_family, sock_kind, 0);
+    #ifdef INVALID_SOCKET
     if (CAST_SOCKET(o)->fd==INVALID_SOCKET){
+    #else
+    if (CAST_SOCKET(o)->fd<0){
+    #endif
         #ifdef _WIN32
         int err=WSAGetLastError();
         #else
@@ -245,7 +253,7 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
-    connect(CAST_SOCKET(self)->fd, (SOCKADDR *)CAST_SOCKET(self)->server, sizeof(SOCKADDR));
+    connect(CAST_SOCKET(self)->fd, (sockaddr *)CAST_SOCKET(self)->server, sizeof(sockaddr));
 
     return new_none();
 }
@@ -483,7 +491,7 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
 
 	CAST_SOCKET(self)->server->sin_port = htons(CAST_INT(port_)->val->to_int());
     
-    int i=bind(CAST_SOCKET(self)->fd, (SOCKADDR *)CAST_SOCKET(self)->server, sizeof(SOCKADDR));
+    int i=bind(CAST_SOCKET(self)->fd, (sockaddr *)CAST_SOCKET(self)->server, sizeof(sockaddr));
     if (i==SOCKET_ERROR){
         #ifdef _WIN32
         int err=WSAGetLastError();
@@ -550,8 +558,12 @@ object* socket_accept(object* selftp, object* args, object* kwargs){
     int c= sizeof(struct sockaddr_in);
     struct sockaddr_in client;
 
-    SOCKET_T new_socket=accept(CAST_SOCKET(self)->fd, (struct sockaddr*)&client, &c);
+    SOCKET_T new_socket=accept(CAST_SOCKET(self)->fd, (struct sockaddr*)&client, (socklen_t*)&c);
+    #ifdef INVALID_SOCKET
     if (new_socket==INVALID_SOCKET){
+    #else
+    if (new_socket<0){
+    #endif
         #ifdef _WIN32
         int err=WSAGetLastError();
         #else
@@ -724,7 +736,7 @@ object* socket_getsockname(object* selftp, object* args, object* kwargs){
     struct sockaddr_in sa;
     int sa_len=sizeof(sa);
 
-    int i=getsockname(CAST_SOCKET(self)->fd, (sockaddr*)&sa, &sa_len);
+    int i=getsockname(CAST_SOCKET(self)->fd, (sockaddr*)&sa, (socklen_t*)&sa_len);
     if (i!=0){
         #ifdef _WIN32
         int err=WSAGetLastError();
@@ -911,7 +923,9 @@ object* new_socket_module(){
     dict_set(dict, str_new_fromstr("SO_SNDTIMEO"), new_int_fromint(SO_SNDTIMEO));
     dict_set(dict, str_new_fromstr("SO_ENABLED"), new_int_fromint(1));
     dict_set(dict, str_new_fromstr("SO_DISABLED"), new_int_fromint(0));
+    #ifdef _WIN32
     dict_set(dict, str_new_fromstr("SO_CONDITIONAL_ACCEPT"), new_int_fromint(SO_CONDITIONAL_ACCEPT));
+    #endif
 
     //Other
     dict_set(dict, str_new_fromstr("SOMAXCONN"), new_int_fromint(SOMAXCONN));
