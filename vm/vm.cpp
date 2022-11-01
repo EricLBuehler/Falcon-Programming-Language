@@ -792,7 +792,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
-            if (ret==NULL){
+            if (ret==NULL || hit_sigint){
                 goto exc;
             }
             if (ret==TERM_PROGRAM|| ret==CALL_ERR){
@@ -904,7 +904,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
-            if (ret==NULL){
+            if (ret==NULL || hit_sigint){
                 goto exc;
             }
             if (ret==TERM_PROGRAM || ret==CALL_ERR){
@@ -1017,7 +1017,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
-            if (ret==NULL){ 
+            if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
             if (ret==TERM_PROGRAM || ret==CALL_ERR){
@@ -1069,7 +1069,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_getattr(obj, attr);            
             
-            if (ret==NULL){ 
+            if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
             if (ret==TERM_PROGRAM || ret==CALL_ERR){
@@ -1087,7 +1087,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_getattr(obj, attr);            
             
             
-            if (ret==NULL){
+            if (ret==NULL || hit_sigint){
                 goto exc;
             }
             if (ret==TERM_PROGRAM|| ret==CALL_ERR){
@@ -1106,7 +1106,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_setattr(obj, attr, val);
             
             
-            if (ret==NULL){
+            if (ret==NULL || hit_sigint){
                 goto exc;
             }
             if (ret==TERM_PROGRAM|| ret==CALL_ERR){
@@ -1642,6 +1642,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     vm_add_err(&ImportError,vm, "Cannot import name '%s' from '%s'",CAST_STRING(list_index_int(names, i))->val->c_str(), CAST_STRING(CAST_MODULE(lib)->name)->val->c_str());
                     goto exc;
                 }
+                if (hit_sigint){
+                    goto exc;
+                }
 
                 object* name=list_index_int(names, i);
                 object* value=o;
@@ -1912,7 +1915,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_setattr(obj, attr, NULL);
             
-            if (ret==NULL){
+            if (ret==NULL || hit_sigint){
                 goto exc;
             }
             if (ret==TERM_PROGRAM|| ret==CALL_ERR){
@@ -2418,7 +2421,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             dict_set(annon, attr, tp);
             
-            if (ret==NULL){
+            if (ret==NULL || hit_sigint){
                 goto exc;
             }
             if (ret==TERM_PROGRAM|| ret==CALL_ERR){
@@ -2547,6 +2550,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
     exc:
     if (vm->exception!=NULL){
+        if (hit_sigint){
+            hit_sigint=false;
+        }
         (*ip)-=2;
         struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
         if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
