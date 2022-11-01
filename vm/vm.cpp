@@ -139,49 +139,6 @@ void vm_del(struct vm* vm){
     }
 }
 
-inline void vm_del_var_nonlocal(struct vm* vm, object* name){
-    
-    for (int i=vm->callstack->size-1; i>=0; i--){
-        struct callframe frame=vm->callstack->data[i];
-        if (i==0){
-            if (find(CAST_DICT(frame.locals)->keys->begin(), CAST_DICT(frame.locals)->keys->end(), name) != CAST_DICT(frame.locals)->keys->end()){
-                if (CAST_DICT(frame.locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(frame.locals)->val->at(name))->gc_ref--;
-                }
-                if (object_find_bool_dict_keys(frame.annotations, name)){
-                    if (CAST_DICT(frame.annotations)->val->at(name)->type->size==0){
-                        ((object_var*)CAST_DICT(frame.annotations)->val->at(name))->gc_ref--;
-                    }
-                    dict_set(frame.annotations, name, NULL);
-                }
-                dict_set(frame.locals, name, NULL);
-                return;
-            }
-        }
-        if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
-        && CAST_FUNC(frame.callable)->closure!=NULL){
-            object* closure=CAST_FUNC(frame.callable)->closure;
-            //Check if name in closure
-            if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-                if (CAST_DICT(closure)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
-                }
-                if (object_find_bool_dict_keys(CAST_FUNC(frame.callable)->closure_annotations, name)){
-                    if (CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name)->type->size==0){
-                        ((object_var*)CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name))->gc_ref--;
-                    }
-                    dict_set(CAST_FUNC(frame.callable)->closure_annotations, name, NULL);
-                }
-                dict_set(closure, name, NULL);
-
-                return;
-            }
-        }
-    }
-
-    vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
-}
-
 inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
     for (int i=0; i<CAST_LIST(CAST_CODE(callframe->code)->co_lines)->size; i++){
         object* tup=list_index_int(CAST_LIST(CAST_CODE(callframe->code)->co_lines), i);
@@ -303,48 +260,6 @@ object* import_name(string data, object* name){
     ::vm=vm_;
 
     return o;
-}
-
-void vm_del_var_locals(struct vm* vm, object* name){
-    for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-        if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-            }
-
-            if (object_find_bool_dict_keys(callstack_head(vm->callstack).annotations, name)){
-                if (CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name))->gc_ref--;
-                }
-                dict_set(callstack_head(vm->callstack).annotations, name, NULL);
-            }
-            dict_set(callstack_head(vm->callstack).locals, name, NULL);
-            return;
-        }
-    }
-    vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
-    return;
-}
-
-void vm_del_var_globals(struct vm* vm, object* name){
-    for (auto k: (*CAST_DICT(vm->globals)->val)){
-        if (istrue(object_cmp(name, k.first, CMP_EQ))){
-            if (CAST_DICT(vm->globals)->val->at(name)->type->size==0){
-                ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
-            }
-
-            if (object_find_bool_dict_keys(vm->global_annotations, name)){
-                if (CAST_DICT(vm->global_annotations)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(vm->global_annotations)->val->at(k.first))->gc_ref--;
-                }
-                dict_set(vm->global_annotations, name, NULL);
-            }
-            dict_set(vm->globals, name, NULL);
-            return;
-        }
-    }
-    vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
-    return;
 }
 
 void annotate_var(object* tp, object* name){
@@ -1767,8 +1682,26 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         DEL_NAME: {
-            vm_del_var_locals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
-            DISPATCH();
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+
+            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
+                    }
+
+                    if (object_find_bool_dict_keys(callstack_head(vm->callstack).annotations, name)){
+                        if (CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name)->type->size==0){
+                            ((object_var*)CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name))->gc_ref--;
+                        }
+                        dict_set(callstack_head(vm->callstack).annotations, name, NULL);
+                    }
+                    dict_set(callstack_head(vm->callstack).locals, name, NULL);
+                    DISPATCH();
+                }
+            }
+            vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+            goto exc;
         }
 
         BINOP_MOD:{
@@ -1952,8 +1885,26 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }        
 
         DEL_GLBL: {
-            vm_del_var_globals(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
-            DISPATCH();
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+            
+            for (auto k: (*CAST_DICT(vm->globals)->val)){
+                if (istrue(object_cmp(name, k.first, CMP_EQ))){
+                    if (CAST_DICT(vm->globals)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
+                    }
+
+                    if (object_find_bool_dict_keys(vm->global_annotations, name)){
+                        if (CAST_DICT(vm->global_annotations)->val->at(name)->type->size==0){
+                            ((object_var*)CAST_DICT(vm->global_annotations)->val->at(k.first))->gc_ref--;
+                        }
+                        dict_set(vm->global_annotations, name, NULL);
+                    }
+                    dict_set(vm->globals, name, NULL);
+                    DISPATCH();
+                }
+            }
+            vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
+            goto exc;
         }
 
         DEL_ATTR: {
@@ -2088,11 +2039,52 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
 
             vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
+            goto exc;
         }
 
         DEL_NONLOCAL:{
-            vm_del_var_nonlocal(vm, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
-            DISPATCH();
+            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
+
+            for (int i=vm->callstack->size-1; i>=0; i--){
+                struct callframe frame=vm->callstack->data[i];
+                if (i==vm->callstack->size-1){
+                    if (find(CAST_DICT(frame.locals)->keys->begin(), CAST_DICT(frame.locals)->keys->end(), name) != CAST_DICT(frame.locals)->keys->end()){
+                        if (CAST_DICT(frame.locals)->val->at(name)->type->size==0){
+                            ((object_var*)CAST_DICT(frame.locals)->val->at(name))->gc_ref--;
+                        }
+                        if (object_find_bool_dict_keys(frame.annotations, name)){
+                            if (CAST_DICT(frame.annotations)->val->at(name)->type->size==0){
+                                ((object_var*)CAST_DICT(frame.annotations)->val->at(name))->gc_ref--;
+                            }
+                            dict_set(frame.annotations, name, NULL);
+                        }
+                        dict_set(frame.locals, name, NULL);
+                        DISPATCH();
+                    }
+                }
+                if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
+                && CAST_FUNC(frame.callable)->closure!=NULL){
+                    object* closure=CAST_FUNC(frame.callable)->closure;
+                    //Check if name in closure
+                    if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                        if (CAST_DICT(closure)->val->at(name)->type->size==0){
+                            ((object_var*)CAST_DICT(closure)->val->at(name))->gc_ref--;
+                        }
+                        if (object_find_bool_dict_keys(CAST_FUNC(frame.callable)->closure_annotations, name)){
+                            if (CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name)->type->size==0){
+                                ((object_var*)CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name))->gc_ref--;
+                            }
+                            dict_set(CAST_FUNC(frame.callable)->closure_annotations, name, NULL);
+                        }
+                        dict_set(closure, name, NULL);
+
+                        DISPATCH();
+                    }
+                }
+            }
+
+            vm_add_err(&NameError, vm, "Nonlocal %s referenced before assignment", object_crepr(name).c_str());
+            goto exc;
         }
         
         BITWISE_NOT:{
