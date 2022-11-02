@@ -326,6 +326,7 @@ Help
 - <a href='https://github.com/faheel/BigInt'>BigInt</a> (Used for ```int``` type)
 - <a href='https://github.com/python/cpython'>CPython</a>
 - <a href='https://eli.thegreenplace.net/2012/07/12/computed-goto-for-efficient-dispatch-tables'>Computed GOTOs</a>
+- <a href='https://github.com/thestr4ng3r/nxjson'>NXJSON</a>
 
 ### Licenses ###
 - [MIT License](LICENSE)
