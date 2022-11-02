@@ -298,12 +298,19 @@ object* socket_send(object* selftp, object* args, object* kwargs){
             return NULL;
         }
     }
-    
-    string s=object_cstr(v).c_str();
-    char msg[s.size()+1];
-    strcpy(msg, s.c_str());
 
-    int i=send(CAST_SOCKET(self)->fd, msg , strlen(msg), (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+    int i;
+
+    if (!object_istype(v->type, &BytesType)){
+        string s=object_cstr(v).c_str();
+        char msg[s.size()+1];
+        strcpy(msg, s.c_str());
+
+        i=send(CAST_SOCKET(self)->fd, msg , strlen(msg), (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+    }
+    else{
+        i=send(CAST_SOCKET(self)->fd, CAST_BYTES(v)->val, CAST_BYTES(v)->len, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+    }
     
     if (i==SOCKET_ERROR){
         #ifdef _WIN32
@@ -364,7 +371,7 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
         return NULL;
     } 
     
-    return str_new_fromstr(string(buf));
+    return bytes_new_frombytearr(buf, i);
 }
 
 object* socket_gethostbyname(object* selftp, object* args){
@@ -806,31 +813,57 @@ object* socket_sendall(object* selftp, object* args, object* kwargs){
             return NULL;
         }
     }
-    
-    string s=object_cstr(v).c_str();
-    char msg[s.size()+1];
-    strcpy(msg, s.c_str());
-    
+
     //Inspiration https://beej.us/guide/bgnet/html/
     int total = 0;
-    const int len_msg=s.size();
-    int bytesleft = len_msg;
-    int n;
+    
+    if (!object_istype(v->type, &BytesType)){
+        string s=object_cstr(v).c_str();
+        char msg[s.size()+1];
+        strcpy(msg, s.c_str());
+    
+        const int len_msg=s.size();
+        int bytesleft = len_msg;
+        int n;
 
-    while(total < len_msg) {
-        n = send(CAST_SOCKET(self)->fd, msg + total, bytesleft, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
-        if (n==SOCKET_ERROR){
-            #ifdef _WIN32
-            int err=WSAGetLastError();
-            #else
-            int err=errno;
-            errno=0;
-            #endif
-            vm_add_err(&OSError, vm, "[Errno %d] send failed" , err);
-            return NULL;
+        while(total < len_msg) {
+            n = send(CAST_SOCKET(self)->fd, msg + total, bytesleft, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+            if (n==SOCKET_ERROR){
+                #ifdef _WIN32
+                int err=WSAGetLastError();
+                #else
+                int err=errno;
+                errno=0;
+                #endif
+                vm_add_err(&OSError, vm, "[Errno %d] send failed" , err);
+                return NULL;
+            }
+            total += n;
+            bytesleft -= n;
         }
-        total += n;
-        bytesleft -= n;
+    }
+    else{
+        const int len_msg=CAST_BYTES(v)->len;
+        int bytesleft = len_msg;
+        int n;
+
+        while(total < len_msg) {
+            cout<<total<<endl;
+            n = send(CAST_SOCKET(self)->fd, CAST_BYTES(v)->val+total, bytesleft, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+            if (n==SOCKET_ERROR){
+                #ifdef _WIN32
+                int err=WSAGetLastError();
+                #else
+                int err=errno;
+                errno=0;
+                #endif
+                vm_add_err(&OSError, vm, "[Errno %d] send failed" , err);
+                return NULL;
+            }
+            total += n;
+            bytesleft -= n;
+        }
+        
     }
 
     return new_int_fromint(total);
