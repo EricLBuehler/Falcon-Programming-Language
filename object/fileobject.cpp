@@ -88,6 +88,7 @@ object* file_read_meth(object* selftp, object* args, object* kwargs){
     char *s = (char*)fpl_malloc(fsize + 1);
     memset(s, 0, fsize);
     size_t i=fread(s, fsize, 1, CAST_FILE(self)->file);
+    cout<<i;
     if (i==0 && fsize>0 && ferror(CAST_FILE(self)->file)){
         vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
         return NULL;
@@ -151,6 +152,27 @@ object* file_close_meth(object* selftp, object* args, object* kwargs){
     fclose(CAST_FILE(self)->file);
     CAST_FILE(self)->open=false;
     return new_none();
+}
+
+object* file_size_meth(object* selftp, object* args, object* kwargs){    
+    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL;
+    }
+
+    object* self=list_index_int(args, 0);
+    if (!CAST_FILE(self)->open){
+        vm_add_err(&ValueError, vm, "Attempting to get size of a closed file");
+        return NULL;
+    }
+    
+    long start = ftell(CAST_FILE(self)->file);
+    fseek(CAST_FILE(self)->file, 0, SEEK_END);
+    long fsize = ftell(CAST_FILE(self)->file);
+    fseek(CAST_FILE(self)->file, 0, start);
+
+    return new_int_fromint(fsize);
 }
 
 object* file_enter(object* self){

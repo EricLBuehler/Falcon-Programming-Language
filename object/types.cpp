@@ -1366,7 +1366,8 @@ object* file_enter(object* self);
 object* file_exit(object* self);
 
 Method file_methods[]={{"read", (cwrapperfunc)file_read_meth}, {"close", (cwrapperfunc)file_close_meth}\
-                    , {"write", (cwrapperfunc)file_write_meth}, {"seek", (cwrapperfunc)file_seek_meth}, {NULL,NULL}};
+                    , {"write", (cwrapperfunc)file_write_meth}, {"seek", (cwrapperfunc)file_seek_meth}\
+                    , {"size", (cwrapperfunc)file_size_meth}, {NULL,NULL}};
 GetSets file_getsets[]={{NULL,NULL}};
 OffsetMember file_offsets[]={{NULL}};
 
