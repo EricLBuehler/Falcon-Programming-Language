@@ -848,7 +848,6 @@ object* socket_sendall(object* selftp, object* args, object* kwargs){
         int n;
 
         while(total < len_msg) {
-            cout<<total<<endl;
             n = send(CAST_SOCKET(self)->fd, CAST_BYTES(v)->val+total, bytesleft, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
             if (n==SOCKET_ERROR){
                 #ifdef _WIN32
