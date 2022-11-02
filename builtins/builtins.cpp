@@ -5,7 +5,8 @@ object* builtin_print(object* self, object* args){
     object* tupargs=args->type->slot_mappings->slot_get(args, str_new_fromstr("args"));
     string sep=object_cstr(dict_get(args, str_new_fromstr("sep")));
     for (int n=0; n<CAST_TUPLE(tupargs)->size; n++){
-        printf("%s",object_cstr(tuple_index_int(tupargs, n)).c_str());
+        
+        cout<<object_cstr(tuple_index_int(tupargs, n));
         if (n+1!=CAST_TUPLE(tupargs)->size){
             cout<<sep;
         }
