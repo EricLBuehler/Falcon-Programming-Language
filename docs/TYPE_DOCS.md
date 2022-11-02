@@ -403,6 +403,18 @@ Writes ```val.__str__()``` to open, writeable file object.
 #### Returns
 File object - ```file```
 
+### ```file.size```
+Returns the size of open file object.
+```file.size(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```file("test.txt","r").size() == 3 == True```
+#### Returns
+Size - ```int```
+
 
 
 
