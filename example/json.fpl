@@ -1,0 +1,14 @@
+import json
+
+j='
+{
+  "some-int": 2,
+  "O":{"A":100},
+  "X":[1,{"A":123}]
+}
+'
+
+decoded=json.decode(j)
+print(decoded)
+
+print(json.encode(decoded))
