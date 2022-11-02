@@ -90,13 +90,18 @@ object* json_encode_list(object* list){
             s+=object_cstr(itm);
         }
         else if (object_istype(itm->type, &FloatType)){
-            s+=object_cstr(itm);
+            if (isinf(CAST_FLOAT(itm)->val) || isnan(CAST_FLOAT(itm)->val)){
+                s+="null";
+            }
+            else{
+                s+=object_cstr(itm);
+            }
         }
         else if (object_istype(itm->type, &BoolType)){
             s+=CAST_BOOL(itm)->val ? "true" : "false";
         }
         else if (object_istype(itm->type, &NoneType)){
-            s+="None";
+            s+="null";
         }
         else if (object_istype(itm->type, &DictType)){
             object* o=json_encode_dict(itm);
@@ -144,13 +149,18 @@ object* json_encode_dict(object* dict){
             s+=object_cstr(k.second);
         }
         else if (object_istype(k.second->type, &FloatType)){
-            s+=object_cstr(k.second);
+            if (isinf(CAST_FLOAT(k.second)->val) || isnan(CAST_FLOAT(k.second)->val)){
+                s+="null";
+            }
+            else{
+                s+=object_cstr(k.second);
+            }
         }
         else if (object_istype(k.second->type, &BoolType)){
             s+=CAST_BOOL(k.second)->val ? "true" : "false";
         }
         else if (object_istype(k.second->type, &NoneType)){
-            s+="None";
+            s+="null";
         }
         else if (object_istype(k.second->type, &DictType)){
             object* o=json_encode_dict(k.second);
