@@ -3471,7 +3471,7 @@ object* bytes_add(object* self, object* other);
 object* bytes_get(object* self, object* idx);
 object* bytes_mul(object* self, object* other);
 
-object* bytes_new_fromchararr(char* val, int lne);
+object* bytes_new_frombytearr(char* val, int lne);
 
 typedef struct BytesObject{
     OBJHEAD_EXTRA
