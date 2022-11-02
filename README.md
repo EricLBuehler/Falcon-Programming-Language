@@ -309,8 +309,11 @@ False
 </details>
 
 ### Usage ###
-Build entire Falcon programming language
+Build Falcon in debug mode
 ```./build.cmd```
+
+Build Falcon in release mode
+```./release.cmd```
 
 Run a script
 ```./fpl program```
