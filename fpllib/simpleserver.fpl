@@ -1,8 +1,7 @@
 import socket
-print(socket)
+
 class App{
     func __init__(self, name){
-        print("APP")
         self.name=name
         self.pages=[]
     }
