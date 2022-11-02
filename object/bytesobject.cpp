@@ -32,9 +32,25 @@ object* bytes_new_frombyte(char arr){
 
 object* bytes_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
-        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+    if ((len!=1 && len!=0) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 or 0 arguments, got %d", len);
         return NULL;
+    }
+
+    if (len==0){
+        object* obj=new_object(&BytesType);
+    
+        char* c=(char*)fpl_malloc(sizeof(char));
+        CAST_BYTES(obj)->val=c;
+        CAST_BYTES(obj)->len=0;
+
+        object* o = in_immutables((struct object*)obj);
+        if (o==NULL){
+            return (object*)obj;
+        }
+        
+        FPLDECREF((object*)obj);
+        return o;
     }
 
     if (object_istype(list_index_int(args, 0)->type, &BytesType)){
@@ -51,33 +67,47 @@ object* bytes_new(object* type, object* args, object* kwargs){
         }
 
         object* obj=new_object(CAST_TYPE(type));
-        CAST_BYTES(obj)->val=(char*)fpl_malloc(128);
-        
-        o=iter->type->slot_next(iter);
-        int i=0;
-        int len=128;
-        while (vm->exception==NULL){
-            object* intob=object_int(o);
-            if (intob==NULL || !object_istype(intob->type, &IntType)){
-                vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", o->type->name->c_str());
-                return NULL; 
-            }
-            CAST_BYTES(obj)->val[i++]=(char)(CAST_INT(intob)->val->to_int());
-            
-            if (i==128){
-                CAST_BYTES(obj)->val=(char*)fpl_realloc((void*)CAST_BYTES(obj)->val, i+=1);
-            }
+
+        if (!object_istype(o->type, &StrType)){
+            CAST_BYTES(obj)->val=(char*)fpl_malloc(128);
             
             o=iter->type->slot_next(iter);
+            int i=0;
+            int len=128;
+            while (vm->exception==NULL){
+                object* intob=object_int(o);
+                if (intob==NULL || !object_istype(intob->type, &IntType)){
+                    vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", o->type->name->c_str());
+                    return NULL; 
+                }
+                CAST_BYTES(obj)->val[i++]=(char)(CAST_INT(intob)->val->to_int());
+                
+                if (i==128){
+                    CAST_BYTES(obj)->val=(char*)fpl_realloc((void*)CAST_BYTES(obj)->val, i+=1);
+                }
+                
+                o=iter->type->slot_next(iter);
+            }
+            if (vm->exception!=NULL){
+                FPLDECREF(vm->exception);
+                vm->exception=NULL;
+            }
+            FPLDECREF(iter);
+            
+            CAST_BYTES(obj)->len=i;
         }
-        if (vm->exception!=NULL){
-            FPLDECREF(vm->exception);
-            vm->exception=NULL;
+        else{
+            CAST_BYTES(obj)->val=(char*)fpl_malloc(CAST_STRING(o)->val->size());
+            CAST_BYTES(obj)->len=CAST_STRING(o)->val->size();
+            memcpy(CAST_BYTES(obj)->val, CAST_STRING(o)->val->c_str(), CAST_STRING(o)->val->size());
         }
-        FPLDECREF(iter);
-
-        CAST_BYTES(obj)->len=i;
-        return obj;
+        object* obj_ = in_immutables((struct object*)obj);
+        if (obj_==NULL){
+            return (object*)obj;
+        }
+        
+        FPLDECREF((object*)obj);
+        return obj_;
     }
 
     vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", list_index_int(args, 0)->type->name->c_str());
@@ -85,9 +115,9 @@ object* bytes_new(object* type, object* args, object* kwargs){
 }
 
 string _byte_repr(char c){
-    char arr[5];
-    sprintf(arr, "0x%x", (int)c);
-    return string(arr, 4);
+    char arr[50];
+    sprintf(arr, "0x%x\0", (int)c);
+    return string(arr, strlen(arr));
 }
 
 object* bytes_slice(object* self, object* idx){
@@ -145,9 +175,22 @@ object* bytes_len(object* self){
 }
 
 object* bytes_repr(object* self){
+    string s="";
+    for (int i=0; i<CAST_BYTES(self)->len; i++){
+        s+=string(1, CAST_BYTES(self)->val[i]);
+    }
+    return str_new_fromstr(s);
+}
+
+
+object* bytes_str(object* self){
     string s="b'";
     for (int i=0; i<CAST_BYTES(self)->len; i++){
         s+=_byte_repr(CAST_BYTES(self)->val[i]);
+        if (i==128){
+            s+="... ";
+            break;
+        }
         if (i!=CAST_BYTES(self)->len-1){
             s+=", ";
         }

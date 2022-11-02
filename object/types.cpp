@@ -3463,6 +3463,7 @@ object* bytes_new(object* type, object* args, object* kwargs);
 void bytes_del(object* self);
 object* bytes_len(object* self);
 object* bytes_repr(object* self);
+object* bytes_str(object* self);
 object* bytes_cmp(object* self, object* other, uint8_t type);
 object* bytes_bool(object* self);
 object* bytes_iter(object* self);
@@ -3536,7 +3537,7 @@ TypeObject BytesType={
     (unaryfunc)bytes_iter, //slot_iter
 
     (reprfunc)bytes_repr, //slot_repr
-    (reprfunc)bytes_repr, //slot_str
+    (reprfunc)bytes_str, //slot_str
     0, //slot_call
 
     &bytes_num_methods, //slot_number

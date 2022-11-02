@@ -69,6 +69,18 @@ object* file_new_fromfile(object* name, char* mode){
     return o;
 }
 
+bool is_binary(char* mode){
+    int idx=0;
+    char c=mode[idx++];
+    while (c){
+        if (c=='b'){
+            return true;
+        }
+        c=mode[idx++];
+    }
+    return false;
+}
+
 object* file_read_meth(object* selftp, object* args, object* kwargs){    
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
@@ -94,8 +106,12 @@ object* file_read_meth(object* selftp, object* args, object* kwargs){
         return NULL;
     }
     s[fsize] = 0;
-    string str(s);
-    return str_new_fromstr(str);
+
+    if (!is_binary(CAST_FILE(self)->mode)){
+        string str(s);
+        return str_new_fromstr(str);
+    }
+    return bytes_new_frombytearr(s, fsize);
 }
 
 object* file_seek_meth(object* selftp, object* args, object* kwargs){    
@@ -132,8 +148,20 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
+    int i;
+
+    if (is_binary(CAST_FILE(self)->mode)){
+        i=fprintf(CAST_FILE(self)->file, "%s", CAST_BYTES(list_index_int(args, 1))->val);
+        if (i==0 && CAST_BYTES(list_index_int(args, 1))->len>0 && ferror(CAST_FILE(self)->file)){
+            vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
+            return NULL;
+        }
+        return FPLINCREF(self);
+    }
+    
     string s=object_cstr(list_index_int(args, 1));
-    int i=fprintf(CAST_FILE(self)->file, "%s", s.c_str() );
+
+    i=fprintf(CAST_FILE(self)->file, "%s", s.c_str() );
     if (i==0 && s.size()>0 && ferror(CAST_FILE(self)->file)){
         vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
         return NULL;
