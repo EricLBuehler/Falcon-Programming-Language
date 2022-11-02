@@ -219,7 +219,7 @@ object* import_name(string data, object* name){
         cout<<ast.header<<endl;
         cout<<ast.snippet<<endl;
         cout<<ast.arrows<<endl;
-        printf("%s\n",ast.error->c_str());
+        printf("%s\n",ast.error);
         return TERM_PROGRAM;
     }
 
@@ -234,7 +234,7 @@ object* import_name(string data, object* name){
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;
-        printf("%s\n",parseretglbl.error->c_str());
+        printf("%s\n",parseretglbl.error);
         return TERM_PROGRAM;
     }
 
