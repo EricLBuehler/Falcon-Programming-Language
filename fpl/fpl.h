@@ -8,13 +8,15 @@ object** modules=NULL;
 #include "os.cpp"
 #include "sockets/sockets.cpp"
 #include "builtins.cpp"
+#include "json/json.cpp"
 
 typedef object* (*newmodulefunc)(void);
-const size_t nmodules=8;
+const size_t nmodules=9;
 newmodulefunc newmodules[] = {(newmodulefunc)new_random_module, (newmodulefunc)new_time_module,\
                             (newmodulefunc)new_math_module, (newmodulefunc)new_thread_module,\
                             (newmodulefunc)new_sys_module, (newmodulefunc)new_os_module,\
-                            (newmodulefunc)new_socket_module, (newmodulefunc)new_builtins_module, NULL};
+                            (newmodulefunc)new_socket_module, (newmodulefunc)new_builtins_module,\
+                            (newmodulefunc)new_json_module, NULL};
 
 void setup_modules(){
     int i=0;

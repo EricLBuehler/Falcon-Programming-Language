@@ -458,7 +458,7 @@ object* math_tanh(object* self, object* args){
 object* math_factorial(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     if (!object_istype(val->type, &IntType)){
-        vm_add_err(&ValueError, vm, "Expected int, got '%s'", val->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", val->type->name->c_str());
         return NULL; 
     }
     BigInt n=*CAST_INT(val)->val;
@@ -484,7 +484,7 @@ BigInt fib(BigInt n){
 object* math_fib(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     if (!object_istype(val->type, &IntType)){
-        vm_add_err(&ValueError, vm, "Expected int, got '%s'", val->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", val->type->name->c_str());
         return NULL; 
     }
     BigInt n=*CAST_INT(val)->val;
