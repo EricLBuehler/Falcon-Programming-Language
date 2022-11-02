@@ -2600,15 +2600,16 @@ object* run_vm(object* codeobj, uint32_t* ip){
             cout<<": "<<object_cstr(CAST_EXCEPTION(vm->exception)->err);
         }
         cout<<endl;
-        /*
-        if (vm->callstack->size>1){
-            return CALL_ERR;
-        */
 
         if (vm->exception!=NULL){
             FPLDECREF(vm->exception);
         }
         vm->exception=NULL;
+
+        
+        if (vm->callstack->size>1){
+            return CALL_ERR;
+        }
         
         //Free GIL
         GIL.unlock();
