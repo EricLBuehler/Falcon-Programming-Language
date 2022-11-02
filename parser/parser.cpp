@@ -1338,10 +1338,9 @@ class Parser{
                 this->advance();
                 unpackkwargs->push_back(idx);
             }
-            
             bool b=this->multi;
             bool noassign=this->noassign;
-            this->noassign=true;
+            this->noassign=false;
             this->multi=false;
             bool anno=this->anno;
             this->anno=false;
