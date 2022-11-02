@@ -1,6 +1,6 @@
 typedef struct parse_ret{
     vector<Node*> nodes;
-    string* error;
+    char* error;
     string header;
     string snippet;
     string arrows;
@@ -85,7 +85,7 @@ class Parser{
             vsnprintf(msg, length, format, args);
             va_end(args);
 
-            ret->error=(string*)msg;
+            ret->error=msg;
             ret->snippet=snippet;
             ret->arrows=arrows;
             ret->errornum++;
