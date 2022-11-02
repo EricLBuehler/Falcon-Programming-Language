@@ -94,9 +94,9 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->id=id;
     vm->ret_val=0;
     vm->ip=0;
-    vm->objstack=new_datastack(CAST_INT(CAST_CODE(code)->co_stack_size)->val->to_int());
+    vm->objstack=new_datastack((code==NULL) ? 128 : CAST_INT(CAST_CODE(code)->co_stack_size)->val->to_int());
     vm->callstack=new_callstack();
-    vm->blockstack=new_blockstack(CAST_INT(CAST_CODE(code)->co_blockstack_size)->val->to_int());
+    vm->blockstack=new_blockstack((code==NULL) ? 128 : CAST_INT(CAST_CODE(code)->co_blockstack_size)->val->to_int());
     
     vm->exception=NULL;
 
