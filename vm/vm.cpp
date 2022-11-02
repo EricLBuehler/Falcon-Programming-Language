@@ -493,6 +493,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
 
             dict_set(callstack_head(vm->callstack).locals, name, value);
+            DISPATCH();
         }
 
         LOAD_NAME:{
@@ -1324,7 +1325,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             res=NULL;
             
             ob=iter->type->slot_next(iter);
-
             while (vm->exception==NULL){
                 add_dataframe(vm, vm->objstack, ob);
                 
@@ -1333,7 +1333,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 len++;
             }
             if (vm->exception!=NULL){
-                FPLDECREF(vm->exception);
+                FPLDECREF(vm->exception);   
                 vm->exception=NULL;
             }
             
