@@ -367,20 +367,8 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
     return str_new_fromstr(string(buf));
 }
 
-object* socket_gethostbyname(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
-        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
-        return NULL; 
-    }
-
-    object* self=list_index_int(args, 0);
-    
-    if (CAST_SOCKET(self)->closed){
-        vm_add_err(&InvalidOperationError, vm, "Socket closed");
-        return NULL; 
-    }
-    object* v=list_index_int(args, 1);
+object* socket_gethostbyname(object* selftp, object* args){
+    object* v=dict_get(args, str_new_fromstr("name"));
     
     string s=object_cstr(v).c_str();
     char name[s.size()+1];
@@ -936,7 +924,12 @@ object* new_socket_module(){
     object* ob=new_builtin(socket_gethostname, str_new_fromstr("gethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
     dict_set(dict, str_new_fromstr("gethostname"), ob);
     FPLDECREF(ob);
-    
+
+    object* gethostbyname_args=new_tuple();
+    tuple_append(gethostbyname_args, str_new_fromstr("name"));
+    ob=new_builtin(socket_gethostbyname, str_new_fromstr("gethostbyname"), gethostbyname_args, emptyargs_kwargs, 1, false);
+    dict_set(dict, str_new_fromstr("gethostbyname"), ob);
+    FPLDECREF(ob);    
 
     #ifndef _WIN32
     ob=new_builtin(socket_sethostname, str_new_fromstr("sethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);

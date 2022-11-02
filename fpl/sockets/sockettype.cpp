@@ -6,7 +6,6 @@ object* socket_connect(object* self, object* args, object* kwargs);
 object* socket_close(object* self, object* args, object* kwargs);
 object* socket_send(object* self, object* args, object* kwargs);
 object* socket_recv(object* self, object* args, object* kwargs);
-object* socket_gethostbyname(object* self, object* args, object* kwargs);
 object* socket_bind(object* self, object* args, object* kwargs);
 object* socket_listen(object* self, object* args, object* kwargs);
 object* socket_accept(object* self, object* args, object* kwargs);
@@ -28,9 +27,8 @@ typedef struct SocketObject{
 }SocketObject;
 
 Method socket_methods[]={{"connect",socket_connect}, {"close",socket_close}, {"send",socket_send}\
-                        , {"recv",socket_recv}, {"gethostbyname",socket_gethostbyname}\
-                        , {"bind",socket_bind}, {"listen",socket_listen}, {"accept",socket_accept}\
-                        , {"setsockopt",socket_setsockopt}, {"getsockopt",socket_getsockopt}\
+                        , {"recv",socket_recv}, {"bind",socket_bind}, {"listen",socket_listen}\
+                        ,{"accept",socket_accept}, {"setsockopt",socket_setsockopt}, {"getsockopt",socket_getsockopt}\
                         , {"getsockname",socket_getsockname}, {"sendall",socket_sendall}, {NULL,NULL}};
 
 GetSets socket_getsets[]={{NULL,NULL}};
