@@ -143,7 +143,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=64;
+const size_t nbuiltins=65;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -516,6 +516,8 @@ enum opcode{
 #define CAST_GEN(obj) ((GeneratorObject*)obj)
 #define CAST_SET(obj) ((SetObject*)obj)
 #define CAST_SETITER(obj) ((SetIterObject*)obj)
+#define CAST_BYTES(obj) ((BytesObject*)obj)
+#define CAST_BYTESITER(obj) ((BytesIterObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
@@ -588,6 +590,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "propertyobject.cpp"
 #include "genobject.cpp"
 #include "setobject.cpp"
+#include "bytesobject.cpp"
 
 
 void setup_types_consts(){
@@ -636,6 +639,8 @@ void setup_types_consts(){
     setup_gen_type();
     setup_set_type();
     setup_setiter_type();
+    setup_bytes_type();
+    setup_bytesiter_type();
 
     setup_builtins();
     
@@ -793,4 +798,12 @@ void setup_types_consts(){
     inherit_type_dict(&SetIterType); 
     setup_type_offsets(&SetIterType);
     setup_type_getsets(&SetIterType);
+
+    inherit_type_dict(&BytesType); 
+    setup_type_offsets(&BytesType);
+    setup_type_getsets(&BytesType);
+    
+    inherit_type_dict(&BytesIterType); 
+    setup_type_offsets(&BytesIterType);
+    setup_type_getsets(&BytesIterType);
 }

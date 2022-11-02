@@ -3459,6 +3459,189 @@ void setup_setiter_type(){
     fplbases.push_back(&SetIterType);
 }
 
+object* bytes_new(object* type, object* args, object* kwargs);
+void bytes_del(object* self);
+object* bytes_len(object* self);
+object* bytes_repr(object* self);
+object* bytes_cmp(object* self, object* other, uint8_t type);
+object* bytes_bool(object* self);
+object* bytes_iter(object* self);
+
+object* bytes_add(object* self, object* other);
+object* bytes_get(object* self, object* idx);
+object* bytes_mul(object* self, object* other);
+
+object* bytes_new_fromchararr(char* val, int lne);
+
+typedef struct BytesObject{
+    OBJHEAD_EXTRA
+    char* val;
+    uint32_t len;
+}BytesObject;
+
+static NumberMethods bytes_num_methods{
+    (binopfunc)bytes_add, //slot_add
+    0, //slot_sub
+    (binopfunc)bytes_mul, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+    0, //slot_xor
+
+    0, //slot_neg
+    0, //slot_not
+    0, //slot_abs
+
+    0, //slot_bool
+    0, //slot_int
+    0, //slot_float
+};
+
+static Mappings bytes_mappings{
+    bytes_get, //slot_get
+    0, //slot_set
+    bytes_len, //slot_len
+};
+
+Method bytes_methods[]={{NULL,NULL}};
+GetSets bytes_getsets[]={{NULL,NULL}};
+OffsetMember bytes_offsets[]={{NULL}};
+
+TypeObject BytesType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("bytes"), //name
+    sizeof(BytesObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    (newfunc)bytes_new, //slot_new
+    (delfunc)bytes_del, //slot_del
+
+    0, //slot_next
+    (unaryfunc)bytes_iter, //slot_iter
+
+    (reprfunc)bytes_repr, //slot_repr
+    (reprfunc)bytes_repr, //slot_str
+    0, //slot_call
+
+    &bytes_num_methods, //slot_number
+    &bytes_mappings, //slot_mapping
+
+    bytes_methods, //slot_methods
+    bytes_getsets, //slot_getsets
+    bytes_offsets, //slot_offsests
+
+    (compfunc)bytes_cmp, //slot_cmp
+};
+
+void setup_bytes_type(){
+    BytesType=(*(TypeObject*)finalize_type(&BytesType));
+    fplbases.push_back(&BytesType);
+}
+
+
+void bytes_iter_del(object* self);
+object* bytes_iter_repr(object* self);
+object* bytes_iter_next(object* self);
+object* bytes_iter_cmp(object* self, object* other, uint8_t type);
+object* bytes_iter_bool(object* self);
+
+typedef struct BytesIterObject{
+    OBJHEAD_VAR
+    char* val;
+    uint32_t len;
+    uint32_t idx;
+}BytesIterObject;
+
+Method bytes_iter_methods[]={{NULL,NULL}};
+GetSets bytes_iter_getsets[]={{NULL,NULL}};
+
+static NumberMethods bytes_iter_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+    0, //slot_xor
+
+    0, //slot_neg
+    0, //slot_not
+    0, //slot_abs
+
+    0, //slot_bool
+};
+
+static Mappings bytes_iter_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject BytesIterType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("bytes_iter"), //name
+    0, //size
+    sizeof(BytesIterObject), //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)bytes_iter_del, //slot_del
+
+    (iternextfunc)bytes_iter_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &bytes_iter_num_methods, //slot_number
+    &bytes_iter_mappings, //slot_mapping
+
+    bytes_iter_methods, //slot_methods
+    bytes_iter_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)bytes_iter_cmp, //slot_cmp
+};
+
+void setup_bytesiter_type(){
+    BytesIterType=(*(TypeObject*)finalize_type(&BytesIterType));
+    BytesIterType.slot_new=NULL;
+    fplbases.push_back(&BytesIterType);
+}
+
 
 
 

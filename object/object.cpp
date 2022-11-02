@@ -60,6 +60,12 @@ object* in_immutables(object* obj){
                     return FPLINCREF(o);
                 }
             }
+            if (o->type->name==BytesType.name){
+                if (CAST_BYTES(o)->len==CAST_BYTES(obj)->len && \
+                memcpy(CAST_BYTES(o)->val, CAST_BYTES(obj)->val, CAST_BYTES(o)->len) ){
+                    return FPLINCREF(o);
+                }
+            }
         }
         o=o->ob_next;
     }

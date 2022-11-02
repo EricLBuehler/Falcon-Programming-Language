@@ -81,14 +81,14 @@ object* file_read_meth(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
+    long start = ftell(CAST_FILE(self)->file);
     fseek(CAST_FILE(self)->file, 0, SEEK_END);
     long fsize = ftell(CAST_FILE(self)->file);
-    fseek(CAST_FILE(self)->file, 0, SEEK_SET);  /* same as rewind(f); */
+    fseek(CAST_FILE(self)->file, 0, start);
 
     char *s = (char*)fpl_malloc(fsize + 1);
     memset(s, 0, fsize);
     size_t i=fread(s, fsize, 1, CAST_FILE(self)->file);
-    cout<<i;
     if (i==0 && fsize>0 && ferror(CAST_FILE(self)->file)){
         vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
         return NULL;
