@@ -141,7 +141,7 @@ int execute(string data, bool objdump, bool verbose){
         cout<<ast.header<<endl;
         cout<<ast.snippet<<endl;
         cout<<ast.arrows<<endl;
-        printf("%s\n",ast.error->c_str());
+        printf("%s\n",ast.error);
         return -1;
     }
 
@@ -157,7 +157,7 @@ int execute(string data, bool objdump, bool verbose){
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;
-        printf("%s\n",parseretglbl.error->c_str());
+        printf("%s\n",parseretglbl.error);
         return -1;
     }
     

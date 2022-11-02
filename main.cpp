@@ -31,7 +31,6 @@ int main(int argc, char** argv) {
 
     glblargc_raw=argc;
     glblargv_raw=argv;
-    
     if (argc==1){
         try{
             cout<<"Falcon Programming Language V"<<FPL_VERSION<<endl;
@@ -73,7 +72,7 @@ int main(int argc, char** argv) {
                     cout<<ast.header<<endl;
                     cout<<ast.snippet<<endl;
                     cout<<ast.arrows<<endl;
-                    printf("%s\n",ast.error->c_str());
+                    printf("%s\n",ast.error);
                     vm=vm_;
                     continue;
                 }
@@ -85,7 +84,7 @@ int main(int argc, char** argv) {
                 if (code==NULL){
                     cout<<parseretglbl.header<<endl;
                     cout<<parseretglbl.snippet<<endl;
-                    printf("%s\n",parseretglbl.error->c_str());
+                    printf("%s\n",parseretglbl.error);
                     vm=vm_;
                     continue;
                 }
@@ -106,7 +105,6 @@ int main(int argc, char** argv) {
                 compiler_del(compiler);
                 FPLDECREF(code);
                 compiler = new_compiler();
-                //cout<<endl;
                 if (returned!=NULL){
                     FPLDECREF(returned);
                 }
