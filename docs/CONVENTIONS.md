@@ -13,4 +13,4 @@ Patch - Bug fixes
 Left curly is on the first line of the block. The right curly is positioned after the block of code, deindented by 4 spaces
 
 ## Indentation
-4 Spaces
+4 Spaces per block
