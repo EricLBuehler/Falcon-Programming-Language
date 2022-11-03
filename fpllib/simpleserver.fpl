@@ -23,8 +23,8 @@ class App{
         return ("404 NOT FOUND", "")
     }
 
-    func start(self, port=8000, info=True){
-        if info{
+    func start(self, port=8000, verbose=True){
+        if verbose{
             print(f"Starting server at {socket.gethostbyname(socket.gethostname())}:{port}")
         }
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) sock{
@@ -39,6 +39,11 @@ class App{
 
                 try{
                     raw=response.split("\n")[0]
+
+                    if verbose{
+                        print(raw)
+                    }
+
                     method=raw.split(" ")[0]
                     request="".join(raw.split(" ")[1])
                     args={}
