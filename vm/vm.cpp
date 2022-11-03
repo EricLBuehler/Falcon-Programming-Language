@@ -2545,6 +2545,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             DISPATCH();
         }
+
+        BYTES_STRING: {
+            object* o=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_consts, arg);
+            add_dataframe(vm, vm->objstack, bytes_new_frombytearr((char*)CAST_STRING(o)->val->c_str(), CAST_STRING(o)->val->size()));
+            DISPATCH();
+        }
     }
 
     exc:
