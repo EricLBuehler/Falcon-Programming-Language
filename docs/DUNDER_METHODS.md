@@ -19,6 +19,7 @@
 - ```__bool__(self)```
 - ```__int__(self)```
 - ```__float__(self)```
+- ```__bytes__(self)```
 
 ## Arithmetic
 - ```__add__(self, other)```
