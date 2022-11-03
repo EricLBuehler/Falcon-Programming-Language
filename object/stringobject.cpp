@@ -134,7 +134,7 @@ object* str_bool(object* self){
 
 object* str_cmp(object* self, object* other, uint8_t type){
     if (type==CMP_IN){
-        return str_in(other, self);
+        return str_in(self, other);
     }
     if (self->type!=other->type){
         return NULL;
