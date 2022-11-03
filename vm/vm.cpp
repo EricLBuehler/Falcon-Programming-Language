@@ -2300,7 +2300,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, res);
                 DISPATCH();
             }
-            vm_add_err(&TypeError, vm, "Invalid operator in for '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            vm_add_err(&TypeError, vm, "Invalid operand types for in '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             goto exc;
         }
         
@@ -2313,7 +2313,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 add_dataframe(vm, vm->objstack, res);
                 DISPATCH();
             }         
-            vm_add_err(&TypeError, vm, "Invalid operator in for '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            vm_add_err(&TypeError, vm, "Invalid operand types for in '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
             goto exc;
         }
 
