@@ -417,6 +417,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&SEQ_APPEND,
         &&DICT_SET,
         &&BITWISE_XOR,
+        &&BYTES_STRING,
     };
     
     uint32_t* code_array=CAST_CODE(codeobj)->code;
