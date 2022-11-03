@@ -4081,6 +4081,7 @@ void inherit_type_dict(TypeObject* tp){
         type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_lt, "__lt__");
         type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_gte, "__gte__");
         type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_lte, "__lte__");
+        type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_in, "__in__");
     }
 }
 

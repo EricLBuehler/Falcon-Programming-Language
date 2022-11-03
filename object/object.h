@@ -292,16 +292,10 @@ object* type_wrapper_gt(object* self, object* args, object* kwargs);
 object* type_wrapper_lt(object* self, object* args, object* kwargs);
 object* type_wrapper_gte(object* self, object* args, object* kwargs);
 object* type_wrapper_lte(object* self, object* args, object* kwargs);
+object* type_wrapper_in(object* self, object* args, object* kwargs);
 
 object* type_wrapper_enter(object* self, object* args, object* kwargs);
 object* type_wrapper_exit(object* self, object* args, object* kwargs);
-
-object* newtp_wrapper_eq(object* self, object* args, object* kwargs);
-object* newtp_wrapper_ne(object* self, object* args, object* kwargs);
-object* newtp_wrapper_gt(object* self, object* args, object* kwargs);
-object* newtp_wrapper_lt(object* self, object* args, object* kwargs);
-object* newtp_wrapper_gte(object* self, object* args, object* kwargs);
-object* newtp_wrapper_lte(object* self, object* args, object* kwargs);
 
 struct vm* vm=NULL;
 

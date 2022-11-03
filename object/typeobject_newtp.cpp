@@ -201,6 +201,21 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
             return val;
         }
     }
+
+    if (type==CMP_IN){
+        object* n=object_getattr(self, str_new_fromstr("__in__"));
+        ERROR_RET(n);
+    
+        if (n!=NULL){
+            object* args=new_tuple();
+            tuple_append(args, self);
+            tuple_append(args, other);
+            
+            object* val=object_call_nokwargs(n, args);
+            
+            return val;
+        }
+    }
     return NULL;
 }
 
