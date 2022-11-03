@@ -37,24 +37,28 @@ class App{
 
                 response=repr(client.recv(1024))
 
-                raw=response.split("\n")[0]
-                method=raw.split(" ")[0]
-                request="".join(raw.split(" ")[1])
-                args={}
-                if "?" in request{
-                    args_=raw.split(" ")[1].split("?")[1].split("&")
-                    for itm in args_{
-                        if "=" in itm{
-                            args[itm[0:itm.find("=")-1]]=itm[itm.find("=")+1:]
+                try{
+                    raw=response.split("\n")[0]
+                    method=raw.split(" ")[0]
+                    request="".join(raw.split(" ")[1])
+                    args={}
+                    if "?" in request{
+                        args_="".join(request.split("?")[1:]).split("&")
+                        for itm in args_{
+                            if "=" in itm{
+                                args[itm[0:itm.find("=")-1]]=itm[itm.find("=")+1:]
+                            }
                         }
+                        request=request[0:request.find("?")-1]
                     }
-                    request=request[0:request.find("?")-1]
+                    type, data=self.extract_data(method,request,args)
+
+                    client.sendall(f"HTTP/1.0 {type}\r\n\r\n")
+                    client.sendall(data)
                 }
-
-                type, data=self.extract_data(method,request,args)
-
-                client.sendall(f"HTTP/1.0 {type}\r\n\r\n")
-                client.sendall(data)
+                except Exception e{
+                    print(e)
+                }
             
                 client.close()       
             }
