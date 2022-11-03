@@ -209,6 +209,25 @@ object* file_size_meth(object* selftp, object* args, object* kwargs){
     return new_int_fromint(fsize);
 }
 
+object* file_flush_meth(object* selftp, object* args, object* kwargs){    
+    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL;
+    }
+
+    object* self=list_index_int(args, 0);
+    if (!CAST_FILE(self)->open){
+        vm_add_err(&ValueError, vm, "Attempting to flush closed file");
+        return NULL;
+    }
+    
+    fflush(CAST_FILE(self)->file);
+
+    return new_none();
+}
+
+
 object* file_enter(object* self){
     return self;
 }

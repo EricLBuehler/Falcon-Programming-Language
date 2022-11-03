@@ -1363,12 +1363,13 @@ object* file_close_meth(object* selftp, object* args, object* kwargs);
 object* file_write_meth(object* selftp, object* args, object* kwargs);
 object* file_seek_meth(object* selftp, object* args, object* kwargs);
 object* file_size_meth(object* selftp, object* args, object* kwargs);
+object* file_flush_meth(object* selftp, object* args, object* kwargs);
 object* file_enter(object* self);
 object* file_exit(object* self);
 
 Method file_methods[]={{"read", (cwrapperfunc)file_read_meth}, {"close", (cwrapperfunc)file_close_meth}\
                     , {"write", (cwrapperfunc)file_write_meth}, {"seek", (cwrapperfunc)file_seek_meth}\
-                    , {"size", (cwrapperfunc)file_size_meth}, {NULL,NULL}};
+                    , {"size", (cwrapperfunc)file_size_meth}, {"flush", (cwrapperfunc)file_flush_meth}, {NULL,NULL}};
 GetSets file_getsets[]={{NULL,NULL}};
 OffsetMember file_offsets[]={{NULL}};
 
