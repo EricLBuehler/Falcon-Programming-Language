@@ -32,6 +32,15 @@
 - ```__neg__(self)```
 - ```__abs__(self)```
 
+## Comparison
+- ```__eq__(self, other)```
+- ```__ne__(self, other)```
+- ```__gt__(self, other)```
+- ```__gte__(self, other)```
+- ```__lt__(self, other)```
+- ```__lte__(self, other)```
+- ```__in__(self, other)```
+
 ## Call
 - ```__call__(self, ...)```
 
