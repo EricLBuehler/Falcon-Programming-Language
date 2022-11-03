@@ -470,6 +470,7 @@ enum opcode{
     SEQ_APPEND,
     DICT_SET,
     BITWISE_XOR,
+    BYTES_STRING,
 };
 
 
