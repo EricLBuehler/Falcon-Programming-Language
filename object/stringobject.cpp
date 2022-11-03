@@ -127,12 +127,15 @@ object* str_repr(object* self){
 object* str_str(object* self){
     return self; //str_new_fromstr(new string((*CAST_STRING(self)->val)));
 }
-
+     
 object* str_bool(object* self){
     return new_bool_true();
 }
 
 object* str_cmp(object* self, object* other, uint8_t type){
+    if (type==CMP_IN){
+        return str_in(other, self);
+    }
     if (self->type!=other->type){
         return NULL;
     }
@@ -608,4 +611,20 @@ object* string_contains_meth(object* selftp, object* args, object* kwargs){
         return new_bool_false();
     }
     return new_bool_true();
+}
+
+object* str_in(object* self, object* other){
+    if (!object_istype(other->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", other->type->name->c_str());
+        return NULL; 
+    }  
+
+    string s=*CAST_STRING(self)->val;
+    string v=*CAST_STRING(other)->val;
+    
+    size_t idx=s.find(v);
+    if (idx>0){
+        return new_bool_true();
+    }
+    return new_bool_false();
 }

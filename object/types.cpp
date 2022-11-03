@@ -140,6 +140,7 @@ object* string_strip_meth(object* selftp, object* args, object* kwargs);
 object* string_rstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_lstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_contains_meth(object* selftp, object* args, object* kwargs);
+object* str_in(object* self, object* other);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA
@@ -3543,7 +3544,7 @@ TypeObject BytesType={
     &bytes_num_methods, //slot_number
     &bytes_mappings, //slot_mapping
 
-    bytes_methods, //slot_methods
+    bytes_methods, //slot_methodsS
     bytes_getsets, //slot_getsets
     bytes_offsets, //slot_offsests
 

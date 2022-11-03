@@ -770,6 +770,22 @@ object* object_iscallable(object* obj){
     return new_bool_true();
 }
 
+object* object_bytes(object* obj){
+    if (object_issubclass(obj, &BytesType)){
+        return obj;
+    }
+    object* o=object_getattr(obj, str_new_fromstr("__bytes__"));
+    if (o==NULL){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+    }
+    return o;
+}
+
+object* object_in(object* left, object* right){
+    return right->type->slot_cmp(right, left, CMP_IN);
+}
+
 object* object_in_iter(object* left, object* right){
     if (right->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", right->type->name->c_str());
@@ -801,25 +817,6 @@ object* object_in_iter(object* left, object* right){
     if (vm->exception!=NULL){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
-    }
-
-    if (res==NULL){
-        object* itm=object_getattr(right, str_new_fromstr("find"));
-        if (itm==NULL){
-            FPLDECREF(vm->exception);
-            vm->exception=NULL;
-            return NULL;
-        }
-        
-        object* args=new_list();
-        list_append(args, left);
-        
-        object* o = object_call_nokwargs(itm, args);
-        ERROR_RET(o);
-        
-        object* b = o->type->slot_number->slot_bool(o);
-        FPLDECREF(o);
-        return b;
     }
     return res;
 }

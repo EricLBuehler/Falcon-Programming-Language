@@ -401,6 +401,9 @@ object* list_repr(object* self){
 
 
 object* list_cmp(object* self, object* other, uint8_t type){
+    if (type==CMP_IN){
+        return object_in_iter(other, self);
+    }
     if (self->type!=other->type){
         return NULL;
     }

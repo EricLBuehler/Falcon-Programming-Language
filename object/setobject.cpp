@@ -177,6 +177,9 @@ object* set_iter_next(object* self){
 }
 
 object* set_iter_cmp(object* self, object* other, uint8_t type){
+    if (type==CMP_IN){
+        return object_in_iter(other, self);
+    }
     if (self->type!=other->type){
         return NULL;
     }

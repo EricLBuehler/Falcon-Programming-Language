@@ -528,6 +528,7 @@ enum opcode{
 #define CMP_LT 3
 #define CMP_LTE 4
 #define CMP_NE 5
+#define CMP_IN 6
 
 
 #define FUNC_STRICTARGS 0
