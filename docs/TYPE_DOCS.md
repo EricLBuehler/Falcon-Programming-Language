@@ -415,6 +415,18 @@ Returns the size of open file object.
 #### Returns
 Size - ```int```
 
+### ```file.flush```
+Flushes file
+```file.flush(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+### Example
+```file("test.txt","w").flush() == None == True```
+#### Returns
+```None```
+
 
 
 
