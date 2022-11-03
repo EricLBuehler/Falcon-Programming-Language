@@ -2294,28 +2294,27 @@ object* run_vm(object* codeobj, uint32_t* ip){
         BINOP_NOTIN:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            object* res=object_in_iter(left, right);
+            object* res=object_in(left, right);
 
             if (res!=NULL){
-                FPLDECREF(res);
-                add_dataframe(vm, vm->objstack, new_bool_false());
+                add_dataframe(vm, vm->objstack, res);
+                DISPATCH();
             }
-            add_dataframe(vm, vm->objstack, new_bool_true());
-            DISPATCH();
+            vm_add_err(&TypeError, vm, "Invalid operator in for '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            goto exc;
         }
         
         BINOP_IN:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            object* res=object_in_iter(left, right);
+            object* res=object_in(left, right);
 
             if (res!=NULL){
                 add_dataframe(vm, vm->objstack, res);
-            }
-            else{
-                add_dataframe(vm, vm->objstack, new_bool_false());
-            }
-            DISPATCH();
+                DISPATCH();
+            }         
+            vm_add_err(&TypeError, vm, "Invalid operator in for '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            goto exc;
         }
 
         BINOP_ISNOT:{
