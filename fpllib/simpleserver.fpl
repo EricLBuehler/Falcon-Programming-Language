@@ -35,7 +35,7 @@ class App{
             while True{
                 client, info=sock.accept()
 
-                response=client.recv(1024)
+                response=repr(client.recv(1024))
 
                 raw=response.split("\n")[0]
                 method=raw.split(" ")[0]
@@ -53,7 +53,8 @@ class App{
 
                 type, data=self.extract_data(method,request,args)
 
-                n=client.sendall(f"HTTP/1.0 {type}\r\n\r\n{data}")
+                client.sendall(f"HTTP/1.0 {type}\r\n\r\n")
+                client.sendall(data)
             
                 client.close()       
             }
