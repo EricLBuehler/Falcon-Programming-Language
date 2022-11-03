@@ -2194,7 +2194,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 target=(num_instructions(TRYEXCEPTFINALLY(expr->node)->bases, compiler->scope)*2)-(num_instructions(TRYEXCEPTFINALLY(expr->node)->bases->back(), compiler->scope)*2);
             }
             else{
-                target=num_instructions(TRYEXCEPTFINALLY(expr->node)->bases, compiler->scope)*2;
+                target=num_instructions(TRYEXCEPTFINALLY(expr->node)->bases, compiler->scope)*2+2;
             }
 
             uint32_t instrs=0;
@@ -2373,6 +2373,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 add_instruction(compiler, compiler->instructions,JUMP_DELTA,target-instrs, GET_ANNO_N(tryn));
             }
             if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
+                //add_instruction(compiler, compiler->instructions,JUMP_DELTA,0, GET_ANNO_N(expr));
                 add_instruction(compiler, compiler->instructions,RAISE_EXC,0, GET_ANNO_N(expr)); 
             }
             add_instruction(compiler, compiler->instructions,FINISH_TRY,0, GET_ANNO_N(expr));   
