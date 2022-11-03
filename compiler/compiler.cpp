@@ -4232,6 +4232,22 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_BSTRING: {
+            uint32_t idx;
+            if (!_list_contains(compiler->consts, STRLIT(expr->node)->literal)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
+                idx=NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
+            }
+            add_instruction(compiler, compiler->instructions,BYTES_STRING,idx, GET_ANNO_N(expr));
+            if (!compiler->keep_return){
+                add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
+            }
+            break;     
+        }
 
     }
     

@@ -192,3 +192,5 @@ LIST_APPEND(i) - Appends TOS to list at TOS-i. Used for list, set, and tuple com
 DICT_SET(i) - Sets value TOS to key TOS-1 in dict at TOS-i. Used for dict comprehension
 
 BINOP_XOR(n) - Implements TOS ^ TOS-1
+
+BYTES_STRING(idx) - Pushes bytes object from co_consts[idx]
