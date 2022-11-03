@@ -818,6 +818,9 @@ object* object_in_iter(object* left, object* right){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
+    if (res==NULL){
+        return new_bool_false();
+    }
     return res;
 }
 
