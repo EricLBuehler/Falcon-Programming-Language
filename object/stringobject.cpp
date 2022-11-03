@@ -623,7 +623,7 @@ object* str_in(object* self, object* other){
     string v=*CAST_STRING(other)->val;
     
     size_t idx=s.find(v);
-    if (idx>0){
+    if (idx!=(size_t)-1){
         return new_bool_true();
     }
     return new_bool_false();

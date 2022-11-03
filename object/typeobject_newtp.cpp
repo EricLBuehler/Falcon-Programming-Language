@@ -208,7 +208,6 @@ object* newtp_cmp(object* self, object* other, uint8_t type){
     
         if (n!=NULL){
             object* args=new_tuple();
-            tuple_append(args, self);
             tuple_append(args, other);
             
             object* val=object_call_nokwargs(n, args);
