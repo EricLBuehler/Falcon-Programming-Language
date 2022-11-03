@@ -301,15 +301,21 @@ object* socket_send(object* selftp, object* args, object* kwargs){
 
     int i;
 
-    if (!object_istype(v->type, &BytesType)){
+    object* bytes=object_bytes(v);
+
+    if (v==NULL && object_issubclass(v, &StrType)){
         string s=object_cstr(v).c_str();
         char msg[s.size()+1];
         strcpy(msg, s.c_str());
 
         i=send(CAST_SOCKET(self)->fd, msg , strlen(msg), (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
     }
-    else{
+    else if (v!=NULL && object_issubclass(v, &BytesType)){
         i=send(CAST_SOCKET(self)->fd, CAST_BYTES(v)->val, CAST_BYTES(v)->len, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
+    }
+    else{
+        vm_add_err(&TypeError, vm, "Expecting string or bytes-like object, got '%s' object", v->type->name->c_str());
+        return NULL;
     }
     
     if (i==SOCKET_ERROR){
