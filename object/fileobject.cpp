@@ -151,8 +151,14 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
     int i;
 
     if (is_binary(CAST_FILE(self)->mode)){
-        i=fprintf(CAST_FILE(self)->file, "%s", CAST_BYTES(list_index_int(args, 1))->val);
-        if (i==0 && CAST_BYTES(list_index_int(args, 1))->len>0 && ferror(CAST_FILE(self)->file)){
+        object* bytes=object_bytes(list_index_int(args, 1));
+
+        if (bytes==NULL || !object_issubclass(bytes, &BytesType)){
+            vm_add_err(&TypeError, vm, "Expecting string or bytes-like object, got '%s' object",list_index_int(args, 1)->type->name->c_str());
+            return NULL;
+        }
+        i=fprintf(CAST_FILE(self)->file, "%s", CAST_BYTES(bytes)->val);
+        if (i==0 && CAST_BYTES(bytes)->len>0 && ferror(CAST_FILE(self)->file)){
             vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
             return NULL;
         }
