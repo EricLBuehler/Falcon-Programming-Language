@@ -202,7 +202,6 @@ void print_traceback(){
 }
 
 object* import_name(string data, object* name){
-
     program=object_cstr(name);
 
     Lexer lexer(data,kwds);
@@ -806,7 +805,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             DISPATCH();
         }
 
-        CALL_FUNCTION: {
+        CALL_FUNCTION: {           
             object* function=pop_dataframe(vm->objstack);
             
             uint32_t argc=arg;
@@ -900,7 +899,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 }
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
-            //
+            //         
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
@@ -1526,7 +1525,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                                 //try en->d_name
                                 //Later try nm as folder
                                 
-                                FILE* f=fopen((nm+"/"+string(en->d_name)).c_str(), "rb");
+                                FILE* f=fopen((nm+"/"+string(en->d_name)).c_str(), "r");
                                 if (f==NULL){
                                     vm_add_err(&ImportError, vm, "'%s' not found", (nm+"/"+string(en->d_name)).c_str());
                                     goto exc;
@@ -1563,20 +1562,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     else{ //File
                         //try nm.fpl
                         //Later try nm as folder
-                        FILE* f=fopen(name_.c_str(), "rb");
+                        FILE* f=fopen(name_.c_str(), "r");
 
                         fseek(f, 0, SEEK_END);
                         long fsize = ftell(f);
                         fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
 
                         char *s = (char*)fpl_malloc(fsize + 1);
-                        int i=fread(s, fsize, 1, f);
+                        memset(s, 0, fsize);
+                        int i=fread(s, 1, fsize, f);
                         if (i==0 && fsize>0){
                             vm_add_err(&InvalidOperationError, vm, "Unable to read from file");
                             goto exc;
                         }
                         s[fsize] = 0;
-                        string str(s);
+                        string str=s;
                         data=str;
                     }
                 }
@@ -1593,7 +1593,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
                     continue;
                 }
-                
                 object* o=import_name(data, name);
                 ERROR_RET(o);
                 add_dataframe(vm, vm->objstack, o);
