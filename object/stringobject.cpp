@@ -1,16 +1,15 @@
 string trim(string s);
 
 object* str_new_fromstr(string val){
+    object* o = in_immutables_str(val);
+    if (o!=NULL){
+        return o;
+    }
+
     object* obj=new_object(&StrType);
     
     ((StrObject*)obj)->val=new string(val);
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
-    }
-    
-    FPLDECREF((object*)obj);
-    return o;
+    return obj;
 }
 
 
@@ -38,34 +37,32 @@ object* str_float(object* self){
 
 
 object* str_new(object* type, object* args, object* kwargs){
-    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){ 
+        object* o = in_immutables_str("");
+        if (o!=NULL){
+            return o;
+        }
+
         object* obj=new_object(CAST_TYPE(type));
         ((StrObject*)obj)->val=new string("");
-
-        object* o = in_immutables((struct object*)obj);
-        if (o==NULL){
-            return (object*)obj;
-        }
-        FPLDECREF((struct object*)obj);
-        return o;
+        return obj;
     }
     int len=CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
     if (len>0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", len);
         return NULL;
     }
-    object* val=FPLINCREF(list_index_int(args, 0));
+    object* val=list_index_int(args, 0);
     string s=object_cstr(val);
+
+    object* o = in_immutables_str(s);
+    if (o!=NULL){
+        return o;
+    }
 
     object* obj=new_object(CAST_TYPE(type));
     ((StrObject*)obj)->val=new string(s);
-
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
-    }
-    FPLDECREF((struct object*)obj);
-    return o;
+    return obj;
 }
 
 object* str_slice(object* self, object* idx){

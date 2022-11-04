@@ -1,33 +1,29 @@
 object* bytes_new_frombytearr(char* arr, int len){
+    object* o = in_immutables_bytes(arr,len);
+    if (o!=NULL){
+        return o;
+    }
+
     object* obj=new_object(&BytesType);
     
     CAST_BYTES(obj)->val=arr;
     CAST_BYTES(obj)->len=len;
-
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
-    }
-    
-    FPLDECREF((object*)obj);
-    return o;
+    return obj;
 }
 
 object* bytes_new_frombyte(char arr){
+    object* o = in_immutables_bytes(&arr, 1);
+    if (o!=NULL){
+        return o;
+    }
+    
     object* obj=new_object(&BytesType);
     
     char* c=(char*)fpl_malloc(sizeof(char));
     c[0]=arr;
     CAST_BYTES(obj)->val=c;
     CAST_BYTES(obj)->len=1;
-
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
-    }
-    
-    FPLDECREF((object*)obj);
-    return o;
+    return obj;
 }
 
 object* bytes_new(object* type, object* args, object* kwargs){
@@ -38,19 +34,19 @@ object* bytes_new(object* type, object* args, object* kwargs){
     }
 
     if (len==0){
+        char c_='\0';
+        object* o = in_immutables_bytes(&c_, 0);
+        if (o==NULL){
+            return o;
+        }
+
         object* obj=new_object(&BytesType);
     
         char* c=(char*)fpl_malloc(sizeof(char));
         CAST_BYTES(obj)->val=c;
-        CAST_BYTES(obj)->len=0;
-
-        object* o = in_immutables((struct object*)obj);
-        if (o==NULL){
-            return (object*)obj;
-        }
+        CAST_BYTES(obj)->len=1;
         
-        FPLDECREF((object*)obj);
-        return o;
+        return obj;
     }
 
     if (object_istype(list_index_int(args, 0)->type, &BytesType)){
@@ -101,13 +97,13 @@ object* bytes_new(object* type, object* args, object* kwargs){
             CAST_BYTES(obj)->len=CAST_STRING(o)->val->size();
             memcpy(CAST_BYTES(obj)->val, CAST_STRING(o)->val->c_str(), CAST_STRING(o)->val->size());
         }
-        object* obj_ = in_immutables((struct object*)obj);
-        if (obj_==NULL){
-            return (object*)obj;
+        object* ob = in_immutables_bytes(CAST_BYTES(obj)->val, CAST_BYTES(obj)->len);
+        if (ob!=NULL){
+            FPLDECREF(obj);
+            return ob;
         }
         
-        FPLDECREF((object*)obj);
-        return obj_;
+        return obj;
     }
 
     vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", list_index_int(args, 0)->type->name->c_str());
@@ -302,13 +298,13 @@ object* bytes_add(object* self, object* other){
     CAST_BYTES(obj)->val=c;
     CAST_BYTES(obj)->len=CAST_BYTES(self)->len+CAST_BYTES(other)->len;
 
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
+    object* o = in_immutables_bytes(c, CAST_BYTES(obj)->len);
+    if (o!=NULL){
+        FPLDECREF(obj);
+        return o;
     }
     
-    FPLDECREF((object*)obj);
-    return o;
+    return obj;
 }
 
 object* bytes_mul(object* self, object* other){
@@ -331,11 +327,11 @@ object* bytes_mul(object* self, object* other){
     CAST_BYTES(obj)->val=c;
     CAST_BYTES(obj)->len=len;
 
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
+    object* o = in_immutables_bytes(c, len);
+    if (o!=NULL){
+        FPLDECREF(obj);
+        return o;
     }
     
-    FPLDECREF((object*)obj);
-    return o;
+    return obj;
 }

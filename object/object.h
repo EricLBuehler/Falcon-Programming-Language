@@ -171,7 +171,10 @@ Parser parser;
 
 inline void FPLDECREF(struct object* object);
 inline object* FPLINCREF(struct object* object);
-object* in_immutables(object* obj);
+object* in_immutables_bytes(object* obj);
+object* in_immutables_float(object* obj);
+object* in_immutables_int(object* obj);
+object* in_immutables_str(object* obj);
 object* new_object(TypeObject* type);
 object_var* new_object_var(TypeObject* type, size_t size);
 bool object_istype(TypeObject* self, TypeObject* other);

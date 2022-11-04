@@ -1,34 +1,35 @@
 object* new_float_fromdouble(double v){
+    object* o = in_immutables_float(v);
+    if (o!=NULL){
+        return o;
+    }
+    
     object* obj=new_object(&FloatType);
     CAST_FLOAT(obj)->val=v;
-    object* o = in_immutables(obj);
-    if (o==NULL){
-        return obj;
-    }
-    FPLDECREF(obj);
-    return o;
+    
+    return obj;
 }
 
 object* new_float_fromstr(string* v){
     object* obj=new_object(&FloatType);
     CAST_FLOAT(obj)->val=stod(v->c_str());
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
+    object* o = in_immutables_float(CAST_FLOAT(obj)->val);
+    if (o!=NULL){
+        FPLDECREF(obj);
+        return o;
     }
-    FPLDECREF((struct object*)obj);
-    return o;
+    return obj;
 }
 
 object* new_float_fromstr(string v){
     object* obj=new_object(&FloatType);
     CAST_FLOAT(obj)->val=stod(v.c_str());
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
+    object* o = in_immutables_float(CAST_FLOAT(obj)->val);
+    if (o!=NULL){
+        FPLDECREF(obj);
+        return o;
     }
-    FPLDECREF((struct object*)obj);
-    return o;
+    return obj;
 }
 
 object* float_float(object* self){
@@ -45,12 +46,12 @@ object* float_new(object* type, object* args, object* kwargs){
         object* obj=new_object(CAST_TYPE(type));
         CAST_FLOAT(obj)->val=0;
 
-        object* o = in_immutables((struct object*)obj);
-        if (o==NULL){
-            return (object*)obj;
+        object* o = in_immutables_float(CAST_FLOAT(obj)->val);
+        if(o!=NULL){
+            FPLDECREF(obj);
+            return o;
         }
-        FPLDECREF((struct object*)obj);
-        return o;
+        return obj; 
     }
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
@@ -73,12 +74,12 @@ object* float_new(object* type, object* args, object* kwargs){
         return NULL;
     }
 
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
+    object* o = in_immutables_float(CAST_FLOAT(obj)->val);
+    if(o!=NULL){
+        FPLDECREF(obj);
+        return o;
     }
-    FPLDECREF((struct object*)obj);
-    return o;
+    return obj; 
 }
 
 object* float_pow(object* self, object* other){

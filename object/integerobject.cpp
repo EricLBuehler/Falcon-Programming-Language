@@ -1,12 +1,13 @@
 object* new_int_fromint(int v){
+    object* o = in_immutables_int(v);
+    if(o!=NULL){
+        return o;
+    }
+
     object* obj=new_object(&IntType);
     ((IntObject*)obj)->val=new BigInt(v);
-    object* o = in_immutables(obj);
-    if (o==NULL){
-        return obj;
-    }
-    FPLDECREF(obj);
-    return o;
+    
+    return obj;
 }
 
 string trim(string s);
@@ -22,12 +23,12 @@ object* new_int_fromstr(string v){
             return NULL;
         }
     }
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
+    object* o = in_immutables_int(CAST_INT(obj)->val->to_long_long());
+    if (o!=NULL){
+        FPLDECREF(obj);
+        return o;
     }
-    FPLDECREF((struct object*)obj);
-    return o;
+    return obj;
 }
 
 
@@ -42,24 +43,24 @@ object* new_int_fromstr(string* v){
             return NULL;
         }
     }
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
+    object* o = in_immutables_int(CAST_INT(obj)->val->to_long_long());
+    if (o!=NULL){
+        FPLDECREF(obj);
+        return o;
     }
-    FPLDECREF((struct object*)obj);
-    return o;
+    return obj;
 }
 
 object* new_int_frombigint(BigInt* v){
+    object* o = in_immutables_int(v->to_long_long());
+    if (o!=NULL){
+        return o;
+    }
+
     object* obj=new_object(&IntType);
     ((IntObject*)obj)->val=v;
     
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
-    }
-    FPLDECREF((struct object*)obj);
-    return o;
+    return obj;
 }
 
 object* int_int(object* self){
@@ -73,15 +74,15 @@ object* int_float(object* self){
 object* int_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
     if (len==0){
+        object* o = in_immutables_int(0);
+        if (o!=NULL){
+            return o;
+        }
+
         object* obj=new_object(CAST_TYPE(type));
         ((IntObject*)obj)->val=new BigInt(0);
 
-        object* o = in_immutables((struct object*)obj);
-        if (o==NULL){
-            return (object*)obj;
-        }
-        FPLDECREF((struct object*)obj);
-        return o;
+        return obj;
     }
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
@@ -103,13 +104,13 @@ object* int_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Could not convert string '%s' to int",object_cstr(val).c_str());
         return NULL;
     }
-
-    object* o = in_immutables((struct object*)obj);
-    if (o==NULL){
-        return (object*)obj;
+    
+    object* o = in_immutables_int(CAST_INT(obj)->val->to_long_long());
+    if (o!=NULL){
+        FPLDECREF(obj);
+        return o;
     }
-    FPLDECREF((struct object*)obj);
-    return o;
+    return obj;
 }
 
 object* int_pow(object* self, object* other){

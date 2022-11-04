@@ -34,43 +34,63 @@ inline object* FPLINCREF(struct object* object){
     return object;
 }
 
-object* in_immutables(object* obj){
-    object* o=immutable_objs->ob_next;
-    if (obj->refcnt==0){
-        return NULL;
-    }
+//NULL if not found
+object* in_immutables_bytes(char* val, size_t len){
+    object* o=immutable_objs;
     while (o){
-        if (o->refcnt==0){
-            o=o->ob_next;
-            continue;
-        }
-        if ((*o->type->name)==(*obj->type->name)){
-            if (o->type->name==StrType.name){
-                if ((*CAST_STRING(o)->val)==(*CAST_STRING(obj)->val)){
-                    return FPLINCREF(o);
-                }
-            }
-            if (o->type->name==IntType.name){
-                if ((*CAST_INT(o)->val)==(*CAST_INT(obj)->val)){
-                    return FPLINCREF(o);
-                }
-            }
-            if (o->type->name==FloatType.name){
-                if (CAST_FLOAT(o)->val==CAST_FLOAT(obj)->val){
-                    return FPLINCREF(o);
-                }
-            }
-            if (o->type->name==BytesType.name){
-                if (CAST_BYTES(o)->len==CAST_BYTES(obj)->len && \
-                memcpy(CAST_BYTES(o)->val, CAST_BYTES(obj)->val, CAST_BYTES(o)->len) ){
-                    return FPLINCREF(o);
-                }
+        if (o->type->name==BytesType.name){
+            if (len==CAST_BYTES(o)->len && \
+            memcmp(val, CAST_BYTES(o)->val, len) ){
+                return FPLINCREF(o);
             }
         }
         o=o->ob_next;
     }
     return NULL;
 }
+
+//NULL if not found
+object* in_immutables_int(int i){
+    object* o=immutable_objs;
+    while (o){
+        if (o->type->name==IntType.name){
+            if ((*CAST_INT(o)->val)==i){
+                return FPLINCREF(o);
+            }
+        }
+        o=o->ob_next;
+    }
+    return NULL;
+}
+
+//NULL if not found
+object* in_immutables_float(double v){
+    object* o=immutable_objs;
+    while (o){
+        if (o->type->name==FloatType.name){
+            if (CAST_FLOAT(o)->val==v){
+                return FPLINCREF(o);
+            }
+        }
+        o=o->ob_next;
+    }
+    return NULL;
+}
+
+//NULL if not found
+object* in_immutables_str(string s){
+    object* o=immutable_objs;
+    while (o){
+        if (o->type->name==StrType.name){
+            if ((*CAST_STRING(o)->val)==s){
+                return FPLINCREF(o);
+            }
+        }
+        o=o->ob_next;
+    }
+    return NULL;
+}
+
 
 object* new_object(TypeObject* type){
     object* object = (struct object*) fpl_malloc(type->size);
