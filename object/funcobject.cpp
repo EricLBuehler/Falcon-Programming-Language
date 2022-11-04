@@ -23,9 +23,11 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
 }
 
 object* func_call(object* self, object* args, object* kwargs){
-    uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    uint32_t posargc=CAST_LIST(args)->size;
+    uint32_t argc=posargc+CAST_DICT(kwargs)->val->size();
     uint32_t kwargc=argc-posargc;
+
+    uint32_t self_kwargs=CAST_DICT(CAST_FUNC(self)->kwargs)->val->size();
 
     uint32_t ip=0;
 
@@ -41,15 +43,15 @@ object* func_call(object* self, object* args, object* kwargs){
     
     int flags=CAST_FUNC(self)->flags;
 
-    if (flags!=FUNC_STAR && CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
-    || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
+    if (flags!=FUNC_STAR && CAST_FUNC(self)->argc-self_kwargs>posargc \
+    || self_kwargs<kwargc \
     || CAST_FUNC(self)->argc<argc){
         //If we are starargs and positonal differs, no error
-        if (flags==FUNC_STARARGS && CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()!=posargc){
+        if (flags==FUNC_STARARGS && CAST_FUNC(self)->argc-self_kwargs!=posargc){
             goto noerror;
         }
         //If we are starkwargs and kwd differs, no error
-        if (flags==FUNC_STARKWARGS && CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()!=kwargc){
+        if (flags==FUNC_STARKWARGS && self_kwargs!=kwargc){
             goto noerror;
         }
         if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0){
@@ -60,6 +62,7 @@ object* func_call(object* self, object* args, object* kwargs){
     noerror:
     
     object* res=setup_args_stars(callstack_head(vm->callstack).locals, CAST_FUNC(self)->argc, CAST_FUNC(self)->args, CAST_FUNC(self)->kwargs, args, kwargs, flags, CAST_FUNC(self)->stargs, CAST_FUNC(self)->stkwargs);
+    
     if (res==NULL){
         return res;
     }
