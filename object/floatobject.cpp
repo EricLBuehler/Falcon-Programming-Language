@@ -35,6 +35,9 @@ object* float_float(object* self){
     return FPLINCREF(self);
 }
 
+object* float_int(object* self){
+    return new_int_fromint((int)(CAST_FLOAT(self)->val));
+}
 
 object* float_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
