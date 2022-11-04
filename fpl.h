@@ -184,6 +184,13 @@ int execute(string data, bool objdump, bool verbose){
     finalize_threads();
     socket_cleanup();
 
+    while (vm->blockstack->size>0){
+        if (blockstack_head(vm->blockstack).type==WITH_BLOCK){
+            object_exit_with(blockstack_head(vm->blockstack).obj);
+        }
+        pop_blockframe(vm->blockstack);
+    }
+
     if (verbose){
         cout<<"--------";
     }

@@ -95,6 +95,13 @@ int main(int argc, char** argv) {
                 
                 object* returned=run_vm(code, &vm->ip);
 
+                while (vm->blockstack->size>0){
+                    if (blockstack_head(vm->blockstack).type==WITH_BLOCK){
+                        object_exit_with(blockstack_head(vm->blockstack).obj);
+                    }
+                    pop_blockframe(vm->blockstack);
+                }
+
                 if (returned==TERM_PROGRAM && vm->exception==NULL){
                     finalize_threads();
                         
