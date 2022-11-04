@@ -87,6 +87,7 @@ volatile bool hit_sigint=false;
 #include <signal.h>
 
 void fpl_startup(){
+    set_new_handler(memory_error);
     new_gc();
     setup_types_consts();
     setup_modules();
