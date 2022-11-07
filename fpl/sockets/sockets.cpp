@@ -180,6 +180,10 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
     }
     object* iter=iter_->type->slot_iter(iter_);
 
+    if (iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter_->type->name->c_str());
+        return NULL;
+    }
     
 
     object* one=new_int_fromint(0);
@@ -433,6 +437,11 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* iter=iter_->type->slot_iter(iter_);
+
+    if (iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter_->type->name->c_str());
+        return NULL;
+    }
 
     
 
