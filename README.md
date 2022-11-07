@@ -1,4 +1,4 @@
-# Falcon Programming Language - Version 1.2.0
+# Falcon Programming Language - Version 1.2.1
 ### Eric Buehler 2022 ###
 
 <img src="logo.png"/>
