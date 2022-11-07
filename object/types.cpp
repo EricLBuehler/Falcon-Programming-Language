@@ -250,6 +250,7 @@ object* list_replace_meth(object* selftp, object* args, object* kwargs);
 object* list_find_meth(object* selftp, object* args, object* kwargs);
 object* list_remove_meth(object* selftp, object* args, object* kwargs);
 object* list_insert_meth(object* selftp, object* args, object* kwargs);
+object* list_extend_meth(object* selftp, object* args, object* kwargs);
 
 object* list_add(object* self, object* other);
 object* list_mul(object* self, object* other);
@@ -262,7 +263,8 @@ typedef struct ListObject{
 }ListObject;
 
 Method list_methods[]={{"find", (cwrapperfunc)list_find_meth}, {"replace", (cwrapperfunc)list_replace_meth}, {"append", (cwrapperfunc)list_append_meth},\
-                    {"pop", (cwrapperfunc)list_pop_meth}, {"remove", (cwrapperfunc)list_remove_meth}, {"insert", (cwrapperfunc)list_insert_meth}, {NULL,NULL}};
+                    {"pop", (cwrapperfunc)list_pop_meth}, {"remove", (cwrapperfunc)list_remove_meth}, {"insert", (cwrapperfunc)list_insert_meth},\
+                    {"extend", (cwrapperfunc)list_extend_meth}, {NULL,NULL}};
 GetSets list_getsets[]={{NULL,NULL}};
 OffsetMember list_offsets[]={{NULL}};
 

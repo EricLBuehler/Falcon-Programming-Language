@@ -684,3 +684,41 @@ object* list_insert_meth(object* selftp, object* args, object* kwargs){
 
     return new_none();
 }
+
+object* list_extend_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
+    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* iter_=tuple_index_int(args, 1);
+
+    if (iter_->type->slot_iter==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object is not iterable", iter_->type->name->c_str());
+        return NULL; 
+    }
+    object* iter=iter_->type->slot_iter(iter_);
+
+    if (iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter_->type->name->c_str());
+        return NULL;
+    }
+    
+
+    object* one=new_int_fromint(0);
+    object* two=new_int_fromint(1);
+    
+    object* o=iter->type->slot_next(iter);
+    while (vm->exception==NULL){   
+        list_append(self, o);        
+        o=iter->type->slot_next(iter);
+    }
+    if (vm->exception!=NULL){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+    }
+
+
+    return new_none();
+}
