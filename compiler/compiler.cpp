@@ -3472,15 +3472,15 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //TOS is now the function!
             object* stargs=new_tuple();
             object* stkwargs=new_tuple();
-            object* kwargs=new_tuple();
+            object* kwargs_=new_tuple();
 
-            if (!object_find_bool(compiler->consts,kwargs)){
+            if (!object_find_bool(compiler->consts,kwargs_)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs_);
                 idx=NAMEIDX(compiler->consts);
             }
             else{
-                idx=object_find(compiler->consts, kwargs);
+                idx=object_find(compiler->consts, kwargs_);
             }
             
             add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
