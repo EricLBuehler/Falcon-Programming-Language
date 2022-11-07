@@ -18,9 +18,9 @@ inline void FPLDECREF(struct object* object){
             }
             else{
                 immutable_objs=object->ob_next;
-                immutable_size--;
             }
             fpl_free(object);
+                immutable_size--;
         }
         return;
     }
