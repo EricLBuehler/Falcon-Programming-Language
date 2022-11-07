@@ -292,6 +292,23 @@ a == [2,3] == True
 #### Returns
 ```None```
 
+### ```list.extend```
+Extends list by passed iterator
+```list.extend(self, it)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```it```    | iterator     |
+### Example
+```
+a=[1,2,3]
+a.extend({4,5,6})
+a == [1,2,3,4,5,6] == True
+```
+#### Returns
+```None```
+
 
 
 ## ```dict```
