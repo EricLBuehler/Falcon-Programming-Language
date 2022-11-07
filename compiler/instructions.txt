@@ -23,9 +23,9 @@ MAKE_FUNCTION(argc) - Creates a function using TOS-1 as code, TOS-2 as annotatio
 
 RETURN_VAL - Return and pos TOS
 
-CALL_FUNCTION(argc) - Calls callable TOS, with an integer object posargc as TOS-1. TOS-2 is tuple of indexes for unpackable kw arguments,
-    TOS-3 is tuple of indexes for unpackable pos arguments. Keyword arguments below (value above name)
-    with positional arguments following (left->right descending). argc is the total number of arguemnts passed.
+CALL_FUNCTION(argc) - Calls callable TOS. TOS-1 is a tuple of star kwargs objects, and TOS-2
+    is a tuple of star args objects. TOS-3 is a tuple of kwargs names (keys). Below that are the keyword arguments,
+    and below that, the positional arguments following (left->right descending). argc is the total number of arguemnts passed.
 
 LOAD_ATTR(idx) - Implements getattr(TOS, names[idx])
 
@@ -33,9 +33,9 @@ STORE_ATTR(idx) - Implement TOS.names[idx] =TOS-1
 
 LOAD_BUILD_CLASS - Loads __build_class__
 
-CALL_METHOD(argc) - Calls callable TOS, TOS-1 is object with attribute (TOS), and with an integer object posargc as TOS-2.
-    TOS-3 is tuple of indexes for unpackable kw arguments, TOS-4 is tuple of indexes for unpackable pos arguments.
-    Keyword arguments below (value above name) with positional arguments following (left->right descending). argc is the total number of arguemnts passed.
+CALL_METHOD(argc) - TOS is a tuple of star kwargs objects. TOS-1 is a tuple of star args objects. TOS-2 is a tuple of kwargs names (keys).
+    Below that are the keyword arguments, and below that, the positional arguments following (left->right descending). Below, the callable and head 
+    are located. argc is the total number of arguemnts passed.
 
 BUILD_TUPLE(n) - Pops n frames of stack (L->R and Top->Down) and pushes tuple
 
