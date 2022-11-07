@@ -693,22 +693,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         CALL_METHOD: {
-            uint32_t argc=arg;
-            uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
-            uint32_t kwargc=argc-posargc;
-
             object* stkwargs=pop_dataframe(vm->objstack);
             object* stargs=pop_dataframe(vm->objstack);
+            object* keys=pop_dataframe(vm->objstack);
+            
+            uint32_t argc=arg;
+            uint32_t kwargc=CAST_TUPLE(keys)->size;
+            uint32_t posargc=argc-kwargc;
 
             int stkwargsidx=0;
             int stargsidx=0;
-            
+
             //Setup kwargs
             object* kwargs=new_dict();
-            object* val;
             for (uint32_t i=0; i<kwargc; i++){
-                val=pop_dataframe(vm->objstack);
-                dict_set(kwargs, pop_dataframe(vm->objstack), val);
+                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
             }
             //
 
@@ -807,13 +806,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         CALL_FUNCTION: {           
             object* function=pop_dataframe(vm->objstack);
-            
-            uint32_t argc=arg;
-            uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
-            uint32_t kwargc=argc-posargc;
 
             object* stkwargs=pop_dataframe(vm->objstack);
             object* stargs=pop_dataframe(vm->objstack);
+            object* keys=pop_dataframe(vm->objstack);
+            
+            uint32_t argc=arg;
+            uint32_t kwargc=CAST_TUPLE(keys)->size;
+            uint32_t posargc=argc-kwargc;
 
             if (function->type->slot_call==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
@@ -825,10 +825,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             //Setup kwargs
             object* kwargs=new_dict();
-            object* val;
             for (uint32_t i=0; i<kwargc; i++){
-                val=pop_dataframe(vm->objstack);
-                dict_set(kwargs, pop_dataframe(vm->objstack), val);
+                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
             }
             //
 
@@ -919,22 +917,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         CALL_FUNCTION_BOTTOM: {
-            uint32_t argc=arg;
-            uint32_t posargc=CAST_INT(pop_dataframe(vm->objstack))->val->to_int();
-            uint32_t kwargc=argc-posargc;
-
             object* stkwargs=pop_dataframe(vm->objstack);
             object* stargs=pop_dataframe(vm->objstack);
+            object* keys=pop_dataframe(vm->objstack);
+            
+            uint32_t argc=arg;
+            uint32_t kwargc=CAST_TUPLE(keys)->size;
+            uint32_t posargc=argc-kwargc;
 
             int stkwargsidx=0;
             int stargsidx=0;
 
             //Setup kwargs
             object* kwargs=new_dict();
-            object* val;
             for (uint32_t i=0; i<kwargc; i++){
-                val=pop_dataframe(vm->objstack);
-                dict_set(kwargs, pop_dataframe(vm->objstack), val);
+                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
             }
             //
 
