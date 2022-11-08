@@ -123,7 +123,8 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL, &vm->ip);
     vm->globals=new_dict();
-    callstack_head(vm->callstack).locals=FPLINCREF(vm->globals);
+    FPLINCREF(vm->globals);
+    callstack_head(vm->callstack).locals=vm->globals;
     vm->global_annotations=callstack_head(vm->callstack).annotations;
     
     return vm;
@@ -242,7 +243,8 @@ object* import_name(string data, object* name){
     ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
     
     ::vm->globals=new_dict();
-    ::callstack_head(vm->callstack).locals=FPLINCREF(::vm->globals);
+    FPLINCREF(::vm->globals);
+    ::callstack_head(vm->callstack).locals=::vm->globals;
     dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
     dict_set(::vm->globals, str_new_fromstr("__name__"), name);
     ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
@@ -251,7 +253,8 @@ object* import_name(string data, object* name){
 
     ERROR_RET(ret);
 
-    object* dict=FPLINCREF(::callstack_head(vm->callstack).locals);
+    FPLINCREF(::callstack_head(vm->callstack).locals);
+    object* dict=::callstack_head(vm->callstack).locals;
 
     object* o=module_new_fromdict(dict, name);
     
@@ -333,7 +336,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&LOAD_BUILD_CLASS,
         &&LOAD_ATTR,
         &&STORE_ATTR,
-        &&CALL_METHOD,
         &&BUILD_LIST,
         &&BINOP_IS,
         &&BINOP_EE,
@@ -397,7 +399,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&BINOP_ISNOT,
         &&BINOP_FLDIV,
         &&BINOP_IFLDIV,
-        &&LOAD_METHOD,
         &&TERNARY_TEST,
         &&CALL_FUNCTION_BOTTOM,
         &&ANNOTATE_GLOBAL,
@@ -689,119 +690,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         RETURN_VAL: {
             GIL.unlock();
-            return FPLINCREF(pop_dataframe(vm->objstack));
-        }
-
-        CALL_METHOD: {
-            object* stkwargs=pop_dataframe(vm->objstack);
-            object* stargs=pop_dataframe(vm->objstack);
-            object* keys=pop_dataframe(vm->objstack);
-            
-            uint32_t argc=arg;
-            uint32_t kwargc=CAST_TUPLE(keys)->size;
-            uint32_t posargc=argc-kwargc;
-
-            int stkwargsidx=0;
-            int stargsidx=0;
-
-            //Setup kwargs
-            object* kwargs=new_dict();
-            for (uint32_t i=0; i<kwargc; i++){
-                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
-            }
-            //
-
-            //Setup args
-            object* args=new_tuple();
-            for (uint32_t i=0; i<posargc; i++){
-                if (stkwargsidx<CAST_LIST(stkwargs)->size && CAST_INT(list_index_int(stkwargs, stkwargsidx))->val->to_int()==i){
-                    //pop dict, insert values
-                    object* ob=pop_dataframe(vm->objstack);
-                    
-                    if (!object_istype(ob->type, &DictType)){
-                        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", ob->type->name->c_str());
-                        goto exc;
-                    }
-                    
-                    object* iter=ob->type->slot_iter(ob);
-
-                    object* res=NULL;
-                    
-                    object* o=iter->type->slot_next(iter);
-                    object* v;
-                    while (vm->exception==NULL){
-                        v=ob->type->slot_mappings->slot_get(ob, o);
-                        ERROR_RET(v);
-                        dict_set(kwargs, o, v);
-                        
-                        o=iter->type->slot_next(iter);
-                    }
-                    if (vm->exception!=NULL){
-                        FPLDECREF(vm->exception);
-                        vm->exception=NULL;
-                    }
-
-
-                    stkwargsidx++;
-                    continue;
-                }
-                if (stargsidx<CAST_LIST(stargs)->size && CAST_INT(list_index_int(stargs, stargsidx))->val->to_int()==i){
-                    //pop dict, insert values
-                    object* ob=pop_dataframe(vm->objstack);
-                    
-                    if (!object_istype(ob->type, &ListType) && !object_istype(ob->type, &TupleType)){
-                        vm_add_err(&TypeError, vm, "Expected list or tuple object, got '%s' object", ob->type->name->c_str());
-                        DISPATCH();
-                    }
-                    
-                    object* iter=ob->type->slot_iter(ob);
-
-                    object* one=new_int_fromint(0);
-                    object* two=new_int_fromint(1);
-                    object* res=NULL;
-                    
-                    object* o=iter->type->slot_next(iter);
-                    object* v;
-                    while (vm->exception==NULL){
-                        tuple_append(args, o);
-                        
-                        o=iter->type->slot_next(iter);
-                    }
-                    if (vm->exception!=NULL){
-                        FPLDECREF(vm->exception);
-                        vm->exception=NULL;
-                    }
-
-
-                    stargsidx++;
-                    continue;
-                }
-                tuple_append(args, pop_dataframe(vm->objstack));
-            }
-            //
-
-            object* function=pop_dataframe(vm->objstack);
-            object* head=pop_dataframe(vm->objstack);
-            
-            if (function->type->slot_call==NULL){
-                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
-                goto exc;
-            }
-
-            //Call
-            object* ret=function->type->slot_call(function, args, kwargs);
-            FPLDECREF(args);
-            FPLDECREF(kwargs);
-            if (ret==NULL || hit_sigint){
-                goto exc;
-            }
-            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
-                GIL.unlock();
-                return TERM_PROGRAM;
-            }
-            add_dataframe(vm, vm->objstack, ret);
-
-            DISPATCH();
+            object* o=pop_dataframe(vm->objstack);
+            FPLINCREF(o);
+            return o;
         }
 
         CALL_FUNCTION: {           
@@ -1077,25 +968,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             add_dataframe(vm, vm->objstack, ret);
             DISPATCH();
-        }    
-
-        LOAD_METHOD: {
-            object* obj=peek_dataframe(vm->objstack);
-            object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* ret=object_getattr(obj, attr);            
-            
-            
-            if (ret==NULL || hit_sigint){
-                goto exc;
-            }
-            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
-                GIL.unlock();
-                return TERM_PROGRAM;
-            }
-
-            add_dataframe(vm, vm->objstack, ret);
-            DISPATCH();
-        }  
+        }
 
         STORE_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
@@ -1582,7 +1455,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     bool done=false;
                     for (int i=0; i<nmodules; i++){
                         if (istrue(object_cmp(name, CAST_MODULE(modules[i])->name, CMP_EQ))){
-                            add_dataframe(vm, vm->objstack, FPLINCREF(modules[i]));
+                            object* mod=modules[i];
+                            FPLINCREF(mod);
+                            add_dataframe(vm, vm->objstack, mod);
                             done=true;
                             DISPATCH();
                         }
@@ -1852,7 +1727,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (int i=0; i<arg; i++){
                 object* flag = pop_dataframe(vm->objstack);
                 object* o=pop_dataframe(vm->objstack);
-                if (istrue(FPLINCREF(flag))){
+                FPLINCREF(flag);
+                if (istrue(flag)){
                     strs.push_back(object_crepr(o));
                     continue;
                 }
@@ -1941,8 +1817,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* args=pop_dataframe(vm->objstack); //<- Args
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
-            
-            object* func=func_new_code(code, args, kwargs, arg, name, FPLINCREF(callstack_head(vm->callstack).locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, FPLINCREF(callstack_head(vm->callstack).annotations), vm->globals, vm->global_annotations);
+
+            FPLINCREF(callstack_head(vm->callstack).locals);
+            FPLINCREF(callstack_head(vm->callstack).annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, callstack_head(vm->callstack).locals, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, callstack_head(vm->callstack).annotations, vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2479,7 +2357,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, arg, name, FPLINCREF(callstack_head(vm->callstack).locals), FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, FPLINCREF(callstack_head(vm->callstack).annotations), vm->globals, vm->global_annotations);
+            FPLINCREF(callstack_head(vm->callstack).locals);
+            FPLINCREF(callstack_head(vm->callstack).annotations)
+            object* func=func_new_code(code, args, kwargs, arg, name, callstack_head(vm->callstack).locals, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, callstack_head(vm->callstack).annotations, vm->globals, vm->global_annotations);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2565,7 +2445,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 return NULL;
             }
             add_dataframe(vm, vm->objstack, vm->exception);
-            frame->obj=FPLINCREF(vm->exception);
+            FPLINCREF(vm->exception);
+            frame->obj=vm->exception;
             if (vm->exception!=NULL){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
