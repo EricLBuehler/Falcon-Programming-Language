@@ -923,13 +923,14 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_INT: {
             uint32_t idx;
-            if (!_list_contains(compiler->consts, INTLIT(expr->node)->literal)){
+            object* v=new_int_fromstr(INTLIT(expr->node)->literal);
+            if (!object_find_bool(compiler->consts, v)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_int_fromstr(INTLIT(expr->node)->literal));
-                idx=NAMEIDX(compiler->consts);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, v);
+                idx = NAMEIDX(compiler->consts);
             }
             else{
-                idx=object_find(compiler->consts, new_int_fromstr(INTLIT(expr->node)->literal));
+                idx=object_find(compiler->consts, v);
             }
             
             add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -941,13 +942,14 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_FLOAT: {
             uint32_t idx;
-            if (!_list_contains(compiler->consts, FLOATLIT(expr->node)->literal)){
+            object* v=new_float_fromstr(FLOATLIT(expr->node)->literal);
+            if (!object_find_bool(compiler->consts, v)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_float_fromstr(FLOATLIT(expr->node)->literal));
-                idx=NAMEIDX(compiler->consts);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, v);
+                idx = NAMEIDX(compiler->consts);
             }
             else{
-                idx=object_find(compiler->consts, new_float_fromstr(FLOATLIT(expr->node)->literal));
+                idx=object_find(compiler->consts, v);
             }
             
             add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -959,14 +961,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_STR: {
             uint32_t idx;
-            if (!_list_contains(compiler->consts, STRLIT(expr->node)->literal)){
+            object* v=str_new_fromstr(*STRLIT(expr->node)->literal);
+            if (!object_find_bool(compiler->consts, v)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
-                idx=NAMEIDX(compiler->consts);
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, v);
+                idx = NAMEIDX(compiler->consts);
             }
             else{
-                idx=object_find(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
+                idx=object_find(compiler->consts, v);
             }
+            
             add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
             if (!compiler->keep_return){
                 add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
@@ -1793,7 +1797,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_LIST: {
             for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
-                int cmpexpr=compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+                int cmpexpr=compile_expr_keep(compiler, LIST(expr->node)->list->at(i-1));
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
@@ -1804,7 +1808,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_TUPLE: {
             for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
-                int cmpexpr=compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+                int cmpexpr=compile_expr_keep(compiler, LIST(expr->node)->list->at(i-1));
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
@@ -1815,11 +1819,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_DICT: {
             for (size_t i=DICT(expr->node)->keys->size(); i>0; i--){
-                int cmpexpr=compile_expr(compiler, DICT(expr->node)->vals->at(i-1)); //Value
+                int cmpexpr=compile_expr_keep(compiler, DICT(expr->node)->vals->at(i-1)); //Value
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
-                cmpexpr=compile_expr(compiler, DICT(expr->node)->keys->at(i-1)); //Value
+                cmpexpr=compile_expr_keep(compiler, DICT(expr->node)->keys->at(i-1)); //Value
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
@@ -3717,7 +3721,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_SET: {
             for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
-                int cmpexpr=compile_expr(compiler, LIST(expr->node)->list->at(i-1));
+                int cmpexpr=compile_expr_keep(compiler, LIST(expr->node)->list->at(i-1));
                 if (cmpexpr==0x100){
                     return cmpexpr;
                 }
