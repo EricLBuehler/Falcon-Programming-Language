@@ -1,14 +1,16 @@
 string trim(string s);
 
 object* str_new_fromstr(string val){
-    object* o = in_immutables_str(val);
-    if (o!=NULL){
-        return o;
+    if(str_map.find(val)!=str_map.end()){
+        FPLINCREF(str_map[val]);
+        return str_map[val];
     }
 
     object* obj=new_object(&StrType);
     
     ((StrObject*)obj)->val=new string(val);
+
+    str_map[val]=obj;
     return obj;
 }
 
@@ -38,13 +40,15 @@ object* str_float(object* self){
 
 object* str_new(object* type, object* args, object* kwargs){
     if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){ 
-        object* o = in_immutables_str("");
-        if (o!=NULL){
-            return o;
+        if(str_map.find("")!=str_map.end()){
+            FPLINCREF(str_map[""]);
+            return str_map[""];
         }
 
         object* obj=new_object(CAST_TYPE(type));
         ((StrObject*)obj)->val=new string("");
+
+        str_map[""]=obj;
         return obj;
     }
     int len=CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
@@ -54,14 +58,15 @@ object* str_new(object* type, object* args, object* kwargs){
     }
     object* val=list_index_int(args, 0);
     string s=object_cstr(val);
-
-    object* o = in_immutables_str(s);
-    if (o!=NULL){
-        return o;
+    if(str_map.find(s)!=str_map.end()){
+        FPLINCREF(str_map[s]);
+        return str_map[s];
     }
 
     object* obj=new_object(CAST_TYPE(type));
     ((StrObject*)obj)->val=new string(s);
+
+    str_map[s]=obj;
     return obj;
 }
 
@@ -158,6 +163,7 @@ object* str_cmp(object* self, object* other, uint8_t type){
 }
 
 void str_del(object* obj){
+    str_map.erase(*((StrObject*)obj)->val);
     delete ((StrObject*)obj)->val;
 }
 

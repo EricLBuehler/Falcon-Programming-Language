@@ -8,19 +8,9 @@ inline void FPLDECREF(struct object* object){
             }
         }
         
-        //GC collect it later.... or...
+        //If it is immutable, free it now
         if (!object->type->gc_trackable){
-            if (object->ob_next!=NULL){
-                object->ob_next->ob_prev=object->ob_prev;
-            }
-            if (object->ob_prev!=NULL){
-                object->ob_prev->ob_next=object->ob_next;
-            }
-            else{
-                immutable_objs=object->ob_next;
-            }
             fpl_free(object);
-            immutable_size--;
         }
         return;
     }
@@ -30,67 +20,6 @@ inline void FPLDECREF(struct object* object){
 inline object* _FPLINCREF(struct object* object){
     object->refcnt++;
     return object;
-}
-
-//NULL if not found
-object* in_immutables_bytes(char* val, size_t len){
-    object* o=immutable_objs;
-    while (o){
-        if (o->type->name==BytesType.name){
-            if (len==CAST_BYTES(o)->len && \
-            memcmp(val, CAST_BYTES(o)->val, len) ){
-                FPLINCREF(o);
-                return o;
-            }
-        }
-        o=o->ob_next;
-    }
-    return NULL;
-}
-
-//NULL if not found
-object* in_immutables_int(int i){
-    object* o=immutable_objs;
-    while (o){
-        if (o->type->name==IntType.name){
-            if ((*CAST_INT(o)->val)==i){
-                FPLINCREF(o);
-                return o;
-            }
-        }
-        o=o->ob_next;
-    }
-    return NULL;
-}
-
-//NULL if not found
-object* in_immutables_float(double v){
-    object* o=immutable_objs;
-    while (o){
-        if (o->type->name==FloatType.name){
-            if (CAST_FLOAT(o)->val==v){
-                FPLINCREF(o);
-                return o;
-            }
-        }
-        o=o->ob_next;
-    }
-    return NULL;
-}
-
-//NULL if not found
-object* in_immutables_str(string s){
-    object* o=immutable_objs;
-    while (o){
-        if (o->type->name==StrType.name){
-            if ((*CAST_STRING(o)->val)==s){
-                FPLINCREF(o);
-                return o;
-            }
-        }
-        o=o->ob_next;
-    }
-    return NULL;
 }
 
 
@@ -109,15 +38,6 @@ object* new_object(TypeObject* type){
         gc.gen0=object;
 
         gc.gen0_n++;
-    }
-    else{
-        if (immutable_objs!=NULL){
-            immutable_objs->ob_prev=object;
-        }
-        object->ob_prev=NULL;
-        object->ob_next=immutable_objs;
-        immutable_objs=object;
-        immutable_size++;
     }
 
     if (gc.gen0_n==gc.gen0_thresh){
@@ -150,15 +70,6 @@ object_var* new_object_var(TypeObject* type, size_t size){
         gc.gen0=(struct object*)object;
 
         gc.gen0_n++;
-    }
-    else{
-        if (immutable_objs!=NULL){
-            immutable_objs->ob_prev=(struct object*)object;
-        }
-        object->ob_prev=NULL;
-        object->ob_next=immutable_objs;
-        immutable_objs=(struct object*)object;
-        immutable_size++;
     }
 
     if (gc.gen0_n==gc.gen0_thresh){

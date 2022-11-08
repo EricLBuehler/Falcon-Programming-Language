@@ -137,8 +137,10 @@ typedef struct object_var{
     OBJHEAD_VAR
 }object_var;
 
-static object* immutable_objs=NULL;
-uint32_t immutable_size=0;
+map<BigInt, object*> int_map;
+map<double, object*> float_map;
+map<string, object*> str_map;
+
 static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
@@ -172,10 +174,7 @@ Parser parser;
 
 inline void FPLDECREF(struct object* object);
 inline object* _FPLINCREF(struct object* object);
-object* in_immutables_bytes(object* obj);
-object* in_immutables_float(object* obj);
-object* in_immutables_int(object* obj);
-object* in_immutables_str(object* obj);
+
 object* new_object(TypeObject* type);
 object_var* new_object_var(TypeObject* type, size_t size);
 bool object_istype(TypeObject* self, TypeObject* other);
@@ -593,6 +592,10 @@ ostream& operator<<(ostream& os, TypeObject* o){
 
 void setup_types_consts(){
     fplbases.clear();
+    int_map.clear();
+    float_map.clear();
+    str_map.clear();
+
     setup_object_type(); 
 
     trueobj=_new_bool_true();

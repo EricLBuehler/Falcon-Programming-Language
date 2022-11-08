@@ -1,11 +1,13 @@
 object* new_float_fromdouble(double v){
-    object* o = in_immutables_float(v);
-    if (o!=NULL){
-        return o;
+    if(float_map.find(v)!=float_map.end()){
+        FPLINCREF(float_map[v]);
+        return float_map[v];
     }
     
     object* obj=new_object(&FloatType);
     CAST_FLOAT(obj)->val=v;
+
+    float_map[v]=obj;
     
     return obj;
 }
@@ -13,22 +15,25 @@ object* new_float_fromdouble(double v){
 object* new_float_fromstr(string* v){
     object* obj=new_object(&FloatType);
     CAST_FLOAT(obj)->val=stod(v->c_str());
-    object* o = in_immutables_float(CAST_FLOAT(obj)->val);
-    if (o!=NULL){
-        FPLDECREF(obj);
-        return o;
+
+    if(float_map.find(CAST_FLOAT(obj)->val)!=float_map.end()){
+        FPLINCREF(float_map[CAST_FLOAT(obj)->val]);
+        return float_map[CAST_FLOAT(obj)->val];
     }
+
+    float_map[CAST_FLOAT(obj)->val]=obj;
     return obj;
 }
 
 object* new_float_fromstr(string v){
     object* obj=new_object(&FloatType);
     CAST_FLOAT(obj)->val=stod(v.c_str());
-    object* o = in_immutables_float(CAST_FLOAT(obj)->val);
-    if (o!=NULL){
-        FPLDECREF(obj);
-        return o;
+    if(float_map.find(CAST_FLOAT(obj)->val)!=float_map.end()){
+        FPLINCREF(float_map[CAST_FLOAT(obj)->val]);
+        return float_map[CAST_FLOAT(obj)->val];
     }
+
+    float_map[CAST_FLOAT(obj)->val]=obj;
     return obj;
 }
 
@@ -44,15 +49,16 @@ object* float_int(object* self){
 object* float_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
     if (len==0){
-        object* obj=new_object(CAST_TYPE(type));
-        CAST_FLOAT(obj)->val=0;
-
-        object* o = in_immutables_float(CAST_FLOAT(obj)->val);
-        if(o!=NULL){
-            FPLDECREF(obj);
-            return o;
+        if(float_map.find(0)!=float_map.end()){
+            FPLINCREF(float_map[0]);
+            return float_map[0];
         }
-        return obj; 
+
+        object* obj=new_object(CAST_TYPE(type));
+        CAST_FLOAT(obj)->val=0;        
+
+        float_map[0]=obj;
+        return obj;
     }
     if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
@@ -76,12 +82,13 @@ object* float_new(object* type, object* args, object* kwargs){
         return NULL;
     }
 
-    object* o = in_immutables_float(CAST_FLOAT(obj)->val);
-    if(o!=NULL){
-        FPLDECREF(obj);
-        return o;
+    if(float_map.find(CAST_FLOAT(obj)->val)!=float_map.end()){
+        FPLINCREF(float_map[CAST_FLOAT(obj)->val]);
+        return float_map[CAST_FLOAT(obj)->val];
     }
-    return obj; 
+
+    float_map[CAST_FLOAT(obj)->val]=obj;
+    return obj;
 }
 
 object* float_pow(object* self, object* other){
@@ -282,6 +289,7 @@ object* float_bool(object* self){
 }
 
 void float_del(object* obj){
+    float_map.erase(CAST_FLOAT(obj)->val);
 }
 
 double round_double(double value, size_t prec){

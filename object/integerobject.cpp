@@ -1,11 +1,13 @@
 object* new_int_fromint(int v){
-    object* o = in_immutables_int(v);
-    if(o!=NULL){
-        return o;
+    if(int_map.find(BigInt(v))!=int_map.end()){
+        FPLINCREF(int_map[BigInt(v)]);
+        return int_map[BigInt(v)];
     }
 
     object* obj=new_object(&IntType);
     ((IntObject*)obj)->val=new BigInt(v);
+
+    int_map[BigInt(v)]=obj;
     
     return obj;
 }
@@ -13,9 +15,15 @@ object* new_int_fromint(int v){
 string trim(string s);
 
 object* new_int_fromstr(string v){
+    string v_=trim(v);
+    if(int_map.find(BigInt(v_))!=int_map.end()){
+        FPLINCREF(int_map[BigInt(v_)]);
+        return int_map[BigInt(v_)];
+    }
+
     object* obj=new_object(&IntType);
     try{
-        CAST_INT(obj)->val=new BigInt(trim(v));
+        CAST_INT(obj)->val=new BigInt(v_);
     }
     catch (std::invalid_argument){
         if (::vm!=NULL){
@@ -23,42 +31,47 @@ object* new_int_fromstr(string v){
             return NULL;
         }
     }
-    object* o = in_immutables_int(CAST_INT(obj)->val->to_long_long());
-    if (o!=NULL){
-        FPLDECREF(obj);
-        return o;
-    }
+
+    int_map[BigInt(v_)]=obj;
+
     return obj;
 }
 
 
 object* new_int_fromstr(string* v){
+    string v_=trim(*v);
+    if(int_map.find(BigInt(v_))!=int_map.end()){
+        FPLINCREF(int_map[BigInt(v_)]);
+        return int_map[BigInt(v_)];
+    }
+
     object* obj=new_object(&IntType);
     try{
-        CAST_INT(obj)->val=new BigInt(trim(*v));
+        CAST_INT(obj)->val=new BigInt(v_);
     }
     catch (std::invalid_argument){
         if (::vm!=NULL){
-            vm_add_err(&ValueError, vm, "Invalid literal '%s'", v->c_str());
+            vm_add_err(&ValueError, vm, "Invalid literal '%s'", v_.c_str());
             return NULL;
         }
     }
-    object* o = in_immutables_int(CAST_INT(obj)->val->to_long_long());
-    if (o!=NULL){
-        FPLDECREF(obj);
-        return o;
-    }
+
+    int_map[BigInt(v_)]=obj;
+
     return obj;
 }
 
 object* new_int_frombigint(BigInt* v){
-    object* o = in_immutables_int(v->to_long_long());
-    if (o!=NULL){
-        return o;
+    if(int_map.find(*v)!=int_map.end()){
+        FPLINCREF(int_map[*v]);
+        return int_map[*v];
     }
+    
 
     object* obj=new_object(&IntType);
     ((IntObject*)obj)->val=v;
+
+    int_map[*v]=obj;
     
     return obj;
 }
@@ -75,13 +88,15 @@ object* int_float(object* self){
 object* int_new(object* type, object* args, object* kwargs){
     int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
     if (len==0){
-        object* o = in_immutables_int(0);
-        if (o!=NULL){
-            return o;
+        if(int_map.find(BigInt(0))!=int_map.end()){
+            FPLINCREF(int_map[BigInt(0)]);
+            return int_map[BigInt(0)];
         }
 
         object* obj=new_object(CAST_TYPE(type));
         ((IntObject*)obj)->val=new BigInt(0);
+
+        int_map[BigInt(0)] = obj;
 
         return obj;
     }
@@ -107,11 +122,14 @@ object* int_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     
-    object* o = in_immutables_int(CAST_INT(obj)->val->to_long_long());
-    if (o!=NULL){
+    if(int_map.find(*CAST_INT(obj)->val)!=int_map.end()){
+        FPLINCREF(int_map[*CAST_INT(obj)->val]);
         FPLDECREF(obj);
-        return o;
+        return int_map[*CAST_INT(obj)->val];
     }
+
+    int_map[*CAST_INT(obj)->val]=obj;
+
     return obj;
 }
 
@@ -477,5 +495,6 @@ object* int_bool(object* self){
 }
 
 void int_del(object* obj){
+    int_map.erase(*((IntObject*)obj)->val);
     delete ((IntObject*)obj)->val;
 }

@@ -1,9 +1,4 @@
 object* bytes_new_frombytearr(char* arr, int len){
-    object* o = in_immutables_bytes(arr,len);
-    if (o!=NULL){
-        return o;
-    }
-
     object* obj=new_object(&BytesType);
     
     CAST_BYTES(obj)->val=arr;
@@ -12,11 +7,6 @@ object* bytes_new_frombytearr(char* arr, int len){
 }
 
 object* bytes_new_frombyte(char arr){
-    object* o = in_immutables_bytes(&arr, 1);
-    if (o!=NULL){
-        return o;
-    }
-    
     object* obj=new_object(&BytesType);
     
     char* c=(char*)fpl_malloc(sizeof(char));
@@ -34,12 +24,6 @@ object* bytes_new(object* type, object* args, object* kwargs){
     }
 
     if (len==0){
-        char c_='\0';
-        object* o = in_immutables_bytes(&c_, 0);
-        if (o==NULL){
-            return o;
-        }
-
         object* obj=new_object(&BytesType);
     
         char* c=(char*)fpl_malloc(sizeof(char));
@@ -78,10 +62,16 @@ object* bytes_new(object* type, object* args, object* kwargs){
                     vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", o->type->name->c_str());
                     return NULL; 
                 }
+                
+                if (CAST_INT(intob)->val->to_int()>255 || CAST_INT(intob)->val->to_int()<0){
+                    vm_add_err(&ValueError, vm, "Expected value in range(0, 256), got %d", CAST_INT(intob)->val->to_int());
+                    return NULL;
+                }
                 CAST_BYTES(obj)->val[i++]=(char)(CAST_INT(intob)->val->to_int());
                 
-                if (i==128){
+                if (i==len){
                     CAST_BYTES(obj)->val=(char*)fpl_realloc((void*)CAST_BYTES(obj)->val, i+=1);
+                    len+=1;
                 }
                 
                 o=iter->type->slot_next(iter);
@@ -99,12 +89,6 @@ object* bytes_new(object* type, object* args, object* kwargs){
             CAST_BYTES(obj)->len=CAST_STRING(o)->val->size();
             memcpy(CAST_BYTES(obj)->val, CAST_STRING(o)->val->c_str(), CAST_STRING(o)->val->size());
         }
-        object* ob = in_immutables_bytes(CAST_BYTES(obj)->val, CAST_BYTES(obj)->len);
-        if (ob!=NULL){
-            FPLDECREF(obj);
-            return ob;
-        }
-        
         return obj;
     }
 
@@ -212,7 +196,7 @@ object* bytes_cmp(object* self, object* other, uint8_t type){
         if (CAST_BYTES(self)->len!=CAST_BYTES(other)->len){
             return new_bool_false();
         }
-        if (memcmp(CAST_BYTES(self)->val, CAST_BYTES(other)->val, CAST_BYTES(self)->len)){
+        if (memcmp(CAST_BYTES(self)->val, CAST_BYTES(other)->val, CAST_BYTES(self)->len)==0){
             return new_bool_true();
         }
         return new_bool_false();
@@ -221,7 +205,7 @@ object* bytes_cmp(object* self, object* other, uint8_t type){
         if (CAST_BYTES(self)->len==CAST_BYTES(other)->len){
             return new_bool_false();
         }
-        if (!memcmp(CAST_BYTES(self)->val, CAST_BYTES(other)->val, CAST_BYTES(self)->len)){
+        if (!memcmp(CAST_BYTES(self)->val, CAST_BYTES(other)->val, CAST_BYTES(self)->len)==0){
             return new_bool_true();
         }
         return new_bool_false();
@@ -264,7 +248,7 @@ object* bytes_iter_cmp(object* self, object* other, uint8_t type){
         if (CAST_BYTESITER(self)->len!=CAST_BYTESITER(other)->len){
             return new_bool_false();
         }
-        if (memcmp(CAST_BYTESITER(self)->val, CAST_BYTESITER(other)->val, CAST_BYTESITER(self)->len)){
+        if (memcmp(CAST_BYTESITER(self)->val, CAST_BYTESITER(other)->val, CAST_BYTESITER(self)->len)==0){
             return new_bool_true();
         }
         return new_bool_false();
@@ -273,7 +257,7 @@ object* bytes_iter_cmp(object* self, object* other, uint8_t type){
         if (CAST_BYTESITER(self)->len==CAST_BYTESITER(other)->len){
             return new_bool_false();
         }
-        if (!memcmp(CAST_BYTESITER(self)->val, CAST_BYTESITER(other)->val, CAST_BYTESITER(self)->len)){
+        if (!memcmp(CAST_BYTESITER(self)->val, CAST_BYTESITER(other)->val, CAST_BYTESITER(self)->len)==0){
             return new_bool_true();
         }
         return new_bool_false();
@@ -299,12 +283,6 @@ object* bytes_add(object* self, object* other){
     
     CAST_BYTES(obj)->val=c;
     CAST_BYTES(obj)->len=CAST_BYTES(self)->len+CAST_BYTES(other)->len;
-
-    object* o = in_immutables_bytes(c, CAST_BYTES(obj)->len);
-    if (o!=NULL){
-        FPLDECREF(obj);
-        return o;
-    }
     
     return obj;
 }
@@ -328,12 +306,5 @@ object* bytes_mul(object* self, object* other){
     
     CAST_BYTES(obj)->val=c;
     CAST_BYTES(obj)->len=len;
-
-    object* o = in_immutables_bytes(c, len);
-    if (o!=NULL){
-        FPLDECREF(obj);
-        return o;
-    }
-    
     return obj;
 }

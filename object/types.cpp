@@ -2268,6 +2268,7 @@ object* range_cmp(object* self, object* other, uint8_t type);
 typedef struct RangeObject{
     OBJHEAD_VAR
     uint32_t start;
+    uint32_t step;
     uint32_t end;
     uint32_t idx;
 }RangeObject;
