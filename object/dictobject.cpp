@@ -20,7 +20,9 @@ object* dict_new(object* type, object* args, object* kwargs){
         return (object*)obj;    
     }
     if (CAST_LIST(args)->size!=0 && object_istype(list_index_int(args, 0)->type, &DictType)){
-        return FPLINCREF(list_index_int(args, 0));
+        object* o=list_index_int(args, 0);
+        FPLINCREF(o);
+        return o;
     }
     if (CAST_LIST(args)->size!=0){
         object* o=list_index_int(args, 0);
@@ -133,7 +135,8 @@ object* dict_set(object* self, object* key, object* val){
             return new_none();
         } 
         object* o=(*CAST_DICT(self)->val)[key];
-        (*CAST_DICT(self)->val)[key]=FPLINCREF(val);
+        FPLINCREF(val);
+        (*CAST_DICT(self)->val)[key]=val;
         FPLDECREF(o);
         CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
         return new_none();
@@ -146,7 +149,8 @@ object* dict_set(object* self, object* key, object* val){
                 return new_none();
             }
             object* o=(*CAST_DICT(self)->val)[k.first];
-            (*CAST_DICT(self)->val)[k.first]=FPLINCREF(val);
+            FPLINCREF(val);
+            (*CAST_DICT(self)->val)[k.first]=val;
             FPLDECREF(o);
             CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
             return new_none();
@@ -155,8 +159,9 @@ object* dict_set(object* self, object* key, object* val){
     
     CAST_DICT(self)->keys->push_back(key);
 
-    
-    (*CAST_DICT(self)->val)[FPLINCREF(key)]=FPLINCREF(val);
+    FPLINCREF(key);
+    FPLINCREF(val);
+    (*CAST_DICT(self)->val)[key]=val;
     CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
     return new_none();
 }
@@ -266,8 +271,11 @@ object* dict_iter(object* self){
     CAST_DICTITER(iter)->keys->clear();
     CAST_DICTITER(iter)->idx=0;
     for (auto k: *CAST_DICT(self)->val){
-        (*CAST_DICTITER(iter)->val)[FPLINCREF(k.first)]=FPLINCREF(k.second);
-        CAST_DICTITER(iter)->keys->push_back(FPLINCREF(k.first));
+        FPLINCREF(k.first);
+        FPLINCREF(k.first);
+        FPLINCREF(k.second);
+        (*CAST_DICTITER(iter)->val)[k.first]=k.second;
+        CAST_DICTITER(iter)->keys->push_back(k.first);
     }
     return iter;
 }

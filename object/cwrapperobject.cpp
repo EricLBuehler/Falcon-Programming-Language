@@ -16,7 +16,8 @@ object* cwrapper_new_fromfunc(cwrapperfunc func, string name, object* tp){
     object* o=new_object(&CWrapperType);
     CAST_CWRAPPER(o)->function=func;
     CAST_CWRAPPER(o)->name=new string(name);
-    CAST_CWRAPPER(o)->tp=FPLINCREF(tp);
+    FPLINCREF(tp);
+    CAST_CWRAPPER(o)->tp=tp;
     return o;
 }
 
@@ -50,7 +51,8 @@ void cwrapper_del(object* self){
 
 object* cwrapper_descrget(object* obj, object* self, object* owner){
     if (owner==NULL || object_istype(owner->type, &NoneType)){
-        return FPLINCREF(self);
+        FPLINCREF(self);
+        return self;
     }
     return wrappermethod_new_impl(self, obj);
 }

@@ -33,7 +33,8 @@ object* new_float_fromstr(string v){
 }
 
 object* float_float(object* self){
-    return FPLINCREF(self);
+    FPLINCREF(self);
+    return self;
 }
 
 object* float_int(object* self){
@@ -61,7 +62,8 @@ object* float_new(object* type, object* args, object* kwargs){
     object* val=list_index_int(args, 0);
     
     if (object_istype(val->type, CAST_TYPE(type))){
-        return FPLINCREF(val);
+        FPLINCREF(val);
+        return val;
     }
     
     object* obj=object_float(val);
@@ -194,7 +196,8 @@ object* float_abs(object* self){
     if (CAST_FLOAT(self)->val<0){
         return new_float_fromdouble(CAST_FLOAT(self)->val*-1);
     }
-    return FPLINCREF(self);
+    FPLINCREF(self);
+    return self;
 }
 
 object* float_neg(object* self){

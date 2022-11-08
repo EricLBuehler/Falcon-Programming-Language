@@ -50,7 +50,9 @@ object* bytes_new(object* type, object* args, object* kwargs){
     }
 
     if (object_istype(list_index_int(args, 0)->type, &BytesType)){
-        return FPLINCREF(list_index_int(args, 0));
+        object* ret=list_index_int(args, 0);
+        FPLINCREF(ret);
+        return ret;
     }
     
     if (list_index_int(args, 0)->type->slot_iter!=NULL){

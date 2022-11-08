@@ -1,7 +1,9 @@
 object* wrappermethod_new_impl(object* func, object* instance){
     object* method=new_object(&WrapperMethodType);
-    CAST_METHOD(method)->function=FPLINCREF(func);
-    CAST_METHOD(method)->instance=FPLINCREF(instance);
+    FPLINCREF(func);
+    CAST_METHOD(method)->function=func;
+    FPLINCREF(instance);
+    CAST_METHOD(method)->instance=instance;
     return method;
 }
 

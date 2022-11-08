@@ -11,10 +11,12 @@ object* zip_new(object* type, object* args, object* kwargs){
     CAST_ZIP(zip)->n_iterators=niterators;
     CAST_ZIP(zip)->iterators=(object**)fpl_malloc(sizeof(object*)*niterators);
     for (uint32_t i=0; i<niterators; i++){
-        CAST_ZIP(zip)->iterators[i]=FPLINCREF(list_index_int(args, i));
+        object* o=list_index_int(args, i);
+        FPLINCREF(o);
+        CAST_ZIP(zip)->iterators[i]=o;
         if (CAST_ZIP(zip)->iterators[i]->type->slot_iter!=NULL){
             FPLDECREF(CAST_ZIP(zip)->iterators[i]);
-            CAST_ZIP(zip)->iterators[i]=FPLINCREF(CAST_ZIP(zip)->iterators[i]->type->slot_iter(CAST_ZIP(zip)->iterators[i]));
+            CAST_ZIP(zip)->iterators[i]=CAST_ZIP(zip)->iterators[i]->type->slot_iter(CAST_ZIP(zip)->iterators[i]);
         }
         else{
             FPLDECREF(zip);

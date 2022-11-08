@@ -6,7 +6,9 @@ object* classmethod_new(object* type, object* args, object* kwargs){
     }
 
     object* method=new_object(CAST_TYPE(type));
-    CAST_CLASSMETHOD(method)->function=FPLINCREF(list_index_int(args, 0));
+    object* func=list_index_int(args, 0);
+    FPLINCREF(list_index_int(args, 0));
+    CAST_CLASSMETHOD(method)->function=func;
     return method;
 }
 
@@ -23,7 +25,8 @@ object* classmethod_repr(object* self){
 
 object* classmethod_descrget(object* instance, object* self, object* owner){
     if (owner==NULL || object_istype(owner->type, &NoneType)){
-        return FPLINCREF(self);
+        FPLINCREF(self);
+        return self;
     }
     return method_new_impl(CAST_STATICMETHOD(self)->function, (object*)instance->type);
 }

@@ -1,7 +1,8 @@
 //Expects strong reference for locals!
 object* new_generator_impl(object* func, object* locals){
     object* obj=new_object(&GeneratorType);
-    CAST_GEN(obj)->func=FPLINCREF(func);
+    FPLINCREF(func);
+    CAST_GEN(obj)->func=func;
     CAST_GEN(obj)->locals=locals;
     CAST_GEN(obj)->ip=0;
     CAST_GEN(obj)->done=false;
@@ -70,7 +71,8 @@ object* gen_next(object* self){
             add_callframe(vm->callstack, callstack_head(CAST_GEN(self)->callstack).line, callstack_head(CAST_GEN(self)->callstack).name,\
                 callstack_head(CAST_GEN(self)->callstack).code, callstack_head(CAST_GEN(self)->callstack).callable, callstack_head(CAST_GEN(self)->callstack).ip);
             FPLDECREF(callstack_head(vm->callstack).annotations);
-            callstack_head(vm->callstack).annotations=FPLINCREF(callstack_head(CAST_GEN(self)->callstack).annotations);
+            callstack_head(vm->callstack).annotations=callstack_head(CAST_GEN(self)->callstack).annotations;
+            FPLINCREF(callstack_head(CAST_GEN(self)->callstack).annotations);
             pop_callframe(CAST_GEN(self)->callstack);
         }
     }
@@ -142,7 +144,8 @@ object* gen_next(object* self){
             add_callframe(CAST_GEN(self)->callstack, callstack_head(vm->callstack).line, callstack_head(vm->callstack).name,\
                 callstack_head(vm->callstack).code, callstack_head(vm->callstack).callable, callstack_head(vm->callstack).ip);
             FPLDECREF(callstack_head(CAST_GEN(self)->callstack).annotations);
-            callstack_head(CAST_GEN(self)->callstack).annotations=FPLINCREF(callstack_head(vm->callstack).annotations);
+            callstack_head(CAST_GEN(self)->callstack).annotations=callstack_head(vm->callstack).annotations;
+            FPLINCREF(callstack_head(vm->callstack).annotations);
             pop_callframe(vm->callstack);
         }
     }

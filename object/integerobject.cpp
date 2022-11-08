@@ -64,7 +64,8 @@ object* new_int_frombigint(BigInt* v){
 }
 
 object* int_int(object* self){
-    return FPLINCREF(self);
+    FPLINCREF(self);
+    return self;
 }
 
 object* int_float(object* self){
@@ -92,7 +93,8 @@ object* int_new(object* type, object* args, object* kwargs){
     object* val=list_index_int(args, 0);
     
     if (object_istype(val->type, CAST_TYPE(type))){
-        return FPLINCREF(val);
+        FPLINCREF(val);
+        return val;
     }
     
     object* obj=object_int(val);
@@ -378,7 +380,8 @@ object* int_abs(object* self){
     if (*CAST_INT(self)->val<0){
         return new_int_frombigint(new BigInt(*CAST_INT(self)->val*-1));
     }
-    return FPLINCREF(self);
+    FPLINCREF(self);
+    return self;
 }
 
 object* int_neg(object* self){

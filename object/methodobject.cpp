@@ -1,6 +1,7 @@
 object* method_new_impl(object* func, object* instance){
     object* method=new_object(&MethodType);
-    CAST_METHOD(method)->function=FPLINCREF(func);
+    FPLINCREF(func);
+    CAST_METHOD(method)->function=func;
     if (instance!=NULL){
         FPLINCREF(instance);
     }
@@ -16,8 +17,12 @@ object* method_new(object* type, object* args, object* kwargs){
     }
 
     object* method=new_object(CAST_TYPE(type));
-    CAST_METHOD(method)->function=FPLINCREF(list_index_int(args, 0));
-    CAST_METHOD(method)->instance=FPLINCREF(list_index_int(args, 1));
+    object* o=list_index_int(args, 0);
+    FPLINCREF(o);
+    CAST_METHOD(method)->function=o;
+    o=list_index_int(args, 1);
+    FPLINCREF(o);
+    CAST_METHOD(method)->instance=o;
     return method;
 }
 

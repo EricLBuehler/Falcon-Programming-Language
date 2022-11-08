@@ -26,7 +26,8 @@ object* offsetwrapper_repr(object* self){
 
 object* offsetwrapper_descrget(object* obj, object* self, object* owner){
     if (owner==NULL || object_istype(owner->type, &NoneType)){
-        return FPLINCREF(self);
+        FPLINCREF(self);
+        return self;
     }
     object* ob= (*(object**)((char*)obj + CAST_OFFSETWRAPPER(self)->offset));
     return ob;

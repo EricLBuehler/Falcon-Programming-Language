@@ -3651,6 +3651,8 @@ void setup_bytesiter_type(){
 
 
 
+
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 object* new_type(string* name, object* bases, object* dict);
@@ -3677,8 +3679,12 @@ object* type_new(object* type, object* args, object* kwargs){
     }
     //
     string* name=CAST_STRING(list_index_int(args, 0))->val;
-    object* bases=FPLINCREF(list_index_int(args, 1));
-    object* dict=FPLINCREF(list_index_int(args, 2));
+    object* o=list_index_int(args, 1);
+    FPLINCREF(o);
+    object* bases=o;
+    o=list_index_int(args, 2);
+    FPLINCREF(o);
+    object* dict=o;
     return new_type(name, bases, dict);
 }
 

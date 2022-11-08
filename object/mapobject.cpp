@@ -10,13 +10,17 @@ object* map_new(object* type, object* args, object* kwargs){
     CAST_MAP(map)->idx=0;
     CAST_MAP(map)->n_iterators=niterators-1;
     CAST_MAP(map)->iterators=(object**)fpl_malloc(sizeof(object*)*(niterators-1));
-    CAST_MAP(map)->func=FPLINCREF(list_index_int(args,0));
+    object* o=list_index_int(args,0);
+    FPLINCREF(o);
+    CAST_MAP(map)->func=o;
     
     for (uint32_t i=1; i<niterators; i++){
-        CAST_MAP(map)->iterators[i-1]=FPLINCREF(list_index_int(args, i));
+        object* o=list_index_int(args, i);
+        FPLINCREF(o);
+        CAST_MAP(map)->iterators[i-1]=o;
         if (CAST_MAP(map)->iterators[i-1]->type->slot_iter!=NULL){
             FPLDECREF(CAST_MAP(map)->iterators[i-1]);
-            CAST_MAP(map)->iterators[i-1]=FPLINCREF(CAST_MAP(map)->iterators[i-1]->type->slot_iter(CAST_MAP(map)->iterators[i-1]));
+            CAST_MAP(map)->iterators[i-1]=CAST_MAP(map)->iterators[i-1]->type->slot_iter(CAST_MAP(map)->iterators[i-1]);
         }
         else{
             FPLDECREF(map);

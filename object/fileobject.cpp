@@ -162,7 +162,8 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
             vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
             return NULL;
         }
-        return FPLINCREF(self);
+        FPLINCREF(self);
+        return self;
     }
     
     string s=object_cstr(list_index_int(args, 1));
@@ -172,7 +173,8 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
         vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
         return NULL;
     }
-    return FPLINCREF(self);
+    FPLINCREF(self);
+    return self;
 }
 
 object* file_close_meth(object* selftp, object* args, object* kwargs){   

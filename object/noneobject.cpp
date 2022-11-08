@@ -4,7 +4,8 @@ object* _new_none(){
 }
 
 object* new_none(){
-    return FPLINCREF(noneobj);
+    FPLINCREF(noneobj);
+    return noneobj;
 }
 
 object* none_repr(object* self){

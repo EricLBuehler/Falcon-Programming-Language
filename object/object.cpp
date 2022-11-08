@@ -27,9 +27,7 @@ inline void FPLDECREF(struct object* object){
     return;
 } 
 
-
-
-inline object* FPLINCREF(struct object* object){
+inline object* _FPLINCREF(struct object* object){
     object->refcnt++;
     return object;
 }
@@ -41,7 +39,8 @@ object* in_immutables_bytes(char* val, size_t len){
         if (o->type->name==BytesType.name){
             if (len==CAST_BYTES(o)->len && \
             memcmp(val, CAST_BYTES(o)->val, len) ){
-                return FPLINCREF(o);
+                FPLINCREF(o);
+                return o;
             }
         }
         o=o->ob_next;
@@ -55,7 +54,8 @@ object* in_immutables_int(int i){
     while (o){
         if (o->type->name==IntType.name){
             if ((*CAST_INT(o)->val)==i){
-                return FPLINCREF(o);
+                FPLINCREF(o);
+                return o;
             }
         }
         o=o->ob_next;
@@ -69,7 +69,8 @@ object* in_immutables_float(double v){
     while (o){
         if (o->type->name==FloatType.name){
             if (CAST_FLOAT(o)->val==v){
-                return FPLINCREF(o);
+                FPLINCREF(o);
+                return o;
             }
         }
         o=o->ob_next;
@@ -83,7 +84,8 @@ object* in_immutables_str(string s){
     while (o){
         if (o->type->name==StrType.name){
             if ((*CAST_STRING(o)->val)==s){
-                return FPLINCREF(o);
+                FPLINCREF(o);
+                return o;
             }
         }
         o=o->ob_next;
@@ -776,6 +778,7 @@ object* object_abs(object* left){
 }
 
 object* generic_iter_iter(object* self){
+    FPLINCREF(self);
     return self;
 }
 

@@ -8,14 +8,31 @@ object* code_new_fromargs(object* args){
         //Error
         return NULL;
     }
-    CAST_CODE(obj)->co_names=FPLINCREF(list_index_int(args, 0));
-    CAST_CODE(obj)->co_consts=FPLINCREF(list_index_int(args, 1));
-    CAST_CODE(obj)->co_code=FPLINCREF(list_index_int(args, 2));
-    CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
-    CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
-    CAST_CODE(obj)->co_detailed_lines=FPLINCREF(list_index_int(args, 5));
-    CAST_CODE(obj)->co_stack_size=FPLINCREF(list_index_int(args, 6));
-    CAST_CODE(obj)->co_blockstack_size=FPLINCREF(list_index_int(args, 7));
+
+    object* o=list_index_int(args, 0);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_names=o;
+    o=list_index_int(args, 1);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_consts=o;
+    o=list_index_int(args, 2);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_code=o;
+    o=list_index_int(args, 3);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_file=o;
+    o=list_index_int(args, 4);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_lines=o;
+    o=list_index_int(args, 5);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_detailed_lines=o;
+    o=list_index_int(args, 6);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_stack_size=o;
+    o=list_index_int(args, 7);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_blockstack_size=o;
 
     const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
     CAST_CODE(obj)->code=new uint32_t[len];
@@ -35,14 +52,31 @@ object* code_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected 8 arguments, got %d", CAST_LIST(args)->size);
         return NULL;
     }
-    CAST_CODE(obj)->co_names=FPLINCREF(list_index_int(args, 0));
-    CAST_CODE(obj)->co_consts=FPLINCREF(list_index_int(args, 1));
-    CAST_CODE(obj)->co_code=FPLINCREF(list_index_int(args, 2));
-    CAST_CODE(obj)->co_file=FPLINCREF(list_index_int(args, 3));
-    CAST_CODE(obj)->co_lines=FPLINCREF(list_index_int(args, 4));
-    CAST_CODE(obj)->co_detailed_lines=FPLINCREF(list_index_int(args, 5));
-    CAST_CODE(obj)->co_stack_size=FPLINCREF(list_index_int(args, 6));
-    CAST_CODE(obj)->co_blockstack_size=FPLINCREF(list_index_int(args, 7));
+    
+    object* o=list_index_int(args, 0);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_names=o;
+    o=list_index_int(args, 1);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_consts=o;
+    o=list_index_int(args, 2);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_code=o;
+    o=list_index_int(args, 3);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_file=o;
+    o=list_index_int(args, 4);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_lines=o;
+    o=list_index_int(args, 5);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_detailed_lines=o;
+    o=list_index_int(args, 6);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_stack_size=o;
+    o=list_index_int(args, 7);
+    FPLINCREF(o);
+    CAST_CODE(obj)->co_blockstack_size=o;
     
     const uint32_t len=CAST_LIST(CAST_CODE(obj)->co_code)->size;
     CAST_CODE(obj)->code=new uint32_t[len];

@@ -8,7 +8,8 @@ object* super_new(object* type, object* args, object* kwargs){
     object* ob=tuple_index_int(args, 0);
 
     object* super=new_object(CAST_TYPE(type));
-    CAST_SUPER(super)->ob=FPLINCREF(ob);
+    FPLINCREF(ob);
+    CAST_SUPER(super)->ob=ob;
     
     return super;
 }

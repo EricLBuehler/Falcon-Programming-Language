@@ -11,21 +11,27 @@ object* property_new(object* type, object* args, object* kwargs){
     CAST_PROPERTY(property)->set=NULL;
     CAST_PROPERTY(property)->del=NULL;
     if (len>=1){
-        CAST_PROPERTY(property)->get=FPLINCREF(list_index_int(args, 0));
+        object* o=list_index_int(args, 0);
+        FPLINCREF(o);
+        CAST_PROPERTY(property)->get=o;
         if (!istrue(object_iscallable(CAST_PROPERTY(property)->get))){
             vm_add_err(&TypeError, vm, "Expected callable, got '%s' object", CAST_PROPERTY(property)->get->type->name->c_str());
             return NULL;            
         }
     }
     if (len>=2){
-        CAST_PROPERTY(property)->set=FPLINCREF(list_index_int(args, 1));
+        object* o=list_index_int(args, 1);
+        FPLINCREF(o);
+        CAST_PROPERTY(property)->set=o;
         if (!istrue(object_iscallable(CAST_PROPERTY(property)->set))){
             vm_add_err(&TypeError, vm, "Expected callable, got '%s' object", CAST_PROPERTY(property)->set->type->name->c_str());
             return NULL;            
         }
     }
     if (len>=3){
-        CAST_PROPERTY(property)->del=FPLINCREF(list_index_int(args, 2));
+        object* o=list_index_int(args, 2);
+        FPLINCREF(o);
+        CAST_PROPERTY(property)->del=o;
         if (!istrue(object_iscallable(CAST_PROPERTY(property)->del))){
             vm_add_err(&TypeError, vm, "Expected callable, got '%s' object", CAST_PROPERTY(property)->del->type->name->c_str());
             return NULL;            
@@ -71,7 +77,8 @@ object* property_repr(object* self){
 }
 object* property_descrget(object* instance, object* self, object* owner){
     if (owner==NULL || object_istype(owner->type, &NoneType)){
-        return FPLINCREF(self);
+        FPLINCREF(self);
+        return self;
     }
     if (CAST_PROPERTY(self)->get==NULL){
         vm_add_err(&AttributeError, vm, "property of '%s' object has no getter", object_cstr(instance).c_str());
@@ -121,8 +128,9 @@ object* property_getter(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    
-    CAST_PROPERTY(self)->get=FPLINCREF(list_index_int(args, 1));
+    object* o=list_index_int(args, 1);
+    FPLINCREF(o);
+    CAST_PROPERTY(self)->get=o;
     if (!istrue(object_iscallable(CAST_PROPERTY(self)->get))){
         vm_add_err(&TypeError, vm, "Expected callable, got '%s' object", CAST_PROPERTY(self)->get->type->name->c_str());
         return NULL;            
@@ -137,8 +145,9 @@ object* property_setter(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    
-    CAST_PROPERTY(self)->set=FPLINCREF(list_index_int(args, 1));
+    object* o=list_index_int(args, 1);
+    FPLINCREF(o);
+    CAST_PROPERTY(self)->set=o;
     if (!istrue(object_iscallable(CAST_PROPERTY(self)->set))){
         vm_add_err(&TypeError, vm, "Expected callable, got '%s' object", CAST_PROPERTY(self)->set->type->name->c_str());
         return NULL;            
@@ -153,8 +162,9 @@ object* property_deleter(object* selftp, object* args, object* kwargs){
     }
 
     object* self=list_index_int(args, 0);
-    
-    CAST_PROPERTY(self)->del=FPLINCREF(list_index_int(args, 1));
+    object* o=list_index_int(args, 1);
+    FPLINCREF(o);
+    CAST_PROPERTY(self)->del=o;
     if (!istrue(object_iscallable(CAST_PROPERTY(self)->del))){
         vm_add_err(&TypeError, vm, "Expected callable, got '%s' object", CAST_PROPERTY(self)->del->type->name->c_str());
         return NULL;            

@@ -27,11 +27,13 @@ object* _new_bool_false(){
 }
 
 object* new_bool_true(){
-    return FPLINCREF(trueobj);
+    FPLINCREF(trueobj);
+    return trueobj;
 }
 
 object* new_bool_false(){
-    return FPLINCREF(falseobj);
+    FPLINCREF(falseobj);
+    return falseobj;
 }
 
 object* bool_pow(object* self, object* other){

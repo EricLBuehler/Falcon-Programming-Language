@@ -20,7 +20,9 @@ object* set_new(object* type, object* args, object* kwargs){
         return NULL;
     }
     if (object_istype(list_index_int(args, 0)->type, &SetType)){
-        return FPLINCREF(list_index_int(args, 0));
+        object* o=list_index_int(args, 0);
+        FPLINCREF(o);
+        return o;
     }
     if (list_index_int(args, 0)->type->slot_iter!=NULL){
         object* o=list_index_int(args, 0);
@@ -82,7 +84,8 @@ void set_append(object* self, object* obj){
             return;
         }
     }
-    CAST_SET(self)->vec->push_back(FPLINCREF(obj));
+    FPLINCREF(obj);
+    CAST_SET(self)->vec->push_back(obj);
 }
 
 void set_del(object* obj){
@@ -155,7 +158,8 @@ object* set_iter(object* self){
     CAST_SETITER(obj)->idx=0;
 
     for (object* o: (*CAST_SET(self)->vec)){
-        CAST_SETITER(obj)->vec->push_back(FPLINCREF(o));
+        FPLINCREF(o);
+        CAST_SETITER(obj)->vec->push_back(o);
     }
     
     return obj;

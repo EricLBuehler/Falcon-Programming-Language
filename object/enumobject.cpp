@@ -6,10 +6,12 @@ object* enum_new(object* type, object* args, object* kwargs){
     }
 
     object* enumer=new_object(CAST_TYPE(type));
-    CAST_ENUM(enumer)->iterator=FPLINCREF(list_index_int(args, 0));
+    object* o=list_index_int(args, 0);
+    FPLINCREF(o);
+    CAST_ENUM(enumer)->iterator=o;
     if (CAST_ENUM(enumer)->iterator->type->slot_iter!=NULL){
         FPLDECREF(CAST_ENUM(enumer)->iterator);
-        CAST_ENUM(enumer)->iterator=FPLINCREF(CAST_ENUM(enumer)->iterator->type->slot_iter(CAST_ENUM(enumer)->iterator));
+        CAST_ENUM(enumer)->iterator=CAST_ENUM(enumer)->iterator->type->slot_iter(CAST_ENUM(enumer)->iterator);
  
         if (CAST_ENUM(enumer)->iterator==NULL){
             vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", CAST_ENUM(enumer)->iterator->type->name->c_str());

@@ -201,7 +201,8 @@ void func_del(object* obj){
 
 object* func_descrget(object* obj, object* self, object* owner){
     if (owner==NULL || object_istype(owner->type, &NoneType)){
-        return FPLINCREF(self);
+        FPLINCREF(self);
+        return self;
     }
     
     return method_new_impl(self, obj);

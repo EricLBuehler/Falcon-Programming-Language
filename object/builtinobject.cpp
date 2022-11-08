@@ -198,7 +198,7 @@ void setup_builtins(){
     object* hasattrkwargs=new_tuple();
     builtins[63]=new_builtin((builtinfunc)builtin_sum, str_new_fromstr("hasattr"), hasattrargs, hasattrkwargs, 2, false);
 
-    builtins[64]=(object*)&BytesType;  
+    builtins[64]=(object*)&BytesType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

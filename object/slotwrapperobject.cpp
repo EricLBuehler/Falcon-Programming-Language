@@ -52,7 +52,8 @@ object* slotwrapper_str(object* self){
 
 object* slotwrapper_descrget(object* obj, object* self, object* owner){
     if (owner==NULL || object_istype(owner->type, &NoneType)){
-        return FPLINCREF(self);
+        FPLINCREF(self);
+        return self;
     }
     return CAST_SLOTWRAPPER(self)->get(obj);
 }

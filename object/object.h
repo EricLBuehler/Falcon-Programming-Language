@@ -168,9 +168,10 @@ bool hit_memory_error=false;
 
 Parser parser;
 
+#define FPLINCREF(object) object->refcnt++;
 
 inline void FPLDECREF(struct object* object);
-inline object* FPLINCREF(struct object* object);
+inline object* _FPLINCREF(struct object* object);
 object* in_immutables_bytes(object* obj);
 object* in_immutables_float(object* obj);
 object* in_immutables_int(object* obj);
@@ -390,7 +391,6 @@ enum opcode{
     LOAD_BUILD_CLASS,
     LOAD_ATTR,
     STORE_ATTR,
-    CALL_METHOD,
     BUILD_LIST,
     BINOP_IS,
     BINOP_EE,
@@ -454,7 +454,6 @@ enum opcode{
     BINOP_ISNOT,
     BINOP_FLDIV,
     BINOP_IFLDIV,
-    LOAD_METHOD,
     TERNARY_TEST,
     CALL_FUNCTION_BOTTOM,
     ANNOTATE_GLOBAL,
