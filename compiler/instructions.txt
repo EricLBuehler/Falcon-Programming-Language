@@ -33,10 +33,6 @@ STORE_ATTR(idx) - Implement TOS.names[idx] =TOS-1
 
 LOAD_BUILD_CLASS - Loads __build_class__
 
-CALL_METHOD(argc) - TOS is a tuple of star kwargs objects. TOS-1 is a tuple of star args objects. TOS-2 is a tuple of kwargs names (keys).
-    Below that are the keyword arguments, and below that, the positional arguments following (left->right descending). Below, the callable and head 
-    are located. argc is the total number of arguemnts passed.
-
 BUILD_TUPLE(n) - Pops n frames of stack (L->R and Top->Down) and pushes tuple
 
 BUILD_DICT(n) - Pops n*2 frames of stack (L->R and Top->Down) with name above value and pushes dict
@@ -157,8 +153,6 @@ BITWISE_IN - Implements TOS in TOS-1
 BINOP_FLDIV - Implements TOS//TOS-1
 
 BINOP_IFLDIV - Implements TOS//TOS-1 and assigns to names[n]
-
-LOAD_METHOD(idx) - Similar to LOAD_ATTR but leaves TOS on TOS
 
 TERNARY_TEST - If TOS-2 is true, then put TOS on stack, otherwise put TOS-1
 

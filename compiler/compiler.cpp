@@ -98,9 +98,6 @@ int get_stack_size_inc(enum opcode opcode, uint32_t arg){
         case STORE_ATTR: {
             return 0;
         }
-        case CALL_METHOD: {
-            return 0;
-        }
         case BUILD_LIST: {
             if (arg==0){
                 return 1;
@@ -296,9 +293,6 @@ int get_stack_size_inc(enum opcode opcode, uint32_t arg){
         case BINOP_IFLDIV: {
             return 0;
         }
-        case LOAD_METHOD: {
-            return 1;
-        }
         case TERNARY_TEST: {
             return 0;
         }
@@ -354,6 +348,9 @@ int get_stack_size_inc(enum opcode opcode, uint32_t arg){
             return 0;
         }
         case BITWISE_XOR: {
+            return 0;
+        }
+        case BYTES_STRING: {
             return 0;
         }
     }
@@ -1698,7 +1695,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         idx=object_find(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                     }
 
-                    add_instruction(compiler, compiler->instructions,LOAD_METHOD, idx, GET_ANNO_N(names->at(i)));
+                    add_instruction(compiler, compiler->instructions,LOAD_ATTR, idx, GET_ANNO_N(names->at(i)));
 
                     object* kwargs=new_tuple();
 
@@ -1767,7 +1764,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     //Num of pos args
                     uint32_t argc=DOTCALL(expr->node)->args->size()+DOTCALL(expr->node)->kwargs->size();                   
 
-                    add_instruction(compiler, compiler->instructions,CALL_METHOD, argc, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,CALL_FUNCTION_BOTTOM, argc, GET_ANNO_N(expr));
 
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
@@ -4234,7 +4231,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             break;     
         }
-
     }
     
     if (!compiler->nofree){
