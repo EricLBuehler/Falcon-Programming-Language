@@ -246,16 +246,6 @@ int execute(string data, bool objdump, bool verbose){
             }
             cout<<"\n";
 
-            cout<<"Immutables:\n";
-            
-            node=immutable_objs;
-            while (node){
-                cout<<(*CAST_STRING(node->type->slot_repr(node))->val)<<" ";
-                cout<<node->type->name->c_str()<<" has "<<node->refcnt<<" refs\n";
-                node=node->ob_next;
-            }
-            cout<<"\n\n";
-
             uint32_t total=0;
             
             node=gc.gen0;
@@ -275,15 +265,8 @@ int execute(string data, bool objdump, bool verbose){
                 node=node->ob_next;
             }
             
-            node=immutable_objs;
-            while (node){
-                total++;
-                node=node->ob_next;
-            }
-            
 
             cout<<"gen0 "<<gc.gen0_n<<"\ngen1 "<<gc.gen1_n<<"\ngen2 "<<gc.gen2_n;
-            cout<<"\nImmutable "<<immutable_size;
             cout<<"\nTotal "<<total;
         }
     }
