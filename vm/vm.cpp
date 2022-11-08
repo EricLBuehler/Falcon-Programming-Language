@@ -695,7 +695,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             return o;
         }
 
-        CALL_FUNCTION: {           
+        CALL_FUNCTION: {
             object* function=pop_dataframe(vm->objstack);
 
             object* stkwargs=pop_dataframe(vm->objstack);
@@ -1138,7 +1138,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         FOR_TOS_ITER: {
-            if (vm->blockstack->size==0 || blockstack_head(vm->blockstack).type!=FOR_BLOCK || (blockstack_head(vm->blockstack).type==FOR_BLOCK && blockstack_head(vm->blockstack).arg!=arg) ){
+            if (blockstack_head(vm->blockstack).arg!=arg && vm->blockstack->size==0 || blockstack_head(vm->blockstack).type!=FOR_BLOCK || (blockstack_head(vm->blockstack).type==FOR_BLOCK) ){
                 add_blockframe(ip, vm, vm->blockstack, arg, FOR_BLOCK);
             }
             
