@@ -87,6 +87,8 @@ volatile bool hit_sigint=false;
 #include <signal.h>
 
 void fpl_startup(){
+    std::setvbuf(stdout, nullptr, _IOFBF, BUFSIZ);
+    std::setvbuf(stdin, nullptr, _IOFBF, BUFSIZ);
     set_new_handler(memory_error);
     new_gc();
     setup_types_consts();
