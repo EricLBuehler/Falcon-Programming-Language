@@ -448,8 +448,22 @@ object* object_getattr_self(object* obj, object* attr){
 }
 
 object* object_genericgetattr_notype(object* obj, object* attr){
-    object* res=object_getattr_self(obj, attr);
-    
+    object* res=NULL;
+    //Check dict
+    if (obj->type->dict_offset!=0){
+        object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
+        if (object_find_bool_dict_keys(dict, attr)){
+            res = dict_get(dict, attr);
+        }
+    }
+    //Check type dict
+    if (obj->type->dict!=0){
+        object* dict = obj->type->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            res = dict_get(dict, attr);
+        }
+    }
+
     if (res==NULL){
         vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
     }
@@ -464,7 +478,21 @@ object* object_genericgetattr_notype(object* obj, object* attr){
 
 
 object* object_genericgetattr(object* obj, object* attr){
-    object* res=object_getattr_self(obj, attr);
+    object* res=NULL;
+    //Check dict
+    if (obj->type->dict_offset!=0){
+        object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
+        if (object_find_bool_dict_keys(dict, attr)){
+            res=dict_get(dict, attr);
+        }
+    }
+    //Check type dict
+    if (obj->type->dict!=0){
+        object* dict = obj->type->dict;
+        if (object_find_bool_dict_keys(dict, attr)){
+            res=dict_get(dict, attr);
+        }
+    }
 
     if (res==NULL){
         //Check bases
