@@ -353,6 +353,24 @@ int get_stack_size_inc(enum opcode opcode, uint32_t arg){
         case BYTES_STRING: {
             return 0;
         }
+        case CALL_FUNCTION_BOTTOM_KW: {
+            return 0;
+        }
+        case CALL_FUNCTION_BOTTOM_U: {
+            return 0;
+        }
+        case CALL_FUNCTION_BOTTOM_KW_U: {
+            return 0;
+        }
+        case CALL_FUNCTION_KW: {
+            return 0;
+        }
+        case CALL_FUNCTION_U: {
+            return 0;
+        }
+        case CALL_FUNCTION_KW_U: {
+            return 0;
+        }
     }
 
     return 0;
@@ -1351,38 +1369,42 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             uint32_t idx;
 
-            if (!object_find_bool(compiler->consts,kwargs)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
-                idx=NAMEIDX(compiler->consts);
+            if (CAST_TUPLE(kwargs)->size != 0){
+                if (!object_find_bool(compiler->consts,kwargs)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, kwargs);
+                }
+                
+                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
             }
-            else{
-                idx=object_find(compiler->consts, kwargs);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
 
-            if (!object_find_bool(compiler->consts,stargs)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
-                idx=NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, stargs);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+            if (CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0){
+                if (!object_find_bool(compiler->consts,stargs)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, stargs);
+                }
+                
+                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
 
-            if (!object_find_bool(compiler->consts,stkwargs)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
-                idx=NAMEIDX(compiler->consts);
+                if (!object_find_bool(compiler->consts,stkwargs)){
+                    //Create object
+                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, stkwargs);
+                }
+                
+                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
             }
-            else{
-                idx=object_find(compiler->consts, stkwargs);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
             
             //Num of pos args
             uint32_t argc=CALL(expr->node)->args->size()+CALL(expr->node)->kwargs->size();
@@ -1392,8 +1414,19 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (cmpexpr==0x100){
                 return cmpexpr;
             }
-            
-            add_instruction(compiler, compiler->instructions,CALL_FUNCTION, argc, GET_ANNO_N(expr));
+
+            if ((CAST_TUPLE(kwargs)->size != 0) && (CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0)){
+                add_instruction(compiler, compiler->instructions,CALL_FUNCTION_KW_U, argc, GET_ANNO_N(expr));
+            }
+            else if ((CAST_TUPLE(kwargs)->size != 0)){
+                add_instruction(compiler, compiler->instructions,CALL_FUNCTION_KW, argc, GET_ANNO_N(expr));
+            }
+            else if ((CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0)){
+                add_instruction(compiler, compiler->instructions,CALL_FUNCTION_U, argc, GET_ANNO_N(expr));
+            }
+            else{
+                add_instruction(compiler, compiler->instructions,CALL_FUNCTION, argc, GET_ANNO_N(expr));
+            }
 
             if (!compiler->keep_return){
                 add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
@@ -1522,6 +1555,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
 
 
+
             add_instruction(compiler, compiler->instructions,MAKE_FUNCTION, 0, GET_ANNO_N(expr));            
         
             add_instruction(compiler, compiler->instructions,LOAD_CONST, nameidx, GET_ANNO_N(expr));
@@ -1535,45 +1569,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
             add_instruction(compiler, compiler->instructions,BUILD_LIST, nbases, GET_ANNO_N(expr));
-            
-            object* stargs=new_tuple();
-            object* stkwargs=new_tuple();
-            object* kwargs=new_tuple();
 
-            if (!object_find_bool(compiler->consts,kwargs)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
-                idx=NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, kwargs);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
 
-            if (!object_find_bool(compiler->consts,stargs)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
-                idx=NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, stargs);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
-            
-
-            if (!object_find_bool(compiler->consts,stkwargs)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
-                idx=NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, stkwargs);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
-            
 
             add_instruction(compiler, compiler->instructions,LOAD_BUILD_CLASS, 0, GET_ANNO_N(expr));
             
@@ -1721,54 +1718,69 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             
                     uint32_t idx;
-
-                    if (!object_find_bool(compiler->consts,kwargs)){
-                        //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
-                        idx=NAMEIDX(compiler->consts);
+                    if (CAST_TUPLE(kwargs)->size != 0){
+                        if (!object_find_bool(compiler->consts,kwargs)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, kwargs);
+                        }
+                        
+                        add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                     }
-                    else{
-                        idx=object_find(compiler->consts, kwargs);
-                    }
-                    
-                    add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
 
                     object* stargs=new_tuple();
                     for (int i: *DOTCALL(expr->node)->stargs){
                         tuple_append(stargs, new_int_fromint(i));
                     }
-
-                    if (!object_find_bool(compiler->consts,stargs)){
-                        //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
-                        idx=NAMEIDX(compiler->consts);
-                    }
-                    else{
-                        idx=object_find(compiler->consts, stargs);
-                    }
-                    
-                    add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
-
                     object* stkwargs=new_tuple();
                     for (int i: *DOTCALL(expr->node)->stkwargs){
                         tuple_append(stkwargs, new_int_fromint(i));
                     }
 
-                    if (!object_find_bool(compiler->consts,stkwargs)){
-                        //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
-                        idx=NAMEIDX(compiler->consts);
-                    }
-                    else{
-                        idx=object_find(compiler->consts, stkwargs);
-                    }
-                    
-                    add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                    if (CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0){
+                        if (!object_find_bool(compiler->consts,stargs)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, stargs);
+                        }
+                        
+                        add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+
+                        
+
+                        if (!object_find_bool(compiler->consts,stkwargs)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, stkwargs);
+                        }
+
+                        add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                    }                    
 
                     //Num of pos args
                     uint32_t argc=DOTCALL(expr->node)->args->size()+DOTCALL(expr->node)->kwargs->size();                   
 
-                    add_instruction(compiler, compiler->instructions,CALL_FUNCTION_BOTTOM, argc, GET_ANNO_N(expr));
+                    if ((CAST_TUPLE(kwargs)->size != 0) && (CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0)){
+                        add_instruction(compiler, compiler->instructions,CALL_FUNCTION_BOTTOM_KW_U, argc, GET_ANNO_N(expr));
+                    }
+                    else if ((CAST_TUPLE(kwargs)->size != 0)){
+                        add_instruction(compiler, compiler->instructions,CALL_FUNCTION_BOTTOM_KW, argc, GET_ANNO_N(expr));
+                    }
+                    else if ((CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0)){
+                        add_instruction(compiler, compiler->instructions,CALL_FUNCTION_BOTTOM_U, argc, GET_ANNO_N(expr));
+                    }
+                    else{
+                        add_instruction(compiler, compiler->instructions,CALL_FUNCTION_BOTTOM, argc, GET_ANNO_N(expr));
+                    }
 
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
@@ -3471,85 +3483,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             
             //TOS is now the function!
-            object* stargs=new_tuple();
-            object* stkwargs=new_tuple();
-            object* kwargs_=new_tuple();
-
-            if (!object_find_bool(compiler->consts,kwargs_)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs_);
-                idx=NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, kwargs_);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
-
-            if (!object_find_bool(compiler->consts,stargs)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
-                idx=NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, stargs);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
-
-            if (!object_find_bool(compiler->consts,stkwargs)){
-                //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
-                idx=NAMEIDX(compiler->consts);
-            }
-            else{
-                idx=object_find(compiler->consts, stkwargs);
-            }
-            
-            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
             
             add_instruction(compiler, compiler->instructions,CALL_FUNCTION_BOTTOM, 1, GET_ANNO_N(expr));
             
 
             for (size_t i_=decorators.size()-1; i_>0; i_--){
                 size_t i=i_-1;
-
-                object* stargs=new_tuple();
-                object* stkwargs=new_tuple();
-                object* kwargs=new_tuple();
-
-                if (!object_find_bool(compiler->consts,kwargs)){
-                    //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
-                    idx=NAMEIDX(compiler->consts);
-                }
-                else{
-                    idx=object_find(compiler->consts, kwargs);
-                }
-                
-                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(decorators.at(i)->name));
-
-                if (!object_find_bool(compiler->consts,stargs)){
-                    //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
-                    idx=NAMEIDX(compiler->consts);
-                }
-                else{
-                    idx=object_find(compiler->consts, stargs);
-                }
-                
-                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(decorators.at(i)->name));
-
-                if (!object_find_bool(compiler->consts,stkwargs)){
-                    //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
-                    idx=NAMEIDX(compiler->consts);
-                }
-                else{
-                    idx=object_find(compiler->consts, stkwargs);
-                }
-                
-                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(decorators.at(i)->name));
                 
                 add_instruction(compiler, compiler->instructions,CALL_FUNCTION_BOTTOM, 1, GET_ANNO_N(decorators.at(i)->name));
             }

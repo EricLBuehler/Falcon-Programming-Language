@@ -23,9 +23,7 @@ MAKE_FUNCTION(argc) - Creates a function using TOS-1 as code, TOS-2 as annotatio
 
 RETURN_VAL - Return and pos TOS
 
-CALL_FUNCTION(argc) - Calls callable TOS. TOS-1 is a tuple of star kwargs objects, and TOS-2
-    is a tuple of star args objects. TOS-3 is a tuple of kwargs names (keys). Below that are the keyword arguments,
-    and below that, the positional arguments following (left->right descending). argc is the total number of arguemnts passed.
+CALL_FUNCTION(argc) - Calls callable TOS. Below that, the positional arguments following (left->right descending). argc is the total number of arguemnts passed.
 
 LOAD_ATTR(idx) - Implements getattr(TOS, names[idx])
 
@@ -188,3 +186,16 @@ DICT_SET(i) - Sets value TOS to key TOS-1 in dict at TOS-i. Used for dict compre
 BINOP_XOR(n) - Implements TOS ^ TOS-1
 
 BYTES_STRING(idx) - Pushes bytes object from co_consts[idx]
+
+CALL_FUNCTION_KW(argc) - Same as CALL_FUNCTION, but with keyword arguments encoded with a tuple of keys at TOS-1 and the values below.
+
+CALL_FUNCTION_U(argc) -  Same as CALL_FUNCTION, but with TOS-1 is a tuple of star kwargs objects, and TOS-2
+                        a tuple of star args objects.
+
+CALL_FUNCTION_KW_U(argc) - Combination of CALL_FUNCTION_KW and CALL_FUNCTION_KW_U, where CALL_FUNCTION_BOTTOM_KW TOS-1 becomes TOS-3
+
+CALL_FUNCTION_BOTTOM_KW(argc) - Same as CALL_FUNCTION_BOTTOM, but with keyword arguments as described in CALL_FUNCTION_KW
+
+CALL_FUNCTION_BOTTOM_U(argc) -  Same as CALL_FUNCTION_BOTTOM, but with unpacking of arguments as described in CALL_FUNCTION_U
+
+CALL_FUNCTION_BOTTOM_KW_U(argc) - Combination of CALL_FUNCTION_KW and CALL_FUNCTION_KW_U
