@@ -3025,6 +3025,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             while (i<data.size()){
                 x++;
                 if (data[i]=='{'){
+                    int starti=i;
                     string segment="";
                     bool repr=false;
                     i++;
@@ -3053,7 +3054,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     
                     Lexer lexer(segment,kwds);
-                    lexer.pos=Position(program);
+                    lexer.pos=Position(program, 0, starti+expr->start->col+2, expr->start->line);
 
                     Position end=lexer.tokenize();
                     
