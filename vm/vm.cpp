@@ -418,6 +418,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&DICT_SET,
         &&BITWISE_XOR,
         &&BYTES_STRING,
+        &&CALL_FUNCTION_KW,
+        &&CALL_FUNCTION_U,
+        &&CALL_FUNCTION_KW_U,
+        &&CALL_FUNCTION_BOTTOM_KW,
+        &&CALL_FUNCTION_BOTTOM_U,
+        &&CALL_FUNCTION_BOTTOM_KW_U,
     };
     
     uint32_t* code_array=CAST_CODE(codeobj)->code;
@@ -695,7 +701,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             return o;
         }
 
-        CALL_FUNCTION: {
+        CALL_FUNCTION_KW_U: {
             object* function=pop_dataframe(vm->objstack);
 
             object* stkwargs=pop_dataframe(vm->objstack);
@@ -807,7 +813,200 @@ object* run_vm(object* codeobj, uint32_t* ip){
             DISPATCH();            
         }
 
-        CALL_FUNCTION_BOTTOM: {
+        CALL_FUNCTION_U: {
+            object* function=pop_dataframe(vm->objstack);
+
+            object* stkwargs=pop_dataframe(vm->objstack);
+            object* stargs=pop_dataframe(vm->objstack);
+            
+            uint32_t argc=arg;
+            uint32_t kwargc=0;
+            uint32_t posargc=argc;
+
+            if (function->type->slot_call==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                goto exc;
+            }
+
+            int stkwargsidx=0;
+            int stargsidx=0;
+
+            //Setup kwargs
+            object* kwargs=new_dict();
+            //
+
+            //Setup args
+            object* args=new_tuple();
+            for (uint32_t i=0; i<posargc; i++){
+                if (stkwargsidx<CAST_LIST(stkwargs)->size && CAST_INT(list_index_int(stkwargs, stkwargsidx))->val->to_int()==i){
+                    //pop dict, insert values
+                    object* ob=pop_dataframe(vm->objstack);
+                    
+                    if (!object_istype(ob->type, &DictType)){
+                        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object", ob->type->name->c_str());
+                        DISPATCH();
+                    }
+                    
+                    object* iter=ob->type->slot_iter(ob);
+
+                    object* res=NULL;
+                    
+                    object* o=iter->type->slot_next(iter);
+                    object* v;
+                    while (vm->exception==NULL){
+                        v=ob->type->slot_mappings->slot_get(ob, o);
+                        ERROR_RET(v);
+                        dict_set(kwargs, o, v);
+                        
+                        o=iter->type->slot_next(iter);
+                    }
+                    if (vm->exception!=NULL){
+                        FPLDECREF(vm->exception);
+                        vm->exception=NULL;
+                    }
+
+
+                    stkwargsidx++;
+                    continue;
+                }
+                if (stargsidx<CAST_LIST(stargs)->size && CAST_INT(list_index_int(stargs, stargsidx))->val->to_int()==i){
+                    //pop dict, insert values
+                    object* ob=pop_dataframe(vm->objstack);
+                    
+                    if (!object_istype(ob->type, &ListType) && !object_istype(ob->type, &TupleType)){
+                        vm_add_err(&TypeError, vm, "Expected list or tuple object, got '%s' object", ob->type->name->c_str());
+                        goto exc;
+                    }
+                    
+                    object* iter=ob->type->slot_iter(ob);
+
+                    object* one=new_int_fromint(0);
+                    object* two=new_int_fromint(1);
+                    object* res=NULL;
+                    
+                    object* o=iter->type->slot_next(iter);
+                    object* v;
+                    while (vm->exception==NULL){
+                        tuple_append(args, o);
+                        
+                        o=iter->type->slot_next(iter);
+                    }
+                    if (vm->exception!=NULL){
+                        FPLDECREF(vm->exception);
+                        vm->exception=NULL;
+                    }
+
+
+                    stargsidx++;
+                    continue;
+                }
+                tuple_append(args, pop_dataframe(vm->objstack));
+            }
+            //         
+            
+            //Call
+            object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
+            if (ret==NULL || hit_sigint){
+                goto exc;
+            }
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+                GIL.unlock();
+                return TERM_PROGRAM;
+            }
+            
+            add_dataframe(vm, vm->objstack, ret);
+            
+            DISPATCH();            
+        }
+
+        CALL_FUNCTION_KW: {
+            object* function=pop_dataframe(vm->objstack);
+            
+            object* keys=pop_dataframe(vm->objstack);
+            
+            uint32_t argc=arg;
+            uint32_t kwargc=CAST_TUPLE(keys)->size;
+            uint32_t posargc=argc-kwargc;
+
+            if (function->type->slot_call==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                goto exc;
+            }
+
+            //Setup kwargs
+            object* kwargs=new_dict();
+            for (uint32_t i=0; i<kwargc; i++){
+                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
+            }
+            //
+
+            //Setup args
+            object* args=new_tuple();
+            for (uint32_t i=0; i<posargc; i++){
+                tuple_append(args, pop_dataframe(vm->objstack));
+            }
+            //         
+            
+            //Call
+            object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
+            if (ret==NULL || hit_sigint){
+                goto exc;
+            }
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+                GIL.unlock();
+                return TERM_PROGRAM;
+            }
+            
+            add_dataframe(vm, vm->objstack, ret);
+            
+            DISPATCH();            
+        }
+        
+        CALL_FUNCTION: {
+            object* function=pop_dataframe(vm->objstack);
+            
+            uint32_t argc=arg;
+            uint32_t kwargc=0;
+            uint32_t posargc=argc;
+
+            if (function->type->slot_call==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                goto exc;
+            }
+
+            //Setup kwargs
+            object* kwargs=new_dict();
+            //
+
+            //Setup args
+            object* args=new_tuple();
+            for (uint32_t i=0; i<posargc; i++){
+                tuple_append(args, pop_dataframe(vm->objstack));
+            }
+            //         
+            
+            //Call
+            object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
+            if (ret==NULL || hit_sigint){
+                goto exc;
+            }
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+                GIL.unlock();
+                return TERM_PROGRAM;
+            }
+            
+            add_dataframe(vm, vm->objstack, ret);
+            
+            DISPATCH();            
+        }
+
+        CALL_FUNCTION_BOTTOM_KW_U: {
             object* stkwargs=pop_dataframe(vm->objstack);
             object* stargs=pop_dataframe(vm->objstack);
             object* keys=pop_dataframe(vm->objstack);
@@ -891,6 +1090,199 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     stargsidx++;
                     continue;
                 }
+                tuple_append(args, pop_dataframe(vm->objstack));
+            }
+            //
+
+            
+            object* function=pop_dataframe(vm->objstack);
+            if (function->type->slot_call==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                goto exc;
+            }
+            
+            //Call
+            object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
+            if (ret==NULL || hit_sigint){ 
+                goto exc;
+            }
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+                GIL.unlock();
+                return TERM_PROGRAM;
+            }
+            
+            add_dataframe(vm, vm->objstack, ret);
+            
+            DISPATCH();            
+        }
+
+        CALL_FUNCTION_BOTTOM_KW: {
+            object* keys=pop_dataframe(vm->objstack);
+            
+            uint32_t argc=arg;
+            uint32_t kwargc=CAST_TUPLE(keys)->size;
+            uint32_t posargc=argc-kwargc;
+
+            //Setup kwargs
+            object* kwargs=new_dict();
+            for (uint32_t i=0; i<kwargc; i++){
+                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
+            }
+            //
+
+            //Setup args
+            object* args=new_tuple();
+            for (uint32_t i=0; i<posargc; i++){
+                tuple_append(args, pop_dataframe(vm->objstack));
+            }
+            //
+
+            
+            object* function=pop_dataframe(vm->objstack);
+            if (function->type->slot_call==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                goto exc;
+            }
+            
+            //Call
+            object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
+            if (ret==NULL || hit_sigint){ 
+                goto exc;
+            }
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+                GIL.unlock();
+                return TERM_PROGRAM;
+            }
+            
+            add_dataframe(vm, vm->objstack, ret);
+            
+            DISPATCH();            
+        }
+
+        CALL_FUNCTION_BOTTOM_U: {
+            object* stkwargs=pop_dataframe(vm->objstack);
+            object* stargs=pop_dataframe(vm->objstack);
+            
+            uint32_t argc=arg;
+            uint32_t kwargc=0;
+            uint32_t posargc=argc;
+
+            int stkwargsidx=0;
+            int stargsidx=0;
+
+            //Setup kwargs
+            object* kwargs=new_dict();
+            //
+
+            //Setup args
+            object* args=new_tuple();
+            for (uint32_t i=0; i<posargc; i++){
+                if (stkwargsidx<CAST_LIST(stkwargs)->size && CAST_INT(list_index_int(stkwargs, stkwargsidx))->val->to_int()==i){
+                    //pop dict, insert values
+                    object* ob=pop_dataframe(vm->objstack);
+                    
+                    if (!object_istype(ob->type, &DictType)){
+                        vm_add_err(&TypeError, vm, "Expected dict or tuple object, got '%s' object", ob->type->name->c_str());
+                        goto exc;
+                    }
+                    
+                    object* iter=ob->type->slot_iter(ob);
+
+                    object* res=NULL;
+                    
+                    object* o=iter->type->slot_next(iter);
+                    object* v;
+                    while (vm->exception==NULL){
+                        v=ob->type->slot_mappings->slot_get(ob, o);
+                        ERROR_RET(v);
+                        dict_set(kwargs, o, v);
+                        
+                        o=iter->type->slot_next(iter);
+                    }
+                    if (vm->exception!=NULL){
+                        FPLDECREF(vm->exception);
+                        vm->exception=NULL;
+                    }
+
+
+                    stkwargsidx++;
+                    continue;
+                }
+                if (stargsidx<CAST_LIST(stargs)->size && CAST_INT(list_index_int(stargs, stargsidx))->val->to_int()==i){
+                    //pop dict, insert values
+                    object* ob=pop_dataframe(vm->objstack);
+                    
+                    if (!object_istype(ob->type, &ListType) && !object_istype(ob->type, &TupleType)){
+                        vm_add_err(&TypeError, vm, "Expected list or tuple object, got '%s' object", ob->type->name->c_str());
+                        DISPATCH();
+                    }
+                    
+                    object* iter=ob->type->slot_iter(ob);
+
+                    object* one=new_int_fromint(0);
+                    object* two=new_int_fromint(1);
+                    object* res=NULL;
+                    
+                    object* o=iter->type->slot_next(iter);
+                    object* v;
+                    while (vm->exception==NULL){
+                        tuple_append(args, o);
+                        
+                        o=iter->type->slot_next(iter);
+                    }
+                    if (vm->exception!=NULL){
+                        FPLDECREF(vm->exception);
+                        vm->exception=NULL;
+                    }
+
+
+                    stargsidx++;
+                    continue;
+                }
+                tuple_append(args, pop_dataframe(vm->objstack));
+            }
+            //
+
+            
+            object* function=pop_dataframe(vm->objstack);
+            if (function->type->slot_call==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not callable.",function->type->name->c_str());
+                goto exc;
+            }
+            
+            //Call
+            object* ret=function->type->slot_call(function, args, kwargs);
+            FPLDECREF(args);
+            FPLDECREF(kwargs);
+            if (ret==NULL || hit_sigint){ 
+                goto exc;
+            }
+            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+                GIL.unlock();
+                return TERM_PROGRAM;
+            }
+            
+            add_dataframe(vm, vm->objstack, ret);
+            
+            DISPATCH();            
+        }        
+
+        CALL_FUNCTION_BOTTOM: {
+            uint32_t argc=arg;
+            uint32_t kwargc=0;
+            uint32_t posargc=argc;
+
+            //Setup kwargs
+            object* kwargs=new_dict();
+            //
+
+            //Setup args
+            object* args=new_tuple();
+            for (uint32_t i=0; i<posargc; i++){
                 tuple_append(args, pop_dataframe(vm->objstack));
             }
             //
