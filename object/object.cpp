@@ -228,7 +228,7 @@ bool object_find_bool(object* iter, object* needle){
 
 bool object_find_bool_dict_keys(object* dict, object* needle){
     for (auto k: (*CAST_DICT(dict)->val)){
-        if (istrue(object_cmp(k.first,needle, CMP_EQ))){
+        if (*CAST_STRING(k.first)->val==*CAST_STRING(needle)->val){
             return true;
         }
     }
@@ -237,7 +237,7 @@ bool object_find_bool_dict_keys(object* dict, object* needle){
 
 object* object_find_dict_keys(object* dict, object* needle){
     for (auto k: (*CAST_DICT(dict)->val)){
-        if (istrue(object_cmp(k.first,needle, CMP_EQ))){
+        if (*CAST_STRING(k.first)->val==*CAST_STRING(needle)->val){
             return k.first;
         }
     }
