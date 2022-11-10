@@ -87,10 +87,6 @@ volatile bool hit_sigint=false;
 #include <signal.h>
 
 void fpl_startup(){    
-    std::setvbuf(stdout, nullptr, _IOFBF, BUFSIZ);
-    std::setvbuf(stdin, nullptr, _IOFBF, BUFSIZ);
-    std::setvbuf(stderr, nullptr, _IOFBF, BUFSIZ);
-
     set_new_handler(memory_error);
     new_gc();
     setup_types_consts();
@@ -115,7 +111,7 @@ void sigint(int sig) {
     hit_sigint=true;
 };
 
-int execute(string data, bool objdump, bool verbose){   
+int execute(string data, bool objdump, bool verbose){ 
     //Prep constants and types
     fpl_startup();
 
@@ -137,8 +133,7 @@ int execute(string data, bool objdump, bool verbose){
     if (verbose){
         cout<<"-------------------------------"<<endl;
     }
-
-
+    
     parser=Parser(lexer.tokens, data);
     parse_ret ast=parser.parse();
 
@@ -168,15 +163,14 @@ int execute(string data, bool objdump, bool verbose){
     
     if (verbose){
         cout<<(*CAST_INT(list_len(CAST_CODE(code)->co_code))->val)/2<<" instructions."<<endl;
-        cout<<object_cstr(list_len(CAST_CODE(code)->co_code))<<" bytes."<<endl<<endl;
+        cout<<object_cstr(list_len(CAST_CODE(code)->co_code))<<" bytes.";//<<endl<<endl;
     }
+    
     vm=new_vm(0, code, compiler->instructions, new string(data)); //data is still in scope...
     dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
-    dict_set(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
-    
+    dict_set(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));    
 
     if (verbose){
-        cout<<"D";
         cout<<"Names: "<<object_cstr(CAST_CODE(code)->co_names)<<"\n";
         cout<<"Consts: "<<object_cstr(CAST_CODE(code)->co_consts)<<"\n";
         cout<<"Code: "<<object_cstr(CAST_CODE(code)->co_code)<<"\n";
