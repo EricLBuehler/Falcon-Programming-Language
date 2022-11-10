@@ -450,6 +450,7 @@ object* object_genericgetattr_notype(object* obj, object* attr){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
         if (object_find_bool_dict_keys(dict, attr)){
             res = dict_get(dict, attr);
+            goto done;
         }
     }
     //Check type dict
@@ -457,6 +458,7 @@ object* object_genericgetattr_notype(object* obj, object* attr){
         object* dict = obj->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             res = dict_get(dict, attr);
+            goto done;
         }
     }
 
@@ -464,6 +466,7 @@ object* object_genericgetattr_notype(object* obj, object* attr){
         vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
     }
     else{
+        done:
         if (res->type->slot_descrget!=NULL){
             object* r=res->type->slot_descrget(obj, res, (object*)(obj->type));
             return r;
@@ -480,6 +483,7 @@ object* object_genericgetattr(object* obj, object* attr){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
         if (object_find_bool_dict_keys(dict, attr)){
             res=dict_get(dict, attr);
+            goto done;
         }
     }
     //Check type dict
@@ -487,6 +491,7 @@ object* object_genericgetattr(object* obj, object* attr){
         object* dict = obj->type->dict;
         if (object_find_bool_dict_keys(dict, attr)){
             res=dict_get(dict, attr);
+            goto done;
         }
     }
 
@@ -500,7 +505,7 @@ object* object_genericgetattr(object* obj, object* attr){
                 object* dict = base_tp->dict;
                 if (object_find_bool_dict_keys(dict, attr)){
                     res=dict_get(dict, attr);
-                    break;
+                    goto done;
                 }
             }
         }
@@ -509,6 +514,7 @@ object* object_genericgetattr(object* obj, object* attr){
         vm_add_err(&AttributeError, vm, "%s has no attribute '%s'",obj->type->name->c_str(), object_cstr(attr).c_str());
     }
     else{
+        done:
         if (res->type->slot_descrget!=NULL){
             object* r=res->type->slot_descrget(obj, res, (object*)(obj->type));
             return r;
@@ -543,6 +549,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         dict_=dict;
         if (object_find_bool_dict_keys(dict, attr)){
             d=dict;
+            goto done;
         }
     }
     
@@ -552,6 +559,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         dict_=dict;
         if (object_find_bool_dict_keys(dict, attr)){
             d=dict;
+            goto done;
         }
     }
 
@@ -567,7 +575,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
                 dict_=dict;
                 if (object_find_bool_dict_keys(dict, attr)){
                     d=dict;
-                    break;
+                    goto done;
                 }
             }
         }
@@ -578,6 +586,7 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         return NULL;
     }
     else if (d!=NULL){
+        done:
         object* res=dict_get(d, attr);
         if (res!=NULL && res->type->slot_descrget!=NULL && res->type->slot_descrset==NULL){
             vm_add_err(&AttributeError, vm, "attribute '%s' of '%s' object is read only",object_cstr(attr).c_str() ,obj->type->name->c_str());
