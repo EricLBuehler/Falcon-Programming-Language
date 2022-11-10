@@ -107,7 +107,7 @@ Falcon is implemented in C++. However, although the compiler and interpreter do 
 - ```::``` - Nonlocal variable access
 - ```<name>``` : ```<type>``` - Type annotations in function arguments or assignment
 - ```<function definition> : <type> {``` - Type annotation for function return value
-- ```f"Text {code}"```
+- ```f"Text {code}"``` - Format strings using code snippets
 
 ### Documentation ##
 - [Dunder Methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/DUNDER_METHODS.md)
