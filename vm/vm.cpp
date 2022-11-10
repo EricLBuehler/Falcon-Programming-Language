@@ -438,12 +438,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
         STORE_GLOBAL:{
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=peek_dataframe(vm->objstack);
-            for (auto k: (*CAST_DICT(vm->globals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(vm->globals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
+                if (CAST_DICT(vm->globals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(vm->globals)->val->at(name))->gc_ref--;
                 }
             }
             if (value->type->size==0){
@@ -456,11 +453,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
         LOAD_GLOBAL:{
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
 
-            for (auto k: (*CAST_DICT(vm->globals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
-                    DISPATCH();
-                }
+            if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
+                add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
+                DISPATCH();
             }
             for (size_t i=0; i<nbuiltins; i++){
                 if (object_istype(builtins[i]->type, &BuiltinType)){
@@ -485,12 +480,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=peek_dataframe(vm->objstack);
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -508,11 +500,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             for (int i=vm->callstack->size-1; i>=0; i--){
                 struct callframe frame=vm->callstack->data[i];
-                for (auto k: (*CAST_DICT(frame.locals)->val)){
-                    if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                        add_dataframe(vm, vm->objstack, CAST_DICT(frame.locals)->val->at(name));
-                        DISPATCH();
-                    }
+                if (CAST_DICT(frame.locals)->val->find(name)!=CAST_DICT(frame.locals)->val->end()){
+                    add_dataframe(vm, vm->objstack, CAST_DICT(frame.locals)->val->at(name));
+                    DISPATCH();
                 }
 
                 if (frame.callable!=NULL && object_istype(frame.callable->type, &FuncType)\
@@ -542,11 +532,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
 
             
-            for (auto k: (*CAST_DICT(vm->globals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(k.first));
-                    DISPATCH();
-                }
+            if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
+                add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
+                DISPATCH();
             }
 
             vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
@@ -1348,8 +1336,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
         LOAD_ATTR: {
             object* obj=pop_dataframe(vm->objstack);
             object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* ret=object_getattr(obj, attr);            
-            
+            object* ret=object_getattr(obj, attr); 
+
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
@@ -1525,7 +1513,16 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         EXTRACT_ITER: {
             object* it=pop_dataframe(vm->objstack);
-            add_dataframe(vm, vm->objstack, it->type->slot_iter(it));
+            if (it->type->slot_iter==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not iterable", it->type->name->c_str());
+                return NULL; 
+            }
+            object* o=it->type->slot_iter(it);
+            if (o==NULL || o->type->slot_new==NULL){
+                vm_add_err(&TypeError, vm, "'%s' object is not iterable", it->type->name->c_str());
+                return NULL; 
+            }
+            add_dataframe(vm, vm->objstack, o);
             DISPATCH();
         }
 
@@ -1623,13 +1620,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
-            
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -1655,12 +1648,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -1685,20 +1675,16 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
-            
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
             if (value->type->size==0){
                 ((object_var*)value)->gc_ref++;
             }
-            
 
             dict_set(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();  
@@ -1717,12 +1703,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -1876,12 +1859,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     object* name=k.first;
                     object* value=k.second;
                     
-                    for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                        if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                                ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                            }
-                            break;
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                        if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                            ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                         }
                     }
 
@@ -1913,14 +1893,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 object* name=list_index_int(names, i);
                 object* value=o;
                 
-                for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                    if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                        if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                            ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                        }
-                        break;
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                     }
                 }
+                
 
                 if (value->type->size==0){
                     ((object_var*)value)->gc_ref++;
@@ -1951,21 +1929,19 @@ object* run_vm(object* codeobj, uint32_t* ip){
         DEL_NAME: {
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
 
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-
-                    if (object_find_bool_dict_keys(callstack_head(vm->callstack).annotations, name)){
-                        if (CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name)->type->size==0){
-                            ((object_var*)CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name))->gc_ref--;
-                        }
-                        dict_set(callstack_head(vm->callstack).annotations, name, NULL);
-                    }
-                    dict_set(callstack_head(vm->callstack).locals, name, NULL);
-                    DISPATCH();
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
+
+                if (object_find_bool_dict_keys(callstack_head(vm->callstack).annotations, name)){
+                    if (CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name))->gc_ref--;
+                    }
+                    dict_set(callstack_head(vm->callstack).annotations, name, NULL);
+                }
+                dict_set(callstack_head(vm->callstack).locals, name, NULL);
+                DISPATCH();
             }
             vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
             goto exc;
@@ -2013,12 +1989,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -2044,12 +2017,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -2155,21 +2125,19 @@ object* run_vm(object* codeobj, uint32_t* ip){
         DEL_GLBL: {
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             
-            for (auto k: (*CAST_DICT(vm->globals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(vm->globals)->val->at(name)->type->size==0){
-                        ((object_var*)CAST_DICT(vm->globals)->val->at(k.first))->gc_ref--;
-                    }
-
-                    if (object_find_bool_dict_keys(vm->global_annotations, name)){
-                        if (CAST_DICT(vm->global_annotations)->val->at(name)->type->size==0){
-                            ((object_var*)CAST_DICT(vm->global_annotations)->val->at(k.first))->gc_ref--;
-                        }
-                        dict_set(vm->global_annotations, name, NULL);
-                    }
-                    dict_set(vm->globals, name, NULL);
-                    DISPATCH();
+            if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
+                if (CAST_DICT(vm->globals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(vm->globals)->val->at(name))->gc_ref--;
                 }
+
+                if (object_find_bool_dict_keys(vm->global_annotations, name)){
+                    if (CAST_DICT(vm->global_annotations)->val->at(name)->type->size==0){
+                        ((object_var*)CAST_DICT(vm->global_annotations)->val->at(name))->gc_ref--;
+                    }
+                    dict_set(vm->global_annotations, name, NULL);
+                }
+                dict_set(vm->globals, name, NULL);
+                DISPATCH();
             }
             vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
             goto exc;
@@ -2223,11 +2191,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (int i=vm->callstack->size-1; i>=0; i--){
                 struct callframe frame=vm->callstack->data[i];
                 if (i==vm->callstack->size-1){
-                    for (auto k: (*CAST_DICT(frame.locals)->val)){
-                        if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                            add_dataframe(vm, vm->objstack, CAST_DICT(frame.locals)->val->at(name));
-                            DISPATCH();
-                        }
+                    if (CAST_DICT(frame.locals)->val->find(name)!=CAST_DICT(frame.locals)->val->end()){
+                        add_dataframe(vm, vm->objstack, CAST_DICT(frame.locals)->val->at(name));
+                        DISPATCH();
                     }
                 }
 
@@ -2258,11 +2224,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
 
             
-            for (auto k: (*CAST_DICT(vm->globals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(k.first));
-                    DISPATCH();
-                }
+            if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
+                add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
+                DISPATCH();
             }
 
             vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
@@ -2444,12 +2408,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -2475,12 +2436,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -2507,12 +2465,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -2539,12 +2494,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
@@ -2621,12 +2573,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
-            for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-                if (istrue(object_cmp(name, k.first, CMP_EQ))){
-                    if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first)->type->size==0){
-                        ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(k.first))->gc_ref--;
-                    }
-                    break;
+            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
+                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
+                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
                 }
             }
 
