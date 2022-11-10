@@ -29,6 +29,7 @@ object* bytes_new(object* type, object* args, object* kwargs){
         char* c=(char*)fpl_malloc(sizeof(char));
         CAST_BYTES(obj)->val=c;
         CAST_BYTES(obj)->len=1;
+        memset(c,0,1);
         
         return obj;
     }
