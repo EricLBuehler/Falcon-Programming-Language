@@ -1,6 +1,6 @@
 object* new_dict(){
     object_var* obj=new_object_var(&DictType, 0);
-    CAST_DICT(obj)->val=new map<object*, object*>;
+    CAST_DICT(obj)->val=new unordered_map<object*, object*>;
     CAST_DICT(obj)->keys=new vector<object*>;
     CAST_DICT(obj)->val->clear();
     CAST_DICT(obj)->keys->clear();
@@ -12,7 +12,7 @@ object* new_dict(){
 object* dict_new(object* type, object* args, object* kwargs){
     if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0 && CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
         object_var* obj=new_object_var(CAST_TYPE(type), 0);
-        CAST_DICT(obj)->val=new map<object*, object*>;
+        CAST_DICT(obj)->val=new unordered_map<object*, object*>;
         CAST_DICT(obj)->keys=new vector<object*>;
         CAST_DICT(obj)->val->clear();
         CAST_DICT(obj)->keys->clear();
@@ -40,7 +40,7 @@ object* dict_new(object* type, object* args, object* kwargs){
         }
 
         object_var* obj=new_object_var(CAST_TYPE(type), 0);
-        CAST_DICT(obj)->val=new map<object*, object*>;
+        CAST_DICT(obj)->val=new unordered_map<object*, object*>;
         CAST_DICT(obj)->keys=new vector<object*>;
         CAST_DICT(obj)->val->clear();
         CAST_DICT(obj)->keys->clear();
@@ -67,7 +67,7 @@ object* dict_new(object* type, object* args, object* kwargs){
     }
 
     object_var* obj=new_object_var(CAST_TYPE(type), 0);
-    CAST_DICT(obj)->val=new map<object*, object*>;
+    CAST_DICT(obj)->val=new unordered_map<object*, object*>;
     CAST_DICT(obj)->keys=new vector<object*>;
     CAST_DICT(obj)->val->clear();
     CAST_DICT(obj)->keys->clear();
@@ -265,7 +265,7 @@ void dict_del(object* obj){
 object* dict_iter(object* self){
     //Make an iterator
     object* iter=new_object(&DictIterType);
-    CAST_DICTITER(iter)->val=new map<object*,object*>;
+    CAST_DICTITER(iter)->val=new unordered_map<object*,object*>;
     CAST_DICTITER(iter)->keys=new vector<object*>;
     CAST_DICTITER(iter)->val->clear();
     CAST_DICTITER(iter)->keys->clear();

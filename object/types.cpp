@@ -356,7 +356,7 @@ object* dict_flip_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct DictObject{
     OBJHEAD_VAR
-    map<object*, object*>* val;
+    unordered_map<object*, object*>* val;
     vector<object*>* keys;
 }DictObject;
 
@@ -1837,7 +1837,7 @@ object* dict_iter_bool(object* self);
 
 typedef struct DictIterObject{
     OBJHEAD_VAR
-    map<object*, object*>* val;
+    unordered_map<object*, object*>* val;
     vector<object*>* keys;
     uint32_t idx;
 }DictIterObject;
@@ -4550,7 +4550,7 @@ object* new_type(string* name, object* bases, object* dict){
         size=offsetof(NewTypeObject, dict);
     }
 
-    map<object*, object*> orig_dict(*CAST_DICT(dict)->val);
+    unordered_map<object*, object*> orig_dict(*CAST_DICT(dict)->val);
 
     TypeObject newtype={
         0, //refcnt
