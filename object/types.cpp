@@ -4612,6 +4612,28 @@ object* new_type(string* name, object* bases, object* dict){
     
     object* n=dict_get(CAST_TYPE(tp)->dict, str_new_fromstr("__dict__"));
     CAST_OFFSETWRAPPER(n)->offset=size;
+
+    vector<string> to_del;
+    to_del.clear();
+    for (auto k: (*CAST_DICT(CAST_TYPE(tp)->dict)->val)){
+        string s=object_cstr(k.first);
+
+        string new_name="_"+(*name)+s;
+        object* nw=str_new_fromstr(new_name);
+
+        if (s.size()>=2 && s.rfind("__", 0)==0 && s.rfind("__", s.size()-2)!=s.size()-2 &&\
+        CAST_DICT(CAST_TYPE(tp)->dict)->val->find(nw)==CAST_DICT(CAST_TYPE(tp)->dict)->val->end()){
+            object* o=k.second;
+            dict_set(CAST_TYPE(tp)->dict, str_new_fromstr("_"+(*name)+s), o);
+            to_del.push_back(s);
+        }
+
+        FPLDECREF(nw);
+    }
+
+    for (string s: to_del){
+        dict_set(CAST_TYPE(tp)->dict, str_new_fromstr(s), NULL);
+    }
     return tp;
 }
 
