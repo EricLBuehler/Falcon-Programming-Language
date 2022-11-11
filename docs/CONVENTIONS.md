@@ -14,3 +14,11 @@ Left curly is on the first line of the block. The right curly is positioned afte
 
 ## Indentation
 4 Spaces per block
+
+## Private attributes
+```_``` ```name```
+
+# Protected attributes
+```__``` ```name```
+
+Access using ```_``` ```class name``` ```name```
