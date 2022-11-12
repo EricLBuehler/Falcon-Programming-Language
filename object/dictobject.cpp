@@ -201,6 +201,30 @@ object* dict_set_noinc(object* self, object* key, object* val){
     return new_none();
 }
 
+void dict_set_noret_opti(object* self, object* key, object* val){
+    //Fast path for immutables
+    if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        //Do not FPLINCREF key!
+        if ((*CAST_DICT(self)->val)[key]==val){ //Same val
+            //Do not FPLINCREF val!
+            return;
+        }  
+        object* o=(*CAST_DICT(self)->val)[key];
+        FPLINCREF(val);
+        (*CAST_DICT(self)->val)[key]=val;
+        FPLDECREF(o);
+        CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+        return;
+    }
+    
+    CAST_DICT(self)->keys->push_back(key);
+
+    FPLINCREF(key);
+    FPLINCREF(val);
+    (*CAST_DICT(self)->val)[key]=val;
+    CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+}
+
 void dict_set_noret(object* self, object* key, object* val){
     if (val==NULL){
         dict_del_item(self, key);
