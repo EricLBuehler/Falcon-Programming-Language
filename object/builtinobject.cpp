@@ -217,32 +217,38 @@ object* builtin_call(object* self, object* args, object* kwargs){
     uint32_t posargc=CAST_LIST(args)->size;
     uint32_t kwargc=argc-posargc;
 
-    if (!CAST_BUILTIN(self)->nargs){
-        if (CAST_BUILTIN(self)->argc!=argc && CAST_BUILTIN(self)->argc-CAST_LIST(CAST_BUILTIN(self)->kwargs)->size>posargc \
-        || CAST_LIST(CAST_BUILTIN(self)->kwargs)->size<kwargc \
-        || CAST_BUILTIN(self)->argc<argc){
-            if (CAST_DICT(kwargs)->val->size()==0){
-                vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_BUILTIN(self)->argc, argc);
-                return NULL;
+    if (CAST_BUILTIN(self)->argc!=argc){
+        if (!CAST_BUILTIN(self)->nargs){
+            if (CAST_BUILTIN(self)->argc-CAST_LIST(CAST_BUILTIN(self)->kwargs)->size>posargc \
+            || CAST_LIST(CAST_BUILTIN(self)->kwargs)->size<kwargc \
+            || CAST_BUILTIN(self)->argc<argc){
+                if (CAST_DICT(kwargs)->val->size()==0){
+                    vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_BUILTIN(self)->argc, argc);
+                    return NULL;
+                }
             }
         }
     }
 
-    object* builtinargs=new_dict();
-    if (!CAST_BUILTIN(self)->nargs){
-        if (setup_args(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs)\
-        ==NULL){
-            return NULL;
+    object* builtinargs=CAST_BUILTIN(self)->argc == 0 ? NULL : new_dict();
+    if (CAST_BUILTIN(self)->argc != 0){
+        if (!CAST_BUILTIN(self)->nargs){
+            if (setup_args(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs)\
+            ==NULL){
+                return NULL;
+            }
         }
-    }
-    else{
-        if (setup_args_allargs(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs)\
-        ==NULL){
-            return NULL;
+        else{
+            if (setup_args_allargs(builtinargs, CAST_BUILTIN(self)->argc, CAST_BUILTIN(self)->args, CAST_BUILTIN(self)->kwargs, args, kwargs)\
+            ==NULL){
+                return NULL;
+            }
         }
     }
     object* o=CAST_BUILTIN(self)->function(self, builtinargs);
-    FPLDECREF(builtinargs);
+    if (CAST_BUILTIN(self)->argc != 0){
+        FPLDECREF(builtinargs);
+    }
     return o;
 }
 
