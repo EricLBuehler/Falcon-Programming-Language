@@ -81,7 +81,8 @@ object* func_call(object* self, object* args, object* kwargs){
 
     if (datastack_size_>datastack_size){
         while (vm->objstack->size>datastack_size){
-            FPLDECREF(pop_dataframe(vm->objstack));
+            object* o=pop_dataframe(vm->objstack);
+            FPLDECREF(o);
         }
     }
     if (callstack_size_>callstack_size){

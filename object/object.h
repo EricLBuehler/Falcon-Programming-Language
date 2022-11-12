@@ -171,8 +171,19 @@ bool hit_memory_error=false;
 Parser parser;
 
 #define FPLINCREF(object) object->refcnt++;
+#define FPLDECREF(delobj)   (delobj)->refcnt--;\
+                            if ((delobj)->refcnt==0){\
+                                if ((delobj)->type->slot_del!=NULL){\
+                                    (delobj)->type->slot_del(delobj);\
+                                }\
+                                if ((delobj)->refcnt==0){\
+                                    if (!(delobj)->type->gc_trackable){\
+                                        fpl_free(delobj);\
+                                    }\
+                                }\
+                            }
 
-inline void FPLDECREF(struct object* object);
+inline void _FPLDECREF(struct object* object);
 inline object* _FPLINCREF(struct object* object);
 
 object* new_object(TypeObject* type);

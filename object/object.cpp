@@ -1,4 +1,4 @@
-inline void FPLDECREF(struct object* object){
+inline void _FPLDECREF(struct object* object){
     object->refcnt--;
     if (object->refcnt==0){
         if (object->type->slot_del!=NULL){
