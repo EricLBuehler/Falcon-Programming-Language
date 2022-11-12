@@ -549,7 +549,6 @@ object* builtin_sum(object* self, object* args){
         vm->exception=NULL;
     }
     FPLDECREF(o);
-    FPLDECREF(val);
     FPLDECREF(iter);
     return val;
 }
