@@ -1501,7 +1501,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         POP_TOS: {
-            FPLDECREF(pop_dataframe(vm->objstack));
+            object* o=pop_dataframe(vm->objstack);
+            FPLDECREF(o);
             DISPATCH();
         }
 
@@ -1634,7 +1635,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 (*ip)=blockstack_head(vm->blockstack).arg;
                 pop_blockframe(vm->blockstack);
                 pop_dataframe(vm->objstack);
-                FPLDECREF(pop_dataframe(vm->objstack));
+                object* o=pop_dataframe(vm->objstack);
+                FPLDECREF(o);
             }
             DISPATCH();
         }
