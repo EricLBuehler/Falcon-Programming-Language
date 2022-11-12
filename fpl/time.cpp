@@ -8,9 +8,11 @@ object* time_sleep(object* self, object* args){
     long time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
+        FPLDECREF(val);
     }
     else{
         object* otherint=object_int(val);
+        FPLDECREF(val);
         if (otherint==NULL || !object_istype(otherint->type, &IntType)){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", val->type->name->c_str());
             return NULL; 
@@ -30,9 +32,11 @@ object* time_sleep_ms(object* self, object* args){
     long time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
+        FPLDECREF(val);
     }
     else{
         object* otherint=object_int(val);
+        FPLDECREF(val);
         if (otherint==NULL || !object_istype(otherint->type, &IntType)){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", val->type->name->c_str());
             return NULL; 
@@ -64,6 +68,7 @@ object* time_strftime(object* self, object* args){
     object* val=dict_get(args, str_new_fromstr("n"));
     
     string format=object_cstr(val);
+    FPLDECREF(val);
     
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
@@ -84,29 +89,29 @@ object* new_time_module(){
     object* args=new_tuple();
     args->type->slot_mappings->slot_append(args, str_new_fromstr("n"));
     object* ob=new_builtin(time_sleep, str_new_fromstr("sleep"), args, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("sleep"), ob);
+    dict_set_noret(dict, str_new_fromstr("sleep"), ob);
     FPLDECREF(ob);    
     
     
     ob=new_builtin(time_sleep_ms, str_new_fromstr("sleep_ms"), args, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("sleep_ms"), ob);
+    dict_set_noret(dict, str_new_fromstr("sleep_ms"), ob);
     FPLDECREF(ob);    
     
 
     ob=new_builtin(time_time, str_new_fromstr("time"), emptykw_args, emptykw_args, 0, false);
-    dict_set(dict, str_new_fromstr("time"), ob);
+    dict_set_noret(dict, str_new_fromstr("time"), ob);
     FPLDECREF(ob);    
     
 
     object* strfargs=new_tuple();
     strfargs->type->slot_mappings->slot_append(args, str_new_fromstr("format"));
     ob=new_builtin(time_strftime, str_new_fromstr("strftime"), strfargs, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("strftime"), ob);
+    dict_set_noret(dict, str_new_fromstr("strftime"), ob);
     FPLDECREF(ob);    
     
     
     ob=new_builtin(time_timens, str_new_fromstr("time_ns"), emptykw_args, emptykw_args, 0, false);
-    dict_set(dict, str_new_fromstr("time_ns"), ob);
+    dict_set_noret(dict, str_new_fromstr("time_ns"), ob);
     FPLDECREF(ob);    
     
 

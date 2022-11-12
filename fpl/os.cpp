@@ -10,6 +10,7 @@ object* os_chdir(object* self, object* args){
     }
 
     string dir=*CAST_STRING(val)->val;
+    FPLDECREF(val);
 
     int res=chdir(dir.c_str());
     if (res==0){
@@ -29,6 +30,7 @@ object* os_mkdir(object* self, object* args){
     }
 
     string dir=*CAST_STRING(val)->val;
+    FPLDECREF(val);
 
     #ifdef _WIN32
     int res=mkdir(dir.c_str());
@@ -66,6 +68,7 @@ object* os_rmdir(object* self, object* args){
     }
 
     string dir=*CAST_STRING(val)->val;
+    FPLDECREF(val);
 
     int res=rmdir(dir.c_str());
     if (res==0){
@@ -113,6 +116,7 @@ object* os_system(object* self, object* args){
     }
 
     string cmd=*CAST_STRING(val)->val;
+    FPLDECREF(val);
     
     return new_int_fromint(system(cmd.c_str()));
 }
@@ -125,29 +129,29 @@ object* new_os_module(){
     object* emptykw_args=new_tuple();
     
     object* ob=new_builtin(os_chdir, str_new_fromstr("chdir"), dirargs, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("chdir"), ob);
+    dict_set_noret(dict, str_new_fromstr("chdir"), ob);
     FPLDECREF(ob);    
 
     ob=new_builtin(os_mkdir, str_new_fromstr("mkdir"), dirargs, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("mkdir"), ob);
+    dict_set_noret(dict, str_new_fromstr("mkdir"), ob);
     FPLDECREF(ob);        
 
     ob=new_builtin(os_getcwd, str_new_fromstr("getcwd"), emptykw_args, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("getcwd"), ob);
+    dict_set_noret(dict, str_new_fromstr("getcwd"), ob);
     FPLDECREF(ob);        
 
     ob=new_builtin(os_rmdir, str_new_fromstr("rmdir"), dirargs, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("rmdir"), ob);
+    dict_set_noret(dict, str_new_fromstr("rmdir"), ob);
     FPLDECREF(ob);    
 
     ob=new_builtin(os_listdir, str_new_fromstr("listdir"), emptykw_args, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("listdir"), ob);
+    dict_set_noret(dict, str_new_fromstr("listdir"), ob);
     FPLDECREF(ob);    
 
     object* systemargs=new_tuple();
     systemargs->type->slot_mappings->slot_append(systemargs, str_new_fromstr("cmd"));
     ob=new_builtin(os_system, str_new_fromstr("system"), systemargs, emptykw_args, 1, false);
-    dict_set(dict, str_new_fromstr("system"), ob);
+    dict_set_noret(dict, str_new_fromstr("system"), ob);
     
 
     return module_new_fromdict(dict, str_new_fromstr("os"));
