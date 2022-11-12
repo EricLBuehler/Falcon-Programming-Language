@@ -246,8 +246,8 @@ object* import_name(string data, object* name){
     ::vm->globals=new_dict();
     FPLINCREF(::vm->globals);
     ::callstack_head(vm->callstack).locals=::vm->globals;
-    dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
-    dict_set_noret(::vm->globals, str_new_fromstr("__name__"), name);
+    dict_set_noret_opti(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
+    dict_set_noret_opti(::vm->globals, str_new_fromstr("__name__"), name);
     ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
 
     object* ret=run_vm(code, &::vm->ip);
@@ -266,11 +266,11 @@ object* import_name(string data, object* name){
 }
 
 void annotate_var(object* tp, object* name){
-    dict_set_noret(callstack_head(vm->callstack).annotations, name, tp);
+    dict_set_noret_opti(callstack_head(vm->callstack).annotations, name, tp);
 }
 
 void annotate_global(object* tp, object* name){
-    dict_set_noret(vm->global_annotations, name, tp);
+    dict_set_noret_opti(vm->global_annotations, name, tp);
 }
 
 void annotate_nonlocal(object* tp, object* name){
@@ -286,7 +286,7 @@ void annotate_nonlocal(object* tp, object* name){
                 if (tp->type->size==0){
                     ((object_var*)tp)->gc_ref++;
                 }
-                dict_set_noret(frame.locals, name, tp);
+                dict_set_noret_opti(frame.locals, name, tp);
 
                 return;
             }
@@ -304,7 +304,7 @@ void annotate_nonlocal(object* tp, object* name){
                 if (tp->type->size==0){
                     ((object_var*)tp)->gc_ref++;
                 }
-                dict_set_noret(closure, name, tp);
+                dict_set_noret_opti(closure, name, tp);
 
                 return;
             }
@@ -441,14 +441,15 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=peek_dataframe(vm->objstack);
             if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
-                if (CAST_DICT(vm->globals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(vm->globals)->val->at(name))->gc_ref--;
+                object* o=CAST_DICT(vm->globals)->val->at(name);
+                if (o->type->size==0){
+                    ((object_var*)o)->gc_ref--;
                 }
             }
             if (value->type->size==0){
                 ((object_var*)value)->gc_ref++;
             }
-            dict_set_noret(vm->globals, name, value);
+            dict_set_noret_opti(vm->globals, name, value);
             DISPATCH();
         }
 
@@ -456,8 +457,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
 
             if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
-                FPLINCREF(CAST_DICT(vm->globals)->val->at(name));
-                add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
+                object* o=CAST_DICT(vm->globals)->val->at(name);
+                FPLINCREF(o);
+                add_dataframe(vm, vm->objstack, o);
                 DISPATCH();
             }
             for (size_t i=0; i<nbuiltins; i++){
@@ -496,7 +498,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set_noret(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noret_opti(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -641,7 +643,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         BINOP_EE:{
             struct object* right=pop_dataframe(vm->objstack);
             struct object* left=pop_dataframe(vm->objstack);
-            
             object* ret=object_cmp(left, right, CMP_EQ);
             FPLDECREF(right);
             FPLDECREF(left);
@@ -1632,7 +1633,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm->exception=NULL;
                 (*ip)=blockstack_head(vm->blockstack).arg;
                 pop_blockframe(vm->blockstack);
-                FPLDECREF(pop_dataframe(vm->objstack));
+                pop_dataframe(vm->objstack);
                 FPLDECREF(pop_dataframe(vm->objstack));
             }
             DISPATCH();
@@ -1902,7 +1903,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                                 
                                 object* o=import_name(str, str_new_fromstr(filename));
                                 ERROR_RET(o);
-                                dict_set_noret(dict, str_new_fromstr(filename), o);
+                                dict_set_noret_opti(dict, str_new_fromstr(filename), o);
                             }
                             closedir(dr);
                         }
@@ -1963,7 +1964,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
         IMPORT_FROM_MOD: {
             object* names=pop_dataframe(vm->objstack);
             object* lib=pop_dataframe(vm->objstack);
-            uint32_t len=CAST_INT(names->type->slot_mappings->slot_len(names))->val->to_int();
+            object* len_=names->type->slot_mappings->slot_len(names);
+            uint32_t len=CAST_INT(len)->val->to_int();
             if (len==0){
                 for (auto k: *CAST_DICT(CAST_MODULE(lib)->dict)->val){
                     object* name=k.first;
@@ -1979,9 +1981,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         ((object_var*)value)->gc_ref++;
                     }
 
-                    dict_set_noret(callstack_head(vm->callstack).locals, name, value);
+                    dict_set_noret_opti(callstack_head(vm->callstack).locals, name, value);
                     FPLDECREF(names);
                     FPLDECREF(lib);
+                    FPLDECREF(len_);
                     DISPATCH();
                 }
             }
@@ -1999,11 +2002,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     
                     FPLDECREF(names);
                     FPLDECREF(lib);
+                    FPLDECREF(len_);
                     goto exc;
                 }
                 if (hit_sigint){
                     FPLDECREF(names);
                     FPLDECREF(lib);
+                    FPLDECREF(len_);
                     goto exc;
                 }
 
@@ -2024,11 +2029,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
                 FPLDECREF(names);
                 FPLDECREF(lib);
+                FPLDECREF(len_);
                 DISPATCH();
                 
             }
             FPLDECREF(names);
             FPLDECREF(lib);
+            FPLDECREF(len_);
             DISPATCH();
         }
 
@@ -2063,9 +2070,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     if (CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name)->type->size==0){
                         ((object_var*)CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name))->gc_ref--;
                     }
-                    dict_set_noret(callstack_head(vm->callstack).annotations, name, NULL);
+                    dict_set_noret_opti(callstack_head(vm->callstack).annotations, name, NULL);
                 }
-                dict_set_noret(callstack_head(vm->callstack).locals, name, NULL);
+                dict_set_noret_opti(callstack_head(vm->callstack).locals, name, NULL);
                 DISPATCH();
             }
             vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
@@ -2278,9 +2285,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     if (CAST_DICT(vm->global_annotations)->val->at(name)->type->size==0){
                         ((object_var*)CAST_DICT(vm->global_annotations)->val->at(name))->gc_ref--;
                     }
-                    dict_set_noret(vm->global_annotations, name, NULL);
+                    dict_set_noret_opti(vm->global_annotations, name, NULL);
                 }
-                dict_set_noret(vm->globals, name, NULL);
+                dict_set_noret_opti(vm->globals, name, NULL);
                 DISPATCH();
             }
             vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
@@ -2398,7 +2405,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         if (val->type->size==0){
                             ((object_var*)val)->gc_ref++;
                         }
-                        dict_set_noret(frame.locals, name, val);
+                        dict_set_noret_opti(frame.locals, name, val);
                         DISPATCH();
                     }
                 }
@@ -2415,7 +2422,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         if (val->type->size==0){
                             ((object_var*)val)->gc_ref++;
                         }
-                        dict_set_noret(closure, name, val);
+                        dict_set_noret_opti(closure, name, val);
 
                         DISPATCH();
                     }
@@ -2440,9 +2447,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                             if (CAST_DICT(frame.annotations)->val->at(name)->type->size==0){
                                 ((object_var*)CAST_DICT(frame.annotations)->val->at(name))->gc_ref--;
                             }
-                            dict_set_noret(frame.annotations, name, NULL);
+                            dict_set_noret_opti(frame.annotations, name, NULL);
                         }
-                        dict_set_noret(frame.locals, name, NULL);
+                        dict_set_noret_opti(frame.locals, name, NULL);
                         DISPATCH();
                     }
                 }
@@ -2458,9 +2465,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                             if (CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name)->type->size==0){
                                 ((object_var*)CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name))->gc_ref--;
                             }
-                            dict_set_noret(CAST_FUNC(frame.callable)->closure_annotations, name, NULL);
+                            dict_set_noret_opti(CAST_FUNC(frame.callable)->closure_annotations, name, NULL);
                         }
-                        dict_set_noret(closure, name, NULL);
+                        dict_set_noret_opti(closure, name, NULL);
 
                         DISPATCH();
                     }
@@ -2842,7 +2849,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 annon=new_dict();
                 object_setattr(obj, str_new_fromstr("__annotations__"), annon);
             }
-            dict_set_noret(annon, attr, tp);
+            dict_set_noret_opti(annon, attr, tp);
             FPLDECREF(tp);
             FPLDECREF(obj);
             
@@ -2963,7 +2970,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         DICT_SET: {
             object* v=pop_dataframe(vm->objstack);
             object* k=pop_dataframe(vm->objstack);
-            dict_set_noret(vm->objstack->data[vm->objstack->size-1-arg], k, v);
+            dict_set_noret_opti(vm->objstack->data[vm->objstack->size-1-arg], k, v);
             FPLDECREF(v);
             FPLDECREF(k);
             DISPATCH();
