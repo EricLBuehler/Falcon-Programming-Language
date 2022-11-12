@@ -61,13 +61,16 @@ object* random_choice(object* self, object* args){
     if (ob->type->slot_mappings==NULL || ob->type->slot_mappings->slot_get==NULL\
      || ob->type->slot_mappings->slot_len==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+        FPLDECREF(ob);
         return NULL; 
     }
     object* iterlen=ob->type->slot_mappings->slot_len(ob);
     
     int len_sub1=CAST_INT(iterlen)->val->to_int()-1;
 
-    return FPLINCREF(ob->type->slot_mappings->slot_get(ob, new_int_fromint(iRand(0,len_sub1))));
+    object* o=ob->type->slot_mappings->slot_get(ob, new_int_fromint(iRand(0,len_sub1)));
+    FPLDECREF(ob);
+    return o;
 }
 
 object* new_random_module(){

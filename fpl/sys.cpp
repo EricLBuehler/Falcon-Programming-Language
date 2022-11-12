@@ -8,12 +8,14 @@ object* sys_getsizeof(object* self, object* args){
 
 object* sys_getrefcnt(object* self, object* args){
     object* val=dict_get(args, str_new_fromstr("obj"));
-
-    return new_int_fromint(val->refcnt);
+    object* o=new_int_fromint(val->refcnt);
+    FPLDECREF(val);
+    return o;
 }
 
 object* sys_getpath(object* sys){
-    return FPLINCREF(vm->path);
+    FPLINCREF(vm->path);
+    return vm->path;
 }
 
 object* new_sys_module(){

@@ -4,6 +4,7 @@ object* math_sin(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -23,6 +24,7 @@ object* math_cos(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -42,6 +44,7 @@ object* math_tan(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -61,6 +64,7 @@ object* math_acos(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -80,6 +84,7 @@ object* math_acosh(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -99,6 +104,7 @@ object* math_asin(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -118,6 +124,7 @@ object* math_asinh(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -137,6 +144,7 @@ object* math_atan(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -156,6 +164,7 @@ object* math_atanh(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -176,11 +185,13 @@ object* math_atan2(object* self, object* args){
     object* val2=args->type->slot_mappings->slot_get(args, str_new_fromstr("y"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
     }        
     object* flval2=object_float(val2);
+    FPLDECREF(val2);
     if (flval2==NULL || !object_istype(flval->type, &IntType)){
         return NULL;
     }
@@ -189,6 +200,7 @@ object* math_atan2(object* self, object* args){
     double otherval2=CAST_FLOAT(flval2)->val;
     double res=atan2(otherval,otherval2);
     FPLDECREF(flval);
+    FPLDECREF(flval2);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -200,6 +212,7 @@ object* math_cbrt(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -219,6 +232,7 @@ object* math_ceil(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -238,6 +252,7 @@ object* math_cosh(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -257,6 +272,7 @@ object* math_exp(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -276,6 +292,7 @@ object* math_abs(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -295,6 +312,7 @@ object* math_floor(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -315,11 +333,13 @@ object* math_hypot(object* self, object* args){
     object* val2=args->type->slot_mappings->slot_get(args, str_new_fromstr("b"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
     }        
     object* flval2=object_float(val2);
+    FPLDECREF(val2);
     if (flval2==NULL || !object_istype(flval2->type, &IntType)){
         return NULL;
     }
@@ -328,6 +348,7 @@ object* math_hypot(object* self, object* args){
     double otherval2=CAST_FLOAT(flval2)->val;
     double res=hypot(otherval,otherval2);
     FPLDECREF(flval);
+    FPLDECREF(flval2);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);
@@ -339,6 +360,7 @@ object* math_log(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -358,6 +380,7 @@ object* math_log10(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -378,11 +401,13 @@ object* math_pow(object* self, object* args){
     object* val2=args->type->slot_mappings->slot_get(args, str_new_fromstr("y"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
     }        
     object* flval2=object_float(val2);
+    FPLDECREF(val2);
     if (flval2==NULL || !object_istype(flval2->type, &IntType)){
         return NULL;
     }
@@ -403,6 +428,7 @@ object* math_sinh(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -421,6 +447,7 @@ object* math_sinh(object* self, object* args){
 object* math_sqrt(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -440,6 +467,7 @@ object* math_tanh(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     
     object* flval=object_float(val);
+    FPLDECREF(val);
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
@@ -462,6 +490,7 @@ object* math_factorial(object* self, object* args){
         return NULL; 
     }
     BigInt n=*CAST_INT(val)->val;
+    FPLDECREF(val);
     if (n<0){
         vm_add_err(&ValueError, vm, "Expected argument to be greater than 0");
     }
@@ -488,6 +517,7 @@ object* math_fib(object* self, object* args){
         return NULL; 
     }
     BigInt n=*CAST_INT(val)->val;
+    FPLDECREF(val);
     if (n<0){
         vm_add_err(&ValueError, vm, "Expected argument to be greater than 0");
     }
@@ -499,6 +529,8 @@ object* math_fib(object* self, object* args){
 object* math_todeg(object* self, object* args){
     object* val_=args->type->slot_mappings->slot_get(args, str_new_fromstr("x"));
     object* val=object_float(val_);
+    
+    FPLDECREF(val_);
     
     if (val==NULL || !object_istype(val->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", val->type->name->c_str());
