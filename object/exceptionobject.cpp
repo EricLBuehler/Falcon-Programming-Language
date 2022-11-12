@@ -1,12 +1,12 @@
 object* exception_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (len>1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len>1 || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
         return NULL;
     }
     object* tp = new_object(CAST_TYPE(type));
     CAST_EXCEPTION(tp)->err=NULL;//new_none();
-    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()==1){
+    if (CAST_LIST(args)->size==1){
         FPLDECREF(tp);
         return vm_setup_err((TypeObject*)type, vm, object_cstr(list_index_int(args, 0) ).c_str() );
     }

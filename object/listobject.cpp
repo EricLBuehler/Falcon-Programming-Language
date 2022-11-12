@@ -20,7 +20,7 @@ object* new_list(){
 }
 
 object* list_new(object* type, object* args, object* kwargs){
-    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+    if (CAST_LIST(args)->size==0){
         object_var* obj=new_object_var(CAST_TYPE(type), sizeof(ListObject)+2*sizeof(object*));
         CAST_LIST(obj)->capacity=2; //Start with 2
         CAST_LIST(obj)->size=0;
@@ -28,8 +28,8 @@ object* list_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
-    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()>0){
-        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+    if (CAST_DICT(kwargs)->val->size()>0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
     }
     if (object_istype(list_index_int(args, 0)->type, &ListType)){
@@ -73,7 +73,7 @@ object* list_new(object* type, object* args, object* kwargs){
     CAST_LIST(obj)->size=0;
     CAST_LIST(obj)->array=(object**)fpl_malloc((CAST_LIST(obj)->capacity * sizeof(struct object*)));
 
-    size_t length=(size_t)CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    size_t length=(size_t)CAST_LIST(args)->size;
     for (size_t i=0; i<length; i++){
         object* o=list_index_int(args, i);
         FPLINCREF(list_index_int(args, i));
@@ -313,7 +313,7 @@ void list_del_slice(object* self, object* index){
     for (uint32_t idx=start_v; idx<end_v; idx++){
         FPLDECREF(CAST_LIST(self)->array[idx]);
         
-        for(int i = start_v; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+        for(int i = start_v; i < CAST_LIST(self)->size-1; i++){
             CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
         }
     }
@@ -324,7 +324,7 @@ void list_del_slice(object* self, object* index){
 
 void list_del_item(object* self, long idx){
     FPLDECREF(CAST_LIST(self)->array[idx]);
-    for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+    for(int i = idx; i < CAST_LIST(self)->size-1; i++){
         CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
     }
     list_resize(CAST_LIST(self), CAST_LIST(self)->size--);
@@ -445,8 +445,8 @@ object* list_cmp(object* self, object* other, uint8_t type){
 }
 
 object* list_append_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -524,8 +524,8 @@ object* list_iter_bool(object* self){
 }
 
 object* list_pop_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if ((len!=2 && len!=1) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if ((len!=2 && len!=1) || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 or 2 arguments, got %d", len);
         return NULL; 
     }
@@ -543,13 +543,13 @@ object* list_pop_meth(object* selftp, object* args, object* kwargs){
     }
 
 
-    uint32_t idx=CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1;
-    if (CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()==0){
+    uint32_t idx=CAST_LIST(self)->size-1;
+    if (CAST_LIST(self)->size==0){
         vm_add_err(&ValueError, vm, "Cannot pop from empty list");
         return NULL; 
     }
     object* ob=CAST_LIST(self)->array[idx];
-    for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+    for(int i = idx; i < CAST_LIST(self)->size-1; i++){
         CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
     }
     list_resize(CAST_LIST(self), CAST_LIST(self)->size--);
@@ -603,8 +603,8 @@ object* list_add(object* self, object* other){
 }
 
 object* list_replace_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=3 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
         return NULL; 
     }
@@ -626,8 +626,8 @@ object* list_replace_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* list_find_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -644,8 +644,8 @@ object* list_find_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* list_remove_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -655,7 +655,7 @@ object* list_remove_meth(object* selftp, object* args, object* kwargs){
     for (size_t idx=0; idx<CAST_LIST(self)->size; idx++){
         if (istrue(object_cmp(CAST_LIST(self)->array[idx], val, CMP_EQ))){
             FPLDECREF(CAST_LIST(self)->array[idx]);
-            for(int i = idx; i < CAST_INT(self->type->slot_mappings->slot_len(self))->val->to_int()-1; i++){
+            for(int i = idx; i < CAST_LIST(self)->size-1; i++){
                 CAST_LIST(self)->array[i] = CAST_LIST(self)->array[i + 1];
             }
             list_resize(CAST_LIST(self), CAST_LIST(self)->size--);
@@ -668,8 +668,8 @@ object* list_remove_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* list_insert_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=3 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=3 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d", len);
         return NULL; 
     }
@@ -702,8 +702,8 @@ object* list_insert_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* list_extend_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }

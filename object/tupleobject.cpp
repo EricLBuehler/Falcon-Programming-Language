@@ -23,7 +23,7 @@ object* new_tuple(){
 
 
 object* tuple_new(object* type, object* args, object* kwargs){
-    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+    if (CAST_LIST(args)->size==0){
         object_var* obj=new_object_var(CAST_TYPE(type), sizeof(TupleObject)+2*sizeof(object*));
         CAST_TUPLE(obj)->capacity=2; //Start with 2
         CAST_TUPLE(obj)->size=0;
@@ -32,8 +32,8 @@ object* tuple_new(object* type, object* args, object* kwargs){
         
         return (object*)obj;
     }
-    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()>0){
-        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+    if (CAST_DICT(kwargs)->val->size()>0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
     }
     if (object_istype(list_index_int(args, 0)->type, &TupleType)){
@@ -79,7 +79,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
     CAST_TUPLE(obj)->idx=0;
     CAST_TUPLE(obj)->array=(object**)fpl_malloc((CAST_TUPLE(obj)->capacity * sizeof(struct object*)));
 
-    for (size_t i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
+    for (size_t i=0; i<CAST_LIST(args)->size; i++){
         object* o=list_index_int(args, i);
         FPLINCREF(o);
         tuple_append((object*)obj, o);
@@ -376,8 +376,8 @@ object* tuple_add(object* self, object* other){
 }
 
 object* tuple_find_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }

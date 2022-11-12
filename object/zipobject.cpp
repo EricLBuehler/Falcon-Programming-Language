@@ -1,12 +1,12 @@
 object* zip_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (!(len>=1) || CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (!(len>=1) || CAST_LIST(args)->size==0){
         vm_add_err(&ValueError, vm, "Expected at least 1 argument, got %d", len);
         return NULL;
     }
 
     object* zip=new_object(CAST_TYPE(type));
-    uint32_t niterators=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long();
+    uint32_t niterators=CAST_LIST(args)->size;
     CAST_ZIP(zip)->idx=0;
     CAST_ZIP(zip)->n_iterators=niterators;
     CAST_ZIP(zip)->iterators=(object**)fpl_malloc(sizeof(object*)*niterators);

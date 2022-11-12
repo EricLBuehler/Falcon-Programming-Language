@@ -143,7 +143,6 @@ object* gen_next(object* self){
         while (vm->callstack->size>callstack_size){
             add_callframe(CAST_GEN(self)->callstack, callstack_head(vm->callstack).line, callstack_head(vm->callstack).name,\
                 callstack_head(vm->callstack).code, callstack_head(vm->callstack).callable, callstack_head(vm->callstack).ip);
-            FPLDECREF(callstack_head(CAST_GEN(self)->callstack).annotations);
             callstack_head(CAST_GEN(self)->callstack).annotations=callstack_head(vm->callstack).annotations;
             FPLINCREF(callstack_head(vm->callstack).annotations);
             pop_callframe(vm->callstack);

@@ -10,8 +10,8 @@ object* method_new_impl(object* func, object* instance){
 }
 
 object* method_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    int len=CAST_LIST(args)->size;
+    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }

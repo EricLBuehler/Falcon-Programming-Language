@@ -23,8 +23,8 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
 }
 
 object* func_call(object* self, object* args, object* kwargs){
-    uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    uint32_t argc=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    uint32_t posargc=CAST_LIST(args)->size;
     uint32_t kwargc=argc-posargc;
 
     uint32_t ip=0;
@@ -41,18 +41,18 @@ object* func_call(object* self, object* args, object* kwargs){
     
     int flags=CAST_FUNC(self)->flags;
 
-    if (flags!=FUNC_STAR && CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
-    || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
+    if (flags!=FUNC_STAR && CAST_FUNC(self)->argc-CAST_LIST(CAST_FUNC(self)->kwargs)->size>posargc \
+    || CAST_LIST(CAST_FUNC(self)->kwargs)->size<kwargc \
     || CAST_FUNC(self)->argc<argc){
         //If we are starargs and positonal differs, no error
-        if (flags==FUNC_STARARGS && CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()!=posargc){
+        if (flags==FUNC_STARARGS && CAST_FUNC(self)->argc-CAST_LIST(CAST_FUNC(self)->kwargs)->size!=posargc){
             goto noerror;
         }
         //If we are starkwargs and kwd differs, no error
-        if (flags==FUNC_STARKWARGS && CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()!=kwargc){
+        if (flags==FUNC_STARKWARGS && CAST_LIST(CAST_FUNC(self)->kwargs)->size!=kwargc){
             goto noerror;
         }
-        if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0){
+        if (CAST_DICT(kwargs)->val->size()==0){
             vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_FUNC(self)->argc, argc);
             return NULL;
         }
@@ -100,12 +100,11 @@ object* func_call(object* self, object* args, object* kwargs){
     }
 
     for (auto k: (*CAST_DICT(callstack_head(vm->callstack).locals)->val)){
-        FPLDECREF(k.first);
         if (k.second->type->size==0){
             ((object_var*)k.second)->gc_ref--;
         }
-        FPLDECREF(k.second);
     }
+    FPLDECREF(callstack_head(vm->callstack).locals);
 
     pop_callframe(vm->callstack);
 
@@ -116,8 +115,8 @@ object* func_call(object* self, object* args, object* kwargs){
 }
 
 object* func_call_nostack(object* self, object* args, object* kwargs){
-    uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    uint32_t argc=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    uint32_t posargc=CAST_LIST(args)->size;
     uint32_t kwargc=argc-posargc;
     object* globals=vm->globals;
     object* global_anno=vm->global_annotations;
@@ -125,14 +124,14 @@ object* func_call_nostack(object* self, object* args, object* kwargs){
     vm->globals=CAST_FUNC(self)->globals;
     vm->global_annotations=CAST_FUNC(self)->global_anno;
 
-    if (CAST_FUNC(self)->argc-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()>posargc \
-    || CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()<kwargc \
+    if (CAST_FUNC(self)->argc-CAST_LIST(CAST_FUNC(self)->kwargs)->size>posargc \
+    || CAST_LIST(CAST_FUNC(self)->kwargs)->size<kwargc \
     || CAST_FUNC(self)->argc<argc){
-        if (CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int()==0){
-            vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_mappings->slot_len(CAST_FUNC(self)->args))->val->to_int(), argc);
+        if (CAST_LIST(CAST_FUNC(self)->kwargs)->size-CAST_LIST(CAST_FUNC(self)->kwargs)->size==0){
+            vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_LIST(CAST_FUNC(self)->args)->size, argc);
             return NULL;
         }
-        vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_INT(CAST_FUNC(self)->args->type->slot_mappings->slot_len(CAST_FUNC(self)->args))->val->to_int()-CAST_INT(CAST_FUNC(self)->kwargs->type->slot_mappings->slot_len(CAST_FUNC(self)->kwargs))->val->to_int(), CAST_FUNC(self)->argc, argc);
+        vm_add_err(&ValueError, vm, "expected %d to %d arguments, got %d.",CAST_LIST(CAST_FUNC(self)->args)->size-CAST_LIST(CAST_FUNC(self)->kwargs)->size, CAST_FUNC(self)->argc, argc);
         return NULL;
     }
 

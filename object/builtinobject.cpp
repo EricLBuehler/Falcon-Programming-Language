@@ -5,14 +5,14 @@ void setup_builtins(){
     object* printkwargs=new_tuple();
     printkwargs->type->slot_mappings->slot_append(printkwargs, str_new_fromstr("\n"));
     printkwargs->type->slot_mappings->slot_append(printkwargs, str_new_fromstr(" "));
-    builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr("print"), printargs, printkwargs, CAST_INT(printargs->type->slot_mappings->slot_len(printargs))->val->to_int(), true);
+    builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr("print"), printargs, printkwargs, 2, true);
 
     object* buildclassargs=new_tuple();
     buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr("bases"));
     buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr("name"));
     buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr(("func")));
     object* buildclasskwargs=new_tuple();
-    builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr("__build_class__"), buildclassargs, buildclasskwargs, CAST_INT(buildclassargs->type->slot_mappings->slot_len(buildclassargs))->val->to_int(), false);
+    builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr("__build_class__"), buildclassargs, buildclasskwargs, 3, false);
 
     builtins[2]=(object*)&TypeType;
     builtins[3]=(object*)&IntType;
@@ -46,7 +46,7 @@ void setup_builtins(){
     reprargs->type->slot_mappings->slot_append(reprargs, str_new_fromstr("object"));
     object* reprkwargs=new_tuple();
     reprkwargs->type->slot_mappings->slot_append(reprkwargs, str_new_fromstr(""));
-    builtins[19]=new_builtin((builtinfunc)builtin_repr, str_new_fromstr("repr"), reprargs, reprkwargs, CAST_INT(reprargs->type->slot_mappings->slot_len(reprargs))->val->to_int(), false);
+    builtins[19]=new_builtin((builtinfunc)builtin_repr, str_new_fromstr("repr"), reprargs, reprkwargs, 1, false);
 
     builtins[20]=(object*)&FloatType;
 
@@ -56,13 +56,13 @@ void setup_builtins(){
     iterargs->type->slot_mappings->slot_append(iterargs, str_new_fromstr("object"));
     object* iterkwargs=new_tuple();
     iterkwargs->type->slot_mappings->slot_append(iterkwargs, new_none());
-    builtins[22]=new_builtin((builtinfunc)builtin_iter, str_new_fromstr("iter"), iterargs, iterkwargs, CAST_INT(iterargs->type->slot_mappings->slot_len(iterargs))->val->to_int(), false);
+    builtins[22]=new_builtin((builtinfunc)builtin_iter, str_new_fromstr("iter"), iterargs, iterkwargs, 1, false);
 
     object* nextargs=new_tuple();
     nextargs->type->slot_mappings->slot_append(nextargs, str_new_fromstr("object"));
     object* nextkwargs=new_tuple();
     nextkwargs->type->slot_mappings->slot_append(nextkwargs, new_none());
-    builtins[23]=new_builtin((builtinfunc)builtin_next, str_new_fromstr("next"), nextargs, nextkwargs, CAST_INT(nextargs->type->slot_mappings->slot_len(nextargs))->val->to_int(), false);
+    builtins[23]=new_builtin((builtinfunc)builtin_next, str_new_fromstr("next"), nextargs, nextkwargs, 1, false);
 
     builtins[24]=(object*)&RecursionError;
     builtins[25]=(object*)&MemoryError;
@@ -78,7 +78,7 @@ void setup_builtins(){
     roundargs->type->slot_mappings->slot_append(roundargs, str_new_fromstr("digits"));
     object* roundkwargs=new_tuple();
     roundkwargs->type->slot_mappings->slot_append(roundkwargs, new_int_fromint(0));
-    builtins[31]=new_builtin((builtinfunc)builtin_round, str_new_fromstr("round"), roundargs, roundkwargs, CAST_INT(roundargs->type->slot_mappings->slot_len(roundargs))->val->to_int(), false);
+    builtins[31]=new_builtin((builtinfunc)builtin_round, str_new_fromstr("round"), roundargs, roundkwargs, 2, false);
     
     builtins[32]=(object*)&EnumType;
     builtins[33]=(object*)&RangeType;
@@ -213,15 +213,15 @@ object* new_builtin(builtinfunc function, object* name, object* args, object* kw
 }
 
 object* builtin_call(object* self, object* args, object* kwargs){
-    uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    uint32_t argc=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    uint32_t posargc=CAST_LIST(args)->size;
     uint32_t kwargc=argc-posargc;
 
     if (!CAST_BUILTIN(self)->nargs){
-        if (CAST_BUILTIN(self)->argc-CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_mappings->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()>posargc \
-        || CAST_INT(CAST_BUILTIN(self)->kwargs->type->slot_mappings->slot_len(CAST_BUILTIN(self)->kwargs))->val->to_int()<kwargc \
+        if (CAST_BUILTIN(self)->argc-CAST_LIST(CAST_BUILTIN(self)->kwargs)->size>posargc \
+        || CAST_LIST(CAST_BUILTIN(self)->kwargs)->size<kwargc \
         || CAST_BUILTIN(self)->argc<argc){
-            if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0){
+            if (CAST_DICT(kwargs)->val->size()==0){
                 vm_add_err(&ValueError, vm, "expected %d argument(s), got %d.",CAST_BUILTIN(self)->argc, argc);
                 return NULL;
             }

@@ -208,21 +208,27 @@ object* object_cmp(object* self, object* other, uint8_t type){
 }
 
 size_t object_find(object* iter, object* needle){
-    for (int i=0; i<CAST_INT(iter->type->slot_mappings->slot_len(iter))->val->to_int(); i++){
+    object* len=iter->type->slot_mappings->slot_len(iter);
+    for (int i=0; i<CAST_INT(len)->val->to_int(); i++){
         bool b=list_index_int(iter, i)->type==needle->type && istrue(object_cmp(list_index_int(iter, i),needle, CMP_EQ));
         if (b){
+            FPLDECREF(len);
             return i;
         }
     }
+    FPLDECREF(len);
     return -1;
 }
 
 bool object_find_bool(object* iter, object* needle){
-    for (int i=0; i<CAST_INT(iter->type->slot_mappings->slot_len(iter))->val->to_int(); i++){
+    object* len=iter->type->slot_mappings->slot_len(iter);
+    for (int i=0; i<CAST_INT(len)->val->to_int(); i++){
         if (list_index_int(iter, i)->type==needle->type && istrue(object_cmp(list_index_int(iter, i),needle, CMP_EQ))){
+            FPLDECREF(len);
             return true;
         }
     }
+    FPLDECREF(len);
     return false;
 }
 
@@ -242,11 +248,11 @@ object* object_find_dict_keys(object* dict, object* needle){
 
 object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
     uint32_t argn=0;
-    uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
+    uint32_t argsnum=argc-CAST_LIST(selfkwargs)->size;
 
     //Positional
     object* names=new_list();
-    for (int i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
+    for (int i=0; i<CAST_LIST(args)->size; i++){
         object* o=list_index_int(selfargs, argn);
         object* res=dict->type->slot_mappings->slot_set(dict, o, list_index_int(args, i));
         if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
@@ -262,7 +268,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     
     //Keyword
     uint32_t argn_tmp=argsnum;
-    for (int i=0; i<CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int(); i++){
+    for (int i=0; i<CAST_LIST(selfkwargs)->size; i++){
         object* o=list_index_int(selfargs, argn_tmp);
         
         if (!object_find_bool(names, o)){
@@ -296,7 +302,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
 
 object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
     uint32_t argn=0;
-    uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
+    uint32_t argsnum=argc-CAST_LIST(selfkwargs)->size;
 
     //Positional
     object* res=dict->type->slot_mappings->slot_set(dict, str_new_fromstr("args"), args);
@@ -309,7 +315,7 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
     
     //Keyword
     uint32_t argn_tmp=argsnum;
-    for (int i=0; i<CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int(); i++){
+    for (int i=0; i<CAST_LIST(selfkwargs)->size; i++){
         object* o=list_index_int(selfargs, argn_tmp);
         
         object* res=dict->type->slot_mappings->slot_set(dict, o, list_index_int(selfkwargs, i));
@@ -340,11 +346,11 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
 object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs, int flags, \
                         object* stargs, object* stkwargs){
     uint32_t argn=0;
-    uint32_t argsnum=argc-CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int();
+    uint32_t argsnum=argc-CAST_LIST(selfkwargs)->size;
     //Positional
     object* names=new_list();
-    int selfarglen=CAST_INT(selfargs->type->slot_mappings->slot_len(selfargs))->val->to_int();
-    int arglen=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    int selfarglen=CAST_LIST(selfargs)->size;
+    int arglen=CAST_LIST(args)->size;
     if (arglen>=selfarglen){
         for (int i=0; i<selfarglen; i++){
             object* o=list_index_int(selfargs, argn);
@@ -358,7 +364,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         if (flags==FUNC_STAR || flags==FUNC_STARARGS){
             //Star positional
             object* new_tup=new_tuple();
-            for (int i=argn; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
+            for (int i=argn; i<CAST_LIST(args)->size; i++){
                 new_tup->type->slot_mappings->slot_append(new_tup, list_index_int(args, i));
                 argn++;
             }
@@ -389,7 +395,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
     
     //Keyword
     uint32_t argn_tmp=argsnum;
-    for (int i=0; i<CAST_INT(selfkwargs->type->slot_mappings->slot_len(selfkwargs))->val->to_int(); i++){
+    for (int i=0; i<CAST_LIST(selfkwargs)->size; i++){
         object* o=list_index_int(selfargs, argn_tmp);
         
         if (!object_find_bool(names, o)){
@@ -401,7 +407,13 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         argn_tmp++;
     }
     //Setup user kwargs
-    object* stdict=new_dict();
+    object* stdict;
+    if (flags==FUNC_STAR || flags==FUNC_STARKWARGS){
+        stdict=new_dict();
+    }
+    else{
+        stdict=NULL;
+    }
     for (auto k: (*CAST_DICT(kwargs)->val)){
         //Check if k.first in self.args
         if (!object_find_bool(selfargs, k.first)){ 
@@ -702,12 +714,15 @@ bool object_issubclass(object* obj, TypeObject* t){
     if ((void*)obj->type==(void*)t){
         return true;
     }
-    for (int i=0; i<CAST_INT(obj->type->bases->type->slot_mappings->slot_len(obj->type->bases))->val->to_int(); i++){
+    object* len=obj->type->bases->type->slot_mappings->slot_len(obj->type->bases);
+    for (int i=0; i<CAST_INT(len)->val->to_int(); i++){
         if ((void*)list_index_int(obj->type->bases, i)==(void*)t){
+            FPLDECREF(len);
             return true;
         }
     }
     
+    FPLDECREF(len);
     return false;
 }
 

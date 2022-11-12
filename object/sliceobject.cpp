@@ -8,13 +8,13 @@ object* slice_new_fromnums(object* start, object* end){
 }
 
 object* slice_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    int len=CAST_LIST(args)->size;
     if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got '%d'",len);
         return NULL;
     }
-    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
-        vm_add_err(&ValueError, vm, "Expected no keyword arguments", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments", CAST_DICT(kwargs)->val->size());
         return NULL;
     }
     object* slice=new_object(CAST_TYPE(type));

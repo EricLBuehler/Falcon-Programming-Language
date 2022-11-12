@@ -1,7 +1,7 @@
 
 object* property_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if ((len!=0 && len!=1 && len!=2 && len!=3) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    int len=CAST_LIST(args)->size;
+    if ((len!=0 && len!=1 && len!=2 && len!=3) || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 0, 1, 2 or 3 arguments, got %d", len);
         return NULL;
     }
@@ -121,8 +121,8 @@ object* property_descrset(object* instance, object* self, object* value){
     return val;
 }
 object* property_getter(object* selftp, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    int len=CAST_LIST(args)->size;
+    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -138,8 +138,8 @@ object* property_getter(object* selftp, object* args, object* kwargs){
     return self;
 }
 object* property_setter(object* selftp, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    int len=CAST_LIST(args)->size;
+    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -155,8 +155,8 @@ object* property_setter(object* selftp, object* args, object* kwargs){
     return self;
 }
 object* property_deleter(object* selftp, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    int len=CAST_LIST(args)->size;
+    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }

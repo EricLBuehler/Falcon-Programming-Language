@@ -8,15 +8,15 @@ object* new_set(){
 
 
 object* set_new(object* type, object* args, object* kwargs){
-    if (CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+    if (CAST_LIST(args)->size==0){
         object* obj=new_object(&SetType);
         CAST_SET(obj)->vec=new vector<object*>;
         CAST_SET(obj)->vec->clear();
         
         return obj;
     }
-    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()>0){
-        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+    if (CAST_DICT(kwargs)->val->size()>0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
     }
     if (object_istype(list_index_int(args, 0)->type, &SetType)){
@@ -60,7 +60,7 @@ object* set_new(object* type, object* args, object* kwargs){
     CAST_SET(obj)->vec=new vector<object*>;
     CAST_SET(obj)->vec->clear();
 
-    for (size_t i=0; i<CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int(); i++){
+    for (size_t i=0; i<CAST_LIST(args)->size; i++){
         set_append(obj, list_index_int(args, i));
     }
     
@@ -244,8 +244,8 @@ object* set_iter_bool(object* self){
 }
 
 object* set_find_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -264,8 +264,8 @@ object* set_find_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* set_add_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -276,8 +276,8 @@ object* set_add_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* set_remove_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -298,8 +298,8 @@ object* set_remove_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* set_union_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }

@@ -86,7 +86,7 @@ object* int_float(object* self){
 }
 
 object* int_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
+    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
     if (len==0){
         if(int_map.find(BigInt(0))!=int_map.end()){
             FPLINCREF(int_map[BigInt(0)]);
@@ -100,7 +100,7 @@ object* int_new(object* type, object* args, object* kwargs){
 
         return obj;
     }
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    if (len!=1 || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }

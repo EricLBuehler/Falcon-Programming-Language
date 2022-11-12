@@ -107,8 +107,8 @@ object* newtp_call(object* self, object* args, object* kwargs){
     object* function=object_getattr(self, str_new_fromstr("__call__"));
     ERROR_RET(function);
     
-    uint32_t argc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->operator+((*CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val)).to_int()+1;
-    uint32_t posargc=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+1;
+    uint32_t argc=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size()+1;
+    uint32_t posargc=CAST_LIST(args)->size+1;
     uint32_t kwargc=argc-posargc;     
 
     if (function->type->slot_call==NULL){

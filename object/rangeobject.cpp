@@ -1,11 +1,11 @@
 object* range_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int();
+    int len=CAST_LIST(args)->size;
     if (len!=3 && len!=2 && len!=1){
         vm_add_err(&ValueError, vm, "Expected 1, 2, or 3 arguments, got %d", len);
         return NULL;
     }
-    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
-        vm_add_err(&ValueError, vm, "Expected no keyword arguments", CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int());
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments", CAST_DICT(kwargs)->val->size());
         return NULL;
     }
     object* range=new_object(CAST_TYPE(type));

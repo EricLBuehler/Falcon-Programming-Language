@@ -10,7 +10,7 @@ object* new_dict(){
 }
 
 object* dict_new(object* type, object* args, object* kwargs){
-    if (CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()==0 && CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()==0){
+    if (CAST_DICT(kwargs)->val->size()==0 && CAST_LIST(args)->size==0){
         object_var* obj=new_object_var(CAST_TYPE(type), 0);
         CAST_DICT(obj)->val=new unordered_map<object*, object*>;
         CAST_DICT(obj)->keys=new vector<object*>;
@@ -50,9 +50,14 @@ object* dict_new(object* type, object* args, object* kwargs){
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
             if (o->type->slot_mappings->slot_len==NULL || *CAST_INT(o->type->slot_mappings->slot_len(o))->val!=2){
-                FPLDECREF((object*)obj);
-                vm_add_err(&ValueError, vm, "Expected 2 values (key/value) for dictionary update, got '%d'",CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int());
-                return NULL;
+                object* len=o->type->slot_mappings->slot_len(o);
+                if (*CAST_INT(len)->val!=2){
+                    FPLDECREF(len);
+                    FPLDECREF((object*)obj);
+                    vm_add_err(&ValueError, vm, "Expected 2 values (key/value) for dictionary update, got '%d'",CAST_INT(len)->val->to_int());
+                    return NULL;
+                }
+                FPLDECREF(len);
             }
             dict_set_noret((object*)obj, list_index_int(o, 0), list_index_int(o, 1));
             
@@ -476,8 +481,8 @@ object* dict_iter_bool(object* self){
 }
 
 object* dict_keys_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
@@ -491,8 +496,8 @@ object* dict_keys_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* dict_values_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
@@ -506,8 +511,8 @@ object* dict_values_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* dict_flip_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }

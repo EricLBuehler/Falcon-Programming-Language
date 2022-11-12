@@ -1,6 +1,6 @@
 object* super_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (len!=1|| CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=1|| CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",len);
         return NULL;
     }
