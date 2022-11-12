@@ -406,7 +406,7 @@ void add_instruction(struct compiler* compiler, struct instructions* instruction
     tuple_append(tup, new_int_fromint(startcol));
     tuple_append(tup, new_int_fromint(endcol));
     tuple_append(tup, new_int_fromint(line));
-    dict_set(compiler->lines_detailed, new_int_fromint(instructions->count*2), tup);
+    dict_set_noret(compiler->lines_detailed, new_int_fromint(instructions->count*2), tup);
     FPLDECREF(tup);
 
     compiler->stack_size+=get_stack_size_inc(opcode, arg);
