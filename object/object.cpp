@@ -539,20 +539,22 @@ object* object_genericgetattr_notype(object* obj, object* attr){
 
 
 object* object_genericgetattr(object* obj, object* attr){
-    object* res=NULL;
+    object* res=NULL;   
     //Check dict
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
-        if (object_find_bool_dict_keys(dict, attr)){
-            res=dict_get(dict, attr);
+        if (CAST_DICT(dict)->val->find(attr)!=CAST_DICT(dict)->val->end()){
+            res=CAST_DICT(dict)->val->at(attr);
+            FPLINCREF(res);
             goto done;
         }
     }
     //Check type dict
     if (obj->type->dict!=0){
         object* dict = obj->type->dict;
-        if (object_find_bool_dict_keys(dict, attr)){
-            res=dict_get(dict, attr);
+        if (CAST_DICT(dict)->val->find(attr)!=CAST_DICT(dict)->val->end()){
+            res=CAST_DICT(dict)->val->at(attr);
+            FPLINCREF(res);
             goto done;
         }
     }
@@ -565,8 +567,9 @@ object* object_genericgetattr(object* obj, object* attr){
             //Check type dict
             if (base_tp->dict!=0){
                 object* dict = base_tp->dict;
-                if (object_find_bool_dict_keys(dict, attr)){
-                    res=dict_get(dict, attr);
+                if (CAST_DICT(dict)->val->find(attr)!=CAST_DICT(dict)->val->end()){
+                    res=CAST_DICT(dict)->val->at(attr);
+                    FPLINCREF(res);
                     goto done;
                 }
             }
