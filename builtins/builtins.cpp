@@ -3,38 +3,61 @@
 
 object* builtin_print(object* self, object* args){
     object* tupargs=args->type->slot_mappings->slot_get(args, str_new_fromstr("args"));
-    string sep=object_cstr(dict_get(args, str_new_fromstr("sep")));
+    object* sep_=dict_get(args, str_new_fromstr("sep"));
+    object* end=dict_get(args, str_new_fromstr("end"));
+    string sep=object_cstr(sep_);
     for (int n=0; n<CAST_TUPLE(tupargs)->size; n++){
         cout<<object_cstr(tuple_index_int(tupargs, n));
         if (n+1!=CAST_TUPLE(tupargs)->size){
             cout<<sep;
         }
     }
-    printf("%s",object_cstr(dict_get(args, str_new_fromstr("end"))).c_str());
+    printf("%s",object_cstr(end).c_str());
+    FPLDECREF(sep_);
+    FPLDECREF(end);
+    FPLDECREF(tupargs);
     return new_none();
 }
 
 object* builtin_repr(object* self, object* args){
-    return object_repr(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
+    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* s=object_repr(o);
+    FPLDECREF(o);
+    return s;
 }
 
 object* builtin___build_class__(object* self, object* args){
     object* function=args->type->slot_mappings->slot_get(args, str_new_fromstr("func"));
     object* name=args->type->slot_mappings->slot_get(args, str_new_fromstr("name"));
+    object* bases=args->type->slot_mappings->slot_get(args, str_new_fromstr("bases"));
     object* dict;
     
 
     if (!object_istype(function->type, &FuncType)){
         vm_add_err(&TypeError, vm, "expected function");
+        FPLDECREF(function);
+        FPLDECREF(name);
+        FPLDECREF(bases);
         return NULL;
     }
     if (!object_istype(name->type, &StrType)){
         vm_add_err(&TypeError, vm, "expected str");
+        FPLDECREF(function);
+        FPLDECREF(name);
+        FPLDECREF(bases);
+        return NULL;
+    }
+    if (!object_istype(bases->type, &ListType) && !object_istype(bases->type, &TupleType)){
+        vm_add_err(&TypeError, vm, "expected list or tuple");
+        FPLDECREF(function);
+        FPLDECREF(name);
+        FPLDECREF(bases);
         return NULL;
     }
     
     uint32_t ip=0;
-    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, FPLINCREF(CAST_FUNC(function)->code), function, &ip);
+    FPLINCREF(CAST_FUNC(function)->code);
+    add_callframe(vm->callstack, new_int_fromint(0),  CAST_STRING(CAST_FUNC(function)->name)->val, CAST_FUNC(function)->code, function, &ip);
     callstack_head(vm->callstack).locals=new_dict();
     
     object* kwargs=new_dict();
@@ -43,11 +66,14 @@ object* builtin___build_class__(object* self, object* args){
     FPLDECREF(kwargs);
     FPLDECREF(fargs);
 
-    dict=FPLINCREF(callstack_head(vm->callstack).locals);
+    dict=callstack_head(vm->callstack).locals;
+    FPLINCREF(callstack_head(vm->callstack).locals);
     pop_callframe(vm->callstack);
     ERROR_RET(ret);
     
-    object* t=new_type(CAST_STRING(name)->val, args->type->slot_mappings->slot_get(args, str_new_fromstr("bases")), dict);
+    object* t=new_type(CAST_STRING(name)->val, bases, dict);
+    FPLDECREF(function);
+    FPLDECREF(name);
     return t;
 }
 
@@ -55,6 +81,7 @@ object* builtin_id(object* self, object* args){
     object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
     char buf[32];
     sprintf(buf, "%ld", (size_t)obj);
+    FPLDECREF(obj);
     return new_int_fromstr(new string(buf));
 }
 
@@ -69,6 +96,7 @@ object* builtin_input(object* self, object* args){
         hit_sigint=false;
         return NULL;
     }
+    FPLDECREF(obj);
     return str_new_fromstr(s);
 }
 
@@ -78,7 +106,9 @@ object* builtin_iter(object* self, object* args){
         vm_add_err(&TypeError, vm, "'%s' object is not an iterable", obj->type->name->c_str());
         return NULL;
     }
-    return obj->type->slot_iter(obj);
+    object* it=obj->type->slot_iter(obj);
+    FPLDECREF(obj);
+    return it;
 }
 
 object* builtin_next(object* self, object* args){
@@ -87,7 +117,9 @@ object* builtin_next(object* self, object* args){
         vm_add_err(&TypeError, vm, "'%s' object is not an iterable", obj->type->name->c_str());
         return NULL;
     }
-    return obj->type->slot_next(obj);
+    object* n=obj->type->slot_next(obj);
+    FPLDECREF(obj);
+    return n;
 }
 
 object* builtin_round(object* self, object* args){
@@ -97,11 +129,15 @@ object* builtin_round(object* self, object* args){
     object* floatval=object_float(obj);
     if (floatval==NULL || !object_istype(floatval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", obj->type->name->c_str());
+        FPLDECREF(obj);
+        FPLDECREF(digits);
         return NULL; 
     }
     object* ndigits=object_int(digits);
     if (ndigits==NULL || !object_istype(ndigits->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", digits->type->name->c_str());
+        FPLDECREF(obj);
+        FPLDECREF(digits);
         return NULL; 
     }
 
@@ -119,12 +155,15 @@ object* builtin_round(object* self, object* args){
         substr=orig_val.substr(0, pos+2);
         FPLDECREF(ndigits);
         FPLDECREF(floatval);
+        FPLDECREF(obj);
+        FPLDECREF(digits);
         return new_int_fromint(round(stod(substr)));
     }
     substr=orig_val.substr(0, pos+2+CAST_INT(ndigits)->val->to_int());
     FPLDECREF(ndigits);
     FPLDECREF(floatval);
-    
+    FPLDECREF(obj);
+    FPLDECREF(digits);    
     return new_float_fromdouble(round_double(stod(substr), CAST_INT(ndigits)->val->to_int()));
 }
 
@@ -175,6 +214,8 @@ object* builtin_issubclass(object* self, object* args){
     }
 
     bool is=object_issubclass(ob, CAST_TYPE(type));
+    FPLDECREF(ob);
+    FPLDECREF(type);
     if (is){
         return new_bool_true();
     }
@@ -191,8 +232,10 @@ object* builtin_getattr(object* self, object* args){
         vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", attr->type->name->c_str());
         return NULL;
     }
-
-    return object_getattr(ob, attr);
+    object* v=object_getattr(ob, attr);
+    FPLDECREF(ob);
+    FPLDECREF(attr);
+    return v;
 }
 
 object* builtin_setattr(object* self, object* args){
@@ -206,6 +249,9 @@ object* builtin_setattr(object* self, object* args){
     }
     
     object* v=object_setattr(ob, attr, val);
+    FPLDECREF(ob);
+    FPLDECREF(attr);
+    FPLDECREF(val);
     if (v!=SUCCESS){
         return NULL;
     }
@@ -217,6 +263,7 @@ object* builtin_abs(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("self")); 
     
     object* retval=object_abs(val);
+    FPLDECREF(val);
     if (retval==NULL){
         vm_add_err(&TypeError, vm, "'%s' object has no absolute value", val->type->name->c_str());
         return NULL; 
@@ -225,17 +272,22 @@ object* builtin_abs(object* self, object* args){
 }
     
 object* builtin_iscallable(object* self, object* args){
-    return object_iscallable(args->type->slot_mappings->slot_get(args, str_new_fromstr("object")));
+    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* v=object_iscallable(o);
+    FPLDECREF(o);
+    return v;
 }
     
 object* builtin_reverse(object* self, object* args){
     object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
     if (val->type->slot_mappings->slot_get==NULL){
         vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", val->type->name->c_str());
+        FPLDECREF(val);
         return NULL;
     }
     if (val->type->slot_mappings->slot_len==NULL){
         vm_add_err(&TypeError, vm, "'%s' object has no __len__", val->type->name->c_str());
+        FPLDECREF(val);
         return NULL;
     }
     object* list=new_list();
@@ -244,13 +296,17 @@ object* builtin_reverse(object* self, object* args){
         object* idx=new_int_fromint(i-1);
         object* v=val->type->slot_mappings->slot_get(val, idx);
         if (v==NULL){
+            FPLDECREF(len);
+            FPLDECREF(val);
+            FPLDECREF(idx);
             return NULL;
         }
         FPLDECREF(idx);
         list_append(list,v);
+        FPLDECREF(v);
     }
     FPLDECREF(len);
-
+    FPLDECREF(val);
     return list;
 }
     
@@ -258,8 +314,10 @@ object* builtin_isiter(object* self, object* args){
     object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
 
     if (o->type->slot_iter==NULL){
+        FPLDECREF(o);
         return new_bool_false();
     }
+    FPLDECREF(o);
     return new_bool_true();
 }
     
@@ -268,11 +326,13 @@ object* builtin_min(object* self, object* args){
 
     if (val->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", val->type->name->c_str());
+        FPLDECREF(val);
         return NULL;
     }
 
     if (val->type->slot_mappings->slot_len==NULL){
         vm_add_err(&TypeError, vm, "'%s' object has no __len__", val->type->name->c_str());
+        FPLDECREF(val);
         return NULL;
     }
     
@@ -280,10 +340,14 @@ object* builtin_min(object* self, object* args){
     ERROR_RET(len);
     if (!object_istype(len->type, &IntType)){
         vm_add_err(&TypeError, vm, "Expected int, got '%s' object", len->type->name->c_str());
+        FPLDECREF(val);
+        FPLDECREF(len);
         return NULL;
     }
     if (*CAST_INT(len)->val==0){
         vm_add_err(&ValueError, vm, "Got empty sequence");
+        FPLDECREF(val);
+        FPLDECREF(len);
         return NULL;
     }
 
@@ -291,6 +355,9 @@ object* builtin_min(object* self, object* args){
     
     if (iter!=NULL && iter->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        FPLDECREF(val);
+        FPLDECREF(len);
+        FPLDECREF(iter);
         return NULL;
     }
 
@@ -306,6 +373,8 @@ object* builtin_min(object* self, object* args){
             goto cont;
         }
         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
+            FPLDECREF(val);
+            FPLDECREF(len);
             FPLDECREF(iter);
             FPLDECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
@@ -320,6 +389,7 @@ object* builtin_min(object* self, object* args){
         }
         else{
             if (istrue(object_gt(v, min))){
+                FPLDECREF(min);
                 min=v;
             }
         }
@@ -329,6 +399,10 @@ object* builtin_min(object* self, object* args){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
+    FPLDECREF(val);
+    FPLDECREF(len);
+    FPLDECREF(iter);
+    FPLDECREF(one);
     return min;
 }
     
@@ -337,11 +411,13 @@ object* builtin_max(object* self, object* args){
 
     if (val->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", val->type->name->c_str());
+        FPLDECREF(val);
         return NULL;
     }
 
     if (val->type->slot_mappings->slot_len==NULL){
         vm_add_err(&TypeError, vm, "'%s' object has no __len__", val->type->name->c_str());
+        FPLDECREF(val);
         return NULL;
     }
     
@@ -349,10 +425,14 @@ object* builtin_max(object* self, object* args){
     ERROR_RET(len);
     if (!object_istype(len->type, &IntType)){
         vm_add_err(&TypeError, vm, "Expected int, got '%s' object", len->type->name->c_str());
+        FPLDECREF(val);
+        FPLDECREF(len);
         return NULL;
     }
     if (*CAST_INT(len)->val==0){
         vm_add_err(&ValueError, vm, "Got empty sequence");
+        FPLDECREF(val);
+        FPLDECREF(len);
         return NULL;
     }
 
@@ -360,6 +440,9 @@ object* builtin_max(object* self, object* args){
     
     if (iter!=NULL && iter->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        FPLDECREF(val);
+        FPLDECREF(len);
+        FPLDECREF(iter);
         return NULL;
     }
 
@@ -375,6 +458,8 @@ object* builtin_max(object* self, object* args){
             goto cont;
         }
         if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
+            FPLDECREF(val);
+            FPLDECREF(len);
             FPLDECREF(iter);
             FPLDECREF(one);
             vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
@@ -389,6 +474,7 @@ object* builtin_max(object* self, object* args){
         }
         else{
             if (istrue(object_lt(v, max))){
+                FPLDECREF(max);
                 max=v;
             }
         }
@@ -398,6 +484,10 @@ object* builtin_max(object* self, object* args){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
+    FPLDECREF(val);
+    FPLDECREF(len);
+    FPLDECREF(iter);
+    FPLDECREF(one);
     return max;
 }
     
@@ -406,6 +496,8 @@ object* builtin_getannotation(object* self, object* args){
     object* anno=callstack_head(vm->callstack).annotations;
 
     object* tp=dict_get(anno, nm);
+    FPLDECREF(nm);
+    FPLDECREF(anno);
     if (tp==NULL){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
@@ -420,6 +512,7 @@ object* builtin_sum(object* self, object* args){
     
     if (o->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", o->type->name->c_str());
+        FPLDECREF(o);
         return NULL;
     }
 
@@ -427,6 +520,8 @@ object* builtin_sum(object* self, object* args){
     
     if (iter!=NULL && iter->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        FPLDECREF(o);
+        FPLDECREF(iter);
         return NULL;
     }
 
@@ -437,8 +532,13 @@ object* builtin_sum(object* self, object* args){
         object* v=object_add(val, ob);
         if (v==NULL){
             vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", val->type->name->c_str(), ob->type->name->c_str());
+            FPLDECREF(o);
+            FPLDECREF(val);
+            FPLDECREF(ob);
+            FPLDECREF(iter);
             return NULL;
         }
+        FPLDECREF(val);
         val=v;
         ob=iter->type->slot_next(iter);
     }
@@ -446,6 +546,10 @@ object* builtin_sum(object* self, object* args){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
     }
+    FPLDECREF(o);
+    FPLDECREF(val);
+    FPLDECREF(ob);
+    FPLDECREF(iter);
     return val;
 }
 
@@ -458,11 +562,12 @@ object* builtin_hasattr(object* self, object* args){
         return NULL;
     }
     attr=object_getattr(ob, attr);
+    FPLDECREF(ob);
+    FPLDECREF(attr);
     if (attr==NULL && vm->exception!=NULL && object_issubclass(vm->exception, &ExceptionType)){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
         return new_bool_false();
     }
-    FPLDECREF(attr);
     return new_bool_true();
 }

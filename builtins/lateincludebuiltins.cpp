@@ -21,6 +21,9 @@ object* builtin_eval(object* self, object* args){
         cout<<ast.snippet<<endl;
         cout<<ast.arrows<<endl;
         printf("%s\n",ast.error);
+        FPLDECREF(str);
+        FPLDECREF(glbls);
+        FPLDECREF(locals);
         return TERM_PROGRAM;
     }
 
@@ -35,6 +38,9 @@ object* builtin_eval(object* self, object* args){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;
         printf("%s\n",parseretglbl.error);
+        FPLDECREF(str);
+        FPLDECREF(glbls);
+        FPLDECREF(locals);
         return TERM_PROGRAM;
     }
     
@@ -51,6 +57,10 @@ object* builtin_eval(object* self, object* args){
     
     vm_del(::vm);
     ::vm=vm_;
+
+    FPLDECREF(str);
+    FPLDECREF(glbls);
+    FPLDECREF(locals);
 
     return new_none();
 }
