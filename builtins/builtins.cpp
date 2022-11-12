@@ -539,6 +539,7 @@ object* builtin_sum(object* self, object* args){
             FPLDECREF(iter);
             return NULL;
         }
+        
         FPLDECREF(val);
         val=v;
         ob=iter->type->slot_next(iter);
@@ -549,7 +550,6 @@ object* builtin_sum(object* self, object* args){
     }
     FPLDECREF(o);
     FPLDECREF(val);
-    FPLDECREF(ob);
     FPLDECREF(iter);
     return val;
 }
