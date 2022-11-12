@@ -26,7 +26,6 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t argc=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
     uint32_t posargc=CAST_LIST(args)->size;
     uint32_t kwargc=argc-posargc;
-
     uint32_t ip=0;
 
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, &ip);

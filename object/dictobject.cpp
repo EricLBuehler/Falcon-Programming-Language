@@ -384,6 +384,7 @@ void dict_del(object* obj){
         FPLDECREF(k.second);
     }
     delete CAST_DICT(obj)->val;
+    delete CAST_DICT(obj)->keys;
 }
 
 object* dict_iter(object* self){
@@ -409,6 +410,7 @@ void dict_iter_del(object* self){
         FPLDECREF(k.second);
     }
     delete CAST_DICTITER(self)->val;
+    delete CAST_DICTITER(self)->keys;
 }
 
 object* dict_iter_next(object* self){
