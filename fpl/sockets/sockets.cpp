@@ -388,6 +388,7 @@ object* socket_gethostbyname(object* selftp, object* args){
     object* v=dict_get(args, str_new_fromstr("name"));
     
     string s=object_cstr(v).c_str();
+    FPLDECREF(v);
     char name[s.size()+1];
     strcpy(name, s.c_str());
     
@@ -884,6 +885,7 @@ object* socket_sendall(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_enter(object* self){
+    FPLINCREF(self);
     return self;
 }
 
@@ -908,79 +910,79 @@ object* new_socket_module(){
     setup_type_methods(&SocketType);
 
     object* dict=new_dict();
-    dict_set(dict, str_new_fromstr("socket"), (object*)&SocketType);
+    dict_set_noret(dict, str_new_fromstr("socket"), (object*)&SocketType);
     
     //Address family types
     #ifdef AF_UNIX
-    dict_set(dict, str_new_fromstr("AF_UNIX"), new_int_fromint(AF_UNIX));
+    dict_set_noret(dict, str_new_fromstr("AF_UNIX"), new_int_fromint(AF_UNIX));
     #endif
-    dict_set(dict, str_new_fromstr("AF_INET"), new_int_fromint(AF_INET));
-    dict_set(dict, str_new_fromstr("AF_INET6"), new_int_fromint(AF_INET6));
+    dict_set_noret(dict, str_new_fromstr("AF_INET"), new_int_fromint(AF_INET));
+    dict_set_noret(dict, str_new_fromstr("AF_INET6"), new_int_fromint(AF_INET6));
     
     //Socket Type types
-    dict_set(dict, str_new_fromstr("SOCK_STREAM"), new_int_fromint(SOCK_STREAM));
-    dict_set(dict, str_new_fromstr("SOCK_DGRAM"), new_int_fromint(SOCK_DGRAM));
-    dict_set(dict, str_new_fromstr("SOCK_RAW"), new_int_fromint(SOCK_RAW));
-    dict_set(dict, str_new_fromstr("SOCK_RDM"), new_int_fromint(SOCK_RDM));
-    dict_set(dict, str_new_fromstr("SOCK_SEQPACKET"), new_int_fromint(SOCK_SEQPACKET));
-    dict_set(dict, str_new_fromstr("INADDR_ANY"), new_int_fromint(INADDR_ANY));
-    dict_set(dict, str_new_fromstr("INADDR_BROADCAST"), new_int_fromint(INADDR_BROADCAST));
+    dict_set_noret(dict, str_new_fromstr("SOCK_STREAM"), new_int_fromint(SOCK_STREAM));
+    dict_set_noret(dict, str_new_fromstr("SOCK_DGRAM"), new_int_fromint(SOCK_DGRAM));
+    dict_set_noret(dict, str_new_fromstr("SOCK_RAW"), new_int_fromint(SOCK_RAW));
+    dict_set_noret(dict, str_new_fromstr("SOCK_RDM"), new_int_fromint(SOCK_RDM));
+    dict_set_noret(dict, str_new_fromstr("SOCK_SEQPACKET"), new_int_fromint(SOCK_SEQPACKET));
+    dict_set_noret(dict, str_new_fromstr("INADDR_ANY"), new_int_fromint(INADDR_ANY));
+    dict_set_noret(dict, str_new_fromstr("INADDR_BROADCAST"), new_int_fromint(INADDR_BROADCAST));
 
     //Flags
     #ifndef _WIN32
-    dict_set(dict, str_new_fromstr("MSG_CONFIRM"), new_int_fromint(MSG_CONFIRM));
-    dict_set(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
-    dict_set(dict, str_new_fromstr("MSG_DONTWAIT"), new_int_fromint(MSG_DONTWAIT));
-    dict_set(dict, str_new_fromstr("MSG_EOR"), new_int_fromint(MSG_EOR));
-    dict_set(dict, str_new_fromstr("MSG_MORE"), new_int_fromint(MSG_MORE));
-    dict_set(dict, str_new_fromstr("MSG_NOSIGNAL"), new_int_fromint(MSG_NOSIGNAL));
-    dict_set(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
+    dict_set_noret(dict, str_new_fromstr("MSG_CONFIRM"), new_int_fromint(MSG_CONFIRM));
+    dict_set_noret(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
+    dict_set_noret(dict, str_new_fromstr("MSG_DONTWAIT"), new_int_fromint(MSG_DONTWAIT));
+    dict_set_noret(dict, str_new_fromstr("MSG_EOR"), new_int_fromint(MSG_EOR));
+    dict_set_noret(dict, str_new_fromstr("MSG_MORE"), new_int_fromint(MSG_MORE));
+    dict_set_noret(dict, str_new_fromstr("MSG_NOSIGNAL"), new_int_fromint(MSG_NOSIGNAL));
+    dict_set_noret(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
     #endif
-    dict_set(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
-    dict_set(dict, str_new_fromstr("MSG_OOB"), new_int_fromint(MSG_OOB));
+    dict_set_noret(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
+    dict_set_noret(dict, str_new_fromstr("MSG_OOB"), new_int_fromint(MSG_OOB));
 
     //Socket options (level)
-    dict_set(dict, str_new_fromstr("SOL_SOCKET"), new_int_fromint(SOL_SOCKET));
+    dict_set_noret(dict, str_new_fromstr("SOL_SOCKET"), new_int_fromint(SOL_SOCKET));
 
     //Socket options (options)
-    dict_set(dict, str_new_fromstr("SO_DEBUG"), new_int_fromint(SO_DEBUG));
-    dict_set(dict, str_new_fromstr("SO_BROADCAST"), new_int_fromint(SO_BROADCAST));
-    dict_set(dict, str_new_fromstr("SO_REUSEADDR"), new_int_fromint(SO_REUSEADDR));
-    dict_set(dict, str_new_fromstr("SO_KEEPALIVE"), new_int_fromint(SO_KEEPALIVE));
-    dict_set(dict, str_new_fromstr("SO_LINGER"), new_int_fromint(SO_LINGER));
-    dict_set(dict, str_new_fromstr("SO_OOBINLINE"), new_int_fromint(SO_OOBINLINE));
-    dict_set(dict, str_new_fromstr("SO_SNDBUF"), new_int_fromint(SO_SNDBUF));
-    dict_set(dict, str_new_fromstr("SO_RCVBUF"), new_int_fromint(SO_RCVBUF));
-    dict_set(dict, str_new_fromstr("SO_DONTROUTE"), new_int_fromint(SO_DONTROUTE));
-    dict_set(dict, str_new_fromstr("SO_RCVLOWAT"), new_int_fromint(SO_RCVLOWAT));
-    dict_set(dict, str_new_fromstr("SO_RCVTIMEO"), new_int_fromint(SO_RCVTIMEO));
-    dict_set(dict, str_new_fromstr("SO_SNDLOWAT"), new_int_fromint(SO_SNDLOWAT));
-    dict_set(dict, str_new_fromstr("SO_SNDTIMEO"), new_int_fromint(SO_SNDTIMEO));
-    dict_set(dict, str_new_fromstr("SO_ENABLED"), new_int_fromint(1));
-    dict_set(dict, str_new_fromstr("SO_DISABLED"), new_int_fromint(0));
+    dict_set_noret(dict, str_new_fromstr("SO_DEBUG"), new_int_fromint(SO_DEBUG));
+    dict_set_noret(dict, str_new_fromstr("SO_BROADCAST"), new_int_fromint(SO_BROADCAST));
+    dict_set_noret(dict, str_new_fromstr("SO_REUSEADDR"), new_int_fromint(SO_REUSEADDR));
+    dict_set_noret(dict, str_new_fromstr("SO_KEEPALIVE"), new_int_fromint(SO_KEEPALIVE));
+    dict_set_noret(dict, str_new_fromstr("SO_LINGER"), new_int_fromint(SO_LINGER));
+    dict_set_noret(dict, str_new_fromstr("SO_OOBINLINE"), new_int_fromint(SO_OOBINLINE));
+    dict_set_noret(dict, str_new_fromstr("SO_SNDBUF"), new_int_fromint(SO_SNDBUF));
+    dict_set_noret(dict, str_new_fromstr("SO_RCVBUF"), new_int_fromint(SO_RCVBUF));
+    dict_set_noret(dict, str_new_fromstr("SO_DONTROUTE"), new_int_fromint(SO_DONTROUTE));
+    dict_set_noret(dict, str_new_fromstr("SO_RCVLOWAT"), new_int_fromint(SO_RCVLOWAT));
+    dict_set_noret(dict, str_new_fromstr("SO_RCVTIMEO"), new_int_fromint(SO_RCVTIMEO));
+    dict_set_noret(dict, str_new_fromstr("SO_SNDLOWAT"), new_int_fromint(SO_SNDLOWAT));
+    dict_set_noret(dict, str_new_fromstr("SO_SNDTIMEO"), new_int_fromint(SO_SNDTIMEO));
+    dict_set_noret(dict, str_new_fromstr("SO_ENABLED"), new_int_fromint(1));
+    dict_set_noret(dict, str_new_fromstr("SO_DISABLED"), new_int_fromint(0));
     #ifdef _WIN32
-    dict_set(dict, str_new_fromstr("SO_CONDITIONAL_ACCEPT"), new_int_fromint(SO_CONDITIONAL_ACCEPT));
+    dict_set_noret(dict, str_new_fromstr("SO_CONDITIONAL_ACCEPT"), new_int_fromint(SO_CONDITIONAL_ACCEPT));
     #endif
 
     //Other
-    dict_set(dict, str_new_fromstr("SOMAXCONN"), new_int_fromint(SOMAXCONN));
+    dict_set_noret(dict, str_new_fromstr("SOMAXCONN"), new_int_fromint(SOMAXCONN));
     
     //Builtin objects
     object* emptyargs_kwargs=new_tuple();
 
     object* ob=new_builtin(socket_gethostname, str_new_fromstr("gethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
-    dict_set(dict, str_new_fromstr("gethostname"), ob);
+    dict_set_noret(dict, str_new_fromstr("gethostname"), ob);
     FPLDECREF(ob);
 
     object* gethostbyname_args=new_tuple();
     tuple_append(gethostbyname_args, str_new_fromstr("name"));
     ob=new_builtin(socket_gethostbyname, str_new_fromstr("gethostbyname"), gethostbyname_args, emptyargs_kwargs, 1, false);
-    dict_set(dict, str_new_fromstr("gethostbyname"), ob);
+    dict_set_noret(dict, str_new_fromstr("gethostbyname"), ob);
     FPLDECREF(ob);    
 
     #ifndef _WIN32
     ob=new_builtin(socket_sethostname, str_new_fromstr("sethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
-    dict_set(dict, str_new_fromstr("sethostname"), ob);
+    dict_set_noret(dict, str_new_fromstr("sethostname"), ob);
     FPLDECREF(ob);    
     #endif
     
