@@ -14,17 +14,14 @@ object* thread_new(object* type, object* args, object* kwargs){
         return NULL;
     }
 
-    CAST_THREAD(obj)->callable=FPLINCREF(callable);
+    FPLINCREF(callable);
+    CAST_THREAD(obj)->callable=callable;
     CAST_THREAD(obj)->thread=NULL;
 
     return obj;
 }
 
 void thread_del(object* self){
-    if (object_istype(self->type, &ThreadType)){
-        vm_add_err(&TypeError, vm, "Expected thread object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     FPLDECREF(CAST_THREAD(self)->callable);
     if (CAST_THREAD(self)->thread!=NULL){
         fpl_free(CAST_THREAD(self)->thread);
@@ -51,10 +48,6 @@ object* thread_cmp(object* self, object* other, uint8_t type){
 }
 
 object* thread_repr(object* self){
-    if (object_istype(self->type, &ThreadType)){
-        vm_add_err(&TypeError, vm, "Expected thread object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     string s="";
     s+="<Thread ";
     s+=object_cstr(CAST_THREAD(self)->callable);
@@ -113,10 +106,6 @@ object* thread_start_meth(object* selftp, object* args, object* kwargs){
         args_->args=kwargs->type->slot_mappings->slot_get(kwargs, ar);
     }
     object* self=tuple_index_int(args, 0);
-    if (object_istype(self->type, &ThreadType)){
-        vm_add_err(&TypeError, vm, "Expected thread object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     args_->callable=CAST_THREAD(self)->callable;
 
     pthread_create(t, NULL, &_thread_start_wrap, (void*)args_);

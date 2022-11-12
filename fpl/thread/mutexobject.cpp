@@ -18,10 +18,6 @@ object* mutex_new(object* type, object* args, object* kwargs){
 }
 
 void mutex_del(object* self){
-    if (object_istype(self->type, &MutexType)){
-        vm_add_err(&TypeError, vm, "Expected mutex object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     pthread_mutex_unlock(CAST_MUTEX(self)->lock);
     pthread_mutex_destroy(CAST_MUTEX(self)->lock);
     if (CAST_MUTEX(self)->lock!=NULL){
@@ -30,10 +26,6 @@ void mutex_del(object* self){
 }
 
 object* mutex_repr(object* self){
-    if (object_istype(self->type, &MutexType)){
-        vm_add_err(&TypeError, vm, "Expected mutex object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     string s="";
     s+="<Mutex ";
     if (CAST_MUTEX(self)->locked){
@@ -53,10 +45,6 @@ object* mutex_acquire_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args,0);
-    if (object_istype(self->type, &MutexType)){
-        vm_add_err(&TypeError, vm, "Expected mutex object, got '%s' object", self->type->name->c_str());
-        return NULL;
-    }
     if (CAST_MUTEX(self)->locked){
         return new_bool_false();
     }

@@ -33,8 +33,8 @@ object* new_thread_module(){
 
     object* dict=new_dict();
 
-    dict_set(dict, str_new_fromstr("Thread"), (object*)&ThreadType);
-    dict_set(dict, str_new_fromstr("Mutex"), (object*)&MutexType);
+    dict_set_noret(dict, str_new_fromstr("Thread"), (object*)&ThreadType);
+    dict_set_noret(dict, str_new_fromstr("Mutex"), (object*)&MutexType);
 
     return module_new_fromdict(dict, str_new_fromstr("thread"));
 }
