@@ -49,7 +49,7 @@ object* builtin_eval(object* self, object* args){
     
     ::vm->globals=glbls;
     ::callstack_head(vm->callstack).locals=locals;
-    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
+    dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
     ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
 
     object* ret=run_vm(code, &::vm->ip);

@@ -200,8 +200,9 @@ object* builtin_len(object* self, object* args){
         vm_add_err(&TypeError, vm, "'%s' object has no __len__", arg->type->name->c_str());
         return NULL;
     }
-
-    return arg->type->slot_mappings->slot_len(arg);
+    object* len=arg->type->slot_mappings->slot_len(arg);
+    FPLDECREF(len);
+    return len;
 }
 
 object* builtin_issubclass(object* self, object* args){
