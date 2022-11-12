@@ -218,7 +218,7 @@ object* builtin_call(object* self, object* args, object* kwargs){
     uint32_t kwargc=argc-posargc;
 
     if (!CAST_BUILTIN(self)->nargs){
-        if (CAST_BUILTIN(self)->argc-CAST_LIST(CAST_BUILTIN(self)->kwargs)->size>posargc \
+        if (CAST_BUILTIN(self)->argc!=argc && CAST_BUILTIN(self)->argc-CAST_LIST(CAST_BUILTIN(self)->kwargs)->size>posargc \
         || CAST_LIST(CAST_BUILTIN(self)->kwargs)->size<kwargc \
         || CAST_BUILTIN(self)->argc<argc){
             if (CAST_DICT(kwargs)->val->size()==0){

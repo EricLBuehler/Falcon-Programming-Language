@@ -247,6 +247,9 @@ object* object_find_dict_keys(object* dict, object* needle){
 }
 
 object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs){
+    if (argc==0){
+        return dict;
+    }
     uint32_t argn=0;
     uint32_t argsnum=argc-CAST_LIST(selfkwargs)->size;
 
@@ -260,6 +263,9 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         }
         names->type->slot_mappings->slot_append(names, o);
         argn++;
+    }
+    if (argc==argn){
+        return dict;
     }
     
     //
@@ -345,6 +351,10 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
 
 object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* selfkwargs, object* args, object* kwargs, int flags, \
                         object* stargs, object* stkwargs){
+    
+    if (argc==0){
+        return dict;
+    }
     uint32_t argn=0;
     uint32_t argsnum=argc-CAST_LIST(selfkwargs)->size;
     //Positional
@@ -360,6 +370,9 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
             }
             names->type->slot_mappings->slot_append(names, o);
             argn++;
+        } 
+        if (argc==argn){
+            return dict;
         }
         if (flags==FUNC_STAR || flags==FUNC_STARARGS){
             //Star positional
