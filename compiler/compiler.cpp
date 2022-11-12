@@ -4271,13 +4271,17 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
 
     if (ast.nodes.size()>0){
         object* tuple=new_tuple();
-        object* lineno=object_sub(lines->type->slot_mappings->slot_len(lines), new_int_fromint(1));
-        object* line=lines->type->slot_mappings->slot_get(lines, lineno);
+        object* lineno=new_int_fromint(CAST_LIST(lines)->size-1);
+        object* line=list_index_int(lines, CAST_LIST(lines)->size-1);
         tuple->type->slot_mappings->slot_append(tuple, tuple_index_int(line, 0));
         tuple->type->slot_mappings->slot_append(tuple, object_add(tuple_index_int(line, 1), new_int_fromint(2)));
         tuple->type->slot_mappings->slot_append(tuple, tuple_index_int(line, 2));
         
-        lines->type->slot_mappings->slot_set(lines, lineno, tuple);
+        object* res=lines->type->slot_mappings->slot_set(lines, lineno, tuple);
+        if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
+            FPLDECREF(res);
+        }
+        FPLDECREF(lineno);
     }
     else{
         object* tuple=new_tuple();
