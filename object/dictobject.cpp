@@ -212,7 +212,7 @@ void dict_set_noret(object* self, object* key, object* val){
         if ((*CAST_DICT(self)->val)[key]==val){ //Same val
             //Do not FPLINCREF val!
             return;
-        } 
+        }  
         object* o=(*CAST_DICT(self)->val)[key];
         FPLINCREF(val);
         (*CAST_DICT(self)->val)[key]=val;
