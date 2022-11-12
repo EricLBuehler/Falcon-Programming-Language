@@ -31,7 +31,7 @@ object* func_call(object* self, object* args, object* kwargs){
 
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, &ip);
     callstack_head(vm->callstack).locals=new_dict();
-    dict_set(callstack_head(vm->callstack).locals, str_new_fromstr("__annotations__"), callstack_head(vm->callstack).annotations);
+    dict_set_noret(callstack_head(vm->callstack).locals, str_new_fromstr("__annotations__"), callstack_head(vm->callstack).annotations);
     object* globals=vm->globals;
     object* global_anno=vm->global_annotations;
 
@@ -82,7 +82,7 @@ object* func_call(object* self, object* args, object* kwargs){
 
     if (datastack_size_>datastack_size){
         while (vm->objstack->size>datastack_size){
-            pop_dataframe(vm->objstack);
+            FPLDECREF(pop_dataframe(vm->objstack));
         }
     }
     if (callstack_size_>callstack_size){

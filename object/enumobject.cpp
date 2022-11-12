@@ -40,8 +40,8 @@ object* enum_next(object* self){
     object* idx=new_int_fromint(CAST_ENUM(self)->idx++);
 
     object* tup=new_tuple();
-    tuple_append(tup, idx);
-    tuple_append(tup, next);
+    tuple_append_noinc(tup, idx);
+    tuple_append_noinc(tup, next);
     return tup;
 }
 

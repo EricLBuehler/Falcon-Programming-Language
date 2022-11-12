@@ -498,10 +498,10 @@ object* newtp_descrget(object* obj, object* self, object* owner){
     }
     object* kwargs=new_dict();
     if (owner==NULL){
-        dict_set(kwargs, str_new_fromstr("owner"), new_none());
+        dict_set_noret(kwargs, str_new_fromstr("owner"), new_none());
     }
     else{
-        dict_set(kwargs, str_new_fromstr("owner"), owner);
+        dict_set_noret(kwargs, str_new_fromstr("owner"), owner);
     }
     object* res=object_call(n, args, kwargs);
     return res;

@@ -231,6 +231,7 @@ object* file_flush_meth(object* selftp, object* args, object* kwargs){
 
 
 object* file_enter(object* self){
+    FPLINCREF(self);
     return self;
 }
 

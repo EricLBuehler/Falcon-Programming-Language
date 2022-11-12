@@ -54,7 +54,7 @@ object* dict_new(object* type, object* args, object* kwargs){
                 vm_add_err(&ValueError, vm, "Expected 2 values (key/value) for dictionary update, got '%d'",CAST_INT(o->type->slot_mappings->slot_len(o))->val->to_int());
                 return NULL;
             }
-            dict_set((object*)obj, list_index_int(o, 0), list_index_int(o, 1));
+            dict_set_noret((object*)obj, list_index_int(o, 0), list_index_int(o, 1));
             
             o=iter->type->slot_next(iter);
         }
@@ -74,7 +74,7 @@ object* dict_new(object* type, object* args, object* kwargs){
     obj->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(obj)->val->size())+sizeof(CAST_DICT(obj)->val);
     
     for (auto k: (*CAST_DICT(kwargs)->val)){
-        dict_set((object*)obj, k.first, k.second);
+        dict_set_noret((object*)obj, k.first, k.second);
     }
     
     return (object*)obj;    
@@ -92,12 +92,14 @@ object* dict_len(object* self){
 object* dict_get(object* self, object* key){
     //Fast path for immutables
     if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        FPLINCREF(CAST_DICT(self)->val->at(key));
         return CAST_DICT(self)->val->at(key);
     }
     
     for (auto k: (*CAST_DICT(self)->val)){
         if (istrue(object_cmp(key, k.first, CMP_EQ))){
-            return  CAST_DICT(self)->val->at(k.first);
+            FPLINCREF(CAST_DICT(self)->val->at(k.first));
+            return CAST_DICT(self)->val->at(k.first);
         }
     }
     vm_add_err(&KeyError, vm, "%s is not a key", object_crepr(key).c_str());
@@ -121,6 +123,123 @@ void dict_del_item(object* self, object* key){
     
     vm_add_err(&KeyError, vm, "%s is not a key", object_crepr(key).c_str());
 }
+
+void dict_set_noinc_noret(object* self, object* key, object* val){
+    if (val==NULL){
+        dict_del_item(self, key);
+        return;
+    }
+    //Fast path for immutables
+    if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        //Do not FPLINCREF key!
+        if ((*CAST_DICT(self)->val)[key]==val){ //Same val
+            //Do not FPLINCREF val!
+            return;
+        } 
+        (*CAST_DICT(self)->val)[key]=val;
+        CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+        return;
+    }
+    
+    for (auto k: (*CAST_DICT(self)->val)){
+        if (istrue(object_cmp(key, k.first, CMP_EQ))){
+            if (istrue(object_cmp(val, k.second, CMP_EQ))){ //Same val
+                //Do not FPLINCREF val!
+                return;
+            }
+            (*CAST_DICT(self)->val)[k.first]=val;
+            CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+            return;
+        }
+    }
+    
+    CAST_DICT(self)->keys->push_back(key);
+
+    (*CAST_DICT(self)->val)[key]=val;
+    CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+    return;
+}
+
+object* dict_set_noinc(object* self, object* key, object* val){
+    if (val==NULL){
+        dict_del_item(self, key);
+        return new_none();
+    }
+    //Fast path for immutables
+    if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        //Do not FPLINCREF key!
+        if ((*CAST_DICT(self)->val)[key]==val){ //Same val
+            //Do not FPLINCREF val!
+            return new_none();
+        } 
+        (*CAST_DICT(self)->val)[key]=val;
+        CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+        return new_none();
+    }
+    
+    for (auto k: (*CAST_DICT(self)->val)){
+        if (istrue(object_cmp(key, k.first, CMP_EQ))){
+            if (istrue(object_cmp(val, k.second, CMP_EQ))){ //Same val
+                //Do not FPLINCREF val!
+                return new_none();
+            }
+            (*CAST_DICT(self)->val)[k.first]=val;
+            CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+            return new_none();
+        }
+    }
+    
+    CAST_DICT(self)->keys->push_back(key);
+
+    (*CAST_DICT(self)->val)[key]=val;
+    CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+    return new_none();
+}
+
+void dict_set_noret(object* self, object* key, object* val){
+    if (val==NULL){
+        dict_del_item(self, key);
+        return;
+    }
+    //Fast path for immutables
+    if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        //Do not FPLINCREF key!
+        if ((*CAST_DICT(self)->val)[key]==val){ //Same val
+            //Do not FPLINCREF val!
+            return;
+        } 
+        object* o=(*CAST_DICT(self)->val)[key];
+        FPLINCREF(val);
+        (*CAST_DICT(self)->val)[key]=val;
+        FPLDECREF(o);
+        CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+        return;
+    }
+    
+    for (auto k: (*CAST_DICT(self)->val)){
+        if (istrue(object_cmp(key, k.first, CMP_EQ))){
+            if (istrue(object_cmp(val, k.second, CMP_EQ))){ //Same val
+                //Do not FPLINCREF val!
+                return;
+            }
+            object* o=(*CAST_DICT(self)->val)[k.first];
+            FPLINCREF(val);
+            (*CAST_DICT(self)->val)[k.first]=val;
+            FPLDECREF(o);
+            CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+            return;
+        }
+    }
+    
+    CAST_DICT(self)->keys->push_back(key);
+
+    FPLINCREF(key);
+    FPLINCREF(val);
+    (*CAST_DICT(self)->val)[key]=val;
+    CAST_VAR(self)->var_size=((sizeof(object*)+sizeof(object*))* CAST_DICT(self)->val->size())+sizeof((*CAST_DICT(self)->val));
+}
+
+
 
 object* dict_set(object* self, object* key, object* val){
     if (val==NULL){
@@ -272,7 +391,6 @@ object* dict_iter(object* self){
     CAST_DICTITER(iter)->idx=0;
     for (auto k: *CAST_DICT(self)->val){
         FPLINCREF(k.first);
-        FPLINCREF(k.first);
         FPLINCREF(k.second);
         (*CAST_DICTITER(iter)->val)[k.first]=k.second;
         CAST_DICTITER(iter)->keys->push_back(k.first);
@@ -397,7 +515,7 @@ object* dict_flip_meth(object* selftp, object* args, object* kwargs){
     
     object* dict=new_dict();
     for (object* o: *CAST_DICT(self)->keys){
-        dict_set(dict, CAST_DICT(self)->val->at(o), o);
+        dict_set_noret(dict, CAST_DICT(self)->val->at(o), o);
     }
     return dict;
 }

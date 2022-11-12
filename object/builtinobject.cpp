@@ -241,7 +241,9 @@ object* builtin_call(object* self, object* args, object* kwargs){
             return NULL;
         }
     }
-    return CAST_BUILTIN(self)->function(self, builtinargs);
+    object* o=CAST_BUILTIN(self)->function(self, builtinargs);
+    FPLDECREF(builtinargs);
+    return o;
 }
 
 object* builtin_repr_slot(object* self){

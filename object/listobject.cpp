@@ -256,7 +256,7 @@ object* list_get(object* self, object* idx){
         vm_add_err(&IndexError, vm, "List index out of range");
         return NULL;
     }
-    
+    FPLINCREF(CAST_LIST(self)->array[lidx]);
     return CAST_LIST(self)->array[lidx];
 }
 

@@ -345,6 +345,7 @@ void dict_del(object* self);
 object* dict_len(object* self);
 object* dict_get(object* self, object* idx);
 object* dict_set(object* self, object* key, object* val);
+void dict_set_noret(object* self, object* key, object* val);
 object* dict_repr(object* self);
 object* dict_str(object* self);
 object* dict_cmp(object* self, object* other, uint8_t type);
@@ -3704,9 +3705,18 @@ object* type_call(object* self, object* args, object* kwargs){
         }
         if (CAST_INT(list_len(args))->val->to_long()==3){
             object* args_=new_dict();
-            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("func"), list_index_int(args, 0));
-            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("name"), list_index_int(args, 1));
-            args_->type->slot_mappings->slot_set(args_, str_new_fromstr("bases"), list_index_int(args, 2));
+            object* res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("func"), list_index_int(args, 0));
+            if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
+                FPLDECREF(res);
+            }
+            res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("name"), list_index_int(args, 1));
+            if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
+                FPLDECREF(res);
+            }
+            res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("bases"), list_index_int(args, 2));
+            if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
+                FPLDECREF(res);
+            }
             return builtin___build_class__(NULL, args_);
         }
         vm_add_err(&ValueError, vm, "'type' takes 1 or 3 arguments");
@@ -3816,7 +3826,7 @@ void type_set(object* obj, object* attr, object* val){
     
     if (obj->type->dict_offset!=0){
         object* dict= (*(object**)((char*)obj + obj->type->dict_offset));
-        dict_set(dict, attr, val);
+        dict_set_noret(dict, attr, val);
         return;
     }
     vm_add_err(&AttributeError, vm, "%s object is read only",obj->type->name->c_str());
@@ -3949,7 +3959,7 @@ void inherit_type_dict_nofill(TypeObject* tp){
         object* dict=base_tp->dict;
 
         for (auto k: (*CAST_DICT(dict)->val)){
-            dict_set(tp_tp->dict, k.first, k.second);
+            dict_set_noret(tp_tp->dict, k.first, k.second);
         }  
     }
 
@@ -3975,7 +3985,7 @@ void inherit_type_dict(TypeObject* tp){
         object* dict=base_tp->dict;
 
         for (auto k: (*CAST_DICT(dict)->val)){
-            dict_set(tp_tp->dict, k.first, k.second);
+            dict_set_noret(tp_tp->dict, k.first, k.second);
         }  
     }
 
@@ -4102,7 +4112,7 @@ object* setup_type_methods(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_methods!=NULL && tp_tp->slot_methods[idx].name!=NULL){
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name, (object*)tp_tp));
+        dict_set_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name, (object*)tp_tp));
         idx++;
     }
 
@@ -4119,7 +4129,7 @@ object* setup_type_getsets(TypeObject* tp){
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_getsets!=NULL && base_tp->slot_getsets[idx].name!=NULL){
-            dict_set(base_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)base_tp->slot_getsets[idx].get, (setter)base_tp->slot_getsets[idx].set, base_tp->slot_getsets[idx].name));
+            dict_set_noret(base_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)base_tp->slot_getsets[idx].get, (setter)base_tp->slot_getsets[idx].set, base_tp->slot_getsets[idx].name));
             idx++;
         }
     }
@@ -4127,7 +4137,7 @@ object* setup_type_getsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_getsets!=NULL && tp_tp->slot_getsets[idx].name!=NULL){
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, (setter)tp_tp->slot_getsets[idx].set, tp_tp->slot_getsets[idx].name));
+        dict_set_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, (setter)tp_tp->slot_getsets[idx].set, tp_tp->slot_getsets[idx].name));
         idx++;
     }
 
@@ -4140,7 +4150,7 @@ object* setup_type_offsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_offsets!=NULL && tp_tp->slot_offsets[idx].name!=NULL){
-        dict_set(tp_tp->dict, str_new_fromstr(tp_tp->slot_offsets[idx].name), offsetwrapper_new_fromoffset(tp_tp->slot_offsets[idx].name, tp_tp->slot_offsets[idx].offset, tp_tp->slot_offsets[idx].readonly));
+        dict_set_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_offsets[idx].name), offsetwrapper_new_fromoffset(tp_tp->slot_offsets[idx].name, tp_tp->slot_offsets[idx].offset, tp_tp->slot_offsets[idx].readonly));
         idx++;
     }
 
@@ -4149,7 +4159,7 @@ object* setup_type_offsets(TypeObject* tp){
 
 void type_set_cwrapper(TypeObject* tp, cwrapperfunc func, string name){
     object* f=cwrapper_new_fromfunc(func, name, (object*)tp);
-    dict_set(tp->dict, str_new_fromstr(*CAST_CWRAPPER(f)->name), f);
+    dict_set_noret(tp->dict, str_new_fromstr(*CAST_CWRAPPER(f)->name), f);
 }
 
 object* type_bool(object* self){
@@ -4605,7 +4615,7 @@ object* new_type(string* name, object* bases, object* dict){
     for (auto k: orig_dict){
         for (auto l: *CAST_DICT(CAST_TYPE(tp)->dict)->val){
             if (istrue(object_cmp(l.first, k.first, CMP_EQ))){
-                dict_set(CAST_TYPE(tp)->dict, l.first, k.second);
+                dict_set_noret(CAST_TYPE(tp)->dict, l.first, k.second);
             }
         }
     }
@@ -4624,7 +4634,7 @@ object* new_type(string* name, object* bases, object* dict){
         if (s.size()>=2 && s.rfind("__", 0)==0 && s.rfind("__", s.size()-2)!=s.size()-2 &&\
         CAST_DICT(CAST_TYPE(tp)->dict)->val->find(nw)==CAST_DICT(CAST_TYPE(tp)->dict)->val->end()){
             object* o=k.second;
-            dict_set(CAST_TYPE(tp)->dict, str_new_fromstr("_"+(*name)+s), o);
+            dict_set_noret(CAST_TYPE(tp)->dict, str_new_fromstr("_"+(*name)+s), o);
             to_del.push_back(s);
         }
 
@@ -4632,7 +4642,7 @@ object* new_type(string* name, object* bases, object* dict){
     }
 
     for (string s: to_del){
-        dict_set(CAST_TYPE(tp)->dict, str_new_fromstr(s), NULL);
+        dict_set_noret(CAST_TYPE(tp)->dict, str_new_fromstr(s), NULL);
     }
     return tp;
 }

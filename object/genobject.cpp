@@ -110,7 +110,7 @@ object* gen_next(object* self){
     if (CAST_GEN(self)->done){
         if (datastack_size_>datastack_size){
             while (vm->objstack->size>datastack_size){
-                pop_dataframe(vm->objstack);
+                FPLDECREF(pop_dataframe(vm->objstack));
             }
         }
         if (callstack_size_>callstack_size){

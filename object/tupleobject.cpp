@@ -171,7 +171,7 @@ object* tuple_get(object* self, object* idx){
         vm_add_err(&IndexError, vm, "List index out of range");
         return NULL;
     }
-    
+    FPLINCREF(CAST_TUPLE(self)->array[lidx]);
     return CAST_TUPLE(self)->array[lidx];
 }
 
@@ -181,6 +181,16 @@ void tuple_append(object* self, object* obj){
     }
 
     FPLINCREF(obj);
+    CAST_TUPLE(self)->array[CAST_TUPLE(self)->size++]=obj;
+
+    ((object_var*)self)->var_size=sizeof(TupleObject)+CAST_TUPLE(self)->size;
+}
+
+void tuple_append_noinc(object* self, object* obj){
+    if (CAST_TUPLE(self)->size+1 == CAST_TUPLE(self)->capacity){ //Alloc more space
+        tuple_resize(CAST_TUPLE(self), CAST_TUPLE(self)->size+1);
+    }
+
     CAST_TUPLE(self)->array[CAST_TUPLE(self)->size++]=obj;
 
     ((object_var*)self)->var_size=sizeof(TupleObject)+CAST_TUPLE(self)->size;

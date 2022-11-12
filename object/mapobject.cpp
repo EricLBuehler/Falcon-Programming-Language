@@ -60,7 +60,7 @@ object* map_next(object* self){
         
         cont:
         object* args=new_tuple();
-        tuple_append(args, v);
+        tuple_append_noinc(args, v);
         object* ret=object_call_nokwargs(CAST_MAP(self)->func, args);
         FPLDECREF(args);
         if (CAST_MAP(self)->n_iterators==1){
@@ -68,7 +68,7 @@ object* map_next(object* self){
             FPLDECREF(tup);
             return ret;
         }
-        tup->type->slot_mappings->slot_append(tup, ret);
+        tuple_append_noinc(tup, ret);
     }
     FPLDECREF(one);
     return tup;

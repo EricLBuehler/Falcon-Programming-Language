@@ -45,7 +45,7 @@ object* zip_next(object* self){
             FPLDECREF(tup);
             return o;
         }
-        tup->type->slot_mappings->slot_append(tup, o);
+        tuple_append_noinc(tup, o);
     }
     return tup;
 }
