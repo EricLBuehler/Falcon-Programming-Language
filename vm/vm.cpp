@@ -157,6 +157,7 @@ void print_traceback(){
         int line_=CAST_INT(tuple_index_int(tup, 2))->val->to_int();
         int startcol=CAST_INT(tuple_index_int(tup, 0))->val->to_int();
         int endcol=CAST_INT(tuple_index_int(tup, 1))->val->to_int();
+        FPLDECREF(tup);
 
         cout<<"In file '"+program+"', line "+to_string(line_+1)+", in "+(*callframe.name)<<endl;
         
@@ -245,8 +246,8 @@ object* import_name(string data, object* name){
     ::vm->globals=new_dict();
     FPLINCREF(::vm->globals);
     ::callstack_head(vm->callstack).locals=::vm->globals;
-    dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
-    dict_set(::vm->globals, str_new_fromstr("__name__"), name);
+    dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
+    dict_set_noret(::vm->globals, str_new_fromstr("__name__"), name);
     ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
 
     object* ret=run_vm(code, &::vm->ip);
@@ -265,11 +266,11 @@ object* import_name(string data, object* name){
 }
 
 void annotate_var(object* tp, object* name){
-    dict_set(callstack_head(vm->callstack).annotations, name, tp);
+    dict_set_noret(callstack_head(vm->callstack).annotations, name, tp);
 }
 
 void annotate_global(object* tp, object* name){
-    dict_set(vm->global_annotations, name, tp);
+    dict_set_noret(vm->global_annotations, name, tp);
 }
 
 void annotate_nonlocal(object* tp, object* name){
@@ -285,7 +286,7 @@ void annotate_nonlocal(object* tp, object* name){
                 if (tp->type->size==0){
                     ((object_var*)tp)->gc_ref++;
                 }
-                dict_set(frame.locals, name, tp);
+                dict_set_noret(frame.locals, name, tp);
 
                 return;
             }
@@ -303,7 +304,7 @@ void annotate_nonlocal(object* tp, object* name){
                 if (tp->type->size==0){
                     ((object_var*)tp)->gc_ref++;
                 }
-                dict_set(closure, name, tp);
+                dict_set_noret(closure, name, tp);
 
                 return;
             }
@@ -432,6 +433,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
     while(1){
         LOAD_CONST:{
             add_dataframe(vm, vm->objstack, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_consts, arg));
+            FPLINCREF(list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_consts, arg));
             DISPATCH();
         }
 
@@ -446,7 +448,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (value->type->size==0){
                 ((object_var*)value)->gc_ref++;
             }
-            dict_set(vm->globals, name, value);
+            dict_set_noret(vm->globals, name, value);
             DISPATCH();
         }
 
@@ -454,18 +456,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
 
             if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
+                FPLINCREF(CAST_DICT(vm->globals)->val->at(name));
                 add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
                 DISPATCH();
             }
             for (size_t i=0; i<nbuiltins; i++){
                 if (object_istype(builtins[i]->type, &BuiltinType)){
                     if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
+                        FPLINCREF(builtins[i]);
                         add_dataframe(vm, vm->objstack, builtins[i]);
                         DISPATCH();
                     }
                 }
                 if (object_istype(builtins[i]->type, &TypeType)){
                     if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+                        FPLINCREF(builtins[i]);
                         add_dataframe(vm, vm->objstack, builtins[i]);
                         DISPATCH();
                     }
@@ -491,7 +496,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -501,6 +506,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (int i=vm->callstack->size-1; i>=0; i--){
                 struct callframe frame=vm->callstack->data[i];
                 if (CAST_DICT(frame.locals)->val->find(name)!=CAST_DICT(frame.locals)->val->end()){
+                    FPLINCREF(CAST_DICT(frame.locals)->val->at(name));
                     add_dataframe(vm, vm->objstack, CAST_DICT(frame.locals)->val->at(name));
                     DISPATCH();
                 }
@@ -510,6 +516,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     object* closure=CAST_FUNC(frame.callable)->closure;
                     //Check if name in closure
                     if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                        FPLINCREF(CAST_DICT(frame.locals)->val->at(name));
                         add_dataframe(vm, vm->objstack, CAST_DICT(closure)->val->at(name));
                         DISPATCH();
                     }
@@ -519,12 +526,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (size_t i=0; i<nbuiltins; i++){
                 if (object_istype(builtins[i]->type, &BuiltinType)){
                     if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
+                        FPLINCREF(builtins[i]);
                         add_dataframe(vm, vm->objstack, builtins[i]);
                         DISPATCH();
                     }
                 }
                 if (object_istype(builtins[i]->type, &TypeType)){
                     if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+                        FPLINCREF(builtins[i]);
                         add_dataframe(vm, vm->objstack, builtins[i]);
                         DISPATCH();
                     } 
@@ -533,6 +542,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             
             if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
+                FPLINCREF(CAST_DICT(vm->globals)->val->at(name));
                 add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
                 DISPATCH();
             }
@@ -548,9 +558,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_add(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -563,9 +577,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_sub(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -578,9 +596,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_mul(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();  
@@ -593,9 +615,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_div(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -606,6 +632,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=left==right ? new_bool_true() : new_bool_false();
+            FPLDECREF(right);
+            FPLDECREF(left);
             add_dataframe(vm, vm->objstack, ret);
             DISPATCH();
         }
@@ -615,6 +643,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_cmp(left, right, CMP_EQ);
+            FPLDECREF(right);
+            FPLDECREF(left);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
             }
@@ -631,6 +661,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=object_cmp(left, right, CMP_NE);
+            FPLDECREF(right);
+            FPLDECREF(left);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
             }
@@ -646,6 +678,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             struct object* right=pop_dataframe(vm->objstack);
             
             object* ret=object_neg(right);
+            FPLDECREF(right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
             }
@@ -685,7 +718,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         RETURN_VAL: {
             GIL.unlock();
             object* o=pop_dataframe(vm->objstack);
-            FPLINCREF(o);
             return o;
         }
 
@@ -711,7 +743,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             //Setup kwargs
             object* kwargs=new_dict();
             for (uint32_t i=0; i<kwargc; i++){
-                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
+                dict_set_noinc_noret(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
             }
             //
 
@@ -728,6 +760,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
+                    FPLDECREF(ob);
 
                     object* res=NULL;
                     
@@ -736,7 +769,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     while (vm->exception==NULL){
                         v=ob->type->slot_mappings->slot_get(ob, o);
                         ERROR_RET(v);
-                        dict_set(kwargs, o, v);
+                        dict_set_noinc_noret(kwargs, o, v);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -744,6 +777,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
+                    FPLDECREF(iter);
 
 
                     stkwargsidx++;
@@ -759,15 +793,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
-
-                    object* one=new_int_fromint(0);
-                    object* two=new_int_fromint(1);
+                    FPLDECREF(ob);
+                    
                     object* res=NULL;
                     
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        tuple_append(args, o);
+                        tuple_append_noinc(args, o);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -775,12 +808,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
+                    FPLDECREF(iter);
 
 
                     stargsidx++;
                     continue;
                 }
-                tuple_append(args, pop_dataframe(vm->objstack));
+                tuple_append_noinc(args, pop_dataframe(vm->objstack));
             }
             //         
             
@@ -788,6 +822,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
+            FPLDECREF(function);
+            FPLDECREF(stargs);
+            FPLDECREF(stkwargs);
+            FPLDECREF(keys);
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
@@ -836,6 +874,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
+                    FPLDECREF(ob);
 
                     object* res=NULL;
                     
@@ -844,7 +883,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     while (vm->exception==NULL){
                         v=ob->type->slot_mappings->slot_get(ob, o);
                         ERROR_RET(v);
-                        dict_set(kwargs, o, v);
+                        dict_set_noinc_noret(kwargs, o, v);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -852,6 +891,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
+                    FPLDECREF(iter);
 
 
                     stkwargsidx++;
@@ -867,15 +907,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
+                    FPLDECREF(ob);
 
-                    object* one=new_int_fromint(0);
-                    object* two=new_int_fromint(1);
                     object* res=NULL;
                     
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        tuple_append(args, o);
+                        tuple_append_noinc(args, o);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -883,12 +922,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
+                    FPLDECREF(iter);
 
 
                     stargsidx++;
                     continue;
                 }
-                tuple_append(args, pop_dataframe(vm->objstack));
+                tuple_append_noinc(args, pop_dataframe(vm->objstack));
             }
             //         
             
@@ -896,6 +936,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
+            FPLDECREF(function);
+            FPLDECREF(stargs);
+            FPLDECREF(stkwargs);
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
@@ -926,14 +969,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             //Setup kwargs
             object* kwargs=new_dict();
             for (uint32_t i=0; i<kwargc; i++){
-                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
+                dict_set_noinc_noret(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
             }
             //
 
             //Setup args
             object* args=new_tuple();
             for (uint32_t i=0; i<posargc; i++){
-                tuple_append(args, pop_dataframe(vm->objstack));
+                tuple_append_noinc(args, pop_dataframe(vm->objstack));
             }
             //         
             
@@ -941,6 +984,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
+            FPLDECREF(function);
+            FPLDECREF(keys);
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
@@ -973,7 +1018,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             //Setup args
             object* args=new_tuple();
             for (uint32_t i=0; i<posargc; i++){
-                tuple_append(args, pop_dataframe(vm->objstack));
+                tuple_append_noinc(args, pop_dataframe(vm->objstack));
             }
             //         
             
@@ -981,6 +1026,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
+            FPLDECREF(function);
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
@@ -1009,7 +1055,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             //Setup kwargs
             object* kwargs=new_dict();
             for (uint32_t i=0; i<kwargc; i++){
-                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
+                dict_set_noinc_noret(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
             }
             //
 
@@ -1026,6 +1072,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
+                    FPLDECREF(ob);
 
                     object* res=NULL;
                     
@@ -1034,7 +1081,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     while (vm->exception==NULL){
                         v=ob->type->slot_mappings->slot_get(ob, o);
                         ERROR_RET(v);
-                        dict_set(kwargs, o, v);
+                        dict_set_noinc_noret(kwargs, o, v);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -1042,6 +1089,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
+                    FPLDECREF(iter);
 
 
                     stkwargsidx++;
@@ -1057,6 +1105,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
+                    FPLDECREF(ob);
 
                     object* one=new_int_fromint(0);
                     object* two=new_int_fromint(1);
@@ -1065,7 +1114,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        tuple_append(args, o);
+                        tuple_append_noinc(args, o);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -1073,12 +1122,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
+                    FPLDECREF(iter);
 
 
                     stargsidx++;
                     continue;
                 }
-                tuple_append(args, pop_dataframe(vm->objstack));
+                tuple_append_noinc(args, pop_dataframe(vm->objstack));
             }
             //
 
@@ -1093,6 +1143,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
+            FPLDECREF(function);
+            FPLDECREF(stargs);
+            FPLDECREF(stkwargs);
+            FPLDECREF(keys);
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
@@ -1116,14 +1170,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             //Setup kwargs
             object* kwargs=new_dict();
             for (uint32_t i=0; i<kwargc; i++){
-                dict_set(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
+                dict_set_noinc_noret(kwargs, list_index_int(keys, i), pop_dataframe(vm->objstack));
             }
             //
 
             //Setup args
             object* args=new_tuple();
             for (uint32_t i=0; i<posargc; i++){
-                tuple_append(args, pop_dataframe(vm->objstack));
+                tuple_append_noinc(args, pop_dataframe(vm->objstack));
             }
             //
 
@@ -1138,6 +1192,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
+            FPLDECREF(function);
+            FPLDECREF(keys);
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
@@ -1179,6 +1235,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
+                    FPLDECREF(iter);
 
                     object* res=NULL;
                     
@@ -1187,7 +1244,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     while (vm->exception==NULL){
                         v=ob->type->slot_mappings->slot_get(ob, o);
                         ERROR_RET(v);
-                        dict_set(kwargs, o, v);
+                        dict_set_noinc_noret(kwargs, o, v);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -1195,6 +1252,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
+                    FPLDECREF(iter);
 
 
                     stkwargsidx++;
@@ -1210,6 +1268,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     }
                     
                     object* iter=ob->type->slot_iter(ob);
+                    FPLDECREF(ob);
 
                     object* one=new_int_fromint(0);
                     object* two=new_int_fromint(1);
@@ -1226,6 +1285,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         FPLDECREF(vm->exception);
                         vm->exception=NULL;
                     }
+                    FPLDECREF(iter);
 
 
                     stargsidx++;
@@ -1246,6 +1306,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
+            FPLDECREF(function);
+            FPLDECREF(stkwargs);
+            FPLDECREF(stargs);
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
@@ -1271,7 +1334,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             //Setup args
             object* args=new_tuple();
             for (uint32_t i=0; i<posargc; i++){
-                tuple_append(args, pop_dataframe(vm->objstack));
+                tuple_append_noinc(args, pop_dataframe(vm->objstack));
             }
             //
 
@@ -1286,6 +1349,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=function->type->slot_call(function, args, kwargs);
             FPLDECREF(args);
             FPLDECREF(kwargs);
+            FPLDECREF(function);
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
@@ -1302,7 +1366,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         BUILD_LIST: {
             object* list=new_list();
             for (int i=0; i<arg; i++){
-                list_append(list, pop_dataframe(vm->objstack));
+                tuple_append_noinc(list, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, list);
             DISPATCH();
@@ -1311,7 +1375,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         BUILD_TUPLE: {
             object* tuple=new_tuple();
             for (int i=0; i<arg; i++){
-                tuple_append(tuple, pop_dataframe(vm->objstack));
+                tuple_append_noinc(tuple, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, tuple);
             DISPATCH();
@@ -1322,13 +1386,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (int i=0; i<arg; i++){
                 object* name=pop_dataframe(vm->objstack);
                 
-                dict_set(dict, name, pop_dataframe(vm->objstack));
+                dict_set_noinc_noret(dict, name, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, dict);
             DISPATCH();
         }
 
         LOAD_BUILD_CLASS: {
+            FPLINCREF(BUILTIN_BUILD_CLASS);
             add_dataframe(vm, vm->objstack, BUILTIN_BUILD_CLASS);
             DISPATCH();
         }
@@ -1337,6 +1402,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* obj=pop_dataframe(vm->objstack);
             object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_getattr(obj, attr); 
+            FPLDECREF(obj);
 
             if (ret==NULL || hit_sigint){ 
                 goto exc;
@@ -1355,7 +1421,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
             object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_setattr(obj, attr, val);
-            
+            FPLDECREF(obj);
             
             if (ret==NULL || hit_sigint){
                 goto exc;
@@ -1371,6 +1437,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         POP_JMP_TOS_FALSE: {
             object* o=pop_dataframe(vm->objstack);
             object* val=object_istruthy(o);
+            FPLDECREF(o);
             if (!istrue(val)){
                 (*ip)=(*ip)+arg;
                 DISPATCH();
@@ -1387,6 +1454,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, object_get(base, idx));
+            FPLDECREF(idx);
+            FPLDECREF(base);
             if (peek_dataframe(vm->objstack)==NULL){
                 goto exc;
             }
@@ -1418,10 +1487,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
             object_set(base, idx, val);
+            FPLDECREF(val);
+            FPLDECREF(idx);
+            FPLDECREF(base);
             DISPATCH();
         }
 
         DUP_TOS: {
+            FPLINCREF(peek_dataframe(vm->objstack));
             add_dataframe(vm, vm->objstack, peek_dataframe(vm->objstack));
             DISPATCH();
         }
@@ -1445,9 +1518,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* self=pop_dataframe(vm->objstack);
             object* other=pop_dataframe(vm->objstack);
             if (object_issubclass(other, CAST_TYPE(self))){
+                FPLDECREF(self);
+                FPLDECREF(other);
                 add_dataframe(vm, vm->objstack, new_bool_true());
                 DISPATCH();
             }
+            FPLDECREF(self);
+            FPLDECREF(other);
             add_dataframe(vm, vm->objstack, new_bool_false());
             DISPATCH();
         }
@@ -1459,9 +1536,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_gt(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for >: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -1474,9 +1555,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_gte(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for >=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -1489,9 +1574,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_lt(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for <: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -1503,9 +1592,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_lte(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for <=: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -1518,6 +1611,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 return NULL; 
             }
             object* o=it->type->slot_iter(it);
+            FPLDECREF(it);
             if (o==NULL || o->type->slot_new==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not iterable", it->type->name->c_str());
                 return NULL; 
@@ -1538,8 +1632,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 vm->exception=NULL;
                 (*ip)=blockstack_head(vm->blockstack).arg;
                 pop_blockframe(vm->blockstack);
-                pop_dataframe(vm->objstack);
-                pop_dataframe(vm->objstack);
+                FPLDECREF(pop_dataframe(vm->objstack));
+                FPLDECREF(pop_dataframe(vm->objstack));
             }
             DISPATCH();
         }
@@ -1616,8 +1710,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_add(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(left);
+                FPLDECREF(right);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
@@ -1631,7 +1729,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -1642,8 +1740,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_sub(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(left);
+                FPLDECREF(right);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -1659,7 +1761,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -1670,8 +1772,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_mul(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(left);
+                FPLDECREF(right);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -1686,7 +1792,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 ((object_var*)value)->gc_ref++;
             }
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();  
         }
 
@@ -1697,8 +1803,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_div(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(left);
+                FPLDECREF(right);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -1714,7 +1824,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -1792,7 +1902,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                                 
                                 object* o=import_name(str, str_new_fromstr(filename));
                                 ERROR_RET(o);
-                                dict_set(dict, str_new_fromstr(filename), o);
+                                dict_set_noret(dict, str_new_fromstr(filename), o);
                             }
                             closedir(dr);
                         }
@@ -1869,7 +1979,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         ((object_var*)value)->gc_ref++;
                     }
 
-                    dict_set(callstack_head(vm->callstack).locals, name, value);
+                    dict_set_noret(callstack_head(vm->callstack).locals, name, value);
+                    FPLDECREF(names);
+                    FPLDECREF(lib);
                     DISPATCH();
                 }
             }
@@ -1884,9 +1996,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     FPLDECREF(vm->exception);
                     vm->exception=NULL;
                     vm_add_err(&ImportError,vm, "Cannot import name '%s' from '%s'",CAST_STRING(list_index_int(names, i))->val->c_str(), CAST_STRING(CAST_MODULE(lib)->name)->val->c_str());
+                    
+                    FPLDECREF(names);
+                    FPLDECREF(lib);
                     goto exc;
                 }
                 if (hit_sigint){
+                    FPLDECREF(names);
+                    FPLDECREF(lib);
                     goto exc;
                 }
 
@@ -1904,10 +2021,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     ((object_var*)value)->gc_ref++;
                 }
 
-                dict_set(callstack_head(vm->callstack).locals, name, value);
+                dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
+                FPLDECREF(names);
+                FPLDECREF(lib);
                 DISPATCH();
                 
             }
+            FPLDECREF(names);
+            FPLDECREF(lib);
             DISPATCH();
         }
 
@@ -1916,6 +2037,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* start=pop_dataframe(vm->objstack);
             object* base=peek_dataframe(vm->objstack);
             add_dataframe(vm, vm->objstack, slice_new_fromnums(start, end));
+            FPLDECREF(end);
+            FPLDECREF(start);
             DISPATCH();
         }
 
@@ -1923,6 +2046,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* idx=pop_dataframe(vm->objstack);
             object* base=pop_dataframe(vm->objstack);
             object_del_item(base, idx);
+            FPLDECREF(idx);
+            FPLDECREF(base);
             DISPATCH();
         }
 
@@ -1938,9 +2063,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     if (CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name)->type->size==0){
                         ((object_var*)CAST_DICT(callstack_head(vm->callstack).annotations)->val->at(name))->gc_ref--;
                     }
-                    dict_set(callstack_head(vm->callstack).annotations, name, NULL);
+                    dict_set_noret(callstack_head(vm->callstack).annotations, name, NULL);
                 }
-                dict_set(callstack_head(vm->callstack).locals, name, NULL);
+                dict_set_noret(callstack_head(vm->callstack).locals, name, NULL);
                 DISPATCH();
             }
             vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
@@ -1954,9 +2079,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_mod(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for %: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -1968,9 +2097,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_pow(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -1983,8 +2116,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_pow(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(left);
+                FPLDECREF(right);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -2000,7 +2137,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -2011,8 +2148,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_mod(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(left);
+                FPLDECREF(right);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -2028,7 +2169,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -2092,9 +2233,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 FPLINCREF(flag);
                 if (istrue(flag)){
                     strs.push_back(object_crepr(o));
+                    FPLDECREF(o);
                     continue;
                 }
                 strs.push_back(object_cstr(o));
+                FPLDECREF(o);
             }
             
             for (int i=strs.size(); i>0; i--){
@@ -2107,6 +2250,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         POP_JMP_TOS_TRUE: {
             object* o=pop_dataframe(vm->objstack);
             object* val=object_istruthy(o);
+            FPLDECREF(o);
             if (istrue(val)){
                 (*ip)=arg;
                 DISPATCH();
@@ -2134,9 +2278,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     if (CAST_DICT(vm->global_annotations)->val->at(name)->type->size==0){
                         ((object_var*)CAST_DICT(vm->global_annotations)->val->at(name))->gc_ref--;
                     }
-                    dict_set(vm->global_annotations, name, NULL);
+                    dict_set_noret(vm->global_annotations, name, NULL);
                 }
-                dict_set(vm->globals, name, NULL);
+                dict_set_noret(vm->globals, name, NULL);
                 DISPATCH();
             }
             vm_add_err(&NameError, vm, "Cannot find name %s.", object_cstr(object_repr(name)).c_str());
@@ -2147,7 +2291,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* obj=pop_dataframe(vm->objstack);
             object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* ret=object_setattr(obj, attr, NULL);
-            
+            FPLDECREF(obj);
+            FPLDECREF(attr);
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
@@ -2192,6 +2337,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 struct callframe frame=vm->callstack->data[i];
                 if (i==vm->callstack->size-1){
                     if (CAST_DICT(frame.locals)->val->find(name)!=CAST_DICT(frame.locals)->val->end()){
+                        FPLINCREF(CAST_DICT(frame.locals)->val->at(name));
                         add_dataframe(vm, vm->objstack, CAST_DICT(frame.locals)->val->at(name));
                         DISPATCH();
                     }
@@ -2202,6 +2348,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     object* closure=CAST_FUNC(frame.callable)->closure;
                     //Check if name in closure
                     if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
+                        FPLINCREF(CAST_DICT(closure)->val->at(name));
                         add_dataframe(vm, vm->objstack, CAST_DICT(closure)->val->at(name));
                         DISPATCH();
                     }
@@ -2211,12 +2358,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (size_t i=0; i<nbuiltins; i++){
                 if (object_istype(builtins[i]->type, &BuiltinType)){
                     if (istrue(object_cmp(CAST_BUILTIN(builtins[i])->name, name, CMP_EQ))){
+                        FPLINCREF(builtins[i]);
                         add_dataframe(vm, vm->objstack, builtins[i]);
                         DISPATCH();
                     }
                 }
                 if (object_istype(builtins[i]->type, &TypeType)){
                     if (CAST_TYPE(builtins[i])->name->compare((*CAST_STRING(name)->val))==0){
+                        FPLINCREF(builtins[i]);
                         add_dataframe(vm, vm->objstack, builtins[i]);
                         DISPATCH();
                     } 
@@ -2225,6 +2374,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             
             if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
+                FPLINCREF(CAST_DICT(vm->globals)->val->at(name));
                 add_dataframe(vm, vm->objstack, CAST_DICT(vm->globals)->val->at(name));
                 DISPATCH();
             }
@@ -2248,7 +2398,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         if (val->type->size==0){
                             ((object_var*)val)->gc_ref++;
                         }
-                        dict_set(frame.locals, name, val);
+                        dict_set_noret(frame.locals, name, val);
                         DISPATCH();
                     }
                 }
@@ -2265,7 +2415,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                         if (val->type->size==0){
                             ((object_var*)val)->gc_ref++;
                         }
-                        dict_set(closure, name, val);
+                        dict_set_noret(closure, name, val);
 
                         DISPATCH();
                     }
@@ -2290,9 +2440,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                             if (CAST_DICT(frame.annotations)->val->at(name)->type->size==0){
                                 ((object_var*)CAST_DICT(frame.annotations)->val->at(name))->gc_ref--;
                             }
-                            dict_set(frame.annotations, name, NULL);
+                            dict_set_noret(frame.annotations, name, NULL);
                         }
-                        dict_set(frame.locals, name, NULL);
+                        dict_set_noret(frame.locals, name, NULL);
                         DISPATCH();
                     }
                 }
@@ -2308,9 +2458,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                             if (CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name)->type->size==0){
                                 ((object_var*)CAST_DICT(CAST_FUNC(frame.callable)->closure_annotations)->val->at(name))->gc_ref--;
                             }
-                            dict_set(CAST_FUNC(frame.callable)->closure_annotations, name, NULL);
+                            dict_set_noret(CAST_FUNC(frame.callable)->closure_annotations, name, NULL);
                         }
-                        dict_set(closure, name, NULL);
+                        dict_set_noret(closure, name, NULL);
 
                         DISPATCH();
                     }
@@ -2327,9 +2477,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_not(right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand ~: '%s'.", right->type->name->c_str());
+                FPLDECREF(right);
                 goto exc;
             }
             DISPATCH();
@@ -2342,9 +2494,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_and(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                
+                FPLDECREF(right);
+                FPLDECREF(left);                
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);     
                 goto exc;
             }
             DISPATCH();
@@ -2357,9 +2514,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_or(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -2372,9 +2533,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_lshift(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -2387,9 +2552,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_rshift(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -2402,8 +2571,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_and(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -2419,7 +2592,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -2430,8 +2603,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_or(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -2447,7 +2624,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             
             DISPATCH();
         }
@@ -2459,9 +2636,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_lshift(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
-            }
-            
+            }            
+            FPLDECREF(right);
+            FPLDECREF(left);
+
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
             
@@ -2476,7 +2657,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             
             DISPATCH();
         }
@@ -2488,8 +2669,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_rshift(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -2505,7 +2690,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             
             DISPATCH();
         }
@@ -2517,9 +2702,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             if (res!=NULL){
                 add_dataframe(vm, vm->objstack, res);
+                FPLDECREF(right);
+                FPLDECREF(left);
                 DISPATCH();
             }
             vm_add_err(&TypeError, vm, "Invalid operand types for in '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            FPLDECREF(right);
+            FPLDECREF(left);
             goto exc;
         }
         
@@ -2530,9 +2719,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             if (res!=NULL){
                 add_dataframe(vm, vm->objstack, res);
+                FPLDECREF(right);
+                FPLDECREF(left);
                 DISPATCH();
             }         
             vm_add_err(&TypeError, vm, "Invalid operand types for in '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+            FPLDECREF(right);
+            FPLDECREF(left);
             goto exc;
         }
 
@@ -2541,6 +2734,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             struct object* left=pop_dataframe(vm->objstack);
             
             object* ret=left==right ? new_bool_false() : new_bool_true();
+            FPLDECREF(right);
+            FPLDECREF(left);
             add_dataframe(vm, vm->objstack, ret);
             DISPATCH();
         }
@@ -2552,9 +2747,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_fldiv(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(right);
+                FPLDECREF(left);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
             DISPATCH();
@@ -2567,8 +2766,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_fldiv(left, right);
             if (ret==NULL){
                 vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(right);
+                FPLDECREF(left);
                 goto exc;
             }
+            FPLDECREF(right);
+            FPLDECREF(left);
             
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=ret;
@@ -2584,7 +2787,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
 
-            dict_set(callstack_head(vm->callstack).locals, name, value);
+            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -2594,9 +2797,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* left=pop_dataframe(vm->objstack);
             if (istrue(object_bool(left))){
                 add_dataframe(vm, vm->objstack, expr2);
+                FPLDECREF(expr1);
             }
             else{
                 add_dataframe(vm, vm->objstack, expr1);
+                FPLDECREF(expr2);
             }
             DISPATCH();
         }
@@ -2604,18 +2809,21 @@ object* run_vm(object* codeobj, uint32_t* ip){
         ANNOTATE_GLOBAL:{
             object* tp=pop_dataframe(vm->objstack);
             annotate_global(tp, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
+            FPLDECREF(tp);
             DISPATCH();
         }
 
         ANNOTATE_NAME:{
             object* tp=pop_dataframe(vm->objstack);
             annotate_var(tp, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
+            FPLDECREF(tp);
             DISPATCH();
         }
 
         ANNOTATE_NONLOCAL:{
             object* tp=pop_dataframe(vm->objstack);
             annotate_nonlocal(tp, list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg));
+            FPLDECREF(tp);
             DISPATCH();
         } 
 
@@ -2634,7 +2842,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 annon=new_dict();
                 object_setattr(obj, str_new_fromstr("__annotations__"), annon);
             }
-            dict_set(annon, attr, tp);
+            dict_set_noret(annon, attr, tp);
+            FPLDECREF(tp);
+            FPLDECREF(obj);
             
             if (ret==NULL || hit_sigint){
                 goto exc;
@@ -2643,6 +2853,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
+            FPLDECREF(ret);
             DISPATCH();
         }
 
@@ -2708,7 +2919,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         BUILD_SET: {
             object* set=new_set();
             for (int i=0; i<arg; i++){
-                set_append(set, pop_dataframe(vm->objstack));
+                set_append_noinc(set, pop_dataframe(vm->objstack));
             }
             add_dataframe(vm, vm->objstack, set);
             DISPATCH();
@@ -2727,25 +2938,34 @@ object* run_vm(object* codeobj, uint32_t* ip){
         ENTER_WITH: {
             add_blockframe(ip, vm, vm->blockstack, 0, WITH_BLOCK);
             blockstack_head(vm->blockstack).obj=peek_dataframe(vm->objstack);
-            add_dataframe(vm, vm->objstack, object_enter_with(pop_dataframe(vm->objstack)));
+            object* o=pop_dataframe(vm->objstack);
+            add_dataframe(vm, vm->objstack, object_enter_with(o));
+            FPLDECREF(o);
             DISPATCH();
         }
 
         EXIT_WITH: {
             pop_blockframe(vm->blockstack);
-            add_dataframe(vm, vm->objstack, object_exit_with(pop_dataframe(vm->objstack)));
+            object* o=pop_dataframe(vm->objstack);
+            add_dataframe(vm, vm->objstack, object_exit_with(o));
+            FPLDECREF(o);
             DISPATCH();
         }
 
         SEQ_APPEND: {
             object* o=vm->objstack->data[vm->objstack->size-1-arg];
-            o->type->slot_mappings->slot_append(o, pop_dataframe(vm->objstack));
+            object* ob=pop_dataframe(vm->objstack);
+            o->type->slot_mappings->slot_append(o, ob);
+            FPLDECREF(ob);
             DISPATCH();
         }
 
         DICT_SET: {
             object* v=pop_dataframe(vm->objstack);
-            dict_set(vm->objstack->data[vm->objstack->size-1-arg], pop_dataframe(vm->objstack), v);
+            object* k=pop_dataframe(vm->objstack);
+            dict_set_noret(vm->objstack->data[vm->objstack->size-1-arg], k, v);
+            FPLDECREF(v);
+            FPLDECREF(k);
             DISPATCH();
         }
         
@@ -2756,9 +2976,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* ret=object_xor(left, right);
             if (ret!=NULL){
                 add_dataframe(vm, vm->objstack, ret);
+                FPLDECREF(left);
+                FPLDECREF(right);
             }
             else{
                 vm_add_err(&TypeError, vm, "Invalid bitwise operand types for ^: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
+                FPLDECREF(left);
+                FPLDECREF(right);
                 goto exc;
             }
             DISPATCH();
@@ -2785,9 +3009,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 //
                 return NULL;
             }
+
+            FPLINCREF(vm->exception);
             add_dataframe(vm, vm->objstack, vm->exception);
+
             FPLINCREF(vm->exception);
             frame->obj=vm->exception;
+
             if (vm->exception!=NULL){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
