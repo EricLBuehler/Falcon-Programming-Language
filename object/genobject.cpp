@@ -59,7 +59,7 @@ object* gen_next(object* self){
         vm_add_err(&StopIteration, vm, "Iterator out of data");
         return NULL;
     }
-
+    
     if (CAST_GEN(self)->objstack->size>0){
         while (CAST_GEN(self)->objstack->size>0){
             add_dataframe(vm, vm->objstack, pop_dataframe(CAST_GEN(self)->objstack));
@@ -81,6 +81,7 @@ object* gen_next(object* self){
         while (CAST_GEN(self)->blockstack->size>0){
             add_blockframe(&(blockstack_head(CAST_GEN(self)->blockstack).start_ip), vm, vm->blockstack, blockstack_head(CAST_GEN(self)->blockstack).arg, blockstack_head(CAST_GEN(self)->blockstack).type);
             blockstack_head(vm->blockstack).obj=blockstack_head(CAST_GEN(self)->blockstack).obj;
+            blockstack_head(vm->blockstack).other=blockstack_head(CAST_GEN(self)->blockstack).other;
             pop_blockframe(CAST_GEN(self)->blockstack);
         }
     }
@@ -100,7 +101,6 @@ object* gen_next(object* self){
     uint32_t datastack_size_=vm->objstack->size;
     uint32_t callstack_size_=vm->callstack->size;
     uint32_t blockstack_size_=vm->blockstack->size;
-
     
     
     if (*CAST_INT(list_index_int(CAST_CODE(CAST_FUNC(CAST_GEN(self)->func)->code)->co_code, CAST_GEN(self)->ip-2))->val == RETURN_VAL){
@@ -153,6 +153,7 @@ object* gen_next(object* self){
         while (vm->blockstack->size>blockstack_size){
             add_blockframe(&(blockstack_head(vm->blockstack).start_ip), vm, CAST_GEN(self)->blockstack, blockstack_head(vm->blockstack).arg, blockstack_head(vm->blockstack).type);
             blockstack_head(CAST_GEN(self)->blockstack).obj=blockstack_head(vm->blockstack).obj;
+            blockstack_head(CAST_GEN(self)->blockstack).other=blockstack_head(vm->blockstack).other;
             pop_blockframe(vm->blockstack);
         }
     }
