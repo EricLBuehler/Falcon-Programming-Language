@@ -983,6 +983,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             //Call
             object* ret=function->type->slot_call(function, args, kwargs);
+            
             FPLDECREF(args);
             FPLDECREF(kwargs);
             FPLDECREF(function);
@@ -1623,8 +1624,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         FOR_TOS_ITER: {
-            if (blockstack_head(vm->blockstack).arg!=arg && vm->blockstack->size==0 || blockstack_head(vm->blockstack).type!=FOR_BLOCK || (blockstack_head(vm->blockstack).type==FOR_BLOCK) ){
+            if (vm->blockstack->size==0 || (blockstack_head(vm->blockstack).type==FOR_BLOCK && blockstack_head(vm->blockstack).arg!=arg)){
                 add_blockframe(ip, vm, vm->blockstack, arg, FOR_BLOCK);
+                blockstack_head(vm->blockstack).other=vm->blockstack->size;
             }
             
             object* it=peek_dataframe(vm->objstack);

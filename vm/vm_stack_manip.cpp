@@ -1,5 +1,4 @@
-uint32_t MAX_RECURSION=500;
-
+const uint32_t MAX_RECURSION=500;
 //void add_dataframe(struct vm* vm, struct datastack* stack, struct object* obj){
 #define add_dataframe(vm, stack, obj)   stack->data[stack->size++]=obj;\
                                         if (stack->capacity==stack->size){stack->data=(object**)fpl_realloc(stack->data, sizeof(object*)*((stack->size + (stack->size >> 3) + 6) & ~3));stack->capacity=((stack->size + (stack->size >> 3) + 6) & ~3);};
@@ -35,6 +34,6 @@ uint32_t MAX_RECURSION=500;
                                                                     if (stack->size==MAX_RECURSION){vm_add_err(&RecursionError, vm, "Maximum stack depth exceeded.");};
 
 //void pop_callframe(struct callstack* stack)
-#define pop_callframe(stack)    stack->size--;
+#define pop_callframe(stack)    FPLDECREF(stack->data[stack->size-1].annotations);stack->data[--stack->size];
 
 #define callstack_head(stack)   stack->data[stack->size-1]
