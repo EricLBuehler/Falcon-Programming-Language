@@ -1630,7 +1630,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
             object* it=peek_dataframe(vm->objstack);
-            add_dataframe(vm, vm->objstack, it->type->slot_next(it));
+            object* o=it->type->slot_next(it);
+            add_dataframe(vm, vm->objstack, o);
             if (vm->exception!=NULL && object_istype(vm->exception->type, &StopIteration)){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
