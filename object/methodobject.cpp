@@ -70,5 +70,6 @@ object* method_call(object* self, object* args, object* kwargs){
         args_->type->slot_mappings->slot_append(args_, list_index_int(args, i));
     }
     object* val=object_call(CAST_METHOD(self)->function, args_, kwargs);
+    FPLDECREF(args_);
     return val;
 }

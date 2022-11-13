@@ -15,6 +15,7 @@ object* wrappermethod_call(object* self, object* args, object* kwargs){
     }
     object* cwrapper=CAST_METHOD(self)->function;
     object* val=CAST_CWRAPPER(cwrapper)->function(CAST_CWRAPPER(cwrapper)->tp, args_, kwargs);
+    FPLDECREF(args_);
     return val;
 }
 
