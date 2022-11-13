@@ -1611,13 +1611,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* it=pop_dataframe(vm->objstack);
             if (it->type->slot_iter==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not iterable", it->type->name->c_str());
-                return NULL; 
+                goto exc;
             }
             object* o=it->type->slot_iter(it);
             FPLDECREF(it);
-            if (o==NULL || o->type->slot_new==NULL){
+            if (o==NULL || o->type->slot_next==NULL){
                 vm_add_err(&TypeError, vm, "'%s' object is not iterable", it->type->name->c_str());
-                return NULL; 
+                goto exc;
             }
             add_dataframe(vm, vm->objstack, o);
             DISPATCH();
