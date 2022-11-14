@@ -12,6 +12,7 @@ object* range_new(object* type, object* args, object* kwargs){
     object* arg=object_int(list_index_int(args, 0));
     if (arg==NULL || !object_istype(arg->type, &IntType)){
         FPLDECREF(range);
+        vm_add_err(&ValueError, vm, "%s object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
         return arg;
     }
     CAST_RANGE(range)->start=CAST_INT(arg)->val->to_int();
@@ -19,6 +20,7 @@ object* range_new(object* type, object* args, object* kwargs){
         arg=object_int(list_index_int(args, 1));
         if (arg==NULL || !object_istype(arg->type, &IntType)){
             FPLDECREF(range);
+            vm_add_err(&ValueError, vm, "%s object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
             return arg;
         }
         CAST_RANGE(range)->end=CAST_INT(arg)->val->to_long_long();
@@ -28,6 +30,7 @@ object* range_new(object* type, object* args, object* kwargs){
         arg=object_int(list_index_int(args, 1));
         if (arg==NULL || !object_istype(arg->type, &IntType)){
             FPLDECREF(range);
+            vm_add_err(&ValueError, vm, "%s object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
             return arg;
         }
         CAST_RANGE(range)->end=CAST_INT(arg)->val->to_long_long();
@@ -35,6 +38,7 @@ object* range_new(object* type, object* args, object* kwargs){
         arg=object_int(list_index_int(args, 2));
         if (arg==NULL || !object_istype(arg->type, &IntType)){
             FPLDECREF(range);
+            vm_add_err(&ValueError, vm, "%s object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
             return arg;
         }
         CAST_RANGE(range)->step=CAST_INT(arg)->val->to_long_long();

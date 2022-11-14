@@ -189,6 +189,7 @@ object* set_iter_next(object* self){
         vm_add_err(&StopIteration, vm, "Iterator out of data");
         return NULL;
     }
+    FPLINCREF(CAST_SETITER(self)->vec->at(CAST_SETITER(self)->idx));
     return CAST_SETITER(self)->vec->at(CAST_SETITER(self)->idx++);
 }
 

@@ -27,8 +27,9 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t posargc=CAST_LIST(args)->size;
     uint32_t kwargc=argc-posargc;
     uint32_t ip=0;
-
+    
     add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, &ip);
+
     callstack_head(vm->callstack).locals=new_dict();
     dict_set_noret(callstack_head(vm->callstack).locals, str_new_fromstr("__annotations__"), callstack_head(vm->callstack).annotations);
     object* globals=vm->globals;
@@ -104,10 +105,11 @@ object* func_call(object* self, object* args, object* kwargs){
             ((object_var*)k.second)->gc_ref--;
         }
     }
+    
     FPLDECREF(callstack_head(vm->callstack).locals);
-
+    
     pop_callframe(vm->callstack);
-
+    
     vm->globals=globals;
     vm->global_annotations=global_anno;
     

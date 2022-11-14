@@ -483,6 +483,7 @@ object* list_iter_next(object* self){
         vm_add_err(&StopIteration, vm, "Iterator out of data");
         return NULL;
     }
+    FPLINCREF(CAST_LISTITER(self)->array[CAST_LISTITER(self)->idx]);
     return CAST_LISTITER(self)->array[CAST_LISTITER(self)->idx++];
 }
 

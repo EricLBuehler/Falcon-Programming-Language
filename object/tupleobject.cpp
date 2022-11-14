@@ -290,6 +290,7 @@ object* tuple_iter_next(object* self){
         vm_add_err(&StopIteration, vm, "Iterator out of data");
         return NULL;
     }
+    FPLINCREF(CAST_TUPLEITER(self)->array[CAST_TUPLEITER(self)->idx]);
     return CAST_TUPLEITER(self)->array[CAST_TUPLEITER(self)->idx++];
 }
 
