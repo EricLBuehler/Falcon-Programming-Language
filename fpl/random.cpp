@@ -74,6 +74,7 @@ object* random_choice(object* self, object* args){
     object* iterlen=ob->type->slot_mappings->slot_len(ob);
     
     int len_sub1=CAST_INT(iterlen)->val->to_int()-1;
+    FPLDECREF(iterlen);
 
     object* o=ob->type->slot_mappings->slot_get(ob, new_int_fromint(iRand(0,len_sub1)));
     FPLDECREF(ob);
