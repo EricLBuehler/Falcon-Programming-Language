@@ -76,7 +76,7 @@ struct compiler{
 #define DICTCOMP(node) ((DictComp*)node)
 #define REF(node) ((Ref*)node)
 
-#define NAMEIDX(obj) (*CAST_INT(obj->type->slot_mappings->slot_len(obj))->val).to_long_long()-1
+#define NAMEIDX(obj) CAST_LIST(obj)->size-1
 
 
 struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_line);

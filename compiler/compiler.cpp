@@ -4311,7 +4311,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
     CAST_LIST(list)->type->slot_mappings->slot_append(list, new_int_fromint(compiler->blockstack_size));
     
     object* code=code_new_fromargs(list);
-    CAST_CODE(code)->co_instructions=CAST_INT(instructions->type->slot_mappings->slot_len(instructions))->val->to_int();
+    CAST_CODE(code)->co_instructions=CAST_LIST(instructions)->size;
     CAST_CODE(code)->filedata=glblfildata;
     return code;
 }
