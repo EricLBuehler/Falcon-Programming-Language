@@ -201,7 +201,6 @@ object* builtin_len(object* self, object* args){
         return NULL;
     }
     object* len=arg->type->slot_mappings->slot_len(arg);
-    FPLDECREF(len);
     return len;
 }
 
