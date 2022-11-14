@@ -269,9 +269,20 @@ class Parser{
             return node;
         }
 
+        Node* make_bstring(parse_ret* ret){
+            this->advance();
+            Node* node=make_string_literal();
+            node->type=N_BSTRING;
+            
+            return node;
+        }
+
         Node* make_identifier(parse_ret* ret){
             if (this->current_tok.data=="f" && this->get_next().type==T_STR){
                 return make_fstring(ret);
+            }
+            if (this->current_tok.data=="b" && this->get_next().type==T_STR){
+                return make_bstring(ret);
             }
             Node* node=make_node(N_IDENT);
             
@@ -2076,8 +2087,7 @@ class Parser{
                     if (this->current_tok.data=="lambda"){
                         left=make_lambda(ret);
                     }
-                    break;
-                    
+                    break;                  
                     
 
                 default:
@@ -2104,6 +2114,7 @@ class Parser{
                 case T_TILDE:
                 case T_NOT:
                 case T_COLON:
+                case T_AMPERSAND:
                     return true;
                 case T_KWD:
                     if (this->current_tok.data=="lambda"){

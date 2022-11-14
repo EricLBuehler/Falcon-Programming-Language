@@ -56,7 +56,9 @@ enum nodetype{
     N_LISTCOMP,
     N_TUPLECOMP, //No data struct (N_TUPLECOMP)
     N_SETCOMP, //No data struct (N_TUPLECOMP)
-    N_DICTCOMP
+    N_DICTCOMP,
+    N_BSTRING,
+    N_REF,
 };
 
 enum precedence {
@@ -383,7 +385,6 @@ struct DictComp{
     Node* expr;
     Node* condition;
 };
-
 void destroy_node(struct Node* node){
     if (node->type==N_INT){
         delete ((IntLiteral*)(node->node))->literal;
