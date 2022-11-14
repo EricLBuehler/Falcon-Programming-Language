@@ -1649,6 +1649,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         BREAK_LOOP: {
+            pop_dataframe(vm->objstack); //Iterator
             (*ip)=blockstack_head(vm->blockstack).arg;
             pop_blockframe(vm->blockstack);
             DISPATCH();
