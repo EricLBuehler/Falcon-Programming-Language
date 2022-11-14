@@ -3570,7 +3570,7 @@ object* bytes_iter_cmp(object* self, object* other, uint8_t type);
 object* bytes_iter_bool(object* self);
 
 typedef struct BytesIterObject{
-    OBJHEAD_VAR
+    OBJHEAD_EXTRA
     char* val;
     uint32_t len;
     uint32_t idx;
@@ -3614,8 +3614,8 @@ TypeObject BytesIterType={
     0, //gen
     &TypeType, //type
     new string("bytes_iter"), //name
-    0, //size
-    sizeof(BytesIterObject), //var_base_size
+    sizeof(BytesIterObject), //size
+    0, //var_base_size
     true, //gc_trackable
     NULL, //bases
     0, //dict_offset

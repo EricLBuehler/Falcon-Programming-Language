@@ -24,14 +24,7 @@ object* bytes_new(object* type, object* args, object* kwargs){
     }
 
     if (len==0){
-        object* obj=new_object(&BytesType);
-    
-        char* c=(char*)fpl_malloc(sizeof(char));
-        CAST_BYTES(obj)->val=c;
-        CAST_BYTES(obj)->len=1;
-        memset(c,0,1);
-        
-        return obj;
+        return bytes_new_frombyte(0);
     }
 
     if (object_istype(list_index_int(args, 0)->type, &BytesType)){
@@ -52,7 +45,7 @@ object* bytes_new(object* type, object* args, object* kwargs){
         object* obj=new_object(CAST_TYPE(type));
 
         if (!object_istype(o->type, &StrType)){
-            CAST_BYTES(obj)->val=(char*)fpl_malloc(128);
+            CAST_BYTES(obj)->val=(char*)fpl_malloc(sizeof(char)*128);
             
             o=iter->type->slot_next(iter);
             int i=0;
@@ -69,10 +62,12 @@ object* bytes_new(object* type, object* args, object* kwargs){
                     return NULL;
                 }
                 CAST_BYTES(obj)->val[i++]=(char)(CAST_INT(intob)->val->to_int());
+                FPLDECREF(intob);
                 
                 if (i==len){
-                    CAST_BYTES(obj)->val=(char*)fpl_realloc((void*)CAST_BYTES(obj)->val, i+=1);
+                    i+=1;
                     len+=1;
+                    CAST_BYTES(obj)->val=(char*)fpl_realloc((void*)CAST_BYTES(obj)->val, sizeof(char)*i);
                 }
                 
                 o=iter->type->slot_next(iter);
@@ -82,7 +77,7 @@ object* bytes_new(object* type, object* args, object* kwargs){
                 vm->exception=NULL;
             }
             FPLDECREF(iter);
-            
+
             CAST_BYTES(obj)->len=i;
         }
         else{
@@ -224,7 +219,6 @@ object* bytes_iter(object* self){
     CAST_BYTESITER(iter)->val=(char*)fpl_malloc(CAST_BYTES(self)->len);
     CAST_BYTESITER(iter)->len=CAST_BYTES(self)->len;
     CAST_BYTESITER(iter)->idx=0;
-
     memcpy(CAST_BYTESITER(iter)->val, CAST_BYTES(self)->val, CAST_BYTESITER(iter)->len);
     return iter;
 }
@@ -238,7 +232,7 @@ object* bytes_iter_next(object* self){
         vm_add_err(&StopIteration, vm, "Iterator out of data");
         return NULL;
     }
-    return new_int_fromint(CAST_BYTESITER(self)->val[CAST_BYTESITER(self)->idx++]);
+    return new_int_fromint((int)CAST_BYTESITER(self)->val[CAST_BYTESITER(self)->idx++]);
 }
 
 object* bytes_iter_cmp(object* self, object* other, uint8_t type){
