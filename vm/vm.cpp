@@ -1628,7 +1628,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 add_blockframe(ip, vm, vm->blockstack, arg, FOR_BLOCK);
                 blockstack_head(vm->blockstack).other=vm->blockstack->size;
             }
-            
             object* it=peek_dataframe(vm->objstack);
             object* o=it->type->slot_next(it);
             add_dataframe(vm, vm->objstack, o);
