@@ -55,8 +55,8 @@ int _socket_close(SOCKET_T sock){
 }
 
 object* socket_new(object* type, object* args, object* kwargs){
-    int len=CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_int()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_int()!=0){
+    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -158,8 +158,8 @@ void socket_del(object* self){
 }
 
 object* socket_connect(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -263,8 +263,8 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_close(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 arguments, got %d", len);
         return NULL; 
     }
@@ -281,8 +281,8 @@ object* socket_close(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_send(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if ((len!=2 && len!=3) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -337,8 +337,8 @@ object* socket_send(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_recv(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if ((len!=2 && len!=3)|| CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if ((len!=2 && len!=3)|| CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 or 3 arguments, got %d", len);
         return NULL; 
     }
@@ -418,8 +418,8 @@ object* socket_gethostbyname(object* selftp, object* args){
 }
 
 object* socket_bind(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -518,8 +518,8 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_listen(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=2 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -554,8 +554,8 @@ object* socket_listen(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_accept(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
@@ -608,8 +608,8 @@ object* socket_accept(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_setsockopt(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=4 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=4 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 4 arguments, got %d", len);
         return NULL; 
     }
@@ -659,8 +659,8 @@ object* socket_setsockopt(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_getsockopt(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if ((len!=4 && len!=3) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if ((len!=4 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 3 or 4 arguments, got %d", len);
         return NULL; 
     }
@@ -729,8 +729,8 @@ object* socket_getsockopt(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_getsockname(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if (len!=1 || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
@@ -808,8 +808,8 @@ object* socket_sethostname(object* selftp, object* args){
 #endif
 
 object* socket_sendall(object* selftp, object* args, object* kwargs){
-    long len= CAST_INT(args->type->slot_mappings->slot_len(args))->val->to_long()+CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long();
-    if ((len!=2 && len!=3) || CAST_INT(kwargs->type->slot_mappings->slot_len(kwargs))->val->to_long() != 0){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
