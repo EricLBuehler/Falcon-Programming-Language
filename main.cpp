@@ -42,8 +42,8 @@ int main(int argc, char** argv) {
 
             struct compiler* compiler = new_compiler();
             vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
-            dict_set(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
-            dict_set(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
+            dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
+            dict_set_noret(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
             
             while (true){
                 struct vm* vm_=vm;
