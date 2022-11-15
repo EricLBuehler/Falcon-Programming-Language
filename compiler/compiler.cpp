@@ -857,6 +857,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
+                case T_IXOR: {
+                    uint32_t idx=binop_inplace_setup(compiler, left);
+                    add_instruction(compiler, compiler->instructions,BITWISE_XOR,idx, GET_ANNO_N(expr));
+                    binop_inplace_finish(compiler, left, idx);
+                    break;
+                }
             }
             
             break;

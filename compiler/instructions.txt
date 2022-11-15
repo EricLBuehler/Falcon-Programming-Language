@@ -39,6 +39,10 @@ BUILD_LIST(n) - Pops n frames of stack (L->R and Top->Down) and pushes list (sim
 
 BINOP_IS - Implements TOS is TOS-1
 
+BINOP_ISNOT - Implements TOS is not TOS-1
+
+BINOP_IN - Implements TOS in TOS-1
+
 BINOP_EE - Implements TOS == TOS-1
 
 POP_JMP_TOS_FALSE(idx) - Adds idx to IP and pops TOS if TOS is falsy
@@ -81,14 +85,6 @@ CONTINUE_LOOP - Break out of loop
 
 UNPACK_SEQ(n) - Unpacks sequence so that TOS is last of sequence, error if len(TOS)!=n
 
-BINOP_IADD(n) - Implements TOS+TOS-1 and assigns to names[n]
-
-BINOP_ISUB(n) - Implements TOS-TOS-1 and assigns to names[n]
-
-BINOP_IMUL(n) - Implements TOS*TOS-1 and assigns to names[n]
-
-BINOP_IDIV(n) - Implements TOS/TOS-1 and assigns to names[n]
-
 IMPORT_NAME(arg) - Imports library names[arg] and pushes module object onto stack for store or use
 
 IMPORT_FROM_MOD - Loads attrs in list on TOS, from module TOS-1
@@ -104,10 +100,6 @@ DEL_NAME(arg) - Implements del co_names[arg]
 BINOP_MOD - IF TOS-1 % TOS
 
 BINOP_POW - IF TOS-1 ** TOS
-
-BINOP_IPOW(n) - Implements TOS**TOS-1 and assigns to names[n]
-
-BINOP_IMOD(n) - Implements TOS%TOS-1 and assigns to names[n]
 
 BINOP_AND(n) - Implements TOS and TOS-1
 
@@ -149,8 +141,6 @@ BITWISE_NOTIN - Implements TOS not in TOS-1
 BITWISE_IN - Implements TOS in TOS-1
 
 BINOP_FLDIV - Implements TOS//TOS-1
-
-BINOP_IFLDIV - Implements TOS//TOS-1 and assigns to names[n]
 
 TERNARY_TEST - If TOS-2 is true, then put TOS on stack, otherwise put TOS-1
 
