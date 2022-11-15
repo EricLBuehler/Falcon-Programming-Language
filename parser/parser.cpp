@@ -3175,6 +3175,8 @@ class Parser{
                 node->node=i;
 
                 bases->push_back(node);
+
+                this->advance();
             }
             else if (!this->current_tok_is(T_EOF)){
                 reverse_non_newline;
