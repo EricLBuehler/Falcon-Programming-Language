@@ -2988,7 +2988,6 @@ class Parser{
             this->noassign=noassign;
             this->multi=b;
             this->anno=anno;
-            this->advance();
 
             Node* n=make_node(N_RAISE);
             n->start=expr->start;
