@@ -1,4 +1,3 @@
-
 object* builtin_eval(object* self, object* args){
     object* str=args->type->slot_mappings->slot_get(args, str_new_fromstr("string"));
     object* glbls=args->type->slot_mappings->slot_get(args, str_new_fromstr("globals"));
@@ -59,8 +58,12 @@ object* builtin_eval(object* self, object* args){
     ::vm=vm_;
 
     FPLDECREF(str);
-    FPLDECREF(glbls);
-    FPLDECREF(locals);
+    FPLDECREF(glbls); //vm_del DECREFs, so this deletes
+    FPLDECREF(locals); //Down to 1
+    FPLDECREF(locals); //delete
+
+    list_index_int(CAST_BUILTIN(self)->kwargs, 0)=new_dict();
+    list_index_int(CAST_BUILTIN(self)->kwargs, 1)=new_dict();
 
     return new_none();
 }
