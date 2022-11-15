@@ -22,10 +22,10 @@ struct blockstack* new_blockstack(int size){
 }
 
 struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type){
-    for (int i=0; i<stack->size; i++){
-        struct blockframe frame = stack->data[i];
+    for (int i=stack->size; i>0; i--){
+        struct blockframe frame = stack->data[i-1];
         if (frame.type==type){
-            return (struct blockframe*)(stack->data+(sizeof(struct blockframe)*i));
+            return (struct blockframe*)(stack->data+(i-1));
         }
     }
     return NULL;
@@ -3014,7 +3014,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         (*ip)-=2;
         struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
-        if (frame!=NULL && (frame->arg==3 || frame->arg%2==0)){
+        if (frame!=NULL && frame->arg%2==0){
             if (vm->callstack->size-frame->callstack_size!=0){
                 //Free GIL
                 GIL.unlock();
@@ -3034,11 +3034,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             
             frame->start_ip=(*ip);
-            (*ip)=frame->arg+4; //skip jump
+            (*ip)=frame->arg+2; //skip jump
             frame->arg=1;
             DISPATCH();
         }
-        else if (frame!=NULL && frame->obj!=NULL && frame->arg!=3){
+        else if (frame!=NULL && frame->obj!=NULL && frame->arg!=1){
             uint32_t ip_=(*ip);
             (*ip)=frame->start_ip;
             print_traceback();
