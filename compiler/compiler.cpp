@@ -2361,7 +2361,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }            
                     
                 instrs+=2;
-                add_instruction(compiler, compiler->instructions,JUMP_DELTA,target-instrs-2, GET_ANNO_N(tryn));
+                add_instruction(compiler, compiler->instructions,JUMP_DELTA,target-instrs, GET_ANNO_N(tryn));
             }
             if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
                 //add_instruction(compiler, compiler->instructions,JUMP_DELTA,0, GET_ANNO_N(expr));
