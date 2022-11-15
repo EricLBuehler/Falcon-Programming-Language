@@ -35,11 +35,10 @@ using namespace std;
 
 #define ERROR_RET(v) if (v==NULL || v==CALL_ERR){return CALL_ERR;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
 #define ERROR_RET_NOCALLERR(v) if (v==NULL){return NULL;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
-#define LIST_TUP_LEN(l) CAST_TUPLE(l)->size
 
 #define GIL_MAX_SWITCH 128
 
-#define FPL_VERSION "1.2.1"
+#define FPL_VERSION "1.2.2"
 
 std::mutex GIL;
 
