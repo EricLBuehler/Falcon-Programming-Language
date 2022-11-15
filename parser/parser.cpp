@@ -18,6 +18,7 @@ class Parser{
         bool inloop=false;
         bool inclass=false;
         bool anno=false;
+        bool infunc=false;
 
         Parser(){}
 
@@ -161,6 +162,13 @@ class Parser{
             }
             return false;
         }
+
+        bool isname_inplace(nodetype type){
+            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_NONLOCAL || type==N_DOT){
+                return true;
+            }
+            return false;
+        }
         
         bool isname_tok(token_type type){
             if (type==T_IDENTIFIER || type==T_DOTIDENT){
@@ -266,6 +274,43 @@ class Parser{
             this->advance();
             Node* node=make_string_literal();
             node->type=N_FSTRING;
+
+            string data=*(((StringLiteral*)(node->node))->literal);
+            
+            int x=0;
+            int i=0;
+            while (i<data.size()){
+                x++;
+                if (data[i]=='{'){
+                    int starti=i;
+                    string segment="";
+                    bool repr=false;
+                    i++;
+                    while (data[i]!='}' && data[i]!='\0'){
+                        segment+=data[i++];
+                        if (data[i-1]=='!' && data[i]=='r'){
+                            segment.pop_back();
+                            repr=true;
+                            i++;
+                            continue;
+                        }
+
+                        if (data[i]=='\0'){
+                            this->add_parsing_error(ret, "SyntaxError: Expected '}' for format string");
+                            return NULL;
+                        }
+
+                        if (data[i]=='{'){
+                            this->add_parsing_error(ret, "SyntaxError: Expected '}' for format string");
+                            return NULL;
+                        }
+
+                    }
+                    if (data[i]!='\0'){
+                        i++;
+                    }
+                }
+            }
             
             return node;
         }
@@ -409,6 +454,26 @@ class Parser{
                 this->add_parsing_error(ret, "SyntaxError: Invalid syntax");
                 this->advance();
                 return NULL;
+            }
+
+            switch (opr){
+                case T_IADD:
+                case T_ISUB:
+                case T_IMUL:
+                case T_IDIV:
+                case T_IPOW:
+                case T_IMOD:
+                case T_IAMP:
+                case T_IVBAR:
+                case T_ILSH:
+                case T_IRSH:
+                case T_IFLDIV: {
+                    if (!isname_inplace(left->type)){
+                        this->add_parsing_error(ret, "SyntaxError: Expected identifier for left expression");
+                        return NULL;
+                    }
+                    break;
+                }
             }
 
             //Make new binop, with minimal setup
@@ -1854,15 +1919,16 @@ class Parser{
             }
 
             this->advance();
+            
             bool inloop=this->inloop;
+            bool infunc=this->infunc;
             this->inloop=false;
+            this->infunc=true;
             skip_newline;
             parse_ret code=this->statements();
             if (code.errornum>0){
                 (*ret)=code;
-            }
-            this->inloop=inloop;
-            
+            }    
             if (this->get_prev().type!=T_RCURLY){
                 this->backadvance();
                 this->backadvance();
@@ -1872,6 +1938,9 @@ class Parser{
                 delete kwargs;
                 return NULL;
             }
+            this->inloop=inloop;
+            this->infunc=infunc;
+
             if (this->next_tok_is(T_COLON)){
                 this->advance();
                 this->advance();
@@ -2495,7 +2564,9 @@ class Parser{
 
             this->advance();
             bool inloop=this->inloop;
+            bool infunc=this->infunc;
             this->inloop=false;
+            this->infunc=true;
             skip_newline;
             parse_ret code=this->statements();
             if (code.errornum>0){
@@ -2511,6 +2582,7 @@ class Parser{
                 return NULL;
             }
             this->inloop=inloop;
+            this->infunc=infunc;
 
             Node* node=make_node(N_FUNC);
             node->start=name->start;
@@ -2638,6 +2710,10 @@ class Parser{
         }
 
         Node* make_return(parse_ret* ret){
+            if (!this->infunc){
+                this->add_parsing_error(ret, "SyntaxError: Return outside function");
+                return NULL;
+            }
             Node* node=make_node(N_RETURN);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
 
@@ -3585,6 +3661,11 @@ class Parser{
         }
 
         Node* make_yield(parse_ret* ret){
+            if (!this->infunc){
+                this->add_parsing_error(ret, "SyntaxError: Yield outside function");
+                return NULL;
+            }
+
             this->advance();
 
             Token t=this->current_tok;
