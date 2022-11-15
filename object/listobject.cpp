@@ -1,13 +1,7 @@
 void list_resize(ListObject* obj, size_t size){
-    object** buf=(object**)fpl_malloc(obj->capacity * sizeof(struct object*));
-    memcpy(buf, obj->array, obj->capacity * sizeof(struct object*));
-    size_t oldcap=obj->capacity;
-
     obj->capacity=(size + (size >> 3) + 6) & ~3;
     
     obj->array=(object**)fpl_realloc(obj->array, obj->capacity * sizeof(struct object*));
-    memcpy(obj->array, buf, oldcap * sizeof(struct object*));
-    fpl_free(buf);
 }
 
 object* new_list(){
