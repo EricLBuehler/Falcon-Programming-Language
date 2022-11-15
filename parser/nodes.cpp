@@ -97,6 +97,7 @@ enum precedence get_precedence(Token t){
         case T_ILSH:
         case T_IRSH:
         case T_IFLDIV:
+        case T_IXOR:
             return ASSIGN;
         case T_OR:
             return LOGICAL_OR;
