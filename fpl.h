@@ -162,7 +162,7 @@ int execute(string data, bool objdump, bool verbose){
     
     if (verbose){
         cout<<(*CAST_INT(list_len(CAST_CODE(code)->co_code))->val)/2<<" instructions."<<endl;
-        cout<<object_cstr(list_len(CAST_CODE(code)->co_code))<<" bytes.";//<<endl<<endl;
+        cout<<object_cstr(list_len(CAST_CODE(code)->co_code))<<" bytes."<<endl<<endl;
     }
     
     vm=new_vm(0, code, compiler->instructions, new string(data)); //data is still in scope...
