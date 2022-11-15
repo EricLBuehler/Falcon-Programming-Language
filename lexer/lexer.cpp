@@ -364,9 +364,9 @@ class Lexer{
 
                 else if (this->chr=='^'){
                     Position start=this->pos.copy();
+                    struct _tok_data res = make_caret();
                     Position end=this->pos.copy();
-                    end.advance();
-                    Token t("^",T_CARET,start,end);
+                    Token t(res.data,res.type,start,end);
                     tokens.push_back(t);
                 }
 
@@ -831,6 +831,18 @@ class Lexer{
                 this->advance();
                 res.data="|=";
                 res.type=T_IVBAR;
+            }
+            return res;
+        }
+
+        _tok_data make_caret(){
+            _tok_data res;
+            res.data=this->chr;
+            res.type=T_CARET;
+            if (this->get_next()=='='){
+                this->advance();
+                res.data="^=";
+                res.type=T_IXOR;
             }
             return res;
         }
