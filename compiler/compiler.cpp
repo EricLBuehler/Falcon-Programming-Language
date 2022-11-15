@@ -2085,9 +2085,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                 }
             }
-            add_instruction(compiler, compiler->instructions,FINISH_TRY,0, GET_ANNO_N(expr));   
-
-            add_instruction(compiler, compiler->instructions,JUMP_DELTA,0, GET_ANNO_N(expr));
             break;
         }
 
@@ -2184,7 +2181,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_TRY_EXCEPT_FINALLY: {
-            uint32_t val=compiler->instructions->count*2+num_instructions(TRY(TRYEXCEPTFINALLY(expr->node)->bases->at(0)->node)->code, compiler->scope)*2;
+            uint32_t val=compiler->instructions->count*2+num_instructions(TRYEXCEPTFINALLY(expr->node)->bases->at(0), compiler->scope)*2;
             add_instruction(compiler, compiler->instructions,SETUP_TRY,val, GET_ANNO_N(expr));       
                  
             uint32_t target;
@@ -2256,10 +2253,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         }
                     }
                     
-                    add_instruction(compiler, compiler->instructions,FINISH_TRY,0, GET_ANNO_N(tryn));   
-                    instrs+=2;
-                    add_instruction(compiler, compiler->instructions,JUMP_DELTA,2, GET_ANNO_N(tryn)); 
-                    instrs+=2;
                     continue;
                 }
                 Node* tryn=TRYEXCEPTFINALLY(expr->node)->bases->at(i);
@@ -2368,13 +2361,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }            
                     
                 instrs+=2;
-                add_instruction(compiler, compiler->instructions,JUMP_DELTA,target-instrs, GET_ANNO_N(tryn));
+                add_instruction(compiler, compiler->instructions,JUMP_DELTA,target-instrs-2, GET_ANNO_N(tryn));
             }
             if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
                 //add_instruction(compiler, compiler->instructions,JUMP_DELTA,0, GET_ANNO_N(expr));
                 add_instruction(compiler, compiler->instructions,RAISE_EXC,0, GET_ANNO_N(expr)); 
             }
-            add_instruction(compiler, compiler->instructions,FINISH_TRY,0, GET_ANNO_N(expr));   
+            add_instruction(compiler, compiler->instructions,FINISH_TRY,0, GET_ANNO_N(expr));  
                
             
             
@@ -4240,7 +4233,6 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
         compiler->blockstack_size=0;
         int i=compile_expr(compiler, n);
         compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-
         if (i==0x100){
             return NULL;
         }
@@ -4269,7 +4261,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
     add_instruction(compiler, compiler->instructions, RETURN_VAL, 0,  0, 0, 0);
     compiler->stack_size=siz;
 
-    if (ast.nodes.size()>0){
+    if (ast.nodes.size()>0 && CAST_LIST(lines)->size>0){
         object* tuple=new_tuple();
         object* lineno=new_int_fromint(CAST_LIST(lines)->size-1);
         object* line=list_index_int(lines, CAST_LIST(lines)->size-1);
