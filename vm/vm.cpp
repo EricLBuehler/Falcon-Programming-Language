@@ -319,7 +319,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
     uint32_t arg;
     
     static void* dispatch_table[]={
-        &&LOAD_CONST,
+                &&LOAD_CONST,
         &&STORE_NAME,
         &&LOAD_NAME,
         &&STORE_GLOBAL,
@@ -339,6 +339,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&STORE_ATTR,
         &&BUILD_LIST,
         &&BINOP_IS,
+        &&BINOP_ISNOT,
         &&BINOP_EE,
         &&POP_JMP_TOS_FALSE,
         &&JUMP_DELTA,
@@ -360,10 +361,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&BREAK_LOOP,
         &&CONTINUE_LOOP,
         &&UNPACK_SEQ,
-        &&BINOP_IADD,
-        &&BINOP_ISUB,
-        &&BINOP_IMUL,
-        &&BINOP_IDIV,
         &&IMPORT_NAME,
         &&IMPORT_FROM_MOD,
         &&MAKE_SLICE,
@@ -372,8 +369,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&DEL_NAME,
         &&BINOP_MOD,
         &&BINOP_POW,
-        &&BINOP_IPOW,
-        &&BINOP_IMOD,
         &&BINOP_AND,
         &&BINOP_OR,
         &&UNARY_NOT,
@@ -391,15 +386,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
         &&BITWISE_OR,
         &&BITWISE_LSHIFT,
         &&BITWISE_RSHIFT,
-        &&BINOP_IAND,
-        &&BINOP_IOR,
-        &&BINOP_ILSH,
-        &&BINOP_IRSH,
         &&BINOP_NOTIN,
         &&BINOP_IN,
-        &&BINOP_ISNOT,
         &&BINOP_FLDIV,
-        &&BINOP_IFLDIV,
         &&TERNARY_TEST,
         &&CALL_FUNCTION_BOTTOM,
         &&ANNOTATE_GLOBAL,
@@ -1716,131 +1705,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             DISPATCH();
         }
 
-        BINOP_IADD:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_add(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(left);
-                FPLDECREF(right);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            DISPATCH();
-        }
-
-        BINOP_ISUB:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_sub(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand types for -: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(left);
-                FPLDECREF(right);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            DISPATCH();
-        }
-
-        BINOP_IMUL:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_mul(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(left);
-                FPLDECREF(right);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            DISPATCH();  
-        }
-
-        BINOP_IDIV:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_div(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand types for /: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(left);
-                FPLDECREF(right);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            DISPATCH();
-        }
-
         IMPORT_NAME: {
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             string nm_plain=*CAST_STRING(name)->val;
@@ -2125,70 +1989,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 FPLDECREF(left);
                 goto exc;
             }
-            DISPATCH();
-        }
-
-        BINOP_IPOW:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_pow(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(left);
-                FPLDECREF(right);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            DISPATCH();
-        }
-
-        BINOP_IMOD:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_mod(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand types for **: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(left);
-                FPLDECREF(right);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
@@ -2582,137 +2382,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             DISPATCH();
         }
-
-        BINOP_IAND:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_and(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for &: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(right);
-                FPLDECREF(left);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            DISPATCH();
-        }
-
-        BINOP_IOR:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_or(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for |: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(right);
-                FPLDECREF(left);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            
-            DISPATCH();
-        }
-
-        BINOP_ILSH:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_lshift(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for <<: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(right);
-                FPLDECREF(left);
-                goto exc;
-            }            
-            FPLDECREF(right);
-            FPLDECREF(left);
-
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            
-            DISPATCH();
-        }
-
-        BINOP_IRSH:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_rshift(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid bitwise operand types for >>: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(right);
-                FPLDECREF(left);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
-            
-            DISPATCH();
-        }
         
         BINOP_NOTIN:{
             struct object* right=pop_dataframe(vm->objstack);
@@ -2775,38 +2444,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 FPLDECREF(left);
                 goto exc;
             }
-            DISPATCH();
-        }
-
-        BINOP_IFLDIV:{
-            struct object* right=pop_dataframe(vm->objstack);
-            struct object* left=pop_dataframe(vm->objstack);
-            
-            object* ret=object_fldiv(left, right);
-            if (ret==NULL){
-                vm_add_err(&TypeError, vm, "Invalid operand types for //: '%s', and '%s'.", left->type->name->c_str(), right->type->name->c_str());
-                FPLDECREF(right);
-                FPLDECREF(left);
-                goto exc;
-            }
-            FPLDECREF(right);
-            FPLDECREF(left);
-            
-            object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* value=ret;
-            
-            if (CAST_DICT(callstack_head(vm->callstack).locals)->val->find(name)!=CAST_DICT(callstack_head(vm->callstack).locals)->val->end()){
-                if (CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name)->type->size==0){
-                    ((object_var*)CAST_DICT(callstack_head(vm->callstack).locals)->val->at(name))->gc_ref--;
-                }
-            }
-
-            if (value->type->size==0){
-                ((object_var*)value)->gc_ref++;
-            }
-            
-
-            dict_set_noinc_noret(callstack_head(vm->callstack).locals, name, value);
             DISPATCH();
         }
 
