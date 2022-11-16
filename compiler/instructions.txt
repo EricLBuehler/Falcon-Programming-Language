@@ -51,7 +51,7 @@ JUMP_TO(idx) - Unconditionally adds idx to IP
 
 BINOP_SUBSCR - Implements TOS=TOS-1[TOS]
 
-RAISE_EXC - Attempts to raise TOS as exception
+RAISE_EXC(tp) - Attempts to raise TOS as exception. If tp is 1, then is looks for a try block and if found, used the start_ip for the exc
 
 STORE_SUBSCR - TOS-2[TOS-1]=TOS
 

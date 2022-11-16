@@ -719,7 +719,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     break;
                 }
-                case T_DIV: {                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                case T_DIV: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
@@ -735,7 +736,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     break;
                 }
-                case T_IS: {                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                case T_IS: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
                     if (cmpexpr==0x100){
                         return cmpexpr;
                     }
@@ -2575,12 +2577,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->type->start->line));
                         compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
                     }
-
-                    add_instruction(compiler, compiler->instructions,BINOP_EXC_CMP,0, GET_ANNO_N(EXCEPT(tryn->node)->type));         
+        
                     instrs+=2;
+                    add_instruction(compiler, compiler->instructions,BINOP_EXC_CMP,0, GET_ANNO_N(EXCEPT(tryn->node)->type));
 
-                    add_instruction(compiler, compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(EXCEPT(tryn->node)->code, compiler->scope)*2+4, GET_ANNO_N(EXCEPT(tryn->node)->type));
                     instrs+=2;
+                    uint32_t target_jmp=num_instructions(EXCEPT(tryn->node)->code, compiler->scope)*2+2; //+2 is for code jump, +8 is for this
+                    if (EXCEPT(tryn->node)->name!=NULL){
+                        target_jmp+=4;
+                    }
+                    add_instruction(compiler, compiler->instructions,POP_JMP_TOS_FALSE,target_jmp, GET_ANNO_N(EXCEPT(tryn->node)->type));
                 }
 
                 if (EXCEPT(tryn->node)->name!=NULL){
@@ -2645,10 +2651,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 instrs+=2;
                 add_instruction(compiler, compiler->instructions,JUMP_DELTA,target-instrs, GET_ANNO_N(tryn));
             }
-            if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type!=N_FINALLY){
-                //add_instruction(compiler, compiler->instructions,JUMP_DELTA,0, GET_ANNO_N(expr));
-                add_instruction(compiler, compiler->instructions,RAISE_EXC,0, GET_ANNO_N(expr)); 
-            }
+            add_instruction(compiler, compiler->instructions,RAISE_EXC,1, GET_ANNO_N(expr)); 
             add_instruction(compiler, compiler->instructions,FINISH_TRY,0, GET_ANNO_N(expr));  
                
             
