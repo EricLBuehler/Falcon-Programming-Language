@@ -269,8 +269,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     }
     
     //
-
-    
+  
     
     //Keyword
     uint32_t argn_tmp=argsnum;
