@@ -258,7 +258,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
     for (int i=0; i<CAST_LIST(args)->size; i++){
         object* o=list_index_int(selfargs, argn);
         object* res=dict->type->slot_mappings->slot_set(dict, o, list_index_int(args, i));
-        if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+        if (res!=NULL && res!=TERM_PROGRAM){
             FPLDECREF(res);
         }
         names->type->slot_mappings->slot_append(names, o);
@@ -279,7 +279,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         
         if (!object_find_bool(names, o)){
             object* res=dict->type->slot_mappings->slot_set(dict, o, list_index_int(selfkwargs, i));
-            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+            if (res!=NULL && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
         }
@@ -296,7 +296,7 @@ object* setup_args(object* dict, uint32_t argc, object* selfargs, object* selfkw
         //
 
         object* res=dict->type->slot_mappings->slot_set(dict, k.first, k.second);
-        if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+        if (res!=NULL && res!=TERM_PROGRAM){
             FPLDECREF(res);
         }
         argn++;
@@ -312,7 +312,7 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
 
     //Positional
     object* res=dict->type->slot_mappings->slot_set(dict, str_new_fromstr("args"), args);
-    if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+    if (res!=NULL && res!=TERM_PROGRAM){
         FPLDECREF(res);
     }
     //
@@ -325,7 +325,7 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
         object* o=list_index_int(selfargs, argn_tmp);
         
         object* res=dict->type->slot_mappings->slot_set(dict, o, list_index_int(selfkwargs, i));
-        if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+        if (res!=NULL && res!=TERM_PROGRAM){
             FPLDECREF(res);
         }
         argn_tmp++;
@@ -340,7 +340,7 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
         //
 
         object* res=dict->type->slot_mappings->slot_set(dict, k.first, k.second);
-        if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+        if (res!=NULL && res!=TERM_PROGRAM){
             FPLDECREF(res);
         }
         argn++;
@@ -365,7 +365,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         for (int i=0; i<selfarglen; i++){
             object* o=list_index_int(selfargs, argn);
             object* res=dict->type->slot_mappings->slot_set(dict, o, list_index_int(args, i));
-            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+            if (res!=NULL && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
             names->type->slot_mappings->slot_append(names, o);
@@ -383,7 +383,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
             }
             if (stargs!=NULL){
                 object* res=dict->type->slot_mappings->slot_set(dict, stargs, new_tup);
-                if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+                if (res!=NULL && res!=TERM_PROGRAM){
                     FPLDECREF(res);
                 }
             }
@@ -394,7 +394,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         for (int i=0; i<arglen; i++){
             object* o=list_index_int(selfargs, argn);
             object* res=dict->type->slot_mappings->slot_set(dict, o, list_index_int(args, i));
-            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+            if (res!=NULL && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
             names->type->slot_mappings->slot_append(names, list_index_int(selfargs, argn));
@@ -413,7 +413,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         
         if (!object_find_bool(names, o)){
             object* res=dict->type->slot_mappings->slot_set(dict, o, list_index_int(selfkwargs, i));
-            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+            if (res!=NULL && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
         }
@@ -450,7 +450,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         }
 
         object* res=dict->type->slot_mappings->slot_set(dict, k.first, k.second);
-        if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+        if (res!=NULL && res!=TERM_PROGRAM){
             FPLDECREF(res);
         }
         argn++;
@@ -463,7 +463,7 @@ object* setup_args_stars(object* dict, uint32_t argc, object* selfargs, object* 
         //Star keyword
         if (stkwargs!=NULL){
             object* res=dict->type->slot_mappings->slot_set(dict, stkwargs, stdict);
-            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+            if (res!=NULL && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
         }
@@ -721,7 +721,7 @@ void object_set(object* base, object* idx, object* val){
         return;
     }
     object* res=base->type->slot_mappings->slot_set(base, idx, val);
-    if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+    if (res!=NULL && res!=TERM_PROGRAM){
         FPLDECREF(res);
     }
 }
@@ -798,7 +798,7 @@ object* generic_iter_iter(object* self){
 
 void object_del_item(object* base, object* idx){
     object* res=base->type->slot_mappings->slot_set(base, idx, NULL);
-    if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
+    if (res!=NULL && res!=TERM_PROGRAM){
         FPLDECREF(res);
     }
 }
