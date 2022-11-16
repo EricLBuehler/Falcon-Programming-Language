@@ -8,5 +8,5 @@
 | ```str```        | ```std::string```                |
 | ```list```       | ```object**```                   |
 | ```tuple```      | ```object**```                   |
-| ```dict```       | ```std::map<object*, object*>``` |
+| ```dict```       | ```std::unordered_map<object*, object*>``` |
 | ```bool```       | ```bool```                       |
