@@ -424,36 +424,59 @@ int compile_expr_keep(struct compiler* compiler, Node* expr){
 uint32_t binop_inplace_setup(struct compiler* compiler, Node* left){
     switch (left->type){
         case N_IDENT: {
+            uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(left->node)->name)){
                 //Create object
                 compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
-                return NAMEIDX(compiler->names);
+                idx = NAMEIDX(compiler->names);
             }
             else{
-                return object_find(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
+                idx =  object_find(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
             }
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler, compiler->instructions,LOAD_GLOBAL, idx, GET_ANNO_N(left));
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler, compiler->instructions,LOAD_NAME, idx, GET_ANNO_N(left));
+                    break;
+            }
+            return idx;
             break;
         }
         case N_GLBL_IDENT: {
+            uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(GLBLIDENT(left->node)->name->node)->name)){
                 //Create object
                 compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(left->node)->name->node)->name));
-                return NAMEIDX(compiler->names);
+                idx = NAMEIDX(compiler->names);
             }
             else{
-                return object_find(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(left->node)->name->node)->name));
+                idx = object_find(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(left->node)->name->node)->name));
             }
             break;
         }
         case N_NONLOCAL: {
+            uint32_t idx;
              if (!_list_contains(compiler->names, IDENTI(left->node)->name)){
                 //Create object
                 compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
-                return NAMEIDX(compiler->names);
+                idx = NAMEIDX(compiler->names);
             }
             else{
-                return object_find(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
+                idx = object_find(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
             }
+            switch (compiler->scope){
+                case SCOPE_GLOBAL:
+                    add_instruction(compiler, compiler->instructions,LOAD_GLOBAL, idx, GET_ANNO_N(left));
+                    break;
+
+                case SCOPE_LOCAL:
+                    add_instruction(compiler, compiler->instructions,LOAD_NAME, idx, GET_ANNO_N(left));
+                    break;
+            }
+            return idx;
             break;
         }
         case N_DOT: {
@@ -1057,7 +1080,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BINOP_ADD,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BINOP_ADD,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1067,7 +1090,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BINOP_SUB,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BINOP_SUB,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1077,7 +1100,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BINOP_MUL,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BINOP_MUL,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1087,7 +1110,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BINOP_DIV,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BINOP_DIV,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1097,7 +1120,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BINOP_POW,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BINOP_POW,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1107,7 +1130,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BINOP_MOD,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BINOP_MOD,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1117,7 +1140,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BITWISE_AND, idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BITWISE_AND, 0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1127,7 +1150,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BITWISE_OR,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BITWISE_OR,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1137,7 +1160,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BITWISE_LSHIFT,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BITWISE_LSHIFT,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1147,7 +1170,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BITWISE_LSHIFT,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BITWISE_LSHIFT,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1157,7 +1180,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BINOP_FLDIV,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BINOP_FLDIV,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
@@ -1167,7 +1190,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
-                    add_instruction(compiler, compiler->instructions,BITWISE_XOR,idx, GET_ANNO_N(expr));
+                    add_instruction(compiler, compiler->instructions,BITWISE_XOR,0, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
