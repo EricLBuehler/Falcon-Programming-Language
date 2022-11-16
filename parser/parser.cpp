@@ -310,6 +310,9 @@ class Parser{
                         i++;
                     }
                 }
+                else{
+                    i++;
+                }
             }
             
             return node;
