@@ -3089,6 +3089,14 @@ class Parser{
             this->advance();
             skip_newline;
             
+            if (!(this->current_tok_is(T_KWD) && this->current_tok.data=="except")){
+                this->add_parsing_error(ret, "SyntaxError: Expected except, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->advance();
+                fpl_free(n);
+                fpl_free(f);
+                return NULL;
+            }
+            
             while(this->current_tok_is(T_KWD) && this->current_tok.data=="except"){
                 this->advance();
                 Node* type=NULL;
@@ -3336,6 +3344,7 @@ class Parser{
             Node* node=make_node(N_BREAK);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            this->advance();
             return node;
         }
 
@@ -3348,6 +3357,7 @@ class Parser{
             Node* node=make_node(N_CONTINUE);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            this->advance();
             return node;
         }
 
