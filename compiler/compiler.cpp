@@ -4518,7 +4518,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
         tuple->type->slot_mappings->slot_append(tuple, tuple_index_int(line, 2));
         
         object* res=lines->type->slot_mappings->slot_set(lines, lineno, tuple);
-        if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
+        if (res!=NULL && res!=TERM_PROGRAM){
             FPLDECREF(res);
         }
         FPLDECREF(lineno);
