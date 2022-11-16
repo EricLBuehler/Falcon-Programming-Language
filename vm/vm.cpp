@@ -819,7 +819,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -932,7 +932,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -980,7 +980,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1021,7 +1021,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1141,7 +1141,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1188,7 +1188,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1303,7 +1303,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1344,7 +1344,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1398,7 +1398,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){ 
                 goto exc;
             }
-            if (ret==TERM_PROGRAM || ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1417,7 +1417,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
-            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -1619,13 +1619,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             object* it=peek_dataframe(vm->objstack);
             object* o=it->type->slot_next(it);
-            if (hit_sigint){
-                goto exc;
-            }
-            if (o==TERM_PROGRAM|| o==CALL_ERR){
-                GIL.unlock();
-                return TERM_PROGRAM;
-            }
             add_dataframe(vm, vm->objstack, o);
             if (vm->exception!=NULL && object_istype(vm->exception->type, &StopIteration)){
                 FPLDECREF(vm->exception);
@@ -1635,6 +1628,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 pop_dataframe(vm->objstack);
                 object* o=pop_dataframe(vm->objstack);
                 FPLDECREF(o);
+            }
+            if (hit_sigint || o==NULL){
+                goto exc;
+            }
+            if (o==TERM_PROGRAM){
+                GIL.unlock();
+                return TERM_PROGRAM;
             }
             DISPATCH();
         }
@@ -1867,7 +1867,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (uint32_t i=0; i<len; i++){
                 object* o=object_getattr(lib, list_index_int(names, i));
             
-                if (o==TERM_PROGRAM || o==CALL_ERR){
+                if (o==TERM_PROGRAM){
                     GIL.unlock();
                     return TERM_PROGRAM;
                 }
@@ -2115,7 +2115,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
-            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -2505,7 +2505,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             if (ret==NULL || hit_sigint){
                 goto exc;
             }
-            if (ret==TERM_PROGRAM|| ret==CALL_ERR){
+            if (ret==TERM_PROGRAM){
                 GIL.unlock();
                 return TERM_PROGRAM;
             }
@@ -2682,7 +2682,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             frame->arg=1;
             DISPATCH();
         }
-        else if (frame!=NULL && frame->obj!=NULL && frame->arg!=1){
+        else if (frame!=NULL && frame->obj!=NULL && frame->arg!=1 && vm->callstack->size==0){
             uint32_t ip_=(*ip);
             (*ip)=frame->start_ip;
             print_traceback();
@@ -2701,6 +2701,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
         }
+        if (vm->callstack->size>1){
+            return NULL;
+        }
+
         print_traceback();
         
         cout<<vm->exception->type->name->c_str();
@@ -2713,11 +2717,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             FPLDECREF(vm->exception);
         }
         vm->exception=NULL;
-
-        
-        if (vm->callstack->size>1){
-            return CALL_ERR;
-        }
         
         //Free GIL
         GIL.unlock();
