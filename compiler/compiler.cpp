@@ -2464,15 +2464,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_TRY_EXCEPT_FINALLY: {
-            uint32_t val=compiler->instructions->count*2+num_instructions(TRYEXCEPTFINALLY(expr->node)->bases->at(0), compiler->scope)*2;
+            uint32_t val=compiler->instructions->count*2+(num_instructions(TRYEXCEPTFINALLY(expr->node)->bases->at(0), compiler->scope)*2)+2;
             add_instruction(compiler, compiler->instructions,SETUP_TRY,val, GET_ANNO_N(expr));       
                  
-            uint32_t target;
+            uint32_t target=num_instructions(TRYEXCEPTFINALLY(expr->node)->bases, compiler->scope)*2;
+            target+=2; //FINISH_TRY
             if (TRYEXCEPTFINALLY(expr->node)->bases->back()->type==N_FINALLY){
-                target=(num_instructions(TRYEXCEPTFINALLY(expr->node)->bases, compiler->scope)*2)-(num_instructions(TRYEXCEPTFINALLY(expr->node)->bases->back(), compiler->scope)*2);
-            }
-            else{
-                target=num_instructions(TRYEXCEPTFINALLY(expr->node)->bases, compiler->scope)*2+2;
+                target-=(num_instructions(TRYEXCEPTFINALLY(expr->node)->bases->back(), compiler->scope)*2);
             }
 
             uint32_t instrs=0;
@@ -2619,6 +2617,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     
                     add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(EXCEPT(tryn->node)->name));
+                    instrs+=2;
                 }    
                 
                 for (Node* n: (*EXCEPT(tryn->node)->code)){
