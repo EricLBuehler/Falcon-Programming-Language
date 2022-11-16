@@ -319,7 +319,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
     uint32_t arg;
     
     static void* dispatch_table[]={
-                &&LOAD_CONST,
+        &&LOAD_CONST,
         &&STORE_NAME,
         &&LOAD_NAME,
         &&STORE_GLOBAL,
@@ -1462,6 +1462,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 FPLDECREF(vm->exception);
             }
             vm->exception=pop_dataframe(vm->objstack);
+            if (arg==1){
+                struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
+                if (frame!=NULL && frame->arg==1){
+                    (*ip)=frame->start_ip;
+                }
+            }
             goto exc;
         }
 
@@ -1628,6 +1634,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 pop_dataframe(vm->objstack);
                 object* o=pop_dataframe(vm->objstack);
                 FPLDECREF(o);
+                DISPATCH();
             }
             if (hit_sigint || o==NULL){
                 goto exc;
@@ -2676,9 +2683,8 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
             }
-            
-            frame->start_ip=(*ip);
-            (*ip)=frame->arg+2; //skip jump
+            frame->start_ip=(*ip)+2;
+            (*ip)=frame->arg; //skip jump
             frame->arg=1;
             DISPATCH();
         }
@@ -2704,7 +2710,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         if (vm->callstack->size>1){
             return NULL;
         }
-
+        
         print_traceback();
         
         cout<<vm->exception->type->name->c_str();
