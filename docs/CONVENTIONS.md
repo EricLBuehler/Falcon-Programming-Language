@@ -18,7 +18,7 @@ Left curly is on the first line of the block. The right curly is positioned afte
 ## Private attributes
 ```_``` ```name```
 
-# Protected attributes
+## Protected attributes
 ```__``` ```name```
 
 Access using ```_``` ```class name``` ```__``` ```name```
