@@ -2869,7 +2869,6 @@ class Parser{
                     return n;
                 }
                 bases->push_back(n);
-                this->advance();
             }
 
             Node* node=make_node(N_CONTROL);
