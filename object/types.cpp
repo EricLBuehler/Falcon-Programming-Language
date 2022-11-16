@@ -3706,15 +3706,15 @@ object* type_call(object* self, object* args, object* kwargs){
         if (CAST_INT(list_len(args))->val->to_long()==3){
             object* args_=new_dict();
             object* res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("func"), list_index_int(args, 0));
-            if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
+            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
             res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("name"), list_index_int(args, 1));
-            if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
+            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
             res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("bases"), list_index_int(args, 2));
-            if (res!=NULL && res!=CALL_ERR && res!=SUCCESS && res!=TERM_PROGRAM){
+            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
             return builtin___build_class__(NULL, args_);
@@ -3728,13 +3728,13 @@ object* type_call(object* self, object* args, object* kwargs){
     }
     
     object* o=CAST_TYPE(self)->slot_new(self, args, kwargs);
-    ERROR_RET_NOCALLERR(o);
+    ERROR_RET(o);
     if (o != NULL && o->type->slot_posttpcall!=NULL){
         o->type->slot_posttpcall(o);
     }
     if (o != NULL && o->type->slot_init!=NULL){
         object* v=o->type->slot_init(o, args, kwargs);
-        ERROR_RET_NOCALLERR(v);
+        ERROR_RET(v);
     }
     return o;
 }

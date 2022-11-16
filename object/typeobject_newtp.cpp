@@ -24,7 +24,7 @@ void _newtp_del(object* self){
 
 void newtp_del(object* self){
     object* n=object_getattr(self, str_new_fromstr("__del__"));
-    if (n==NULL || n==TERM_PROGRAM || n==CALL_ERR){
+    if (n==NULL || n==TERM_PROGRAM){
         return;
     }
     object* args=new_tuple();
@@ -429,7 +429,6 @@ object* newtp_iter(object* self){
     object* args=new_tuple();
     
     object* val=object_call_nokwargs(n, args);
-    
     return val;
 }
 
