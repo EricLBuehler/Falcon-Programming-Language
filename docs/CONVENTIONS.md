@@ -21,4 +21,4 @@ Left curly is on the first line of the block. The right curly is positioned afte
 # Protected attributes
 ```__``` ```name```
 
-Access using ```_``` ```class name``` ```name```
+Access using ```_``` ```class name``` __ ```name```
