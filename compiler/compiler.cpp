@@ -459,7 +459,10 @@ uint32_t binop_inplace_setup(struct compiler* compiler, Node* left){
         case N_DOT: {
             vector<Node*>* names=DOT(left->node)->names;
             
+            bool nofree=compiler->nofree;
+            compiler->nofree=true;
             compile_expr_keep(compiler, names->at(0));
+            compiler->nofree=nofree;
             uint32_t lastidx;
             for (size_t i=1; i<names->size(); i++){
                 uint32_t idx;
@@ -515,7 +518,14 @@ void binop_inplace_finish(struct compiler* compiler, Node* left, uint32_t idx){
             break;
         }
         case N_DOT: {
+            vector<Node*>* names=DOT(left->node)->names;
+            
+            compile_expr_keep(compiler, names->at(0));
+
             add_instruction(compiler, compiler->instructions,STORE_ATTR, idx, GET_ANNO_N(left));
+            if (!compiler->keep_return){
+                add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(left));
+            }
             break;
         }
     }
@@ -633,231 +643,529 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_BINOP: {
             Node* left=BINOP(expr->node)->left;
-            bool nofree=compiler->nofree;
-            compiler->nofree=true;
-            int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-            if (cmpexpr==0x100){
-                return cmpexpr;
-            }
-            compiler->nofree=nofree;
-
-            cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-            if (cmpexpr==0x100){
-                return cmpexpr;
-            }
             
             switch (BINOP(expr->node)->opr){
-                case T_PLUS:
+                case T_PLUS: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_ADD,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_MINUS:
+                }
+                case T_MINUS: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_SUB,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_MUL:
+                }
+                case T_MUL: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_MUL,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_DIV:
+                }
+                case T_DIV: {                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_DIV,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_IS:
+                }
+                case T_IS: {                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_IS,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_EE:
+                }
+                case T_EE: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_EE,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_NE:
+                }
+                case T_NE: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_NE,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_GT:
+                }
+                case T_GT: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_GT,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_GTE:
+                }
+                case T_GTE: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_GTE,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_LT:
+                }
+                case T_LT: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_LT,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_LTE:
+                }
+                case T_LTE: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_LTE,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_PERCENT:
+                }
+                case T_PERCENT: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_MOD,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_POW:
+                }
+                case T_POW: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_POW,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_AND:
+                }
+                case T_AND: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_AND,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_OR:
+                }
+                case T_OR: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_OR,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_CARET:
+                }
+                case T_CARET: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BITWISE_XOR,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_AMPERSAND:
+                }
+                case T_AMPERSAND: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BITWISE_AND,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_VBAR:
+                }
+                case T_VBAR: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BITWISE_OR,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_LSHIFT:
+                }
+                case T_LSHIFT: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BITWISE_LSHIFT,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_RSHIFT:
+                }
+                case T_RSHIFT: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BITWISE_RSHIFT,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_NOT:
+                }
+                case T_NOT: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_NOTIN,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_IN:
+                }
+                case T_IN: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_IN,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_ISNOT:
+                }
+                case T_ISNOT: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_ISNOT,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
-                case T_FLDIV:
+                }
+                case T_FLDIV: {                    
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+                    
+                    cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
+
                     add_instruction(compiler, compiler->instructions,BINOP_FLDIV,0, GET_ANNO_N(expr));
                     if (!compiler->keep_return){
                         add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
                     }
                     break;
+                }
                 case T_IADD: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BINOP_ADD,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_ISUB: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BINOP_SUB,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IMUL: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BINOP_MUL,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IDIV: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BINOP_DIV,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IPOW: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BINOP_POW,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IMOD: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BINOP_MOD,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IAMP: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BITWISE_AND, idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IVBAR: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BITWISE_OR,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_ILSH: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BITWISE_LSHIFT,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IRSH: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BITWISE_LSHIFT,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IFLDIV: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BINOP_FLDIV,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
                     break;
                 }
                 case T_IXOR: {
+                    int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
+                    if (cmpexpr==0x100){
+                        return cmpexpr;
+                    }
                     uint32_t idx=binop_inplace_setup(compiler, left);
                     add_instruction(compiler, compiler->instructions,BITWISE_XOR,idx, GET_ANNO_N(expr));
                     binop_inplace_finish(compiler, left, idx);
