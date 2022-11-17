@@ -5,7 +5,7 @@
 
 Falcon is a multithreaded, multi-paradigm interpreted programming language, with a focus on readability and simplicity. It is dynamically typed, and has automatic garbage collection based on reference counting and a tri-generational garbage collector. In comparison to other languages, it a hybrid of Python and C, with the benefits of Python and the syntax of C.
 
-Falcon is implemented in C++. However, although the compiler and interpreter do not use object oriented features and could mostly be compiled in C, the lexer and parser make heavy use of such features.
+Falcon is implemented in C++. However, although the compiler and virtual machines do not use object oriented features and could mostly be compiled in C, the lexer and parser make heavy use of such features.
 
 ### Builtins ###
 - ```print```
