@@ -4,6 +4,7 @@ object* thread_cmp(object* self, object* other, uint8_t type);
 object* thread_repr(object* self);
 object* thread_start_meth(object* selftp, object* args, object* kwargs);
 object* thread_join_meth(object* selftp, object* args, object* kwargs);
+object* thread_getid_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct ThreadObject{
     OBJHEAD_VAR
@@ -11,7 +12,8 @@ typedef struct ThreadObject{
     pthread_t* thread;
 }ThreadObject;
 
-Method thread_methods[]={{"start", (cwrapperfunc)thread_start_meth}, {"join", (cwrapperfunc)thread_join_meth}, {NULL,NULL}};
+Method thread_methods[]={{"start", (cwrapperfunc)thread_start_meth}, {"join", (cwrapperfunc)thread_join_meth}\
+                        , {"getid", (cwrapperfunc)thread_getid_meth}, {NULL,NULL}};
 GetSets thread_getsets[]={{NULL,NULL}};
 OffsetMember thread_offsets[]={{NULL}};
 
