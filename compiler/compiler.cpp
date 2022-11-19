@@ -3347,19 +3347,22 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     int starti=i;
                     string segment="";
                     bool repr=false;
+                    bool eq=false;
                     i++;
                     while (data[i]!='}' && data[i]!='\0'){
                         segment+=data[i++];
-                        if (data[i-1]=='!' && data[i]=='r'){
-                            segment.pop_back();
-                            repr=true;
-                            i++;
-                            continue;
-                        }
-
                     }
                     if (data[i]!='\0'){
                         i++;
+                    }
+                    if (segment.size()>1 && segment.back()=='='){
+                        segment.pop_back();
+                        eq=true;
+                    }
+                    if (segment.size()>2 && segment.at(segment.size()-2)=='!' && segment.at(segment.size()-1)=='r'){
+                        segment.pop_back();
+                        segment.pop_back();
+                        repr=true;
                     }
                     
                     Lexer lexer(segment,kwds);
@@ -3378,6 +3381,60 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         cout<<ast.arrows<<endl;
                         printf("%s\n",ast.error);
                         return 0x100;
+                    }
+
+                    if (eq){
+                        uint32_t idx;
+                        
+                        object* s=str_new_fromstr(segment);
+                        if (!object_find_bool(compiler->consts,s)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, s);
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, s);
+                        }
+                        add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
+
+                        
+                        if (!object_find_bool(compiler->consts,falseobj)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, new_bool_false());
+                        }
+                        
+                        add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
+
+                        x++;
+
+                        s=str_new_fromstr("=");
+                        if (!object_find_bool(compiler->consts,s)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, s);
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, s);
+                        }
+                        add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
+
+                        
+                        if (!object_find_bool(compiler->consts,falseobj)){
+                            //Create object
+                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                            idx=NAMEIDX(compiler->consts);
+                        }
+                        else{
+                            idx=object_find(compiler->consts, new_bool_false());
+                        }
+                        
+                        add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
+                        
+                        x++;
                     }
 
                     int cmpexpr=compile_expr_keep(compiler, ast.nodes.at(0));
