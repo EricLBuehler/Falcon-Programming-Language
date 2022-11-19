@@ -103,6 +103,46 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->filedata=filedata;
 
     vm->path=new_list();
+    vm->exec=0;
+    
+    fstream newfile;
+    newfile.open("fplpath.path",ios::in);
+    if (newfile.is_open()){
+        string tp;
+        while(getline(newfile, tp)){
+            vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr(tp));
+        }
+        newfile.close();
+    }
+    else{
+        vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr("./"));
+    }
+
+    add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL, &vm->ip);
+    vm->globals=new_dict();
+    FPLINCREF(vm->globals);
+    callstack_head(vm->callstack).locals=vm->globals;
+    vm->global_annotations=callstack_head(vm->callstack).annotations;
+    
+    return vm;
+}
+
+//Expects ::vm!=NULL==true
+struct vm* new_vm_raw(uint32_t id){
+    struct vm* vm=(struct vm*)fpl_malloc(sizeof(struct vm));
+    vm->id=id;
+    vm->ret_val=0;
+    vm->ip=0;
+    vm->objstack=new_datastack(128);
+    vm->callstack=new_callstack();
+    vm->blockstack=new_blockstack(128);
+    
+    vm->exception=NULL;
+
+    vm->filedata=::vm->filedata;
+
+    vm->path=new_list();
+    vm->exec=0;
     
     fstream newfile;
     newfile.open("fplpath.path",ios::in);
@@ -117,27 +157,21 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
         vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr("./"));
     }
     
-    if (::vm==NULL){
-        ::vm=vm;
-    }
-
-    add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL, &vm->ip);
-    vm->globals=new_dict();
-    FPLINCREF(vm->globals);
-    callstack_head(vm->callstack).locals=vm->globals;
-    vm->global_annotations=callstack_head(vm->callstack).annotations;
-    
     return vm;
 }
 
 void vm_del(struct vm* vm){
     free(vm->objstack->data);
+    free(vm->callstack->data);
+    free(vm->blockstack->data);
 
     FPLDECREF(vm->globals);
     delete vm->filedata;
     if (vm->exception!=NULL){
         FPLDECREF(vm->exception);
     }
+
+    interpreter_remove_vm(vm->id);
 }
 
 inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
@@ -241,7 +275,8 @@ object* import_name(string data, object* name){
 
     CAST_CODE(code)->co_file=object_repr(name);
     struct vm* vm_=::vm;
-    ::vm=new_vm(0, code, compiler->instructions, &data); //data is still in scope...
+    struct vm* vm=new_vm(interpreter.vm_map->size(), code, compiler->instructions, &data); //data is still in scope...
+    interpreter_add_vm(interpreter.vm_map->size(), vm);
     
     ::vm->globals=new_dict();
     FPLINCREF(::vm->globals);
@@ -706,7 +741,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         RETURN_VAL: {
-            GIL.unlock();
+            gil_unlock();
             object* o=pop_dataframe(vm->objstack);
             return o;
         }
@@ -820,7 +855,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -933,7 +968,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -981,7 +1016,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -1022,7 +1057,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -1142,7 +1177,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -1189,7 +1224,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -1304,7 +1339,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -1345,7 +1380,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -1399,7 +1434,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             
@@ -1418,7 +1453,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
 
@@ -1640,7 +1675,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (o==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             DISPATCH();
@@ -1875,7 +1910,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 object* o=object_getattr(lib, list_index_int(names, i));
             
                 if (o==TERM_PROGRAM){
-                    GIL.unlock();
+                    gil_unlock();
                     return TERM_PROGRAM;
                 }
                 if (o==NULL){
@@ -2123,7 +2158,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             DISPATCH();
@@ -2513,7 +2548,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 goto exc;
             }
             if (ret==TERM_PROGRAM){
-                GIL.unlock();
+                gil_unlock();
                 return TERM_PROGRAM;
             }
             FPLDECREF(ret);
@@ -2522,7 +2557,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
         YIELD_VALUE: {
             object* o = pop_dataframe(vm->objstack);
-            GIL.unlock();
+            gil_unlock();
             return o;
         }
 
@@ -2663,12 +2698,19 @@ object* run_vm(object* codeobj, uint32_t* ip){
         if (hit_sigint){
             hit_sigint=false;
         }
+        if (GET_EVALBREAKER()) {
+            //Free GIL
+            gil_unlock();
+            //
+            return NULL;
+        }
+        
         (*ip)-=2;
         struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
         if (frame!=NULL && frame->arg%2==0){
             if (vm->callstack->size-frame->callstack_size!=0){
                 //Free GIL
-                GIL.unlock();
+                gil_unlock();
                 //
                 return NULL;
             }
@@ -2701,7 +2743,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             cout<<endl;
             if ((void*)frame->obj==(void*)vm->exception){ //Reraised
                 //Free GIL
-                GIL.unlock();
+                gil_unlock();
                 //
                 return NULL;
             }
@@ -2724,14 +2766,15 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
         vm->exception=NULL;
         
+        SET_EVALBREAKER();
         //Free GIL
-        GIL.unlock();
+        gil_unlock();
         //
         return NULL;
     }
 
     //Free GIL
-    GIL.unlock();
+    gil_unlock();
     //
 
     return new_none();
