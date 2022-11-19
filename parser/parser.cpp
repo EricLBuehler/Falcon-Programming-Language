@@ -1980,6 +1980,7 @@ class Parser{
             f->starargs=starargs;
             f->starkwargs=starkwargs;
             f->rettp=rettp;
+            f->doc=NULL;
 
             node->node=f;
             return node;
@@ -2568,6 +2569,13 @@ class Parser{
             }
 
             this->advance();
+            
+            skip_newline;
+            Node* doc=NULL;
+            if (this->current_tok_is(T_STR)){
+                doc=this->atom(ret);
+            }
+
             bool inloop=this->inloop;
             bool infunc=this->infunc;
             this->inloop=false;
@@ -2608,6 +2616,7 @@ class Parser{
             f->starargs=starargs;
             f->starkwargs=starkwargs;
             f->rettp=rettp;
+            f->doc=doc;
 
             node->node=f;
             return node;
@@ -2677,6 +2686,12 @@ class Parser{
                 return NULL;
             }
             this->advance();
+            
+            skip_newline;
+            Node* doc=NULL;
+            if (this->current_tok_is(T_STR)){
+                doc=this->atom(ret);
+            }
 
             bool inloop=this->inloop;
             bool inclass=this->inclass;
@@ -2709,6 +2724,7 @@ class Parser{
                 c->code->push_back(n);
             }
             c->bases=bases;
+            c->doc=doc;
 
             node->node=c;
             return node;

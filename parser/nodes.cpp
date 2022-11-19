@@ -199,6 +199,7 @@ struct Func{
     Node* stargs;
     Node* stkwargs;
     Node* rettp;
+    Node* doc;
 };
 
 struct Call{
@@ -213,6 +214,7 @@ struct Class{
     Node* name;
     vector<Node*>* code;
     vector<Node*>* bases;
+    Node* doc;
 };
 
 struct Dot{
