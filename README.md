@@ -110,7 +110,7 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - ```f"Text {code}"``` - Format strings using code snippets
 
 ### Documentation ##
-- [Dunder Methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/DUNDER_METHODS.md)
+- [Dunder Attributes](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/DUNDER_ATTRS.md)
 - [Types of functions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/FUNCTIONS.md)
 - [Equivalent C++ Types to Falcon Types](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPE_CPPBASE.md)
 - [Builtin type methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPE_DOCS.md)
