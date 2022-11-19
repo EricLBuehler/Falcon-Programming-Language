@@ -3376,10 +3376,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     parser=p;
 
                     if (ast.errornum>0){
-                        cout<<ast.header<<endl;
-                        cout<<ast.snippet<<endl;
-                        cout<<ast.arrows<<endl;
-                        printf("%s\n",ast.error);
+                        parseretglbl=ast;
                         return 0x100;
                     }
 
