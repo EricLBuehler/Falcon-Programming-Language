@@ -1573,6 +1573,23 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
 
+            object* doc;
+            if (FUNCT(expr->node)->doc!=NULL){
+                doc=str_new_fromstr(*STRLIT(FUNCT(expr->node)->doc->node)->literal);
+            }
+            else{
+                doc=new_none();
+            }
+            if (!object_find_bool(compiler->consts, doc)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, doc);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, doc);
+            }
+            add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
+
             //Create callable
             if (compiler->scope!=SCOPE_GLOBAL && !compiler->inclass){
                 if (!isgen){
@@ -1844,7 +1861,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
 
-
+            object* doc=new_none();
+            if (!object_find_bool(compiler->consts, doc)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, doc);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, doc);
+            }
+            add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
 
             add_instruction(compiler, compiler->instructions,MAKE_FUNCTION, 0, GET_ANNO_N(expr));            
         
@@ -1859,12 +1885,27 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
             }
             add_instruction(compiler, compiler->instructions,BUILD_LIST, nbases, GET_ANNO_N(expr));
-
+            
+            if (CLASS(expr->node)->doc!=NULL){
+                doc=str_new_fromstr(*STRLIT(CLASS(expr->node)->doc->node)->literal);
+            }
+            else{
+                doc=new_none();
+            }
+            if (!object_find_bool(compiler->consts, doc)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, doc);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, doc);
+            }
+            add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
 
 
             add_instruction(compiler, compiler->instructions,LOAD_BUILD_CLASS, 0, GET_ANNO_N(expr));
             
-            add_instruction(compiler, compiler->instructions,CALL_FUNCTION, 3, GET_ANNO_N(expr));
+            add_instruction(compiler, compiler->instructions,CALL_FUNCTION, 4, GET_ANNO_N(expr));
 
             //Store class
             uint32_t nameidxstore;
@@ -3732,6 +3773,23 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             else{
                 idx=object_find(compiler->consts, star_int);
+            }
+            add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(DECORATOR(decorators.back())->function));
+            
+            object* doc;
+            if (FUNCT(DECORATOR(decorators.back())->function->node)->doc!=NULL){
+                doc=str_new_fromstr(*STRLIT(FUNCT(DECORATOR(decorators.back())->function->node)->doc->node)->literal);
+            }
+            else{
+                doc=new_none();
+            }
+            if (!object_find_bool(compiler->consts, doc)){
+                //Create object
+                compiler->consts->type->slot_mappings->slot_append(compiler->consts, doc);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, doc);
             }
             add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(DECORATOR(decorators.back())->function));
 

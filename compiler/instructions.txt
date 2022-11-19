@@ -18,8 +18,8 @@ BINOP_DIV - Implements TOS/TOS-1
 
 UNARY_NEG - Implements -1*TOS
 
-MAKE_FUNCTION(argc) - Creates a function using TOS-1 as code, TOS-2 as annotations, TOS-3 as tuple of positional arguments, TOS-4 as tuple of
-    keyword arguments, TOS-5 as name. argc is total number of positional and keyword arguments. TOS is flags.
+MAKE_FUNCTION(argc) - Creates a function using TOS-2 as code, TOS-3 as annotations, TOS-4 as tuple of positional arguments, TOS-5 as tuple of
+    keyword arguments, TOS-5 as name. argc is total number of positional and keyword arguments. TOS-1 is flags. TOS is docstring.
 
 RETURN_VAL - Return and pos TOS
 
