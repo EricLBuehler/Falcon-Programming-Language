@@ -34,11 +34,9 @@ using namespace std;
 
 #define ERROR_RET(v) if (v==NULL){return NULL;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
 
-#define GIL_MAX_SWITCH 128
+#define GIL_MAX_SWITCH 2
 
 #define FPL_VERSION "1.2.2"
-
-std::mutex GIL;
 
 string program;
 
@@ -72,12 +70,13 @@ volatile bool hit_sigint=false;
 
 
 
-
+#include "interpreter/interpreter.h"
 #include "utilities/utils.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "object/object.h"
 #include "compiler/compiler.h"
+#include "gil/gil.h"
 #include "vm/vm.h"
 #include "builtins/lateincludebuiltins.cpp"
 
@@ -88,6 +87,7 @@ void fpl_startup(){
     new_gc();
     setup_types_consts();
     setup_modules();
+    interpreter_init();
 }
 
 
@@ -162,10 +162,11 @@ int execute(string data, bool objdump, bool verbose){
         cout<<(*CAST_INT(list_len(CAST_CODE(code)->co_code))->val)/2<<" instructions."<<endl;
         cout<<object_cstr(list_len(CAST_CODE(code)->co_code))<<" bytes."<<endl<<endl;
     }
-    
-    vm=new_vm(0, code, compiler->instructions, new string(data)); //data is still in scope...
+    struct vm* vm=new_vm(interpreter.vm_map->size(), code, compiler->instructions, new string(data)); //data is still in scope...
+    interpreter_add_vm(interpreter.vm_map->size(), vm);
+    gil_lock(vm->id);
     dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
-    dict_set_noret(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));    
+    dict_set_noret(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
 
     if (verbose){
         cout<<"Names: "<<object_cstr(CAST_CODE(code)->co_names)<<"\n";
