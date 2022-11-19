@@ -122,6 +122,8 @@ typedef struct object_type{
     unaryfunc slot_exit;
 
     posttpcall slot_posttpcall;
+
+    char* slot_doc;
 }TypeObject;
 
 #define OBJHEAD size_t refcnt; struct object* ob_prev; struct object* ob_next; uint32_t gen;

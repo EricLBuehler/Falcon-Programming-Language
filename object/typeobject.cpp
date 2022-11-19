@@ -36,6 +36,7 @@ static Mappings type_mappings{
 
 object* type_dict(object* type);
 object* type_bases_get(object* type);
+object* type_doc_get(object* type);
 
 Method type_methods[]={{NULL,NULL}};
 GetSets type_getsets[]={{NULL,NULL}};

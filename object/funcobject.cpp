@@ -1,5 +1,6 @@
 object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc, object* name, object* closure, int type, int flags\
-    , object* stargs, object* stkwargs, object* annotations, bool isgen, object* closure_annotations, object* globals, object* global_anno){
+    , object* stargs, object* stkwargs, object* annotations, bool isgen, object* closure_annotations, object* globals, object* global_anno\
+    , object* doc){
     object* obj=new_object(&FuncType);
     CAST_FUNC(obj)->code=code;
     CAST_FUNC(obj)->dict=new_dict();
@@ -17,8 +18,7 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->closure_annotations=closure_annotations;
     CAST_FUNC(obj)->globals=globals;
     CAST_FUNC(obj)->global_anno=global_anno;
-
-
+    CAST_FUNC(obj)->doc=doc;
     return obj;
 }
 
@@ -192,6 +192,7 @@ void func_del(object* obj){
     FPLDECREF(CAST_FUNC(obj)->args);
     FPLDECREF(CAST_FUNC(obj)->kwargs);
     FPLDECREF(CAST_FUNC(obj)->dict);
+    FPLDECREF(CAST_FUNC(obj)->doc);
     if (CAST_FUNC(obj)->closure!=NULL){
         FPLDECREF(CAST_FUNC(obj)->closure);
     }

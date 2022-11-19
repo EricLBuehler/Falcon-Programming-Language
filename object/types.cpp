@@ -791,6 +791,7 @@ typedef struct FuncObject{
     object* closure_annotations;
     object* globals;
     object* global_anno;
+    object* doc;
 }FuncObject;
 
 static NumberMethods func_num_methods{
@@ -822,7 +823,9 @@ static Mappings func_mappings{
 
 Method func_methods[]={{NULL,NULL}};
 GetSets func_getsets[]={{NULL,NULL}};
-OffsetMember func_offsets[]={{"__annotations__", offsetof(FuncObject, annotations), true}, {NULL}};
+OffsetMember func_offsets[]={{"__annotations__", offsetof(FuncObject, annotations), true}, \
+                            {"__doc__", offsetof(FuncObject, doc), true}, 
+                            {"__dict__", offsetof(FuncObject, dict), true}, {NULL}};
 
 TypeObject FuncType={
     0, //refcnt
@@ -1081,7 +1084,7 @@ static NumberMethods object_num_methods{
 };
 
 Method object_methods[]={{NULL,NULL}};
-GetSets object_getsets[]={{"__dict__", (getter)type_dict, 0}, {"__bases__", (getter)type_bases_get, 0},{NULL,NULL}};
+GetSets object_getsets[]={{"__dict__", (getter)type_dict, 0}, {"__bases__", (getter)type_bases_get, 0}, {"__doc__", (getter)type_doc_get, 0},{NULL,NULL}};
 OffsetMember object_offsets[]={{NULL}};
 
 static Mappings object_mappings{
@@ -3889,6 +3892,8 @@ void _inherit_slots(TypeObject* tp_tp, TypeObject* base_tp, NumberMethods* m, Ma
 
     SETSLOT(tp_tp, base_tp, slot_enter);
     SETSLOT(tp_tp, base_tp, slot_exit);
+    
+    SETSLOT(tp_tp, base_tp, slot_doc);
 
     _inherit_number_slots(m, base_tp);
     _inherit_mapping_slots(ma, base_tp);
@@ -4180,7 +4185,21 @@ object* type_bases_get(object* type){
     return CAST_TYPE(type)->bases;
 }
 
-object* new_type(string* name, object* bases, object* dict){
+object* type_doc_get(object* type){
+    char* doc;
+    if (!object_istype(type->type, &TypeType)){
+        doc = type->type->slot_doc;
+    }
+    else{
+        doc = CAST_TYPE(type)->slot_doc;
+    }
+    if (doc==NULL){
+        return new_none();
+    }
+    return str_new_fromstr(doc);
+}
+
+object* new_type(string* name, object* bases, object* dict, object* doc){
     reprfunc repr_func=NULL;
     newfunc new_func=NULL;
     initfunc init_func=NULL;
@@ -4562,6 +4581,13 @@ object* new_type(string* name, object* bases, object* dict){
 
     unordered_map<object*, object*> orig_dict(*CAST_DICT(dict)->val);
 
+    char* doc_=NULL;
+    if (object_issubclass(doc, &StrType)){
+        doc_=new char[CAST_STRING(doc)->val->size()+1];
+        memset(doc_, 0, CAST_STRING(doc)->val->size()+1);
+        memcpy(doc_, CAST_STRING(doc)->val->c_str(), CAST_STRING(doc)->val->size());
+    }
+
     TypeObject newtype={
         0, //refcnt
         0, //ob_prev
@@ -4605,6 +4631,8 @@ object* new_type(string* name, object* bases, object* dict){
         exit_func, //slot_exit
 
         newtp_post_tpcall, //slot_posttpcall
+        
+        doc_, //slot_doc
     };
     object* tp=finalize_type(&newtype);
     setup_type_getsets((TypeObject*)tp);
