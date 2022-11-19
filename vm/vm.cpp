@@ -715,10 +715,13 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         MAKE_FUNCTION:{
+            object* doc=pop_dataframe(vm->objstack);
+
             int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
+
             object* stargs=NULL;
             object* stkwargs=NULL;
-            
+
             if (flags==FUNC_STARARGS){
                 stargs=pop_dataframe(vm->objstack);
             }
@@ -734,7 +737,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* args=pop_dataframe(vm->objstack); //<- Args
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
-            object* func=func_new_code(code, args, kwargs, arg, name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, NULL, vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, NULL, vm->globals, vm->global_annotations, doc);
 
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
@@ -2165,7 +2168,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         MAKE_CLOSURE:{
+            object* doc=pop_dataframe(vm->objstack);
+            
             int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
+
             object* stargs=NULL;
             object* stkwargs=NULL;
             if (flags==FUNC_STARARGS){
@@ -2186,7 +2192,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
             FPLINCREF(callstack_head(vm->callstack).locals);
             FPLINCREF(callstack_head(vm->callstack).annotations);
-            object* func=func_new_code(code, args, kwargs, arg, name, callstack_head(vm->callstack).locals, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, callstack_head(vm->callstack).annotations, vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, callstack_head(vm->callstack).locals, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, false, callstack_head(vm->callstack).annotations, vm->globals, vm->global_annotations, doc);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
@@ -2562,7 +2568,10 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         MAKE_GENERATOR:{
+            object* doc=pop_dataframe(vm->objstack);
+            
             int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
+
             object* stargs=NULL;
             object* stkwargs=NULL;
             
@@ -2582,13 +2591,16 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* kwargs=pop_dataframe(vm->objstack); //<- Kwargs
             object* name=pop_dataframe(vm->objstack); //<- Name
             
-            object* func=func_new_code(code, args, kwargs, arg, name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, NULL, vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, NULL, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, NULL, vm->globals, vm->global_annotations, doc);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
 
         MAKE_CLOSURE_GENERATOR:{
+            object* doc=pop_dataframe(vm->objstack);
+            
             int flags=CAST_INT(pop_dataframe(vm->objstack))->val->to_int(); //<- Flags
+
             object* stargs=NULL;
             object* stkwargs=NULL;
             if (flags==FUNC_STARARGS){
@@ -2609,7 +2621,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             
             FPLINCREF(callstack_head(vm->callstack).locals);
             FPLINCREF(callstack_head(vm->callstack).annotations)
-            object* func=func_new_code(code, args, kwargs, arg, name, callstack_head(vm->callstack).locals, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, callstack_head(vm->callstack).annotations, vm->globals, vm->global_annotations);
+            object* func=func_new_code(code, args, kwargs, arg, name, callstack_head(vm->callstack).locals, FUNCTION_NORMAL, flags, stargs, stkwargs, annotations, true, callstack_head(vm->callstack).annotations, vm->globals, vm->global_annotations, doc);
             add_dataframe(vm, vm->objstack, func);
             DISPATCH();
         }
