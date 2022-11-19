@@ -2094,7 +2094,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             for (int i=0; i<arg; i++){
                 object* flag = pop_dataframe(vm->objstack);
                 object* o=pop_dataframe(vm->objstack);
-                FPLINCREF(flag);
                 if (istrue(flag)){
                     strs.push_back(object_crepr(o));
                     FPLDECREF(o);
