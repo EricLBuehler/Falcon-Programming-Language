@@ -154,6 +154,7 @@ int execute(string data, bool objdump, bool verbose){
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;
+        cout<<parseretglbl.arrows<<endl;
         printf("%s\n",parseretglbl.error);
         return -1;
     }

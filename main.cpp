@@ -41,7 +41,9 @@ int main(int argc, char** argv) {
             fpl_startup();
 
             struct compiler* compiler = new_compiler();
-            vm=new_vm(0, NULL, compiler->instructions, NULL); //data is still in scope...
+            struct vm* vm=new_vm(interpreter.vm_map->size(), NULL, compiler->instructions, NULL); //data is still in scope...
+            interpreter_add_vm(interpreter.vm_map->size(), vm);
+            gil_lock(vm->id);
             dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
             dict_set_noret(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
             
@@ -84,6 +86,7 @@ int main(int argc, char** argv) {
                 if (code==NULL){
                     cout<<parseretglbl.header<<endl;
                     cout<<parseretglbl.snippet<<endl;
+                    cout<<parseretglbl.arrows<<endl;
                     printf("%s\n",parseretglbl.error);
                     vm=vm_;
                     continue;
