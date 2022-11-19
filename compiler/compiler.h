@@ -83,4 +83,8 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
 uint32_t num_instructions(vector<Node*>* nodes, scope s);
 uint32_t num_instructions(Node* node, scope s);
 uint32_t num_instructions_keep(Node* node, scope s);
+
+#define COMPILER_ERROR 0xfff
+#define COMPILER_NOLINEANNO 0xffff
+
 #include "compiler.cpp"

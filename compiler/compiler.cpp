@@ -560,7 +560,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
     switch (expr->type){
         case N_ASSIGN: {
             int cmpexpr=compile_expr_keep(compiler, ASSIGN(expr->node)->right); //Push data
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
@@ -597,7 +597,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 int endcol=ASSIGN(expr->node)->name->end->col;
                 int startln=ASSIGN(expr->node)->name->start->line;
                 int cmpexpr=compile_expr(compiler, ASSIGN(expr->node)->name);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 add_instruction(compiler, compiler->instructions,POP_TOS, 0, startcol, endcol, startln);
@@ -670,12 +670,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
             switch (BINOP(expr->node)->opr){
                 case T_PLUS: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -687,12 +687,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_MINUS: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -704,12 +704,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_MUL: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -721,12 +721,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_DIV: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -738,12 +738,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IS: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -755,12 +755,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_EE: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -772,12 +772,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_NE: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -789,12 +789,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_GT: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -806,12 +806,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_GTE: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -823,12 +823,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_LT: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -840,12 +840,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_LTE: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -857,12 +857,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_PERCENT: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -874,12 +874,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_POW: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -891,12 +891,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_AND: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -908,12 +908,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_OR: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -925,12 +925,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_CARET: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -942,12 +942,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_AMPERSAND: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -959,12 +959,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_VBAR: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -976,12 +976,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_LSHIFT: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -993,12 +993,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_RSHIFT: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -1010,12 +1010,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_NOT: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -1027,12 +1027,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IN: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -1044,12 +1044,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_ISNOT: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -1061,12 +1061,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_FLDIV: {                    
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->left); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
                     cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -1078,7 +1078,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IADD: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1088,7 +1088,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_ISUB: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1098,7 +1098,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IMUL: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1108,7 +1108,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IDIV: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1118,7 +1118,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IPOW: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1128,7 +1128,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IMOD: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1138,7 +1138,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IAMP: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1148,7 +1148,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IVBAR: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1158,7 +1158,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_ILSH: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1168,7 +1168,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IRSH: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1178,7 +1178,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IFLDIV: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1188,7 +1188,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 case T_IXOR: {
                     int cmpexpr=compile_expr_keep(compiler, BINOP(expr->node)->right); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx=binop_inplace_setup(compiler, left);
@@ -1203,7 +1203,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_UNARY: {
             int cmpexpr=compile_expr_keep(compiler, UNARYOP(expr->node)->right); //Push data
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
@@ -1349,13 +1349,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 argc++;
                 if ((*n)->type==N_ASSIGN){
                     int cmpexpr=compile_expr_keep(compiler, ASSIGN((*n)->node)->right);
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                 }
                 else{
                     int cmpexpr=compile_expr_keep(compiler, ASSIGN((*n)->node)->right);
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                 }
@@ -1387,7 +1387,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 int startln=FUNCT(expr->node)->rettp->start->line;
 
                 int cmpexpr=compile_expr_keep(compiler, FUNCT(expr->node)->rettp); //Push data
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
 
@@ -1414,7 +1414,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     int startln=ANONIDENT(n->node)->tp->start->line;
 
                     int cmpexpr=compile_expr_keep(compiler, ANONIDENT(n->node)->tp); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -1439,7 +1439,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     int startln=ANONIDENT(n->node)->tp->start->line;
 
                     int cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(n->node)->name->node)->tp); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -1470,7 +1470,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, expr->start->line);
             if (code==NULL){
-                return 0x100;
+                return COMPILER_ERROR;
             }
             compiler=compiler_;
             bool isgen=false;
@@ -1650,7 +1650,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //Args (iterate backwards)
             for (auto it =  (*CALL(expr->node)->args).rbegin(); it != (*CALL(expr->node)->args).rend(); ++it){
                 int cmpexpr=compile_expr_keep(compiler, *it);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 if (find(CALL(expr->node)->stargs->begin(), CALL(expr->node)->stargs->end(), i_)!=CALL(expr->node)->stargs->end()){
@@ -1665,7 +1665,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (auto it =  (*CALL(expr->node)->kwargs).rbegin(); it != (*CALL(expr->node)->kwargs).rend(); ++it){
                 tuple_append(kwargs, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                 int cmpexpr=compile_expr_keep(compiler, ASSIGN((*it)->node)->right);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
             }
@@ -1715,7 +1715,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             //Object
             int cmpexpr=compile_expr_keep(compiler, CALL(expr->node)->object);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
 
@@ -1832,7 +1832,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, expr->start->line);
             if (code==NULL){
-                return 0x100;
+                return COMPILER_ERROR;
             }
             compiler=compiler_;
             compile_expr_cleanup(&compiler->stack_size, &comp->stack_size, &compiler->blockstack_size, &comp->blockstack_size);
@@ -1880,7 +1880,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t nbases=CLASS(expr->node)->bases->size();
             for (Node* n: *CLASS(expr->node)->bases){
                 int cmpexpr=compile_expr_keep(compiler, n);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
             }
@@ -1958,7 +1958,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_DOTASSIGN: {
             int cmpexpr=compile_expr_keep(compiler, DOTASSIGN(expr->node)->right);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             vector<Node*>* names=DOT(DOTASSIGN(expr->node)->dot->node)->names;
@@ -2034,7 +2034,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     //Args (iterate backwards)
                     for (auto it =  (*DOTCALL(expr->node)->args).rbegin(); it != (*DOTCALL(expr->node)->args).rend(); ++it){
                         int cmpexpr=compile_expr_keep(compiler, *it);
-                        if (cmpexpr==0x100){
+                        if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
                         }
                     }
@@ -2042,7 +2042,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     for (auto it =  (*DOTCALL(expr->node)->kwargs).rbegin(); it != (*DOTCALL(expr->node)->kwargs).rend(); ++it){
                         tuple_append(kwargs, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                         int cmpexpr=compile_expr_keep(compiler, ASSIGN((*it)->node)->right);
-                        if (cmpexpr==0x100){
+                        if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
                         }
                     }
@@ -2125,7 +2125,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_RETURN: {
             int cmpexpr=compile_expr_keep(compiler, RETURN(expr->node)->node);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
@@ -2136,7 +2136,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_LIST: {
             for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
                 int cmpexpr=compile_expr_keep(compiler, LIST(expr->node)->list->at(i-1));
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
             }
@@ -2147,7 +2147,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_TUPLE: {
             for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
                 int cmpexpr=compile_expr_keep(compiler, LIST(expr->node)->list->at(i-1));
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
             }
@@ -2158,11 +2158,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_DICT: {
             for (size_t i=DICT(expr->node)->keys->size(); i>0; i--){
                 int cmpexpr=compile_expr_keep(compiler, DICT(expr->node)->vals->at(i-1)); //Value
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 cmpexpr=compile_expr_keep(compiler, DICT(expr->node)->keys->at(i-1)); //Value
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
             }
@@ -2175,7 +2175,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             int endcol=IF(expr->node)->expr->end->col;
             int startline=IF(expr->node)->expr->start->line;
             int cmpexpr=compile_expr_keep(compiler, IF(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
 
@@ -2191,11 +2191,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
                 compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                if (i==0x100){
-                    return 0x100;
+                if (i==COMPILER_ERROR){
+                    return COMPILER_ERROR;
                 }
                 uint32_t end=compiler->instructions->count*2;
-                if (compiler->lines!=NULL && i!=0x200){
+                if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2212,7 +2212,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_ELSE : {
             if (ELSE(expr->node)->base!=NULL){
                 int cmpexpr=compile_expr(compiler, ELSE(expr->node)->base); //Compile first options
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
             }
@@ -2227,11 +2227,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
                 compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                if (i==0x100){
-                    return 0x100;
+                if (i==COMPILER_ERROR){
+                    return COMPILER_ERROR;
                 }
                 uint32_t end=compiler->instructions->count*2;
-                if (compiler->lines!=NULL && i!=0x200){
+                if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2255,7 +2255,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     int endcol=IF(n->node)->expr->end->col;
                     int startline=IF(n->node)->expr->start->line;
                     int cmpexpr=compile_expr_keep(compiler, IF(n->node)->expr);
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     
@@ -2271,11 +2271,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         compiler->blockstack_size=0;
                         int i=compile_expr(compiler, n);
                         compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                        if (i==0x100){
-                            return 0x100;
+                        if (i==COMPILER_ERROR){
+                            return COMPILER_ERROR;
                         }
                         uint32_t end=compiler->instructions->count*2;
-                        if (compiler->lines!=NULL && i!=0x200){
+                        if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                             object* tuple=new_tuple();
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2298,11 +2298,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         compiler->blockstack_size=0;
                         int i=compile_expr(compiler, n);
                         compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                        if (i==0x100){
-                            return 0x100;
+                        if (i==COMPILER_ERROR){
+                            return COMPILER_ERROR;
                         }
                         uint32_t end=compiler->instructions->count*2;
-                        if (compiler->lines!=NULL && i!=0x200){
+                        if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                             object* tuple=new_tuple();
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2312,16 +2312,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }   
                 }
             }
-            return 0x200;
+            return COMPILER_NOLINEANNO;
         }
 
         case N_SUBSCR: {
             int cmpexpr=compile_expr_keep(compiler, SUBSCR(expr->node)->left);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             cmpexpr=compile_expr_keep(compiler, SUBSCR(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             add_instruction(compiler, compiler->instructions,BINOP_SUBSCR, 0, GET_ANNO_N(expr));
@@ -2335,7 +2335,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_RAISE: {
             int cmpexpr=compile_expr_keep(compiler, RAISE(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             add_instruction(compiler, compiler->instructions, RAISE_EXC, 0, GET_ANNO_N(expr));
@@ -2344,16 +2344,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_STORE_SUBSCR: {
             int cmpexpr=compile_expr_keep(compiler, SUBSCR(STSUBSCR(expr->node)->left->node)->left);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
 
             cmpexpr=compile_expr_keep(compiler, SUBSCR(STSUBSCR(expr->node)->left->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             cmpexpr=compile_expr_keep(compiler, STSUBSCR(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
@@ -2371,11 +2371,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
                 compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                if (i==0x100){
-                    return 0x100;
+                if (i==COMPILER_ERROR){
+                    return COMPILER_ERROR;
                 }
                 uint32_t end=compiler->instructions->count*2;
-                if (compiler->lines!=NULL && i!=0x200){
+                if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2399,11 +2399,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
                 compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                if (i==0x100){
-                    return 0x100;
+                if (i==COMPILER_ERROR){
+                    return COMPILER_ERROR;
                 }
                 uint32_t end=compiler->instructions->count*2;
-                if (compiler->lines!=NULL && i!=0x200){
+                if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2488,11 +2488,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
                 compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                if (i==0x100){
-                    return 0x100;
+                if (i==COMPILER_ERROR){
+                    return COMPILER_ERROR;
                 }
                 uint32_t end=compiler->instructions->count*2;
-                if (compiler->lines!=NULL && i!=0x200){
+                if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2532,11 +2532,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         compiler->blockstack_size=0;
                         int i=compile_expr(compiler, n);
                         compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                        if (i==0x100){
-                            return 0x100;
+                        if (i==COMPILER_ERROR){
+                            return COMPILER_ERROR;
                         }
                         uint32_t end=compiler->instructions->count*2;
-                        if (compiler->lines!=NULL && i!=0x200){
+                        if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                             object* tuple=new_tuple();
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2564,11 +2564,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         compiler->blockstack_size=0;
                         int i=compile_expr(compiler, n);
                         compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                        if (i==0x100){
-                            return 0x100;
+                        if (i==COMPILER_ERROR){
+                            return COMPILER_ERROR;
                         }
                         uint32_t end=compiler->instructions->count*2;
-                        if (compiler->lines!=NULL && i!=0x200){
+                        if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                             object* tuple=new_tuple();
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2611,7 +2611,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     instrs+=2;
 
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL && i!=0x200){
+                    if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2655,7 +2655,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     instrs+=2;
 
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL && i!=0x200){
+                    if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2676,11 +2676,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     compiler->blockstack_size=0;
                     int i=compile_expr(compiler, n);
                     compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                    if (i==0x100){
-                        return 0x100;
+                    if (i==COMPILER_ERROR){
+                        return COMPILER_ERROR;
                     }
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL && i!=0x200){
+                    if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2697,7 +2697,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                
             
             
-            return 0x200;
+            return COMPILER_NOLINEANNO;
         }
 
         case N_FOR: {
@@ -2711,11 +2711,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             int startline=FOR(expr->node)->expr->start->line;
 
             int cmpexpr=compile_expr_keep(compiler, FOR(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -2767,7 +2767,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             else if (FOR(expr->node)->ident->type==N_MULTIIDENT){
                 add_instruction(compiler, compiler->instructions,UNPACK_SEQ, MULTIIDENT(FOR(expr->node)->ident->node)->name->size(), GET_ANNO_N(FOR(expr->node)->ident));
                 int cmpexpr=compile_expr_keep(compiler, FOR(expr->node)->ident);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(FOR(expr->node)->ident));
@@ -2783,11 +2783,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
                 compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                if (i==0x100){
-                    return 0x100;
+                if (i==COMPILER_ERROR){
+                    return COMPILER_ERROR;
                 }
                 uint32_t end=compiler->instructions->count*2;
-                if (compiler->lines!=NULL && i!=0x200){
+                if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2809,11 +2809,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     compiler->blockstack_size=0;
                     int i=compile_expr(compiler, n);
                     compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                    if (i==0x100){
-                        return 0x100;
+                    if (i==COMPILER_ERROR){
+                        return COMPILER_ERROR;
                     }
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL && i!=0x200){
+                    if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2825,7 +2825,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             
             
-            return 0x200;
+            return COMPILER_NOLINEANNO;
         }
 
         case N_BREAK: {
@@ -2860,13 +2860,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
             int startline=WHILE(expr->node)->expr->start->line;
 
             int cmpexpr=compile_expr_keep(compiler, WHILE(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             } 
             
             add_instruction(compiler, compiler->instructions,POP_JMP_TOS_FALSE,num_instructions(WHILE(expr->node)->code, compiler->scope)*2+2, startcol, endcol, startline);
             
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -2886,11 +2886,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
                 compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                if (i==0x100){
-                    return 0x100;
+                if (i==COMPILER_ERROR){
+                    return COMPILER_ERROR;
                 }
                 uint32_t end=compiler->instructions->count*2;
-                if (compiler->lines!=NULL && i!=0x200){
+                if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2915,11 +2915,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     compiler->blockstack_size=0;
                     int i=compile_expr(compiler, n);
                     compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                    if (i==0x100){
-                        return 0x100;
+                    if (i==COMPILER_ERROR){
+                        return COMPILER_ERROR;
                     }
                     uint32_t end=compiler->instructions->count*2;
-                    if (compiler->lines!=NULL && i!=0x200){
+                    if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                         tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -2931,7 +2931,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             
             
-            return 0x200;
+            return COMPILER_NOLINEANNO;
         }
 
         case N_IMPORT: {
@@ -3036,7 +3036,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
 
             int cmpexpr=compile_expr_keep(compiler, base);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             if (type==3){
@@ -3046,7 +3046,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             else if (type==2){
                 int cmpexpr=compile_expr_keep(compiler, left);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 uint32_t idx;
@@ -3075,7 +3075,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 int cmpexpr=compile_expr(compiler, right);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
@@ -3116,7 +3116,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
 
             int cmpexpr=compile_expr_keep(compiler, base);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             if (type==3){
@@ -3126,7 +3126,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             else if (type==2){
                 int cmpexpr=compile_expr_keep(compiler, left);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 uint32_t idx;
@@ -3155,7 +3155,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 int cmpexpr=compile_expr_keep(compiler, right);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
@@ -3182,7 +3182,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 Node* subexpr=DEL(expr->node)->expr;
                 
                 int cmpexpr=compile_expr_keep(compiler, SUBSCR(subexpr->node)->left);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
             
@@ -3212,7 +3212,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
 
                 int cmpexpr=compile_expr_keep(compiler, base);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 if (type==3){
@@ -3222,7 +3222,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 else if (type==2){
                     int cmpexpr=compile_expr_keep(compiler, left);
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     uint32_t idx;
@@ -3251,7 +3251,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     
                     add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                     int cmpexpr=compile_expr_keep(compiler, right);
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                     add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
@@ -3329,7 +3329,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             enum scope s=compiler->scope;
             compiler->scope=SCOPE_GLOBAL;
             int cmpexpr=compile_expr(compiler, GLBLIDENT(expr->node)->name);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             compiler->scope=s;
@@ -3377,7 +3377,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                     if (ast.errornum>0){
                         parseretglbl=ast;
-                        return 0x100;
+                        return COMPILER_ERROR;
                     }
 
                     if (eq){
@@ -3435,7 +3435,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
 
                     int cmpexpr=compile_expr_keep(compiler, ast.nodes.at(0));
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -3600,13 +3600,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 argc++;
                 if ((*n)->type==N_ASSIGN){
                     int cmpexpr=compile_expr_keep(compiler, ASSIGN((*n)->node)->right);
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                 }
                 else{
                     int cmpexpr=compile_expr_keep(compiler, ASSIGN((*n)->node)->right);
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
                 }
@@ -3642,7 +3642,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 int startln=FUNCT(DECORATOR(decorators.back())->function->node)->rettp->start->line;
 
                 int cmpexpr=compile_expr_keep(compiler, FUNCT(DECORATOR(decorators.back())->function->node)->rettp); //Push data
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 
@@ -3669,7 +3669,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     int startln=FUNCT(DECORATOR(decorators.back())->function->node)->rettp->start->line;
 
                     int cmpexpr=compile_expr_keep(compiler, ANONIDENT(n->node)->tp); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -3695,7 +3695,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     int startln=FUNCT(DECORATOR(decorators.back())->function->node)->rettp->start->line;
                     
                     int cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(n->node)->name->node)->tp); //Push data
-                    if (cmpexpr==0x100){
+                    if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
 
@@ -3727,7 +3727,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compiler=comp;
             object* code=compile(comp, c, DECORATOR(decorators.back())->function->start->line);
             if (code==NULL){
-                return 0x100;
+                return COMPILER_ERROR;
             }
             compiler=compiler_;
             compile_expr_cleanup(&compiler->stack_size, &comp->stack_size, &compiler->blockstack_size, &comp->blockstack_size);
@@ -3902,7 +3902,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_ANONASSIGN: {
             int cmpexpr=compile_expr_keep(compiler, ASSIGN(expr->node)->right); //Push data
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
 
@@ -3923,7 +3923,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         add_instruction(compiler, compiler->instructions,STORE_GLOBAL, idx, GET_ANNO_N(ASSIGN(expr->node)->name));
                         
                         cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
-                        if (cmpexpr==0x100){
+                        if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
                         }
                         
@@ -3936,7 +3936,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         add_instruction(compiler, compiler->instructions,STORE_NAME, idx, GET_ANNO_N(ASSIGN(expr->node)->name));
                         
                         cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
-                        if (cmpexpr==0x100){
+                        if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
                         }
                         
@@ -3964,7 +3964,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 
                 int cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                         
@@ -3986,7 +3986,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 
                 int cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 
@@ -3997,7 +3997,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 vector<Node*>* names=ANONDOT(ASSIGN(expr->node)->name->node)->names;
                 
                 int cmpexpr=compile_expr_keep(compiler, names->at(0));
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
 
@@ -4014,7 +4014,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     
                     if (i==names->size()-1){
                         int cmpexpr=compile_expr_keep(compiler, ANONDOT(ASSIGN(expr->node)->name->node)->tp);
-                        if (cmpexpr==0x100){
+                        if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
                         }
 
@@ -4029,7 +4029,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_YIELD: {
             int cmpexpr=compile_expr_keep(compiler, YIELD(expr->node)->expr); //Push data
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
@@ -4040,7 +4040,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
         case N_SET: {
             for (size_t i=LIST(expr->node)->list->size(); i>0; i--){
                 int cmpexpr=compile_expr_keep(compiler, LIST(expr->node)->list->at(i-1));
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
             }
@@ -4050,7 +4050,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_WITH: {
             int cmpexpr=compile_expr_keep(compiler, WITH(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
 
@@ -4096,11 +4096,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 compiler->blockstack_size=0;
                 int i=compile_expr(compiler, n);
                 compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-                if (i==0x100){
-                    return 0x100;
+                if (i==COMPILER_ERROR){
+                    return COMPILER_ERROR;
                 }
                 uint32_t end=compiler->instructions->count*2;
-                if (compiler->lines!=NULL && i!=0x200){
+                if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
@@ -4114,7 +4114,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             
 
-            return 0x200;
+            return COMPILER_NOLINEANNO;
         }
 
         case N_LISTCOMP: {
@@ -4138,11 +4138,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             int startln=LISTCOMP(expr->node)->expr->start->line;
 
             int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4182,11 +4182,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 int endcol=LISTCOMP(expr->node)->expr->end->col;
                 int startln=LISTCOMP(expr->node)->expr->start->line;
                 int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->condition);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 
-                if (compiler->lines!=NULL && cmpexpr!=0x200){
+                if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4201,10 +4201,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             start_=compiler->instructions->count*2;
             cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4238,11 +4238,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             int startln=LISTCOMP(expr->node)->expr->start->line;
 
             int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4284,11 +4284,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 int startln=LISTCOMP(expr->node)->expr->start->line;
 
                 int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->condition);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 
-                if (compiler->lines!=NULL && cmpexpr!=0x200){
+                if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4303,10 +4303,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             start_=compiler->instructions->count*2;
             cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4340,11 +4340,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             int startln=LISTCOMP(expr->node)->expr->start->line;
 
             int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4386,11 +4386,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 int startln=LISTCOMP(expr->node)->condition->start->line;
 
                 int cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->condition);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 
-                if (compiler->lines!=NULL && cmpexpr!=0x200){
+                if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4405,10 +4405,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             start_=compiler->instructions->count*2;
             cmpexpr=compile_expr_keep(compiler, LISTCOMP(expr->node)->left);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4443,11 +4443,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             int startln=DICTCOMP(expr->node)->expr->start->line;
 
             int cmpexpr=compile_expr_keep(compiler, DICTCOMP(expr->node)->expr);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
             
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4489,11 +4489,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 int startln=DICTCOMP(expr->node)->condition->start->line;
             
                 int cmpexpr=compile_expr_keep(compiler, DICTCOMP(expr->node)->condition);
-                if (cmpexpr==0x100){
+                if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
                 
-                if (compiler->lines!=NULL && cmpexpr!=0x200){
+                if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                     tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4508,10 +4508,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             start_=compiler->instructions->count*2;
             cmpexpr=compile_expr_keep(compiler, DICTCOMP(expr->node)->left);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4521,10 +4521,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             start_=compiler->instructions->count*2;
             cmpexpr=compile_expr_keep(compiler, DICTCOMP(expr->node)->right);
-            if (cmpexpr==0x100){
+            if (cmpexpr==COMPILER_ERROR){
                 return cmpexpr;
             }
-            if (compiler->lines!=NULL && cmpexpr!=0x200){
+            if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
                 tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
@@ -4569,7 +4569,7 @@ uint32_t num_instructions(vector<Node*>* nodes, scope s){
     comp->nofree=true;
     for (Node* n: (*nodes)){
         int cmpexpr=compile_expr(comp, n);
-        if (cmpexpr==0x100){
+        if (cmpexpr==COMPILER_ERROR){
             return -1;
         }
     }
@@ -4582,7 +4582,7 @@ uint32_t num_instructions(Node* node, scope s){
     comp->scope=s;  
     comp->nofree=true;
     int cmpexpr=compile_expr(comp, node);
-    if (cmpexpr==0x100){
+    if (cmpexpr==COMPILER_ERROR){
         return -1;
     }
     
@@ -4595,7 +4595,7 @@ uint32_t num_instructions_keep(Node* node, scope s){
     comp->scope=s;  
     comp->nofree=true;
     int cmpexpr=compile_expr_keep(comp, node);
-    if (cmpexpr==0x100){
+    if (cmpexpr==COMPILER_ERROR){
         return -1;
     }
     
@@ -4618,11 +4618,11 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
         compiler->blockstack_size=0;
         int i=compile_expr(compiler, n);
         compile_expr_cleanup(&compiler->stack_size, &_stack_size, &compiler->blockstack_size, &_blockstack_size);
-        if (i==0x100){
+        if (i==COMPILER_ERROR){
             return NULL;
         }
         uint32_t end=compiler->instructions->count*2;
-        if (i!=0x200){
+        if (i!=COMPILER_NOLINEANNO){
             object* tuple=new_tuple();
             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
             tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
