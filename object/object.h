@@ -232,6 +232,8 @@ string* glblfildata=NULL;
 
 object* run_vm(object* codeobj, uint32_t* ip);
 struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, string* filedata);
+struct vm* new_vm_raw(uint32_t id);
+void vm_del(struct vm* vm);
 
 void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
 object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, ...);
@@ -311,8 +313,6 @@ object* type_wrapper_in(object* self, object* args, object* kwargs);
 object* type_wrapper_enter(object* self, object* args, object* kwargs);
 object* type_wrapper_exit(object* self, object* args, object* kwargs);
 
-struct vm* vm=NULL;
-
 enum blocktype{
     TRY_BLOCK,
     FOR_BLOCK,
@@ -325,6 +325,8 @@ void pop_blockframe(struct blockstack* stack);
 
 struct blockframe* in_blockstack(struct blockstack* stack, enum blocktype type);
 
+void gil_lock(int id);
+int gil_unlock();
 
 struct callframe{
     object* line;
@@ -373,6 +375,7 @@ struct vm{
 
     int ret_val;
     uint32_t ip;
+    uint32_t exec;
 
     object* exception;
     string* filedata;
