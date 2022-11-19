@@ -7,6 +7,7 @@ vector<pthread_t*> fpl_threads;
 #include "threadobject.cpp"
 #include "signalstypes.cpp"
 #include "mutexobject.cpp"
+#include "semaphoreobject.cpp"
 
 void finalize_threads(){
     for (pthread_t* t: fpl_threads){
@@ -28,6 +29,13 @@ object* new_thread_module(){
     setup_type_offsets(&MutexType);
     setup_type_getsets(&MutexType);
     setup_type_methods(&MutexType);
+    
+    SemaphoreType=(*(TypeObject*)finalize_type(&SemaphoreType));
+    fplbases.push_back(&SemaphoreType);
+    inherit_type_dict(&SemaphoreType);
+    setup_type_offsets(&SemaphoreType);
+    setup_type_getsets(&SemaphoreType);
+    setup_type_methods(&SemaphoreType);
 
     fpl_threads.clear();
 
@@ -35,6 +43,7 @@ object* new_thread_module(){
 
     dict_set_noret(dict, str_new_fromstr("Thread"), (object*)&ThreadType);
     dict_set_noret(dict, str_new_fromstr("Mutex"), (object*)&MutexType);
+    dict_set_noret(dict, str_new_fromstr("Semaphore"), (object*)&SemaphoreType);
 
     return module_new_fromdict(dict, str_new_fromstr("thread"));
 }
