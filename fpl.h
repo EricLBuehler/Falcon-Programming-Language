@@ -36,7 +36,7 @@ using namespace std;
 
 #define GIL_MAX_SWITCH 2
 
-#define FPL_VERSION "1.2.2"
+#define FPL_VERSION "1.2.3"
 
 string program;
 
