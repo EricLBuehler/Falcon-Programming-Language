@@ -36,6 +36,7 @@ object* builtin_eval(object* self, object* args){
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
         cout<<parseretglbl.snippet<<endl;
+        cout<<parseretglbl.arrows<<endl;
         printf("%s\n",parseretglbl.error);
         FPLDECREF(str);
         FPLDECREF(glbls);
