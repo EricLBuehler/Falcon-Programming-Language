@@ -3366,7 +3366,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     
                     Lexer lexer(segment,kwds);
-                    lexer.pos=Position(program, 0, starti+expr->start->col+2, expr->start->line);
+                    lexer.pos=Position(program, 0, starti+expr->start->col+2, 0);
 
                     Position end=lexer.tokenize();
                     
@@ -3385,7 +3385,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                     if (eq){
                         uint32_t idx;
-                        
+
                         object* s=str_new_fromstr(segment);
                         if (!object_find_bool(compiler->consts,s)){
                             //Create object
