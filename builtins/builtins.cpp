@@ -30,8 +30,8 @@ object* builtin___build_class__(object* self, object* args){
     object* function=args->type->slot_mappings->slot_get(args, str_new_fromstr("func"));
     object* name=args->type->slot_mappings->slot_get(args, str_new_fromstr("name"));
     object* bases=args->type->slot_mappings->slot_get(args, str_new_fromstr("bases"));
-    object* dict;
-    
+    object* doc=args->type->slot_mappings->slot_get(args, str_new_fromstr("doc"));
+    object* dict;    
 
     if (!object_istype(function->type, &FuncType)){
         vm_add_err(&TypeError, vm, "expected function");
@@ -71,8 +71,9 @@ object* builtin___build_class__(object* self, object* args){
     pop_callframe(vm->callstack);
     ERROR_RET(ret);
     
-    object* t=new_type(CAST_STRING(name)->val, bases, dict);
+    object* t=new_type(CAST_STRING(name)->val, bases, dict, doc);
     FPLDECREF(function);
+    FPLDECREF(doc);
     FPLDECREF(name);
     return t;
 }
