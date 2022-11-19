@@ -45,14 +45,8 @@ object* mutex_acquire_meth(object* selftp, object* args, object* kwargs){
         return NULL; 
     }
     object* self=tuple_index_int(args,0);
-    if (CAST_MUTEX(self)->locked){
-        return new_bool_false();
-    }
-
     pthread_mutex_lock(CAST_MUTEX(self)->lock);
-    
-    CAST_MUTEX(self)->locked=true;
-    return new_bool_true();
+    return new_none();
 }
 
 object* mutex_release_meth(object* selftp, object* args, object* kwargs){
