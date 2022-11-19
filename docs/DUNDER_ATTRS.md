@@ -1,4 +1,4 @@
-# Falcon Programming Lanugage Dunder Methods
+# Falcon Programming Lanugage Dunder Attributes
 
 ## Constructors
 - ```__init__(self, ...)```
@@ -61,3 +61,9 @@
 - ```__getattr__(self, attr)```
 - ```__setattr__(self, attr, val)```
 - ```__delattr__(self, attr)```
+
+## Other
+- ```__bases__```
+- ```__dict__```
+- ```__doc__```
+- ```__annotations__```
