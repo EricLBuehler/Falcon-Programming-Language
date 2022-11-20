@@ -5,23 +5,27 @@
 
 object* time_sleep(object* self, object* args){
     object* val=dict_get(args, str_new_fromstr("n"));
-    long time;
+    double time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
         FPLDECREF(val);
     }
     else{
-        object* otherint=object_int(val);
+        object* otherflt=object_float(val);
         FPLDECREF(val);
-        if (otherint==NULL || !object_istype(otherint->type, &IntType)){
-            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", val->type->name->c_str());
+        if (otherflt==NULL || !object_istype(otherflt->type, &FloatType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
             return NULL; 
         }
-        time=CAST_INT(otherint)->val->to_long();
-        FPLDECREF(otherint);
+        time=CAST_FLOAT(otherflt)->val;
+        if (time<0){
+            vm_add_err(&ValueError, vm, "Cannot wait for time less than 0 s");
+            return NULL; 
+        }
+        FPLDECREF(otherflt);
     }
     
-    std::this_thread::sleep_for(std::chrono::milliseconds(time*1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds((long)(time*1000)));
 
     return new_none();
 }
@@ -29,23 +33,27 @@ object* time_sleep(object* self, object* args){
 
 object* time_sleep_ms(object* self, object* args){
     object* val=dict_get(args, str_new_fromstr("n"));
-    long time;
+    double time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
         FPLDECREF(val);
     }
     else{
-        object* otherint=object_int(val);
+        object* otherflt=object_float(val);
         FPLDECREF(val);
-        if (otherint==NULL || !object_istype(otherint->type, &IntType)){
-            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", val->type->name->c_str());
+        if (otherflt==NULL || !object_istype(otherflt->type, &FloatType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
             return NULL; 
         }
-        time=CAST_INT(otherint)->val->to_long();
-        FPLDECREF(otherint);
+        time=CAST_FLOAT(otherflt)->val;
+        if (time<0){
+            vm_add_err(&ValueError, vm, "Cannot wait for time less than 0 ms");
+            return NULL; 
+        }
+        FPLDECREF(otherflt);
     }
     
-    std::this_thread::sleep_for(std::chrono::milliseconds(time));
+    std::this_thread::sleep_for(std::chrono::milliseconds((long)time));
 
     return new_none();
 }
