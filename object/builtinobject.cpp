@@ -200,6 +200,11 @@ void setup_builtins(){
     builtins[63]=new_builtin((builtinfunc)builtin_sum, str_new_fromstr("hasattr"), hasattrargs, hasattrkwargs, 2, false);
 
     builtins[64]=(object*)&BytesType;
+
+    object* dirargs=new_tuple();
+    dirargs->type->slot_mappings->slot_append(dirargs, str_new_fromstr("object"));
+    object* dirkwargs=new_tuple();
+    builtins[65]=new_builtin((builtinfunc)builtin_dir, str_new_fromstr("dir"), dirargs, dirkwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
