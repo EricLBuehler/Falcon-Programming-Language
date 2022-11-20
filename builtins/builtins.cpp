@@ -571,3 +571,15 @@ object* builtin_hasattr(object* self, object* args){
     }
     return new_bool_true();
 }
+
+object* builtin_dir(object* self, object* args){
+    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* dict=object_getattr(o, str_new_fromstr("__dict__"));
+    ERROR_RET(dict);
+    
+    object* list=new_list();
+    for (object* o: *CAST_DICT(dict)->keys){
+        list_append(list, o);
+    }
+    return list;
+}
