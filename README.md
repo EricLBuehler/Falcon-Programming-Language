@@ -44,6 +44,7 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - ```getannotation```
 - ```sum```
 - ```hasattr```
+- ```dir```
 
 ### Builtin libraries ###
 - ```time```
