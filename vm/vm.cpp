@@ -110,12 +110,12 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     if (newfile.is_open()){
         string tp;
         while(getline(newfile, tp)){
-            vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr(tp));
+            tuple_append_noinc(vm->path, str_new_fromstr(tp));
         }
         newfile.close();
     }
     else{
-        vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr("./"));
+        tuple_append_noinc(vm->path, str_new_fromstr("./"));
     }
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL, &vm->ip);
@@ -149,12 +149,12 @@ struct vm* new_vm_raw(uint32_t id){
     if (newfile.is_open()){
         string tp;
         while(getline(newfile, tp)){
-            vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr(tp));
+            tuple_append_noinc(vm->path, str_new_fromstr(tp));
         }
         newfile.close();
     }
     else{
-        vm->path->type->slot_mappings->slot_append(vm->path, str_new_fromstr("./"));
+        tuple_append_noinc(vm->path, str_new_fromstr("./"));
     }
     
     return vm;
@@ -187,7 +187,7 @@ inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
 void print_traceback(){
     for (int i=0; i<vm->callstack->size; i++){    
         struct callframe callframe=vm->callstack->data[i];
-        object* tup=dict_get(CAST_CODE(callframe.code)->co_detailed_lines, new_int_fromint((*callframe.ip)));
+        object* tup=dict_get_opti_deref(CAST_CODE(callframe.code)->co_detailed_lines, new_int_fromint((*callframe.ip)));
         int line_=CAST_INT(tuple_index_int(tup, 2))->val->to_int();
         int startcol=CAST_INT(tuple_index_int(tup, 0))->val->to_int();
         int endcol=CAST_INT(tuple_index_int(tup, 1))->val->to_int();
@@ -282,7 +282,7 @@ object* import_name(string data, object* name){
     ::vm->globals=new_dict();
     FPLINCREF(::vm->globals);
     ::callstack_head(vm->callstack).locals=::vm->globals;
-    dict_set_noret_opti(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
+    dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
     dict_set_noret_opti(::vm->globals, str_new_fromstr("__name__"), name);
     ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
 
@@ -1307,7 +1307,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     object* o=iter->type->slot_next(iter);
                     object* v;
                     while (vm->exception==NULL){
-                        tuple_append(args, o);
+                        tuple_append_noinc(args, o);
                         
                         o=iter->type->slot_next(iter);
                     }
@@ -2537,14 +2537,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* obj=pop_dataframe(vm->objstack);
             object* val=peek_dataframe(vm->objstack); //For multiple assignment
             object* attr=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
-            object* ret=object_setattr(obj, attr, val);
+            object* ret=object_setattr_deref(obj, attr, val);
             
-            object* annon=object_getattr(obj, str_new_fromstr("__annotations__"));
+            object* annon=object_getattr_deref(obj, str_new_fromstr("__annotations__"));
             if (annon==NULL){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
                 annon=new_dict();
-                object_setattr(obj, str_new_fromstr("__annotations__"), annon);
+                object_setattr_deref(obj, str_new_fromstr("__annotations__"), annon);
             }
             dict_set_noret_opti(annon, attr, tp);
             FPLDECREF(tp);
