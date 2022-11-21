@@ -213,10 +213,12 @@ size_t object_find(object* iter, object* needle){
         bool b=list_index_int(iter, i)->type==needle->type && istrue(object_cmp(list_index_int(iter, i),needle, CMP_EQ));
         if (b){
             FPLDECREF(len);
+            FPLDECREF(needle);
             return i;
         }
     }
     FPLDECREF(len);
+    FPLDECREF(needle);
     return -1;
 }
 
@@ -310,10 +312,8 @@ object* setup_args_allargs(object* dict, uint32_t argc, object* selfargs, object
     uint32_t argsnum=argc-CAST_LIST(selfkwargs)->size;
 
     //Positional
-    object* res=dict->type->slot_mappings->slot_set(dict, str_new_fromstr("args"), args);
-    if (res!=NULL && res!=TERM_PROGRAM){
-        FPLDECREF(res);
-    }
+    dict_set_noinc_noret(dict, str_new_fromstr("args"), args);
+    FPLINCREF(args);
     //
 
     
@@ -503,6 +503,12 @@ object* object_getattr_self(object* obj, object* attr){
     return NULL;
 }
 
+object* object_genericgetattr_notype_deref(object* obj, object* attr){
+    object* v=object_genericgetattr_notype(obj, attr);
+    FPLDECREF(attr);
+    return v;
+}
+
 object* object_genericgetattr_notype(object* obj, object* attr){
     object* res=NULL;
     //Check dict
@@ -536,6 +542,11 @@ object* object_genericgetattr_notype(object* obj, object* attr){
     return res;
 }
 
+object* object_genericgetattr_deref(object* obj, object* attr){
+    object* v=object_genericgetattr(obj, attr);
+    FPLDECREF(attr);
+    return v;
+}
 
 object* object_genericgetattr(object* obj, object* attr){
     object* res=NULL;   
@@ -594,6 +605,12 @@ object* object_getattr_noerror(object* obj, object* attr){
     }
     
     return NULL;
+}
+
+object* object_getattr_deref(object* obj, object* attr){
+    object* v=object_getattr(obj, attr);
+    FPLDECREF(attr);
+    return v;
 }
 
 object* object_getattr(object* obj, object* attr){
@@ -660,6 +677,8 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
         if (res!=NULL && !(res->type->slot_descrset==NULL && res->type->slot_descrget==NULL) ){
             if (res!=NULL && res->type->slot_descrset!=NULL){
                 object* v=res->type->slot_descrset(obj, res, val);
+                FPLDECREF(res);
+                FPLDECREF(val);
                 if (v!=NULL && v!=TERM_PROGRAM){
                     FPLDECREF(v);
                     return SUCCESS;
@@ -677,6 +696,12 @@ object* object_genericsetattr(object* obj, object* attr, object* val){
     
     dict_set_noret(dict_, attr, val);
     return SUCCESS;
+}
+
+object* object_setattr_deref(object* obj, object* attr, object* val){
+    object* v=object_setattr(obj, attr, val);
+    FPLDECREF(attr);
+    return v;
 }
 
 object* object_setattr(object* obj, object* attr, object* val){
@@ -813,7 +838,9 @@ object* object_bytes(object* obj){
     if (object_issubclass(obj, &BytesType)){
         return obj;
     }
-    object* o=object_getattr(obj, str_new_fromstr("__bytes__"));
+    object* nm=str_new_fromstr("__bytes__");
+    object* o=object_getattr(obj, nm);
+    FPLDECREF(nm);
     if (o==NULL){
         FPLDECREF(vm->exception);
         vm->exception=NULL;
@@ -864,7 +891,9 @@ object* object_in_iter(object* left, object* right){
 }
 
 object* object_enter_with(object* self){
-    object* o=object_getattr(self, str_new_fromstr("__enter__"));
+    object* nm=str_new_fromstr("__enter__");
+    object* o=object_getattr(self, nm);
+    FPLDECREF(nm);
     if (o==NULL){
         return NULL;
     }
@@ -875,7 +904,9 @@ object* object_enter_with(object* self){
 }
 
 object* object_exit_with(object* self){
-    object* o=object_getattr(self, str_new_fromstr("__exit__"));
+    object* nm=str_new_fromstr("__exit__");
+    object* o=object_getattr(self, nm);
+    FPLDECREF(nm);
     if (o==NULL){
         return NULL;
     }

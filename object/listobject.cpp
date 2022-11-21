@@ -48,7 +48,7 @@ object* list_new(object* type, object* args, object* kwargs){
         
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
-            list_append((object*)obj, o);
+            tuple_append_noinc((object*)obj, o);
             
             o=iter->type->slot_next(iter);
         }
@@ -722,7 +722,7 @@ object* list_extend_meth(object* selftp, object* args, object* kwargs){
     
     object* o=iter->type->slot_next(iter);
     while (vm->exception==NULL){   
-        list_append(self, o);        
+        tuple_append_noinc(self, o);        
         o=iter->type->slot_next(iter);
     }
     if (vm->exception!=NULL){

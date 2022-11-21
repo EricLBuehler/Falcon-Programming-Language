@@ -94,6 +94,30 @@ object* dict_len(object* self){
     return new_int_fromint(((DictObject*)self)->val->size());
 }
 
+object* dict_get_opti_deref(object* self, object* key){
+    //Fast path for immutables
+    if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        FPLINCREF(CAST_DICT(self)->val->at(key));
+        object* o=CAST_DICT(self)->val->at(key);;
+        FPLDECREF(key);
+        return o;
+    }
+    
+    vm_add_err(&KeyError, vm, "%s is not a key", object_crepr(key).c_str());
+    return NULL;
+}
+
+object* dict_get_opti(object* self, object* key){
+    //Fast path for immutables
+    if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){
+        FPLINCREF(CAST_DICT(self)->val->at(key));
+        return CAST_DICT(self)->val->at(key);
+    }
+    
+    vm_add_err(&KeyError, vm, "%s is not a key", object_crepr(key).c_str());
+    return NULL;
+}
+
 object* dict_get(object* self, object* key){
     //Fast path for immutables
     if (CAST_DICT(self)->val->find(key)!=CAST_DICT(self)->val->end()){

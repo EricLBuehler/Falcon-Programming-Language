@@ -41,7 +41,7 @@ object* set_new(object* type, object* args, object* kwargs){
         
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
-            set_append(obj, o);
+            set_append_noinc(obj, o);
             CAST_SET(obj)->vec->push_back(o);
             
             o=iter->type->slot_next(iter);

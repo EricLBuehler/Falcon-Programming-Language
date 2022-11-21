@@ -344,7 +344,13 @@ object* dict_new(object* type, object* args, object* kwargs);
 void dict_del(object* self);
 object* dict_len(object* self);
 object* dict_get(object* self, object* idx);
+object* dict_get_opti(object* self, object* idx);
+object* dict_get_opti_deref(object* self, object* idx);
 object* dict_set(object* self, object* key, object* val);
+void dict_set_noret(object* self, object* key, object* val);
+void dict_set_noinc_noret(object* self, object* key, object* val);
+object* dict_set_noinc(object* self, object* key, object* val);
+void dict_set_noret_opti(object* self, object* key, object* val);
 void dict_set_noret(object* self, object* key, object* val);
 object* dict_repr(object* self);
 object* dict_str(object* self);
@@ -668,6 +674,7 @@ void tuple_del(object* self);
 object* tuple_len(object* self);
 object* tuple_get(object* self, object* idx);
 void tuple_append(object* self, object* obj);
+void tuple_append_noinc(object* self, object* obj);
 object* tuple_new(object* type, object* args, object* kwargs);
 object* tuple_repr(object* self);
 object* tuple_next(object* self);
@@ -3290,6 +3297,7 @@ object* set_init(object* self, object* args, object* kwargs);
 void set_del(object* self);
 object* set_len(object* self);
 void set_append(object* self, object* obj);
+void set_append_noinc(object* self, object* obj);
 object* set_new(object* type, object* args, object* kwargs);
 object* set_repr(object* self);
 object* set_next(object* self);
@@ -3708,18 +3716,21 @@ object* type_call(object* self, object* args, object* kwargs){
         }
         if (CAST_INT(list_len(args))->val->to_long()==3){
             object* args_=new_dict();
-            object* res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("func"), list_index_int(args, 0));
+            object* res=dict_set_noinc(args_, str_new_fromstr("func"), list_index_int(args, 0));
             if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
-            res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("name"), list_index_int(args, 1));
+            res=dict_set_noinc(args_, str_new_fromstr("name"), list_index_int(args, 1));
             if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
-            res=args_->type->slot_mappings->slot_set(args_, str_new_fromstr("bases"), list_index_int(args, 2));
+            res=dict_set_noinc(args_, str_new_fromstr("bases"), list_index_int(args, 2));
             if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
                 FPLDECREF(res);
             }
+            FPLINCREF(list_index_int(args, 0));
+            FPLINCREF(list_index_int(args, 1));
+            FPLINCREF(list_index_int(args, 2));
             return builtin___build_class__(NULL, args_);
         }
         vm_add_err(&ValueError, vm, "'type' takes 1 or 3 arguments");
@@ -4117,7 +4128,7 @@ object* setup_type_methods(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_methods!=NULL && tp_tp->slot_methods[idx].name!=NULL){
-        dict_set_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name, (object*)tp_tp));
+        dict_set_noinc_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_methods[idx].name), cwrapper_new_fromfunc((cwrapperfunc)tp_tp->slot_methods[idx].function, tp_tp->slot_methods[idx].name, (object*)tp_tp));
         idx++;
     }
 
@@ -4134,7 +4145,7 @@ object* setup_type_getsets(TypeObject* tp){
         //Inherit methods
         uint32_t idx=0;
         while (base_tp->slot_getsets!=NULL && base_tp->slot_getsets[idx].name!=NULL){
-            dict_set_noret(base_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)base_tp->slot_getsets[idx].get, (setter)base_tp->slot_getsets[idx].set, base_tp->slot_getsets[idx].name));
+            dict_set_noinc_noret(base_tp->dict, str_new_fromstr(base_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)base_tp->slot_getsets[idx].get, (setter)base_tp->slot_getsets[idx].set, base_tp->slot_getsets[idx].name));
             idx++;
         }
     }
@@ -4142,7 +4153,7 @@ object* setup_type_getsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_getsets!=NULL && tp_tp->slot_getsets[idx].name!=NULL){
-        dict_set_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, (setter)tp_tp->slot_getsets[idx].set, tp_tp->slot_getsets[idx].name));
+        dict_set_noinc_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_getsets[idx].name), slotwrapper_new_fromfunc((getter)tp_tp->slot_getsets[idx].get, (setter)tp_tp->slot_getsets[idx].set, tp_tp->slot_getsets[idx].name));
         idx++;
     }
 
@@ -4155,7 +4166,7 @@ object* setup_type_offsets(TypeObject* tp){
     //Inherit methods
     uint32_t idx=0;
     while (tp_tp->slot_offsets!=NULL && tp_tp->slot_offsets[idx].name!=NULL){
-        dict_set_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_offsets[idx].name), offsetwrapper_new_fromoffset(tp_tp->slot_offsets[idx].name, tp_tp->slot_offsets[idx].offset, tp_tp->slot_offsets[idx].readonly));
+        dict_set_noinc_noret(tp_tp->dict, str_new_fromstr(tp_tp->slot_offsets[idx].name), offsetwrapper_new_fromoffset(tp_tp->slot_offsets[idx].name, tp_tp->slot_offsets[idx].offset, tp_tp->slot_offsets[idx].readonly));
         idx++;
     }
 
@@ -4164,7 +4175,7 @@ object* setup_type_offsets(TypeObject* tp){
 
 void type_set_cwrapper(TypeObject* tp, cwrapperfunc func, string name){
     object* f=cwrapper_new_fromfunc(func, name, (object*)tp);
-    dict_set_noret(tp->dict, str_new_fromstr(*CAST_CWRAPPER(f)->name), f);
+    dict_set_noinc_noret(tp->dict, str_new_fromstr(*CAST_CWRAPPER(f)->name), f);
 }
 
 object* type_bool(object* self){
@@ -4222,7 +4233,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
     memset(&mappings, 0, sizeof(Mappings));
 
     if (NEWTP_PRIMARY_COPY){
-        object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__repr__"));
+        object* n=dict_get_opti_deref(dict, str_new_fromstr("__repr__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4231,7 +4242,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             repr_func=(reprfunc)newtp_repr;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__init__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__init__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4240,7 +4251,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             init_func=(initfunc)newtp_init;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__new__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__new__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4249,7 +4260,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             new_func=(newfunc)newtp_new;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__del__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__del__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4258,7 +4269,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             del_func=(delfunc)newtp_del;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__next__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__next__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4267,7 +4278,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             next_func=(iternextfunc)newtp_next;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__iter__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__iter__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4276,7 +4287,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             iter_func=(unaryfunc)newtp_iter;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__str__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__str__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4285,7 +4296,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             str_func=(reprfunc)newtp_str;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__call__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__call__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4294,7 +4305,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             call_func=(callfunc)newtp_call;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__get__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__get__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4303,12 +4314,12 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             get_func=(descrgetfunc)newtp_descrget;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__set__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__set__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
 
-            n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__delete__"));
+            n=dict_get_opti_deref(dict, str_new_fromstr("__delete__"));
             if (n==NULL){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
@@ -4321,7 +4332,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             set_func=(descrsetfunc)newtp_descrset;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__enter__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__enter__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4330,7 +4341,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             enter_func=newtp_enter;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__exit__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__exit__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4340,7 +4351,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
         }
     }
     if (NEWTP_NUMBER_COPY){
-        object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__add__"));
+        object* n=dict_get_opti_deref(dict, str_new_fromstr("__add__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4349,7 +4360,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_add=(binopfunc)newtp_add;
         }
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__sub__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__sub__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4358,7 +4369,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_sub=(binopfunc)newtp_sub;
         }     
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__mul__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__mul__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4367,7 +4378,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_mul=(binopfunc)newtp_mul;
         }     
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__div__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__div__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4376,7 +4387,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_div=(binopfunc)newtp_div;
         }   
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__mod__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__mod__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4385,7 +4396,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_mod=(binopfunc)newtp_mod;
         }     
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__pow__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__pow__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4394,7 +4405,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_mod=(binopfunc)newtp_pow;
         }     
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__neg__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__neg__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4403,7 +4414,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_neg=(unaryfunc)newtp_neg;
         }  
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__bool__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__bool__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4412,7 +4423,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_bool=(unaryfunc)newtp_bool;
         }    
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__int__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__int__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4421,7 +4432,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_int=(unaryfunc)newtp_int;
         }    
         
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__float__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__float__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4430,7 +4441,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_float=(unaryfunc)newtp_float;
         }     
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__not__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__not__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4439,7 +4450,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_not=(unaryfunc)newtp_not;
         }      
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__and__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__and__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4448,7 +4459,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_and=(binopfunc)newtp_and;
         }      
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__or__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__or__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4457,7 +4468,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_or=(binopfunc)newtp_or;
         }       
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__lshift__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__lshift__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4466,7 +4477,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_lshift=(binopfunc)newtp_lshift;
         }      
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__rshift__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__rshift__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4475,7 +4486,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_rshift=(binopfunc)newtp_rshift;
         }   
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__floordiv__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__floordiv__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4484,7 +4495,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_fldiv=(binopfunc)newtp_fldiv;
         }       
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__abs__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__abs__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4493,7 +4504,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             number.slot_abs=(unaryfunc)newtp_abs;
         }        
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__xor__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__xor__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4503,7 +4514,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
         }   
     }
     if (NEWTP_MAPPINGS_COPY){
-        object* n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__getitem__"));
+        object* n=dict_get_opti_deref(dict, str_new_fromstr("__getitem__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4512,8 +4523,8 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             mappings.slot_get=(getfunc)newtp_get;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__setitem__"));
-        object* deli=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__delitem__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__setitem__"));
+        object* deli=dict_get_opti_deref(dict, str_new_fromstr("__delitem__"));
         if (n==NULL && deli!=NULL){
             n=deli;
         }
@@ -4525,7 +4536,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
             mappings.slot_set=(setfunc)newtp_set;
         }
 
-        n=dict->type->slot_mappings->slot_get(dict, str_new_fromstr("__len__"));
+        n=dict_get_opti_deref(dict, str_new_fromstr("__len__"));
         if (n==NULL){
             FPLDECREF(vm->exception);
             vm->exception=NULL;
@@ -4648,7 +4659,7 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
         }
     }
     
-    object* n=dict_get(CAST_TYPE(tp)->dict, str_new_fromstr("__dict__"));
+    object* n=dict_get_opti_deref(CAST_TYPE(tp)->dict, str_new_fromstr("__dict__"));
     CAST_OFFSETWRAPPER(n)->offset=size;
 
     vector<string> to_del;
@@ -4662,7 +4673,8 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
         if (s.size()>=2 && s.rfind("__", 0)==0 && s.rfind("__", s.size()-2)!=s.size()-2 &&\
         CAST_DICT(CAST_TYPE(tp)->dict)->val->find(nw)==CAST_DICT(CAST_TYPE(tp)->dict)->val->end()){
             object* o=k.second;
-            dict_set_noret(CAST_TYPE(tp)->dict, str_new_fromstr("_"+(*name)+s), o);
+            dict_set_noinc_noret(CAST_TYPE(tp)->dict, str_new_fromstr("_"+(*name)+s), o);
+            FPLDECREF(o);
             to_del.push_back(s);
         }
 
@@ -4670,7 +4682,9 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
     }
 
     for (string s: to_del){
-        dict_set_noret(CAST_TYPE(tp)->dict, str_new_fromstr(s), NULL);
+        object* o=str_new_fromstr(s);
+        dict_set_noret(CAST_TYPE(tp)->dict, o, NULL);
+        FPLDECREF(o);
     }
     return tp;
 }

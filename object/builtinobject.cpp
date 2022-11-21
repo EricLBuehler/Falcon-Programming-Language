@@ -1,17 +1,17 @@
 void setup_builtins(){
     object* printargs=new_tuple();
-    printargs->type->slot_mappings->slot_append(printargs, str_new_fromstr("end"));
-    printargs->type->slot_mappings->slot_append(printargs, str_new_fromstr("sep"));
+    tuple_append_noinc(printargs, str_new_fromstr("end"));
+    tuple_append_noinc(printargs, str_new_fromstr("sep"));
     object* printkwargs=new_tuple();
-    printkwargs->type->slot_mappings->slot_append(printkwargs, str_new_fromstr("\n"));
-    printkwargs->type->slot_mappings->slot_append(printkwargs, str_new_fromstr(" "));
+    tuple_append_noinc(printkwargs, str_new_fromstr("\n"));
+    tuple_append_noinc(printkwargs, str_new_fromstr(" "));
     builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr("print"), printargs, printkwargs, 2, true);
 
     object* buildclassargs=new_tuple();
-    buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr("doc"));
-    buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr("bases"));
-    buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr("name"));
-    buildclassargs->type->slot_mappings->slot_append(buildclassargs, str_new_fromstr(("func")));
+    tuple_append_noinc(buildclassargs, str_new_fromstr("doc"));
+    tuple_append_noinc(buildclassargs, str_new_fromstr("bases"));
+    tuple_append_noinc(buildclassargs, str_new_fromstr("name"));
+    tuple_append_noinc(buildclassargs, str_new_fromstr(("func")));
     object* buildclasskwargs=new_tuple();
     builtins[1]=new_builtin((builtinfunc)builtin___build_class__, str_new_fromstr("__build_class__"), buildclassargs, buildclasskwargs, 4, false);
 
@@ -31,22 +31,22 @@ void setup_builtins(){
     builtins[15]=(object*)&ExceptionType;
 
     object* idargs=new_tuple();
-    idargs->type->slot_mappings->slot_append(idargs, str_new_fromstr("object"));
+    tuple_append_noinc(idargs, str_new_fromstr("object"));
     object* idkwargs=new_tuple();
     builtins[16]=new_builtin((builtinfunc)builtin_id, str_new_fromstr("id"), idargs, idkwargs, 1, false);
 
     object* inputargs=new_tuple();
-    inputargs->type->slot_mappings->slot_append(inputargs, str_new_fromstr("object"));
+    tuple_append_noinc(inputargs, str_new_fromstr("object"));
     object* inputkwargs=new_tuple();
-    inputkwargs->type->slot_mappings->slot_append(inputkwargs, str_new_fromstr(""));
+    tuple_append_noinc(inputkwargs, str_new_fromstr(""));
     builtins[17]=new_builtin((builtinfunc)builtin_input, str_new_fromstr("input"), inputargs, inputkwargs, 1, false);
     
     builtins[18]=(object*)&FileType;
 
     object* reprargs=new_tuple();
-    reprargs->type->slot_mappings->slot_append(reprargs, str_new_fromstr("object"));
+    tuple_append_noinc(reprargs, str_new_fromstr("object"));
     object* reprkwargs=new_tuple();
-    reprkwargs->type->slot_mappings->slot_append(reprkwargs, str_new_fromstr(""));
+    tuple_append_noinc(reprkwargs, str_new_fromstr(""));
     builtins[19]=new_builtin((builtinfunc)builtin_repr, str_new_fromstr("repr"), reprargs, reprkwargs, 1, false);
 
     builtins[20]=(object*)&FloatType;
@@ -54,15 +54,15 @@ void setup_builtins(){
     builtins[21]=(object*)&StopIteration;
 
     object* iterargs=new_tuple();
-    iterargs->type->slot_mappings->slot_append(iterargs, str_new_fromstr("object"));
+    tuple_append_noinc(iterargs, str_new_fromstr("object"));
     object* iterkwargs=new_tuple();
-    iterkwargs->type->slot_mappings->slot_append(iterkwargs, new_none());
+    tuple_append_noinc(iterkwargs, new_none());
     builtins[22]=new_builtin((builtinfunc)builtin_iter, str_new_fromstr("iter"), iterargs, iterkwargs, 1, false);
 
     object* nextargs=new_tuple();
-    nextargs->type->slot_mappings->slot_append(nextargs, str_new_fromstr("object"));
+    tuple_append_noinc(nextargs, str_new_fromstr("object"));
     object* nextkwargs=new_tuple();
-    nextkwargs->type->slot_mappings->slot_append(nextkwargs, new_none());
+    tuple_append_noinc(nextkwargs, new_none());
     builtins[23]=new_builtin((builtinfunc)builtin_next, str_new_fromstr("next"), nextargs, nextkwargs, 1, false);
 
     builtins[24]=(object*)&RecursionError;
@@ -75,10 +75,10 @@ void setup_builtins(){
     builtins[30]=(object*)&BoolType;
     
     object* roundargs=new_tuple();
-    roundargs->type->slot_mappings->slot_append(roundargs, str_new_fromstr("object"));
-    roundargs->type->slot_mappings->slot_append(roundargs, str_new_fromstr("digits"));
+    tuple_append_noinc(roundargs, str_new_fromstr("object"));
+    tuple_append_noinc(roundargs, str_new_fromstr("digits"));
     object* roundkwargs=new_tuple();
-    roundkwargs->type->slot_mappings->slot_append(roundkwargs, new_int_fromint(0));
+    tuple_append_noinc(roundkwargs, new_int_fromint(0));
     builtins[31]=new_builtin((builtinfunc)builtin_round, str_new_fromstr("round"), roundargs, roundkwargs, 2, false);
     
     builtins[32]=(object*)&EnumType;
@@ -106,7 +106,7 @@ void setup_builtins(){
     builtins[39]=new_builtin((builtinfunc)builtin_copyright, str_new_fromstr("copyright"), copyrightargs, copyrightkwargs, 0, false);
         
     object* lenargs=new_tuple();
-    lenargs->type->slot_mappings->slot_append(lenargs, str_new_fromstr("object"));
+    tuple_append_noinc(lenargs, str_new_fromstr("object"));
     object* lenkwargs=new_tuple();
     builtins[40]=new_builtin((builtinfunc)builtin_len, str_new_fromstr("len"), lenargs, lenkwargs, 1, false);
 
@@ -114,64 +114,64 @@ void setup_builtins(){
     builtins[42]=(object*)&AssertionError;
 
     object* isinstargs=new_tuple();
-    isinstargs->type->slot_mappings->slot_append(isinstargs, str_new_fromstr("object"));
-    isinstargs->type->slot_mappings->slot_append(isinstargs, str_new_fromstr("type"));
+    tuple_append_noinc(isinstargs, str_new_fromstr("object"));
+    tuple_append_noinc(isinstargs, str_new_fromstr("type"));
     object* isinstkwargs=new_tuple();
     builtins[43]=new_builtin((builtinfunc)builtin_issubclass, str_new_fromstr("isinstance"), isinstargs, isinstkwargs, 2, false);
 
     object* evalargs=new_tuple();
-    evalargs->type->slot_mappings->slot_append(evalargs, str_new_fromstr("string"));
-    evalargs->type->slot_mappings->slot_append(evalargs, str_new_fromstr("globals"));
-    evalargs->type->slot_mappings->slot_append(evalargs, str_new_fromstr("locals"));
+    tuple_append_noinc(evalargs, str_new_fromstr("string"));
+    tuple_append_noinc(evalargs, str_new_fromstr("globals"));
+    tuple_append_noinc(evalargs, str_new_fromstr("locals"));
     object* evalkwargs=new_tuple();
-    evalkwargs->type->slot_mappings->slot_append(evalkwargs, new_dict());
-    evalkwargs->type->slot_mappings->slot_append(evalkwargs, new_dict());
+    tuple_append_noinc(evalkwargs, new_dict());
+    tuple_append_noinc(evalkwargs, new_dict());
     builtins[44]=new_builtin((builtinfunc)builtin_eval, str_new_fromstr("eval"), evalargs, evalkwargs, 3, false);
 
     builtins[45]=(object*)&SuperType;
     
     object* getattrargs=new_tuple();
-    getattrargs->type->slot_mappings->slot_append(getattrargs, str_new_fromstr("object"));
-    getattrargs->type->slot_mappings->slot_append(getattrargs, str_new_fromstr("attr"));
+    tuple_append_noinc(getattrargs, str_new_fromstr("object"));
+    tuple_append_noinc(getattrargs, str_new_fromstr("attr"));
     object* getattrkwargs=new_tuple();
     builtins[46]=new_builtin((builtinfunc)builtin_getattr, str_new_fromstr("getattr"), getattrargs, getattrkwargs, 2, false);
     
     object* setattrargs=new_tuple();
-    setattrargs->type->slot_mappings->slot_append(setattrargs, str_new_fromstr("object"));
-    setattrargs->type->slot_mappings->slot_append(setattrargs, str_new_fromstr("attr"));
-    setattrargs->type->slot_mappings->slot_append(setattrargs, str_new_fromstr("val"));
+    tuple_append_noinc(setattrargs, str_new_fromstr("object"));
+    tuple_append_noinc(setattrargs, str_new_fromstr("attr"));
+    tuple_append_noinc(setattrargs, str_new_fromstr("val"));
     object* setattrkwargs=new_tuple();
     builtins[47]=new_builtin((builtinfunc)builtin_setattr, str_new_fromstr("setattr"), setattrargs, setattrkwargs, 3, false);
 
     object* absargs=new_tuple();
-    absargs->type->slot_mappings->slot_append(absargs, str_new_fromstr("self"));
+    tuple_append_noinc(absargs, str_new_fromstr("self"));
     object* abskwargs=new_tuple();
     builtins[48]=new_builtin((builtinfunc)builtin_abs, str_new_fromstr("abs"), absargs, abskwargs, 1, false);
     
     builtins[49]=(object*)&ZeroDivisionError;
     
     object* iscallableargs=new_tuple();
-    iscallableargs->type->slot_mappings->slot_append(iscallableargs, str_new_fromstr("object"));
+    tuple_append_noinc(iscallableargs, str_new_fromstr("object"));
     object* iscallablekwargs=new_tuple();
     builtins[50]=new_builtin((builtinfunc)builtin_iscallable, str_new_fromstr("iscallable"), iscallableargs, iscallablekwargs, 1, false);
     
     object* reverseargs=new_tuple();
-    reverseargs->type->slot_mappings->slot_append(reverseargs, str_new_fromstr("object"));
+    tuple_append_noinc(reverseargs, str_new_fromstr("object"));
     object* reversekwargs=new_tuple();
     builtins[51]=new_builtin((builtinfunc)builtin_reverse, str_new_fromstr("reverse"), reverseargs, reversekwargs, 1, false);
     
     object* isiterargs=new_tuple();
-    isiterargs->type->slot_mappings->slot_append(isiterargs, str_new_fromstr("object"));
+    tuple_append_noinc(isiterargs, str_new_fromstr("object"));
     object* isiterkwargs=new_tuple();
     builtins[52]=new_builtin((builtinfunc)builtin_isiter, str_new_fromstr("isiter"), isiterargs, isiterkwargs, 1, false);
     
     object* maxargs=new_tuple();
-    maxargs->type->slot_mappings->slot_append(maxargs, str_new_fromstr("object"));
+    tuple_append_noinc(maxargs, str_new_fromstr("object"));
     object* maxkwargs=new_tuple();
     builtins[53]=new_builtin((builtinfunc)builtin_max, str_new_fromstr("max"), maxargs, maxkwargs, 1, false);
     
     object* minargs=new_tuple();
-    minargs->type->slot_mappings->slot_append(minargs, str_new_fromstr("object"));
+    tuple_append_noinc(minargs, str_new_fromstr("object"));
     object* minkwargs=new_tuple();
     builtins[54]=new_builtin((builtinfunc)builtin_min, str_new_fromstr("min"), minargs, minkwargs, 1, false);
     
@@ -182,27 +182,27 @@ void setup_builtins(){
     builtins[59]=(object*)&PropertyType;
     
     object* getannotationargs=new_tuple();
-    getannotationargs->type->slot_mappings->slot_append(getannotationargs, str_new_fromstr("name"));
+    tuple_append_noinc(getannotationargs, str_new_fromstr("name"));
     object* getannotationkwargs=new_tuple();
     builtins[60]=new_builtin((builtinfunc)builtin_getannotation, str_new_fromstr("getannotation"), getannotationargs, getannotationkwargs, 1, false);
 
     object* sumargs=new_tuple();
-    sumargs->type->slot_mappings->slot_append(sumargs, str_new_fromstr("object"));
+    tuple_append_noinc(sumargs, str_new_fromstr("object"));
     object* sumkwargs=new_tuple();
     builtins[61]=new_builtin((builtinfunc)builtin_sum, str_new_fromstr("sum"), sumargs, sumkwargs, 1, false);
 
     builtins[62]=(object*)&SetType;    
     
     object* hasattrargs=new_tuple();
-    hasattrargs->type->slot_mappings->slot_append(hasattrargs, str_new_fromstr("object"));
-    hasattrargs->type->slot_mappings->slot_append(hasattrargs, str_new_fromstr("attr"));
+    tuple_append_noinc(hasattrargs, str_new_fromstr("object"));
+    tuple_append_noinc(hasattrargs, str_new_fromstr("attr"));
     object* hasattrkwargs=new_tuple();
     builtins[63]=new_builtin((builtinfunc)builtin_sum, str_new_fromstr("hasattr"), hasattrargs, hasattrkwargs, 2, false);
 
     builtins[64]=(object*)&BytesType;
 
     object* dirargs=new_tuple();
-    dirargs->type->slot_mappings->slot_append(dirargs, str_new_fromstr("object"));
+    tuple_append_noinc(dirargs, str_new_fromstr("object"));
     object* dirkwargs=new_tuple();
     builtins[65]=new_builtin((builtinfunc)builtin_dir, str_new_fromstr("dir"), dirargs, dirkwargs, 1, false);
 }

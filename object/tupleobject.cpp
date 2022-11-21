@@ -53,7 +53,7 @@ object* tuple_new(object* type, object* args, object* kwargs){
         
         o=iter->type->slot_next(iter);
         while (vm->exception==NULL){
-            list_append((object*)obj, o);
+            tuple_append_noinc((object*)obj, o);
             
             o=iter->type->slot_next(iter);
         }
@@ -75,7 +75,6 @@ object* tuple_new(object* type, object* args, object* kwargs){
 
     for (size_t i=0; i<CAST_LIST(args)->size; i++){
         object* o=list_index_int(args, i);
-        FPLINCREF(o);
         tuple_append((object*)obj, o);
     }
     

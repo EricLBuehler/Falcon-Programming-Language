@@ -380,11 +380,11 @@ object* string_split_meth(object* selftp, object* args, object* kwargs){
     std::string token;
     while ((pos = s.find(delimiter)) != std::string::npos && delimiter.size()!=0) {
         token = s.substr(0, pos);
-        list_append(list, str_new_fromstr(token));
+        tuple_append_noinc(list, str_new_fromstr(token));
         s.erase(0, pos + delimiter.length());
     }
     if (s.length()>=0){
-        list_append(list, str_new_fromstr(s));
+        tuple_append_noinc(list, str_new_fromstr(s));
     }
         
     return list;

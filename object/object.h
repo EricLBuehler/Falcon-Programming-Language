@@ -147,7 +147,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=65;
+const size_t nbuiltins=66;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -215,6 +215,10 @@ object* object_in_iter(object* left, object* right);
 object* object_in_iter(object* left, object* right);
 object* object_enter_with(object* self);
 object* object_exit_with(object* self);
+object* object_genericgetattr_deref(object* obj, object* attr);
+object* object_genericgetattr_notype_deref(object* obj, object* attr);
+object* object_getattr_deref(object* obj, object* attr);
+object* object_setattr_deref(object* obj, object* attr, object* val);
 
 object* builtin___build_class__(object* self, object* args);
 
