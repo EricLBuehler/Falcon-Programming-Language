@@ -1,7 +1,7 @@
 object* builtin_eval(object* self, object* args){
-    object* str=args->type->slot_mappings->slot_get(args, str_new_fromstr("string"));
-    object* glbls=args->type->slot_mappings->slot_get(args, str_new_fromstr("globals"));
-    object* locals=args->type->slot_mappings->slot_get(args, str_new_fromstr("locals"));
+    object* str=dict_get_opti_deref(args, str_new_fromstr("string"));
+    object* glbls=dict_get_opti_deref(args, str_new_fromstr("globals"));
+    object* locals=dict_get_opti_deref(args, str_new_fromstr("locals"));
 
     string data=*CAST_STRING(str)->val;
 

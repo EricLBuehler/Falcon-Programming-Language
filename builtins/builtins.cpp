@@ -2,9 +2,9 @@
 #define BUILTIN_BUILD_CLASS builtins[1]
 
 object* builtin_print(object* self, object* args){
-    object* tupargs=args->type->slot_mappings->slot_get(args, str_new_fromstr("args"));
-    object* sep_=dict_get(args, str_new_fromstr("sep"));
-    object* end=dict_get(args, str_new_fromstr("end"));
+    object* tupargs=dict_get_opti_deref(args, str_new_fromstr("args"));
+    object* sep_=dict_get_opti_deref(args, str_new_fromstr("sep"));
+    object* end=dict_get_opti_deref(args, str_new_fromstr("end"));
     string sep=object_cstr(sep_);
     for (int n=0; n<CAST_TUPLE(tupargs)->size; n++){
         cout<<object_cstr(tuple_index_int(tupargs, n));
@@ -20,17 +20,17 @@ object* builtin_print(object* self, object* args){
 }
 
 object* builtin_repr(object* self, object* args){
-    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
     object* s=object_repr(o);
     FPLDECREF(o);
     return s;
 }
 
 object* builtin___build_class__(object* self, object* args){
-    object* function=args->type->slot_mappings->slot_get(args, str_new_fromstr("func"));
-    object* name=args->type->slot_mappings->slot_get(args, str_new_fromstr("name"));
-    object* bases=args->type->slot_mappings->slot_get(args, str_new_fromstr("bases"));
-    object* doc=args->type->slot_mappings->slot_get(args, str_new_fromstr("doc"));
+    object* function=dict_get_opti_deref(args, str_new_fromstr("func"));
+    object* name=dict_get_opti_deref(args, str_new_fromstr("name"));
+    object* bases=dict_get_opti_deref(args, str_new_fromstr("bases"));
+    object* doc=dict_get_opti_deref(args, str_new_fromstr("doc"));
     object* dict;    
 
     if (!object_istype(function->type, &FuncType)){
@@ -79,7 +79,7 @@ object* builtin___build_class__(object* self, object* args){
 }
 
 object* builtin_id(object* self, object* args){
-    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* obj=dict_get_opti_deref(args, str_new_fromstr("object"));
     char buf[32];
     sprintf(buf, "%ld", (size_t)obj);
     FPLDECREF(obj);
@@ -87,7 +87,7 @@ object* builtin_id(object* self, object* args){
 }
 
 object* builtin_input(object* self, object* args){
-    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* obj=dict_get_opti_deref(args, str_new_fromstr("object"));
     cout<<object_cstr(obj);
     string s="";
     getline(cin,s);
@@ -102,7 +102,7 @@ object* builtin_input(object* self, object* args){
 }
 
 object* builtin_iter(object* self, object* args){
-    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* obj=dict_get_opti_deref(args, str_new_fromstr("object"));
     if (obj->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "'%s' object is not an iterable", obj->type->name->c_str());
         return NULL;
@@ -113,7 +113,7 @@ object* builtin_iter(object* self, object* args){
 }
 
 object* builtin_next(object* self, object* args){
-    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* obj=dict_get_opti_deref(args, str_new_fromstr("object"));
     if (obj->type->slot_next==NULL){
         vm_add_err(&TypeError, vm, "'%s' object is not an iterable", obj->type->name->c_str());
         return NULL;
@@ -124,8 +124,8 @@ object* builtin_next(object* self, object* args){
 }
 
 object* builtin_round(object* self, object* args){
-    object* obj=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
-    object* digits=args->type->slot_mappings->slot_get(args, str_new_fromstr("digits"));
+    object* obj=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* digits=dict_get_opti_deref(args, str_new_fromstr("digits"));
     
     object* floatval=object_float(obj);
     if (floatval==NULL || !object_istype(floatval->type, &FloatType)){
@@ -195,7 +195,7 @@ object* builtin_copyright(object* self, object* args){
 }
     
 object* builtin_len(object* self, object* args){
-    object* arg=dict_get(args, str_new_fromstr("object"));
+    object* arg=dict_get_opti_deref(args, str_new_fromstr("object"));
 
     if (arg->type->slot_mappings->slot_len==NULL){
         vm_add_err(&TypeError, vm, "'%s' object has no __len__", arg->type->name->c_str());
@@ -206,8 +206,8 @@ object* builtin_len(object* self, object* args){
 }
 
 object* builtin_issubclass(object* self, object* args){
-    object* ob=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
-    object* type=args->type->slot_mappings->slot_get(args, str_new_fromstr("type"));
+    object* ob=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* type=dict_get_opti_deref(args, str_new_fromstr("type"));
 
     if (!object_istype(type->type, &TypeType)){
         vm_add_err(&TypeError, vm, "Expected type object, got '%s' object", type->type->name->c_str());
@@ -226,8 +226,8 @@ object* builtin_issubclass(object* self, object* args){
 object* builtin_eval(object* self, object* args);
 
 object* builtin_getattr(object* self, object* args){
-    object* ob=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
-    object* attr=args->type->slot_mappings->slot_get(args, str_new_fromstr("attr"));
+    object* ob=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* attr=dict_get_opti_deref(args, str_new_fromstr("attr"));
     
     if (!object_istype(attr->type, &StrType)){
         vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", attr->type->name->c_str());
@@ -240,9 +240,9 @@ object* builtin_getattr(object* self, object* args){
 }
 
 object* builtin_setattr(object* self, object* args){
-    object* ob=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
-    object* attr=args->type->slot_mappings->slot_get(args, str_new_fromstr("attr"));
-    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("val"));
+    object* ob=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* attr=dict_get_opti_deref(args, str_new_fromstr("attr"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("val"));
 
     if (!object_istype(attr->type, &StrType)){
         vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", attr->type->name->c_str());
@@ -261,7 +261,7 @@ object* builtin_setattr(object* self, object* args){
 }
 
 object* builtin_abs(object* self, object* args){
-    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("self")); 
+    object* val=dict_get_opti_deref(args, str_new_fromstr("self")); 
     
     object* retval=object_abs(val);
     FPLDECREF(val);
@@ -273,14 +273,14 @@ object* builtin_abs(object* self, object* args){
 }
     
 object* builtin_iscallable(object* self, object* args){
-    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
     object* v=object_iscallable(o);
     FPLDECREF(o);
     return v;
 }
     
 object* builtin_reverse(object* self, object* args){
-    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("object"));
     if (val->type->slot_mappings->slot_get==NULL){
         vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", val->type->name->c_str());
         FPLDECREF(val);
@@ -303,7 +303,7 @@ object* builtin_reverse(object* self, object* args){
             return NULL;
         }
         FPLDECREF(idx);
-        list_append(list,v);
+        tuple_append_noinc(list,v);
         FPLDECREF(v);
     }
     FPLDECREF(len);
@@ -312,7 +312,7 @@ object* builtin_reverse(object* self, object* args){
 }
     
 object* builtin_isiter(object* self, object* args){
-    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
 
     if (o->type->slot_iter==NULL){
         FPLDECREF(o);
@@ -323,7 +323,7 @@ object* builtin_isiter(object* self, object* args){
 }
     
 object* builtin_min(object* self, object* args){
-    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("object"));
 
     if (val->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", val->type->name->c_str());
@@ -408,7 +408,7 @@ object* builtin_min(object* self, object* args){
 }
     
 object* builtin_max(object* self, object* args){
-    object* val=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("object"));
 
     if (val->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", val->type->name->c_str());
@@ -493,7 +493,7 @@ object* builtin_max(object* self, object* args){
 }
     
 object* builtin_getannotation(object* self, object* args){
-    object* nm=args->type->slot_mappings->slot_get(args, str_new_fromstr("name"));
+    object* nm=dict_get_opti_deref(args, str_new_fromstr("name"));
     object* anno=callstack_head(vm->callstack).annotations;
 
     object* tp=dict_get(anno, nm);
@@ -509,7 +509,7 @@ object* builtin_getannotation(object* self, object* args){
 }
     
 object* builtin_sum(object* self, object* args){
-    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
     
     if (o->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", o->type->name->c_str());
@@ -554,8 +554,8 @@ object* builtin_sum(object* self, object* args){
 }
 
 object* builtin_hasattr(object* self, object* args){
-    object* ob=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
-    object* attr=args->type->slot_mappings->slot_get(args, str_new_fromstr("attr"));
+    object* ob=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* attr=dict_get_opti_deref(args, str_new_fromstr("attr"));
     
     if (!object_istype(attr->type, &StrType)){
         vm_add_err(&TypeError, vm, "Expected str object, got '%s' object", attr->type->name->c_str());
@@ -573,13 +573,16 @@ object* builtin_hasattr(object* self, object* args){
 }
 
 object* builtin_dir(object* self, object* args){
-    object* o=args->type->slot_mappings->slot_get(args, str_new_fromstr("object"));
-    object* dict=object_getattr(o, str_new_fromstr("__dict__"));
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* v=str_new_fromstr("__dict__");
+    object* dict=object_getattr(o, v);
     ERROR_RET(dict);
     
     object* list=new_list();
     for (object* o: *CAST_DICT(dict)->keys){
         list_append(list, o);
     }
+    FPLDECREF(v);
+    FPLDECREF(dict);
     return list;
 }
