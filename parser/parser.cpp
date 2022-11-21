@@ -33,6 +33,7 @@ class Parser{
             if (ret->errornum>0){
                 return;
             }
+            
             va_list args;
             const int length=256;
             char format[length];
@@ -240,6 +241,36 @@ class Parser{
 
         Node* make_int_literal(){
             Node* node=make_node(N_INT);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+            IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
+            i->literal=new string(this->current_tok.data);
+            node->node=i;
+            return node;
+        }
+
+        Node* make_bin_literal(){
+            Node* node=make_node(N_BIN);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+            IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
+            i->literal=new string(this->current_tok.data);
+            node->node=i;
+            return node;
+        }
+
+        Node* make_hex_literal(){
+            Node* node=make_node(N_HEX);
+            node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+            node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+            IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
+            i->literal=new string(this->current_tok.data);
+            node->node=i;
+            return node;
+        }
+
+        Node* make_octal_literal(){
+            Node* node=make_node(N_OCTAL);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
             IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
@@ -2158,7 +2189,19 @@ class Parser{
                     if (this->current_tok.data=="lambda"){
                         left=make_lambda(ret);
                     }
-                    break;                  
+                    break; 
+
+                case T_BIN:
+                    left=make_bin_literal();
+                    break;
+
+                case T_HEX:
+                    left=make_hex_literal();
+                    break;   
+
+                case T_OCTAL:
+                    left=make_octal_literal();
+                    break;        
                     
 
                 default:
@@ -2186,6 +2229,9 @@ class Parser{
                 case T_NOT:
                 case T_COLON:
                 case T_AMPERSAND:
+                case T_BIN:
+                case T_HEX:
+                case T_OCTAL:
                     return true;
                 case T_KWD:
                     if (this->current_tok.data=="lambda"){

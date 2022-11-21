@@ -58,7 +58,9 @@ enum nodetype{
     N_SETCOMP, //No data struct (N_TUPLECOMP)
     N_DICTCOMP,
     N_BSTRING,
-    N_REF,
+    N_BIN, //No data struct (N_INTLIT)
+    N_HEX, //No data struct (N_INTLIT)
+    N_OCTAL, //No data struct (N_INTLIT)
 };
 
 enum precedence {
