@@ -1242,6 +1242,44 @@ int compile_expr(struct compiler* compiler, Node* expr){
             break;
         }
 
+        case N_BIN: {
+            uint32_t idx;
+            object* v=new_int_frombin(*INTLIT(expr->node)->literal);
+            if (!object_find_bool(compiler->consts, v)){
+                //Create object
+                tuple_append_noinc(compiler->consts, v);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, v);
+            }
+            
+            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+            if (!compiler->keep_return){
+                add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
+            }
+            break;
+        }
+
+        case N_HEX: {
+            uint32_t idx;
+            object* v=new_int_fromhex(*INTLIT(expr->node)->literal);
+            if (!object_find_bool(compiler->consts, v)){
+                //Create object
+                tuple_append_noinc(compiler->consts, v);
+                idx = NAMEIDX(compiler->consts);
+            }
+            else{
+                idx=object_find(compiler->consts, v);
+            }
+            
+            add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+            if (!compiler->keep_return){
+                add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(expr));
+            }
+            break;
+        }
+
         case N_FLOAT: {
             uint32_t idx;
             object* v=new_float_fromstr(FLOATLIT(expr->node)->literal);
