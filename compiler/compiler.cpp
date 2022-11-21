@@ -370,9 +370,9 @@ void add_instruction(struct compiler* compiler, struct instructions* instruction
     instr->next=instructions->first;
     
     object* tup=new_tuple();
-    tuple_append(tup, new_int_fromint(startcol));
-    tuple_append(tup, new_int_fromint(endcol));
-    tuple_append(tup, new_int_fromint(line));
+    tuple_append_noinc(tup, new_int_fromint(startcol));
+    tuple_append_noinc(tup, new_int_fromint(endcol));
+    tuple_append_noinc(tup, new_int_fromint(line));
     dict_set_noret(compiler->lines_detailed, new_int_fromint(instructions->count*2), tup);
     FPLDECREF(tup);
 
@@ -427,7 +427,7 @@ uint32_t binop_inplace_setup(struct compiler* compiler, Node* left){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(left->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
                 idx = NAMEIDX(compiler->names);
             }
             else{
@@ -449,7 +449,7 @@ uint32_t binop_inplace_setup(struct compiler* compiler, Node* left){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(GLBLIDENT(left->node)->name->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(left->node)->name->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(left->node)->name->node)->name));
                 idx = NAMEIDX(compiler->names);
             }
             else{
@@ -461,7 +461,7 @@ uint32_t binop_inplace_setup(struct compiler* compiler, Node* left){
             uint32_t idx;
              if (!_list_contains(compiler->names, IDENTI(left->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(left->node)->name));
                 idx = NAMEIDX(compiler->names);
             }
             else{
@@ -491,7 +491,7 @@ uint32_t binop_inplace_setup(struct compiler* compiler, Node* left){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -572,7 +572,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (ASSIGN(expr->node)->name->type==N_IDENT){
                 if (!_list_contains(compiler->names, IDENTI(ASSIGN(expr->node)->name->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -608,7 +608,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             else if (ASSIGN(expr->node)->name->type==N_NONLOCAL){
                 if (!_list_contains(compiler->names, IDENTI(ASSIGN(expr->node)->name->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(ASSIGN(expr->node)->name->node)->name));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -622,7 +622,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             else if (ASSIGN(expr->node)->name->type==N_GLBL_IDENT){
                 if (!_list_contains(compiler->names, IDENTI(GLBLIDENT(ASSIGN(expr->node)->name->node)->name->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(ASSIGN(expr->node)->name->node)->name->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(ASSIGN(expr->node)->name->node)->name->node)->name));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -642,7 +642,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 string* s=MULTIIDENT(expr->node)->name->at(i-1);
                 if (!_list_contains(compiler->names, s)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*s));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*s));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -1228,7 +1228,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* v=new_int_fromstr(INTLIT(expr->node)->literal);
             if (!object_find_bool(compiler->consts, v)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, v);
+                tuple_append_noinc(compiler->consts, v);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1247,7 +1247,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* v=new_float_fromstr(FLOATLIT(expr->node)->literal);
             if (!object_find_bool(compiler->consts, v)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, v);
+                tuple_append_noinc(compiler->consts, v);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1266,7 +1266,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* v=str_new_fromstr(*STRLIT(expr->node)->literal);
             if (!object_find_bool(compiler->consts, v)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, v);
+                tuple_append_noinc(compiler->consts, v);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1284,7 +1284,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(expr->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(expr->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(expr->node)->name));
                 idx = NAMEIDX(compiler->names);
             }
             else{
@@ -1308,7 +1308,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->name->node)->name )){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
                 nameidx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1327,10 +1327,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*FUNCT(expr->node)->args)){
                 argc++;
                 if (n->type==N_IDENT){
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(n->node)->name));
+                    tuple_append_noinc(args, str_new_fromstr(*IDENTI(n->node)->name));
                 }
                 else{
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*ANONIDENT(n->node)->name));
+                    tuple_append_noinc(args, str_new_fromstr(*ANONIDENT(n->node)->name));
                 }
             }
             //
@@ -1338,10 +1338,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //Setup kwargs (code object) backwards
             for (Node* n: (*FUNCT(expr->node)->kwargs)){
                 if (n->type==N_ASSIGN){
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
+                    tuple_append_noinc(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
                 }
                 else{
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
+                    tuple_append_noinc(args, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
                 }
             }
             
@@ -1366,7 +1366,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts, args)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, args);
+                tuple_append_noinc(compiler->consts, args);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1395,7 +1395,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 string* s=new string("return");
                 if (!_list_contains(compiler->consts, s)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr("return"));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr("return"));
                     idx = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -1421,7 +1421,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, ANONIDENT(n->node)->name )){
                         //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*ANONIDENT(n->node)->name));
+                        tuple_append_noinc(compiler->consts, str_new_fromstr(*ANONIDENT(n->node)->name));
                         idx = NAMEIDX(compiler->consts);
                     }
                     else{
@@ -1446,7 +1446,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, ANONIDENT(ASSIGN(n->node)->name->node)->name)){
                         //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
+                        tuple_append_noinc(compiler->consts, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
                         idx = NAMEIDX(compiler->consts);
                     }
                     else{
@@ -1486,13 +1486,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* lines=new_list();
             
             object* tuple=new_tuple();
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(expr->start->line));
+            tuple_append_noinc(tuple, new_int_fromint(0));
+            tuple_append_noinc(tuple, new_int_fromint(0));
+            tuple_append_noinc(tuple, new_int_fromint(expr->start->line));
             
-            lines->type->slot_mappings->slot_append(lines, tuple);
+            tuple_append_noinc(lines, tuple);
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_lines)->size; i++){
-                lines->type->slot_mappings->slot_append(lines, list_index_int(CAST_CODE(code)->co_lines, i));
+                tuple_append_noinc(lines, list_index_int(CAST_CODE(code)->co_lines, i));
             }
             FPLDECREF(CAST_CODE(code)->co_lines);
             CAST_CODE(code)->co_lines=lines; //No FPLINCREF necessary
@@ -1503,7 +1503,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (!object_find_bool(compiler->consts, code)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, code);
+                tuple_append_noinc(compiler->consts, code);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1519,7 +1519,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 star=FUNC_STAR;
                 if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->stkwargs->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stkwargs->node)->name));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stkwargs->node)->name));
                     star_kwargs = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -1528,7 +1528,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->stargs->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stargs->node)->name));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stargs->node)->name));
                     star_args = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -1541,7 +1541,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 star=FUNC_STARARGS;
                 if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->stargs->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stargs->node)->name));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stargs->node)->name));
                     star_args = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -1553,7 +1553,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 star=FUNC_STARKWARGS;
                 if (!_list_contains(compiler->consts, IDENTI(FUNCT(expr->node)->stkwargs->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stkwargs->node)->name));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(expr->node)->stkwargs->node)->name));
                     star_kwargs = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -1565,7 +1565,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* star_int=new_int_fromint(star);
             if (!object_find_bool(compiler->consts, star_int)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, star_int);
+                tuple_append_noinc(compiler->consts, star_int);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1582,7 +1582,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (!object_find_bool(compiler->consts, doc)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, doc);
+                tuple_append_noinc(compiler->consts, doc);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1613,7 +1613,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t nameidxstore;
                 if (!_list_contains(compiler->names, IDENTI(FUNCT(expr->node)->name->node)->name )){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
                     nameidxstore = NAMEIDX(compiler->names);
                 }
                 else{
@@ -1654,16 +1654,16 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     return cmpexpr;
                 }
                 if (find(CALL(expr->node)->stargs->begin(), CALL(expr->node)->stargs->end(), i_)!=CALL(expr->node)->stargs->end()){
-                    tuple_append(stargs, new_int_fromint(i_));
+                    tuple_append_noinc(stargs, new_int_fromint(i_));
                 }
                 if (find(CALL(expr->node)->stkwargs->begin(), CALL(expr->node)->stkwargs->end(), i_+argsize-1)!=CALL(expr->node)->stkwargs->end()){
-                    tuple_append(stkwargs, new_int_fromint(i_+argsize-1));
+                    tuple_append_noinc(stkwargs, new_int_fromint(i_+argsize-1));
                 }
                 i_++;
             }
             //Kwargs (iterate backwards)
             for (auto it =  (*CALL(expr->node)->kwargs).rbegin(); it != (*CALL(expr->node)->kwargs).rend(); ++it){
-                tuple_append(kwargs, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
+                tuple_append_noinc(kwargs, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                 int cmpexpr=compile_expr_keep(compiler, ASSIGN((*it)->node)->right);
                 if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
@@ -1676,7 +1676,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (CAST_TUPLE(kwargs)->size != 0){
                 if (!object_find_bool(compiler->consts,kwargs)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
+                    tuple_append_noinc(compiler->consts, kwargs);
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
@@ -1689,7 +1689,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0){
                 if (!object_find_bool(compiler->consts,stargs)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                    tuple_append_noinc(compiler->consts, stargs);
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
@@ -1700,7 +1700,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                 if (!object_find_bool(compiler->consts,stkwargs)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                    tuple_append_noinc(compiler->consts, stkwargs);
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
@@ -1742,7 +1742,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,trueobj)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_true());
+                tuple_append_noinc(compiler->consts, new_bool_true());
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -1757,7 +1757,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,falseobj)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                tuple_append_noinc(compiler->consts, new_bool_false());
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -1772,7 +1772,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,noneobj)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                tuple_append_noinc(compiler->consts, noneobj);
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -1788,7 +1788,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t nameidx;
             if (!_list_contains(compiler->consts, IDENTI(CLASS(expr->node)->name->node)->name )){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(CLASS(expr->node)->name->node)->name));
+                tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(CLASS(expr->node)->name->node)->name));
                 nameidx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1802,7 +1802,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts, args)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, args);
+                tuple_append_noinc(compiler->consts, args);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1813,7 +1813,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
             if (!object_find_bool(compiler->consts, anno)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, anno);
+                tuple_append_noinc(compiler->consts, anno);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1838,11 +1838,13 @@ int compile_expr(struct compiler* compiler, Node* expr){
             compile_expr_cleanup(&compiler->stack_size, &comp->stack_size, &compiler->blockstack_size, &comp->blockstack_size);
 
             FPLDECREF(CAST_CODE(code)->co_file);
-            CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name));
+            object* o=str_new_fromstr(*IDENTI(FUNCT(expr->node)->name->node)->name);
+            CAST_CODE(code)->co_file=object_repr(o);
+            FPLDECREF(o);
             
             if (!object_find_bool(compiler->consts, code)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, code);
+                tuple_append_noinc(compiler->consts, code);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1853,7 +1855,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* star_int=new_int_fromint(FUNC_STRICTARGS);
             if (!object_find_bool(compiler->consts, star_int)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, star_int);
+                tuple_append_noinc(compiler->consts, star_int);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1864,7 +1866,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* doc=new_none();
             if (!object_find_bool(compiler->consts, doc)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, doc);
+                tuple_append_noinc(compiler->consts, doc);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1894,7 +1896,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (!object_find_bool(compiler->consts, doc)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, doc);
+                tuple_append_noinc(compiler->consts, doc);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -1911,7 +1913,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t nameidxstore;
             if (!_list_contains(compiler->names, IDENTI(CLASS(expr->node)->name->node)->name )){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(CLASS(expr->node)->name->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(CLASS(expr->node)->name->node)->name));
                 nameidxstore = NAMEIDX(compiler->names);
             }
             else{
@@ -1941,7 +1943,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -1969,7 +1971,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -1998,7 +2000,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -2020,7 +2022,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (i==names->size()-1){//Object
                     if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                         //Create object
-                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -2040,7 +2042,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     //Kwargs (iterate backwards)
                     for (auto it =  (*DOTCALL(expr->node)->kwargs).rbegin(); it != (*DOTCALL(expr->node)->kwargs).rend(); ++it){
-                        tuple_append(kwargs, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
+                        tuple_append_noinc(kwargs, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                         int cmpexpr=compile_expr_keep(compiler, ASSIGN((*it)->node)->right);
                         if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
@@ -2052,7 +2054,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     if (CAST_TUPLE(kwargs)->size != 0){
                         if (!object_find_bool(compiler->consts,kwargs)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, kwargs);
+                            tuple_append_noinc(compiler->consts, kwargs);
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -2064,17 +2066,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                     object* stargs=new_tuple();
                     for (int i: *DOTCALL(expr->node)->stargs){
-                        tuple_append(stargs, new_int_fromint(i));
+                        tuple_append_noinc(stargs, new_int_fromint(i));
                     }
                     object* stkwargs=new_tuple();
                     for (int i: *DOTCALL(expr->node)->stkwargs){
-                        tuple_append(stkwargs, new_int_fromint(i));
+                        tuple_append_noinc(stkwargs, new_int_fromint(i));
                     }
 
                     if (CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0){
                         if (!object_find_bool(compiler->consts,stargs)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, stargs);
+                            tuple_append_noinc(compiler->consts, stargs);
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -2087,7 +2089,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                         if (!object_find_bool(compiler->consts,stkwargs)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, stkwargs);
+                            tuple_append_noinc(compiler->consts, stkwargs);
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -2197,10 +2199,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }
             }
 
@@ -2233,10 +2235,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }
             }   
             break;
@@ -2277,10 +2279,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t end=compiler->instructions->count*2;
                         if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                             object* tuple=new_tuple();
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                            compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                            tuple_append_noinc(tuple, new_int_fromint(start));
+                            tuple_append_noinc(tuple, new_int_fromint(end));
+                            tuple_append_noinc(tuple, new_int_fromint(line));
+                            tuple_append_noinc(compiler->lines, tuple);
                         }
                     }
                     add_instruction(compiler, compiler->instructions,JUMP_DELTA,target-instrs, GET_ANNO_N(n));
@@ -2304,10 +2306,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t end=compiler->instructions->count*2;
                         if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                             object* tuple=new_tuple();
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                            compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                            tuple_append_noinc(tuple, new_int_fromint(start));
+                            tuple_append_noinc(tuple, new_int_fromint(end));
+                            tuple_append_noinc(tuple, new_int_fromint(line));
+                            tuple_append_noinc(compiler->lines, tuple);
                         }
                     }   
                 }
@@ -2377,10 +2379,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }
             }
             add_instruction(compiler, compiler->instructions,JUMP_DELTA,0, GET_ANNO_N(expr));
@@ -2405,10 +2407,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }
             }
             break;
@@ -2419,7 +2421,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, STRLIT(EXCEPT(expr->node)->name->node)->literal)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(expr->node)->name->node)->literal));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(expr->node)->name->node)->literal));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -2441,10 +2443,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }
                 
                     
@@ -2458,7 +2460,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, STRLIT(EXCEPT(expr->node)->type->node)->literal)){
                         //Create object
-                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(expr->node)->type->node)->literal));
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(expr->node)->type->node)->literal));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -2494,10 +2496,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }
             }
 
@@ -2538,10 +2540,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t end=compiler->instructions->count*2;
                         if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                             object* tuple=new_tuple();
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                            compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                            tuple_append_noinc(tuple, new_int_fromint(start));
+                            tuple_append_noinc(tuple, new_int_fromint(end));
+                            tuple_append_noinc(tuple, new_int_fromint(line));
+                            tuple_append_noinc(compiler->lines, tuple);
                         }
                     }
 
@@ -2570,10 +2572,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         uint32_t end=compiler->instructions->count*2;
                         if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                             object* tuple=new_tuple();
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                            compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                            tuple_append_noinc(tuple, new_int_fromint(start));
+                            tuple_append_noinc(tuple, new_int_fromint(end));
+                            tuple_append_noinc(tuple, new_int_fromint(line));
+                            tuple_append_noinc(compiler->lines, tuple);
                         }
                     }
                     
@@ -2590,7 +2592,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->type->node)->literal)){
                         //Create object
-                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->type->node)->literal));
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->type->node)->literal));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -2613,10 +2615,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t end=compiler->instructions->count*2;
                     if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->type->start->line));
-                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                        tuple_append_noinc(tuple, new_int_fromint(start));
+                        tuple_append_noinc(tuple, new_int_fromint(end));
+                        tuple_append_noinc(tuple, new_int_fromint(EXCEPT(tryn->node)->type->start->line));
+                        tuple_append_noinc(compiler->lines, tuple);
                     }
         
                     instrs+=2;
@@ -2634,7 +2636,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, STRLIT(EXCEPT(tryn->node)->name->node)->literal)){
                         //Create object
-                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->name->node)->literal));
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*STRLIT(EXCEPT(tryn->node)->name->node)->literal));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -2657,10 +2659,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t end=compiler->instructions->count*2;
                     if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(tryn->node)->name->start->line));
-                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                        tuple_append_noinc(tuple, new_int_fromint(start));
+                        tuple_append_noinc(tuple, new_int_fromint(end));
+                        tuple_append_noinc(tuple, new_int_fromint(EXCEPT(tryn->node)->name->start->line));
+                        tuple_append_noinc(compiler->lines, tuple);
                     }
                     
                     add_instruction(compiler, compiler->instructions,POP_TOS, 0, GET_ANNO_N(EXCEPT(tryn->node)->name));
@@ -2682,10 +2684,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t end=compiler->instructions->count*2;
                     if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                        tuple_append_noinc(tuple, new_int_fromint(start));
+                        tuple_append_noinc(tuple, new_int_fromint(end));
+                        tuple_append_noinc(tuple, new_int_fromint(line));
+                        tuple_append_noinc(compiler->lines, tuple);
                     }
                 }            
                     
@@ -2717,10 +2719,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
             
             add_instruction(compiler, compiler->instructions,EXTRACT_ITER,0, startcol, endcol, startline);
@@ -2746,7 +2748,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (FOR(expr->node)->ident->type==N_IDENT){
                 if (!_list_contains(compiler->names, IDENTI(FOR(expr->node)->ident->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(FOR(expr->node)->ident->node)->name));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -2789,10 +2791,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }            
             }
 
@@ -2815,10 +2817,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t end=compiler->instructions->count*2;
                     if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                        tuple_append_noinc(tuple, new_int_fromint(start));
+                        tuple_append_noinc(tuple, new_int_fromint(end));
+                        tuple_append_noinc(tuple, new_int_fromint(line));
+                        tuple_append_noinc(compiler->lines, tuple);
                     }
                 }   
             }
@@ -2868,10 +2870,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
 
             
@@ -2892,10 +2894,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }     
                 idx++;       
             }
@@ -2921,10 +2923,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t end=compiler->instructions->count*2;
                     if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                         object* tuple=new_tuple();
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                        compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                        tuple_append_noinc(tuple, new_int_fromint(start));
+                        tuple_append_noinc(tuple, new_int_fromint(end));
+                        tuple_append_noinc(tuple, new_int_fromint(line));
+                        tuple_append_noinc(compiler->lines, tuple);
                     }
                 }   
             }
@@ -2942,7 +2944,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(libname->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(libname->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(libname->node)->name));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -2954,7 +2956,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (name!=NULL){
                     if (!_list_contains(compiler->names, IDENTI(name->node)->name)){
                         //Create object
-                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(name->node)->name));
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(name->node)->name));
                         idx=NAMEIDX(compiler->names);
                     }
                     else{
@@ -2980,7 +2982,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(FROM(expr->node)->name->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FROM(expr->node)->name->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(FROM(expr->node)->name->node)->name));
                 idx=NAMEIDX(compiler->names);
             }
             else{
@@ -2997,12 +2999,12 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     break;
                 }
                 
-                list_append(names, str_new_fromstr(*IDENTI(name->node)->name));
+                tuple_append_noinc(names, str_new_fromstr(*IDENTI(name->node)->name));
             }
             
             if (!object_find_bool(compiler->consts, names)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, names);
+                tuple_append_noinc(compiler->consts, names);
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -3052,7 +3054,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, noneobj);
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3066,7 +3068,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, noneobj);
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3132,7 +3134,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, noneobj);
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3146,7 +3148,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, noneobj);
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3228,7 +3230,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!object_find_bool(compiler->consts,noneobj)){
                         //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                        tuple_append_noinc(compiler->consts, noneobj);
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
@@ -3242,7 +3244,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!object_find_bool(compiler->consts,noneobj)){
                         //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, noneobj);
+                        tuple_append_noinc(compiler->consts, noneobj);
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
@@ -3267,7 +3269,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(GLBLIDENT(DEL(expr->node)->expr->node)->name->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(DEL(expr->node)->expr->node)->name->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(GLBLIDENT(DEL(expr->node)->expr->node)->name->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -3279,7 +3281,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(DEL(expr->node)->expr->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(DEL(expr->node)->expr->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(DEL(expr->node)->expr->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -3295,7 +3297,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                         //Create object
-                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -3314,7 +3316,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!_list_contains(compiler->names, IDENTI(DEL(expr->node)->expr->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(DEL(expr->node)->expr->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(DEL(expr->node)->expr->node)->name));
                     idx = NAMEIDX(compiler->names);
                 }
                 else{
@@ -3386,7 +3388,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         object* s=str_new_fromstr(segment);
                         if (!object_find_bool(compiler->consts,s)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, s);
+                            tuple_append_noinc(compiler->consts, s);
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -3397,7 +3399,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         
                         if (!object_find_bool(compiler->consts,falseobj)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                            tuple_append_noinc(compiler->consts, new_bool_false());
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -3411,7 +3413,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         s=str_new_fromstr("=");
                         if (!object_find_bool(compiler->consts,s)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, s);
+                            tuple_append_noinc(compiler->consts, s);
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -3422,7 +3424,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         
                         if (!object_find_bool(compiler->consts,falseobj)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                            tuple_append_noinc(compiler->consts, new_bool_false());
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -3444,7 +3446,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     if (repr){
                         if (!object_find_bool(compiler->consts,trueobj)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_true());
+                            tuple_append_noinc(compiler->consts, new_bool_true());
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -3454,7 +3456,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     else{
                         if (!object_find_bool(compiler->consts,falseobj)){
                             //Create object
-                            compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                            tuple_append_noinc(compiler->consts, new_bool_false());
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
@@ -3473,7 +3475,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, s)){
                         //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(segment));
+                        tuple_append_noinc(compiler->consts, str_new_fromstr(segment));
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
@@ -3484,7 +3486,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                     if (!object_find_bool(compiler->consts,falseobj)){
                         //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_bool_false());
+                        tuple_append_noinc(compiler->consts, new_bool_false());
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
@@ -3509,7 +3511,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(expr->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(expr->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(expr->node)->name));
                 idx = NAMEIDX(compiler->names);
             }
             else{
@@ -3558,7 +3560,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name )){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
+                tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
                 nameidx = NAMEIDX(compiler->consts);
             }
             else{
@@ -3578,10 +3580,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             for (Node* n: (*FUNCT(DECORATOR(decorators.back())->function->node)->args)){
                 argc++;
                 if (n->type==N_IDENT){
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(n->node)->name));
+                    tuple_append_noinc(args, str_new_fromstr(*IDENTI(n->node)->name));
                 }
                 else{
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*ANONIDENT(n->node)->name));
+                    tuple_append_noinc(args, str_new_fromstr(*ANONIDENT(n->node)->name));
                 }
             }
             //
@@ -3589,10 +3591,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             //Setup kwargs (code object) backwards
             for (Node* n: (*FUNCT(DECORATOR(decorators.back())->function->node)->kwargs)){
                 if (n->type==N_ASSIGN){
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
+                    tuple_append_noinc(args, str_new_fromstr(*IDENTI(ASSIGN(n->node)->name->node)->name));
                 }
                 else{
-                    args->type->slot_mappings->slot_append(args, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
+                    tuple_append_noinc(args, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
                 }
             }
 
@@ -3618,7 +3620,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts, args)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, args);
+                tuple_append_noinc(compiler->consts, args);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -3650,7 +3652,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 string* s=new string("return");
                 if (!_list_contains(compiler->consts, s)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr("return"));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr("return"));
                     idx = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3676,7 +3678,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, ANONIDENT(n->node)->name )){
                         //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*ANONIDENT(n->node)->name));
+                        tuple_append_noinc(compiler->consts, str_new_fromstr(*ANONIDENT(n->node)->name));
                         idx = NAMEIDX(compiler->consts);
                     }
                     else{
@@ -3702,7 +3704,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->consts, ANONIDENT(ASSIGN(n->node)->name->node)->name)){
                         //Create object
-                        compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
+                        tuple_append_noinc(compiler->consts, str_new_fromstr(*ANONIDENT(ASSIGN(n->node)->name->node)->name));
                         idx = NAMEIDX(compiler->consts);
                     }
                     else{
@@ -3743,24 +3745,26 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* lines=new_list();
             
             object* tuple=new_tuple();
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(DECORATOR(decorators.back())->function->start->line));
+            tuple_append_noinc(tuple, new_int_fromint(0));
+            tuple_append_noinc(tuple, new_int_fromint(0));
+            tuple_append_noinc(tuple, new_int_fromint(DECORATOR(decorators.back())->function->start->line));
             
-            lines->type->slot_mappings->slot_append(lines, tuple);
+            tuple_append_noinc(lines, tuple);
             for (int i=0; i<CAST_LIST(CAST_CODE(code)->co_lines)->size; i++){
-                lines->type->slot_mappings->slot_append(lines, list_index_int(CAST_CODE(code)->co_lines, i));
+                tuple_append_noinc(lines, list_index_int(CAST_CODE(code)->co_lines, i));
             }
             FPLDECREF(CAST_CODE(code)->co_lines);
             CAST_CODE(code)->co_lines=lines; //No FPLINCREF necessary
 
             FPLDECREF(CAST_CODE(code)->co_file);
-            CAST_CODE(code)->co_file=object_repr(str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
+            object* o=str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name);
+            CAST_CODE(code)->co_file=object_repr(o);
+            FPLDECREF(o);
             
             
             if (!object_find_bool(compiler->consts, code)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, code);
+                tuple_append_noinc(compiler->consts, code);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -3776,7 +3780,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 star=FUNC_STAR;
                 if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name));
                     star_kwargs = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3785,7 +3789,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name));
                     star_args = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3798,7 +3802,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 star=FUNC_STARARGS;
                 if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stargs->node)->name));
                     star_args = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3810,7 +3814,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 star=FUNC_STARKWARGS;
                 if (!_list_contains(compiler->consts, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name)){
                     //Create object
-                    compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name));
+                    tuple_append_noinc(compiler->consts, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->stkwargs->node)->name));
                     star_kwargs = NAMEIDX(compiler->consts);
                 }
                 else{
@@ -3822,7 +3826,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             object* star_int=new_int_fromint(star);
             if (!object_find_bool(compiler->consts, star_int)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, star_int);
+                tuple_append_noinc(compiler->consts, star_int);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -3839,7 +3843,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (!object_find_bool(compiler->consts, doc)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, doc);
+                tuple_append_noinc(compiler->consts, doc);
                 idx = NAMEIDX(compiler->consts);
             }
             else{
@@ -3881,7 +3885,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t nameidxstore;
             if (!_list_contains(compiler->names, IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name )){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(FUNCT(DECORATOR(decorators.back())->function->node)->name->node)->name));
                 nameidxstore = NAMEIDX(compiler->names);
             }
             else{
@@ -3910,7 +3914,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             if (ASSIGN(expr->node)->name->type==N_ANONIDENT){
                 if (!_list_contains(compiler->names, ANONIDENT(ASSIGN(expr->node)->name->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*ANONIDENT(ASSIGN(expr->node)->name->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*ANONIDENT(ASSIGN(expr->node)->name->node)->name));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -3952,7 +3956,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             else if (ASSIGN(expr->node)->name->type==N_ANONNONLOCAL){
                 if (!_list_contains(compiler->names, ANONIDENT(ASSIGN(expr->node)->name->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*ANONIDENT(ASSIGN(expr->node)->name->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*ANONIDENT(ASSIGN(expr->node)->name->node)->name));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -3973,7 +3977,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             else if (ASSIGN(expr->node)->name->type==N_ANONGLBL_IDENT){
                 if (!_list_contains(compiler->names, ANONIDENT(ASSIGN(expr->node)->name->node)->name)){
                     //Create object
-                    compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*ANONIDENT(ASSIGN(expr->node)->name->node)->name));
+                    tuple_append_noinc(compiler->names, str_new_fromstr(*ANONIDENT(ASSIGN(expr->node)->name->node)->name));
                     idx=NAMEIDX(compiler->names);
                 }
                 else{
@@ -4005,7 +4009,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!_list_contains(compiler->names, IDENTI(names->at(i)->node)->name)){
                         //Create object
-                        compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(names->at(i)->node)->name));
                         idx = NAMEIDX(compiler->names);
                     }
                     else{
@@ -4059,7 +4063,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, STRLIT(WITH(expr->node)->name->node)->literal)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*STRLIT(WITH(expr->node)->name->node)->literal));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*STRLIT(WITH(expr->node)->name->node)->literal));
                 idx = NAMEIDX(compiler->names);
             }
             else{
@@ -4081,10 +4085,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t end=compiler->instructions->count*2;
             if (compiler->lines!=NULL){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start));
+                tuple_append_noinc(tuple, new_int_fromint(end));
+                tuple_append_noinc(tuple, new_int_fromint(EXCEPT(expr->node)->name->start->line));
+                tuple_append_noinc(compiler->lines, tuple);
             }
 
             for (Node* n: (*WITH(expr->node)->code)){
@@ -4102,10 +4106,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t end=compiler->instructions->count*2;
                 if (compiler->lines!=NULL && i!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start));
+                    tuple_append_noinc(tuple, new_int_fromint(end));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 }
             }
             
@@ -4144,10 +4148,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
             
             add_instruction(compiler, compiler->instructions,EXTRACT_ITER,0, startcol, endcol, startln);
@@ -4158,7 +4162,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(LISTCOMP(expr->node)->ident->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
                 idx=NAMEIDX(compiler->names);
             }
             else{
@@ -4188,10 +4192,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start_));
+                    tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 } 
                 
                 
@@ -4206,10 +4210,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
 
             add_instruction(compiler, compiler->instructions,SEQ_APPEND, 2, GET_ANNO_N(expr));
@@ -4244,10 +4248,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
             
             add_instruction(compiler, compiler->instructions,EXTRACT_ITER,0, startcol, endcol, startln);
@@ -4258,7 +4262,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(LISTCOMP(expr->node)->ident->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
                 idx=NAMEIDX(compiler->names);
             }
             else{
@@ -4290,10 +4294,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start_));
+                    tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 } 
                 
                 
@@ -4308,10 +4312,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
 
             add_instruction(compiler, compiler->instructions,SEQ_APPEND, 2, GET_ANNO_N(expr));
@@ -4346,10 +4350,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
             
             add_instruction(compiler, compiler->instructions,EXTRACT_ITER,0, startcol, endcol, startln);
@@ -4360,7 +4364,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(LISTCOMP(expr->node)->ident->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(LISTCOMP(expr->node)->ident->node)->name));
                 idx=NAMEIDX(compiler->names);
             }
             else{
@@ -4392,10 +4396,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start_));
+                    tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 } 
                 
                 
@@ -4410,10 +4414,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
 
             add_instruction(compiler, compiler->instructions,SEQ_APPEND, 2, GET_ANNO_N(expr));
@@ -4449,10 +4453,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             } 
             
             add_instruction(compiler, compiler->instructions,EXTRACT_ITER,0, startcol, endcol, startln);
@@ -4463,7 +4467,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->names, IDENTI(DICTCOMP(expr->node)->ident->node)->name)){
                 //Create object
-                compiler->names->type->slot_mappings->slot_append(compiler->names, str_new_fromstr(*IDENTI(DICTCOMP(expr->node)->ident->node)->name));
+                tuple_append_noinc(compiler->names, str_new_fromstr(*IDENTI(DICTCOMP(expr->node)->ident->node)->name));
                 idx=NAMEIDX(compiler->names);
             }
             else{
@@ -4495,10 +4499,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                     object* tuple=new_tuple();
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                    tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                    compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                    tuple_append_noinc(tuple, new_int_fromint(start_));
+                    tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                    tuple_append_noinc(tuple, new_int_fromint(line));
+                    tuple_append_noinc(compiler->lines, tuple);
                 } 
                 
                 
@@ -4513,10 +4517,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             }
 
             start_=compiler->instructions->count*2;
@@ -4526,10 +4530,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (compiler->lines!=NULL && cmpexpr!=COMPILER_NOLINEANNO){
                 object* tuple=new_tuple();
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start_));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(compiler->instructions->count*2));
-                tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-                compiler->lines->type->slot_mappings->slot_append(compiler->lines, tuple);
+                tuple_append_noinc(tuple, new_int_fromint(start_));
+                tuple_append_noinc(tuple, new_int_fromint(compiler->instructions->count*2));
+                tuple_append_noinc(tuple, new_int_fromint(line));
+                tuple_append_noinc(compiler->lines, tuple);
             }  
 
             add_instruction(compiler, compiler->instructions,DICT_SET, 3, GET_ANNO_N(expr));
@@ -4541,7 +4545,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!_list_contains(compiler->consts, STRLIT(expr->node)->literal)){
                 //Create object
-                compiler->consts->type->slot_mappings->slot_append(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
+                tuple_append_noinc(compiler->consts, str_new_fromstr(*STRLIT(expr->node)->literal));
                 idx=NAMEIDX(compiler->consts);
             }
             else{
@@ -4624,17 +4628,17 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
         uint32_t end=compiler->instructions->count*2;
         if (i!=COMPILER_NOLINEANNO){
             object* tuple=new_tuple();
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(start));
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(end));
-            tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(line));
-            lines->type->slot_mappings->slot_append(lines, tuple);
+            tuple_append_noinc(tuple, new_int_fromint(start));
+            tuple_append_noinc(tuple, new_int_fromint(end));
+            tuple_append_noinc(tuple, new_int_fromint(line));
+            tuple_append_noinc(lines, tuple);
         }
     }        
     
     uint32_t idx;
     if (!object_find_bool(compiler->consts, noneobj)){
         //Create object
-        compiler->consts->type->slot_mappings->slot_append(compiler->consts, new_none());
+        tuple_append_noinc(compiler->consts, new_none());
         idx=NAMEIDX(compiler->consts);
     }
     else{
@@ -4650,9 +4654,9 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
         object* tuple=new_tuple();
         object* lineno=new_int_fromint(CAST_LIST(lines)->size-1);
         object* line=list_index_int(lines, CAST_LIST(lines)->size-1);
-        tuple->type->slot_mappings->slot_append(tuple, tuple_index_int(line, 0));
-        tuple->type->slot_mappings->slot_append(tuple, object_add(tuple_index_int(line, 1), new_int_fromint(2)));
-        tuple->type->slot_mappings->slot_append(tuple, tuple_index_int(line, 2));
+        tuple_append_noinc(tuple, tuple_index_int(line, 0));
+        tuple_append_noinc(tuple, object_add(tuple_index_int(line, 1), new_int_fromint(2)));
+        tuple_append_noinc(tuple, tuple_index_int(line, 2));
         
         object* res=lines->type->slot_mappings->slot_set(lines, lineno, tuple);
         if (res!=NULL && res!=TERM_PROGRAM){
@@ -4662,30 +4666,32 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
     }
     else{
         object* tuple=new_tuple();
-        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(0));
-        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(2));
-        tuple->type->slot_mappings->slot_append(tuple, new_int_fromint(fallback_line));
-        lines->type->slot_mappings->slot_append(lines, tuple);
+        tuple_append_noinc(tuple, new_int_fromint(0));
+        tuple_append_noinc(tuple, new_int_fromint(2));
+        tuple_append_noinc(tuple, new_int_fromint(fallback_line));
+        tuple_append_noinc(lines, tuple);
     }
     
     reverse_instructions(compiler->instructions);
     object* instructions=new_list();
     struct instruction* instruction=compiler->instructions->first;
     while (instruction){
-        CAST_LIST(instructions)->type->slot_mappings->slot_append(instructions, new_int_fromint(instruction->opcode));
-        CAST_LIST(instructions)->type->slot_mappings->slot_append(instructions, new_int_fromint(instruction->arg));
+        tuple_append_noinc(instructions, new_int_fromint(instruction->opcode));
+        tuple_append_noinc(instructions, new_int_fromint(instruction->arg));
         instruction=instruction->next;
     }
 
     object* list=new_list();
-    CAST_LIST(list)->type->slot_mappings->slot_append(list, compiler->names);
-    CAST_LIST(list)->type->slot_mappings->slot_append(list, compiler->consts);
-    CAST_LIST(list)->type->slot_mappings->slot_append(list, instructions);
-    CAST_LIST(list)->type->slot_mappings->slot_append(list, object_repr(str_new_fromstr(program)));
-    CAST_LIST(list)->type->slot_mappings->slot_append(list, lines);
-    CAST_LIST(list)->type->slot_mappings->slot_append(list, compiler->lines_detailed);
-    CAST_LIST(list)->type->slot_mappings->slot_append(list, new_int_fromint(compiler->stack_size));
-    CAST_LIST(list)->type->slot_mappings->slot_append(list, new_int_fromint(compiler->blockstack_size));
+    object* prg=str_new_fromstr(program);
+    tuple_append(list, compiler->names);
+    tuple_append(list, compiler->consts);
+    tuple_append(list, instructions);
+    tuple_append_noinc(list, object_repr(prg));
+    tuple_append(list, lines);
+    tuple_append(list, compiler->lines_detailed);
+    tuple_append_noinc(list, new_int_fromint(compiler->stack_size));
+    tuple_append_noinc(list, new_int_fromint(compiler->blockstack_size));
+    FPLDECREF(prg);
     
     object* code=code_new_fromargs(list);
     CAST_CODE(code)->co_instructions=CAST_LIST(instructions)->size;
