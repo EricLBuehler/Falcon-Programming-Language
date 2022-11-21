@@ -462,6 +462,54 @@ class Lexer{
             return res;
         }
 
+        _tok_data make_binary_number(){
+            string output;
+
+            while (this->chr!='\0') {
+                if (isdigit(this->chr) && (this->chr=='0' || this->chr=='1') ){
+                    output.push_back(this->chr);
+                }
+                else if (this->chr=='_'){
+                    this->advance();
+                    continue;
+                }
+                else{
+                    break;
+                }
+                this->advance();
+            }
+
+            _tok_data res;
+            res.data=output;
+            res.type=T_BIN;
+            return res;
+        }
+
+        _tok_data make_hex_number(){
+            string output;
+
+            while (this->chr!='\0') {
+                if (isdigit(this->chr) || (this->chr=='a' || this->chr=='b' ||\
+                                            this->chr=='c' || this->chr=='d' ||\
+                                            this->chr=='e' || this->chr=='f') ){
+                    output.push_back(this->chr);
+                }
+                else if (this->chr=='_'){
+                    this->advance();
+                    continue;
+                }
+                else{
+                    break;
+                }
+                this->advance();
+            }
+
+            _tok_data res;
+            res.data=output;
+            res.type=T_BIN;
+            return res;
+        }
+
         _tok_data make_number(){
             int dotcount = 0;
             int expcount = 0;
@@ -484,6 +532,14 @@ class Lexer{
                     expcount++;
                     
                     output.push_back(this->chr);
+                }
+                else if (this->chr=='b' && output.size()==1 && output[0]=='0'){
+                    this->advance();
+                    return make_binary_number();
+                }
+                else if (this->chr=='b' && output.size()==1 && output[0]=='0'){
+                    this->advance();
+                    return make_hex_number();
                 }
                 else if ( (this->chr=='-' || this->chr=='+') && expcount==1){
                     output.push_back(this->chr);
@@ -512,10 +568,7 @@ class Lexer{
                 res.type=T_FLOAT;
             }
             return res;
-
-            
         }
-
 
         _tok_data make_identifier(){
             string output;
