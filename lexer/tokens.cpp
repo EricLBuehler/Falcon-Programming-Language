@@ -62,6 +62,9 @@ enum token_type{
     T_AT,
     T_CARET,
     T_IXOR,
+    T_BIN,
+    T_HEX,
+    T_OCTAL,
 };
 
 string token_type_to_str(enum token_type type){
@@ -124,6 +127,9 @@ string token_type_to_str(enum token_type type){
     case T_AT:return "@";
     case T_CARET:return "^";
     case T_IXOR:return "^=";
+    case T_BIN:return "binary";
+    case T_HEX:return "hexadecimal";
+    case T_OCTAL:return "octal";
     }
     return "";
 }

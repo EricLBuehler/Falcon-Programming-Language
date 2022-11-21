@@ -510,6 +510,29 @@ class Lexer{
             return res;
         }
 
+        _tok_data make_octal_number(){
+            string output;
+
+            while (this->chr!='\0') {
+                if (isdigit(this->chr) && stoi(string(1, this->chr))<8 ){
+                    output.push_back(this->chr);
+                }
+                else if (this->chr=='_'){
+                    this->advance();
+                    continue;
+                }
+                else{
+                    break;
+                }
+                this->advance();
+            }
+
+            _tok_data res;
+            res.data=output;
+            res.type=T_OCTAL;
+            return res;
+        }
+
         _tok_data make_number(){
             int dotcount = 0;
             int expcount = 0;
@@ -537,9 +560,13 @@ class Lexer{
                     this->advance();
                     return make_binary_number();
                 }
-                else if (this->chr=='b' && output.size()==1 && output[0]=='0'){
+                else if (this->chr=='x' && output.size()==1 && output[0]=='0'){
                     this->advance();
                     return make_hex_number();
+                }
+                else if (this->chr=='o' && output.size()==1 && output[0]=='0'){
+                    this->advance();
+                    return make_octal_number();
                 }
                 else if ( (this->chr=='-' || this->chr=='+') && expcount==1){
                     output.push_back(this->chr);
