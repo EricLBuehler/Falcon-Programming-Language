@@ -167,7 +167,7 @@ int execute(string data, bool objdump, bool verbose){
     interpreter_add_vm(interpreter.vm_map->size(), vm);
     gil_lock(vm->id);
     dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
-    dict_set_noret(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
+    dict_set_noret_opti(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
 
     if (verbose){
         cout<<"Names: "<<object_cstr(CAST_CODE(code)->co_names)<<"\n";

@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
             interpreter_add_vm(interpreter.vm_map->size(), vm);
             gil_lock(vm->id);
             dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
-            dict_set_noret(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
+            dict_set_noret_opti(::vm->globals, str_new_fromstr("__name__"), str_new_fromstr("__main__"));
             
             while (true){
                 struct vm* vm_=vm;
