@@ -64,7 +64,7 @@ BigInt* new_int_frombase(string s, int base){
             vm_add_err(&ValueError, vm, "Invalid literal for base %d: '%c'", base, s[idx]);
             return NULL;
         }
-        
+
         if (v>=base){
             vm_add_err(&ValueError, vm, "Invalid literal for base %d: '%c'", base, s[idx]);
             return NULL;
@@ -79,6 +79,17 @@ object* new_int_frombin(string v_){
     string v=trim(v_);
     
     BigInt* b=new_int_frombase(v, 2);
+    if (b==NULL){
+        return NULL;
+    }
+
+    return new_int_frombigint(b);
+}
+
+object* new_int_fromoctal(string v_){
+    string v=trim(v_);
+    
+    BigInt* b=new_int_frombase(v, 8);
     if (b==NULL){
         return NULL;
     }
