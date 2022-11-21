@@ -1,13 +1,14 @@
 object* new_int_fromint(int v){
-    if(int_map.find(BigInt(v))!=int_map.end()){
-        FPLINCREF(int_map[BigInt(v)]);
-        return int_map[BigInt(v)];
+    BigInt b=BigInt(v);
+    if(int_map.find(b)!=int_map.end()){
+        FPLINCREF(int_map[b]);
+        return int_map[b];
     }
 
     object* obj=new_object(&IntType);
     ((IntObject*)obj)->val=new BigInt(v);
 
-    int_map[BigInt(v)]=obj;
+    int_map[b]=obj;
     
     return obj;
 }
@@ -16,9 +17,20 @@ string trim(string s);
 
 object* new_int_fromstr(string v){
     string v_=trim(v);
-    if(int_map.find(BigInt(v_))!=int_map.end()){
-        FPLINCREF(int_map[BigInt(v_)]);
-        return int_map[BigInt(v_)];
+    
+    BigInt b;
+    try{
+        b=BigInt(v_);
+    }
+    catch (std::invalid_argument){
+        if (::vm!=NULL){
+            vm_add_err(&ValueError, vm, "Invalid literal '%s'", v.c_str());
+        }
+        return NULL;
+    }
+    if(int_map.find(b)!=int_map.end()){
+        FPLINCREF(int_map[b]);
+        return int_map[b];
     }
 
     object* obj=new_object(&IntType);
@@ -28,11 +40,11 @@ object* new_int_fromstr(string v){
     catch (std::invalid_argument){
         if (::vm!=NULL){
             vm_add_err(&ValueError, vm, "Invalid literal '%s'", v.c_str());
-            return NULL;
         }
+        return NULL;
     }
 
-    int_map[BigInt(v_)]=obj;
+    int_map[b]=obj;
 
     return obj;
 }
@@ -40,9 +52,20 @@ object* new_int_fromstr(string v){
 
 object* new_int_fromstr(string* v){
     string v_=trim(*v);
-    if(int_map.find(BigInt(v_))!=int_map.end()){
-        FPLINCREF(int_map[BigInt(v_)]);
-        return int_map[BigInt(v_)];
+    
+    BigInt b;
+    try{
+        b=BigInt(v_);
+    }
+    catch (std::invalid_argument){
+        if (::vm!=NULL){
+            vm_add_err(&ValueError, vm, "Invalid literal '%s'", v->c_str());
+        }
+        return NULL;
+    }
+    if(int_map.find(b)!=int_map.end()){
+        FPLINCREF(int_map[b]);
+        return int_map[b];
     }
 
     object* obj=new_object(&IntType);
@@ -51,12 +74,12 @@ object* new_int_fromstr(string* v){
     }
     catch (std::invalid_argument){
         if (::vm!=NULL){
-            vm_add_err(&ValueError, vm, "Invalid literal '%s'", v_.c_str());
-            return NULL;
+            vm_add_err(&ValueError, vm, "Invalid literal '%s'", v->c_str());
         }
+        return NULL;
     }
 
-    int_map[BigInt(v_)]=obj;
+    int_map[b]=obj;
 
     return obj;
 }
