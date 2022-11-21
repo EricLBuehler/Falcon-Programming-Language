@@ -9,25 +9,25 @@ object* json_decode_array(const nx_json* json){
     while (item){
         switch (item->type){
             case NX_JSON_NULL:
-                list_append(list, new_none());
+                tuple_append_noinc(list, new_none());
                 break;
             case NX_JSON_STRING:
-                list_append(list, str_new_fromstr(string(item->text_value)));
+                tuple_append_noinc(list, str_new_fromstr(string(item->text_value)));
                 break;
             case NX_JSON_INTEGER:
-                list_append(list, new_int_fromint(item->num.s_value));
+                tuple_append_noinc(list, new_int_fromint(item->num.s_value));
                 break;
             case NX_JSON_DOUBLE:
-                list_append(list, new_float_fromdouble(item->num.dbl_value));
+                tuple_append_noinc(list, new_float_fromdouble(item->num.dbl_value));
                 break;
             case NX_JSON_BOOL:
-                list_append(list, item->num.u_value? new_bool_true() : new_bool_false());
+                tuple_append_noinc(list, item->num.u_value? new_bool_true() : new_bool_false());
                 break;
             case NX_JSON_OBJECT:
-                list_append(list, json_decode_object(item));
+                tuple_append_noinc(list, json_decode_object(item));
                 break;
             case NX_JSON_ARRAY:
-                list_append(list, json_decode_array(item));
+                tuple_append_noinc(list, json_decode_array(item));
                 break;
         }
         item=item->next;
@@ -41,25 +41,25 @@ object* json_decode_object(const nx_json* json){
     while (item){
         switch (item->type){
             case NX_JSON_NULL:
-                dict_set_noret(dict, str_new_fromstr(string(item->key)), new_none());
+                dict_set_noinc_noret(dict, str_new_fromstr(string(item->key)), new_none());
                 break;
             case NX_JSON_STRING:
-                dict_set_noret(dict, str_new_fromstr(string(item->key)), str_new_fromstr(string(item->text_value)));
+                dict_set_noinc_noret(dict, str_new_fromstr(string(item->key)), str_new_fromstr(string(item->text_value)));
                 break;
             case NX_JSON_INTEGER:
-                dict_set_noret(dict, str_new_fromstr(string(item->key)), new_int_fromint(item->num.s_value));
+                dict_set_noinc_noret(dict, str_new_fromstr(string(item->key)), new_int_fromint(item->num.s_value));
                 break;
             case NX_JSON_DOUBLE:
-                dict_set_noret(dict, str_new_fromstr(string(item->key)), new_float_fromdouble(item->num.dbl_value));
+                dict_set_noinc_noret(dict, str_new_fromstr(string(item->key)), new_float_fromdouble(item->num.dbl_value));
                 break;
             case NX_JSON_BOOL:
-                dict_set_noret(dict, str_new_fromstr(string(item->key)), item->num.u_value? new_bool_true() : new_bool_false());
+                dict_set_noinc_noret(dict, str_new_fromstr(string(item->key)), item->num.u_value? new_bool_true() : new_bool_false());
                 break;
             case NX_JSON_OBJECT:
-                dict_set_noret(dict, str_new_fromstr(string(item->key)), json_decode_object(item));
+                dict_set_noinc_noret(dict, str_new_fromstr(string(item->key)), json_decode_object(item));
                 break;
             case NX_JSON_ARRAY:
-                dict_set_noret(dict, str_new_fromstr(string(item->key)), json_decode_array(item));
+                dict_set_noinc_noret(dict, str_new_fromstr(string(item->key)), json_decode_array(item));
                 break;
         }
         item=item->next;
@@ -68,7 +68,7 @@ object* json_decode_object(const nx_json* json){
 }
 
 object* json_decode(object* selftp, object* args){
-    object* str=dict_get(args, str_new_fromstr("string"));
+    object* str=dict_get_opti_deref(args, str_new_fromstr("string"));
 
     const nx_json* json=nx_json_parse_utf8((char*)object_cstr(str).c_str());
     FPLDECREF(str);
@@ -191,7 +191,7 @@ object* json_encode_dict(object* dict){
 }
 
 object* json_encode(object* selftp, object* args){
-    object* head=dict_get(args, str_new_fromstr("object"));
+    object* head=dict_get_opti_deref(args, str_new_fromstr("object"));
 
     if (!object_istype(head->type, &DictType)){
         vm_add_err(&TypeError, vm, "Expected dict, got '%s'", head->type->name->c_str());
@@ -212,15 +212,15 @@ object* new_json_module(){
     object* emptykwargs=new_tuple();
 
     object* decodeargs=new_tuple();
-    decodeargs->type->slot_mappings->slot_append(decodeargs, str_new_fromstr("string"));
+    tuple_append_noinc(decodeargs, str_new_fromstr("string"));
     object* decode=new_builtin(json_decode, str_new_fromstr("decode"), decodeargs, emptykwargs, 1, false);
-    dict_set_noret(dict, str_new_fromstr("decode"), decode);
+    dict_set_noinc_noret(dict, str_new_fromstr("decode"), decode);
     FPLDECREF(decode);
 
     object* encodeargs=new_tuple();
-    encodeargs->type->slot_mappings->slot_append(encodeargs, str_new_fromstr("object"));
+    tuple_append_noinc(encodeargs, str_new_fromstr("object"));
     object* encode=new_builtin(json_encode, str_new_fromstr("encode"), encodeargs, emptykwargs, 1, false);
-    dict_set_noret(dict, str_new_fromstr("encode"), encode);
+    dict_set_noinc_noret(dict, str_new_fromstr("encode"), encode);
     FPLDECREF(encode);
 
     return module_new_fromdict(dict, str_new_fromstr("json"));
