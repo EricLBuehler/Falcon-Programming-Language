@@ -53,9 +53,7 @@ object* semaphore_acquire_meth(object* selftp, object* args, object* kwargs){
     object* self=tuple_index_int(args,0);
 
     if (len==2){
-        object* k=str_new_fromstr("block");
-        object* flag=dict_get(kwargs, k);
-        FPLDECREF(k);
+        object* flag=dict_get_opti_deref(kwargs, str_new_fromstr("block"));
     }
 
     if (flag==NULL){
@@ -90,9 +88,7 @@ object* semaphore_release_meth(object* selftp, object* args, object* kwargs){
     object* self=tuple_index_int(args,0);
 
     if (len==2){
-        object* k=str_new_fromstr("n");
-        object* v=dict_get(kwargs, k);
-        FPLDECREF(k);
+        object* v=dict_get_opti_deref(kwargs, str_new_fromstr("n"));
     }
 
     int v_=1;

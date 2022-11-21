@@ -122,13 +122,16 @@ object* thread_start_meth(object* selftp, object* args, object* kwargs){
 
     object* kw=str_new_fromstr("kwargs");
     if (object_find_bool_dict_keys(kwargs, kw)){
-        args_->kwargs=kwargs->type->slot_mappings->slot_get(kwargs, kw);
+        args_->kwargs=dict_get_opti_deref(kwargs, kw);
     }
     
     object* ar=str_new_fromstr("args");
     if (object_find_bool_dict_keys(kwargs, ar)){
-        args_->args=kwargs->type->slot_mappings->slot_get(kwargs, ar);
+        args_->args=dict_get_opti_deref(kwargs, ar);
     }
+    FPLDECREF(ar);
+    FPLDECREF(kw);
+    
     object* self=tuple_index_int(args, 0);
     args_->callable=CAST_THREAD(self)->callable;
 
