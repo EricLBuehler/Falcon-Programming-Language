@@ -9,9 +9,13 @@ object* new_builtins_module(){
         else if (object_istype(builtins[i]->type, &TypeType)){
             name=*(CAST_TYPE(builtins[i])->name);
         }
-        dict_set_noret(dict, str_new_fromstr(name), builtins[i]);
+        object* o=str_new_fromstr(name);
+        dict_set_noret(dict, o, builtins[i]);
+        FPLDECREF(o);
     }
+    
     object* obj=module_new_fromdict(dict, str_new_fromstr("builtins"));
+
     object* d= (*(object**)((char*)obj + obj->type->dict_offset));
     return obj;
 }

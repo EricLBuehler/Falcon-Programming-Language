@@ -3,7 +3,7 @@
 #endif
 
 object* os_chdir(object* self, object* args){
-    object* val=dict_get(args, str_new_fromstr("dir"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("dir"));
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -23,7 +23,7 @@ object* os_chdir(object* self, object* args){
 }
 
 object* os_mkdir(object* self, object* args){
-    object* val=dict_get(args, str_new_fromstr("dir"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("dir"));
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -61,7 +61,7 @@ object* os_getcwd(object* self, object* args){
 
 
 object* os_rmdir(object* self, object* args){
-    object* val=dict_get(args, str_new_fromstr("dir"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("dir"));
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -97,7 +97,7 @@ object* os_listdir(object* self, object* args){
             if (string(en->d_name)==string(".") || string(en->d_name)==string("..")){
                 continue;
             }
-            list_append(list, str_new_fromstr(string(en->d_name)));
+            tuple_append_noinc(list, str_new_fromstr(string(en->d_name)));
         }
         closedir(dr);
         return list;
@@ -109,7 +109,7 @@ object* os_listdir(object* self, object* args){
 
 
 object* os_system(object* self, object* args){
-    object* val=dict_get(args, str_new_fromstr("cmd"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("cmd"));
     if (!object_istype(val->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str object, got '%s' object", val->type->name->c_str());
         return NULL; 
@@ -125,33 +125,33 @@ object* new_os_module(){
     object* dict=new_dict();
 
     object* dirargs=new_tuple();
-    dirargs->type->slot_mappings->slot_append(dirargs, str_new_fromstr("dir"));
+    tuple_append_noinc(dirargs, str_new_fromstr("dir"));
     object* emptykw_args=new_tuple();
     
     object* ob=new_builtin(os_chdir, str_new_fromstr("chdir"), dirargs, emptykw_args, 1, false);
-    dict_set_noret(dict, str_new_fromstr("chdir"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("chdir"), ob);
     FPLDECREF(ob);    
 
     ob=new_builtin(os_mkdir, str_new_fromstr("mkdir"), dirargs, emptykw_args, 1, false);
-    dict_set_noret(dict, str_new_fromstr("mkdir"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("mkdir"), ob);
     FPLDECREF(ob);        
 
     ob=new_builtin(os_getcwd, str_new_fromstr("getcwd"), emptykw_args, emptykw_args, 1, false);
-    dict_set_noret(dict, str_new_fromstr("getcwd"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("getcwd"), ob);
     FPLDECREF(ob);        
 
     ob=new_builtin(os_rmdir, str_new_fromstr("rmdir"), dirargs, emptykw_args, 1, false);
-    dict_set_noret(dict, str_new_fromstr("rmdir"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("rmdir"), ob);
     FPLDECREF(ob);    
 
     ob=new_builtin(os_listdir, str_new_fromstr("listdir"), emptykw_args, emptykw_args, 1, false);
-    dict_set_noret(dict, str_new_fromstr("listdir"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("listdir"), ob);
     FPLDECREF(ob);    
 
     object* systemargs=new_tuple();
-    systemargs->type->slot_mappings->slot_append(systemargs, str_new_fromstr("cmd"));
+    tuple_append_noinc(systemargs, str_new_fromstr("cmd"));
     ob=new_builtin(os_system, str_new_fromstr("system"), systemargs, emptykw_args, 1, false);
-    dict_set_noret(dict, str_new_fromstr("system"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("system"), ob);
     
 
     return module_new_fromdict(dict, str_new_fromstr("os"));

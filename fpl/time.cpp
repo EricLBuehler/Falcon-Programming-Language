@@ -4,7 +4,7 @@
 #include <sstream>
 
 object* time_sleep(object* self, object* args){
-    object* val=dict_get(args, str_new_fromstr("n"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("n"));
     double time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
@@ -32,7 +32,7 @@ object* time_sleep(object* self, object* args){
 
 
 object* time_sleep_ms(object* self, object* args){
-    object* val=dict_get(args, str_new_fromstr("n"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("n"));
     double time;
     if (object_istype(val->type, &IntType)){
         time=CAST_INT(val)->val->to_long();
@@ -73,7 +73,7 @@ object* time_time(object* self, object* args){
 }
 
 object* time_strftime(object* self, object* args){
-    object* val=dict_get(args, str_new_fromstr("n"));
+    object* val=dict_get_opti_deref(args, str_new_fromstr("n"));
     
     string format=object_cstr(val);
     FPLDECREF(val);
@@ -95,7 +95,7 @@ object* new_time_module(){
     object* emptykw_args=new_tuple();
 
     object* args=new_tuple();
-    args->type->slot_mappings->slot_append(args, str_new_fromstr("n"));
+    tuple_append_noinc(args, str_new_fromstr("n"));
     object* ob=new_builtin(time_sleep, str_new_fromstr("sleep"), args, emptykw_args, 1, false);
     dict_set_noret(dict, str_new_fromstr("sleep"), ob);
     FPLDECREF(ob);    
@@ -112,7 +112,7 @@ object* new_time_module(){
     
 
     object* strfargs=new_tuple();
-    strfargs->type->slot_mappings->slot_append(args, str_new_fromstr("format"));
+    tuple_append_noinc(args, str_new_fromstr("format"));
     ob=new_builtin(time_strftime, str_new_fromstr("strftime"), strfargs, emptykw_args, 1, false);
     dict_set_noret(dict, str_new_fromstr("strftime"), ob);
     FPLDECREF(ob);    

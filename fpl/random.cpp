@@ -12,8 +12,8 @@ double fRand(double lo, double hi)
 }
 
 object* random_randint(object* self, object* args){
-    object* low=dict_get(args, str_new_fromstr("lo"));
-    object* high=dict_get(args, str_new_fromstr("hi"));
+    object* low=dict_get_opti_deref(args, str_new_fromstr("lo"));
+    object* high=dict_get_opti_deref(args, str_new_fromstr("hi"));
 
     if (low==NULL || !object_istype(low->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", low->type->name->c_str());
@@ -37,8 +37,8 @@ object* random_random(object* self, object* args){
     double lo;
     double hi;     
 
-    object* low=dict_get(args, str_new_fromstr("lo"));
-    object* high=dict_get(args, str_new_fromstr("hi"));
+    object* low=dict_get_opti_deref(args, str_new_fromstr("lo"));
+    object* high=dict_get_opti_deref(args, str_new_fromstr("hi"));
 
     if (low==NULL || !object_istype(low->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", low->type->name->c_str());
@@ -64,7 +64,7 @@ object* random_random(object* self, object* args){
 }
 
 object* random_choice(object* self, object* args){
-    object* ob=dict_get(args, str_new_fromstr("iter"));
+    object* ob=dict_get_opti_deref(args, str_new_fromstr("iter"));
     if (ob->type->slot_mappings==NULL || ob->type->slot_mappings->slot_get==NULL\
      || ob->type->slot_mappings->slot_len==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
@@ -76,7 +76,7 @@ object* random_choice(object* self, object* args){
     int len_sub1=CAST_INT(iterlen)->val->to_int()-1;
     FPLDECREF(iterlen);
 
-    object* o=ob->type->slot_mappings->slot_get(ob, new_int_fromint(iRand(0,len_sub1)));
+    object* o=dict_get_opti_deref(ob, new_int_fromint(iRand(0,len_sub1)));
     FPLDECREF(ob);
     return o;
 }
@@ -89,26 +89,26 @@ object* new_random_module(){
     object* emptykw_args=new_tuple();
 
     object* randintargs=new_tuple();
-    randintargs->type->slot_mappings->slot_append(randintargs, str_new_fromstr("lo"));
-    randintargs->type->slot_mappings->slot_append(randintargs, str_new_fromstr("hi"));
+    tuple_append_noinc(randintargs, str_new_fromstr("lo"));
+    tuple_append_noinc(randintargs, str_new_fromstr("hi"));
     object* ob=new_builtin(random_randint, str_new_fromstr("randint"), randintargs, emptykw_args, 2, false);
-    dict_set_noret(dict, str_new_fromstr("randint"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("randint"), ob);
     FPLDECREF(ob);    
 
     object* randkwargs=new_tuple();
-    randkwargs->type->slot_mappings->slot_append(randkwargs, new_int_fromint(0));
-    randkwargs->type->slot_mappings->slot_append(randkwargs, new_int_fromint(1));
+    tuple_append_noinc(randkwargs, new_int_fromint(0));
+    tuple_append_noinc(randkwargs, new_int_fromint(1));
     ob=new_builtin(random_random, str_new_fromstr("random"), randintargs, randkwargs, 2, false);
-    dict_set_noret(dict, str_new_fromstr("random"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("random"), ob);
     FPLDECREF(ob);    
     
     object* randchoiceargs=new_tuple();
-    randchoiceargs->type->slot_mappings->slot_append(randchoiceargs, str_new_fromstr("iter"));
+    tuple_append_noinc(randchoiceargs, str_new_fromstr("iter"));
     ob=new_builtin(random_choice, str_new_fromstr("choice"), randchoiceargs, emptykw_args, 1, false);
-    dict_set_noret(dict, str_new_fromstr("choice"), ob);
+    dict_set_noinc_noret(dict, str_new_fromstr("choice"), ob);
     FPLDECREF(ob);    
     
-    dict_set_noret(dict, str_new_fromstr("RAND_MAX"), new_int_fromint(RAND_MAX));
+    dict_set_noinc_noret(dict, str_new_fromstr("RAND_MAX"), new_int_fromint(RAND_MAX));
 
     return module_new_fromdict(dict, str_new_fromstr("random"));
 }
