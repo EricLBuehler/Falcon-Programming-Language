@@ -49,6 +49,55 @@ object* new_int_fromstr(string v){
     return obj;
 }
 
+BigInt* new_int_frombase(string s, int base){
+    BigInt i=0;
+    int pwr=0;
+    for (int idx=s.size()-1; idx>=0; idx--){
+        int v;
+        if (isdigit(s[idx])){
+            v=stoi(string(1,s[idx]));
+        }
+        else if (isalpha(s[idx])){
+            v=(int)'a'-tolower(s[idx]);
+        }
+        else{
+            vm_add_err(&ValueError, vm, "Invalid literal for base %d: '%c'", base, s[idx]);
+            return NULL;
+        }
+        
+        if (v>=base){
+            vm_add_err(&ValueError, vm, "Invalid literal for base %d: '%c'", base, s[idx]);
+            return NULL;
+        }
+
+        i+=(pow(base,pwr++))*v;
+    }
+    return new BigInt(i);
+}
+
+object* new_int_frombin(string v_){
+    string v=trim(v_);
+    
+    BigInt* b=new_int_frombase(v, 2);
+    if (b==NULL){
+        return NULL;
+    }
+
+    return new_int_frombigint(b);
+}
+
+object* new_int_fromhex(string v_){
+    string v=trim(v_);
+    
+    BigInt* b=new_int_frombase(v, 16);
+    if (b==NULL){
+        return NULL;
+    }
+
+    return new_int_frombigint(b);
+}
+
+
 
 object* new_int_fromstr(string* v){
     string v_=trim(*v);
@@ -123,9 +172,36 @@ object* int_new(object* type, object* args, object* kwargs){
 
         return obj;
     }
-    if (len!=1 || CAST_DICT(kwargs)->val->size()!=0){
+    if ((len!=1 && len!=2) || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
+    }
+
+    int base=10;
+
+    if (len==2){     
+        object* val=list_index_int(args, 1);
+        
+        object* obj=object_int(val);
+        if (obj==NULL && !object_istype(val->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", val->type->name->c_str());
+            return NULL;
+        }
+
+        if (*CAST_INT(obj)->val>36 && *CAST_INT(obj)->val<2 && *CAST_INT(obj)->val!=0){
+            vm_add_err(&ValueError, vm, "Base must be >=2 and <=36, or 0");
+            return NULL;            
+        }
+
+        base=CAST_INT(obj)->val->to_int();
+        FPLDECREF(obj);
+
+        BigInt* b=new_int_frombase(object_cstr(list_index_int(args, 0)), base);
+        if (b==NULL){
+            return NULL;
+        }
+
+        return new_int_frombigint(b);
     }
 
     object* val=list_index_int(args, 0);
