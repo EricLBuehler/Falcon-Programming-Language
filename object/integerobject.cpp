@@ -340,6 +340,36 @@ object* int_fldiv(object* self, object* other){
     return new_float_fromdouble(res);
 }
 
+const int len_uint=to_string(UINT_MAX).size();
+
+vector<long long> convert_str_to_intarr(string num){
+    vector<long long> arr;
+    arr.clear();
+
+    string current_chunk="";
+    for (long long i=num.size()-1; i>=0; i--){
+        current_chunk+=num[i];
+        if (current_chunk.size()==len_uint){
+            string new_str="";
+            for (int i = current_chunk.size() - 1; i >= 0; i--){
+                new_str+=current_chunk[i];
+            }            
+            arr.push_back(stoll(new_str));
+            current_chunk="";
+        }
+    }
+
+    if (current_chunk.size()>0){
+        string new_str="";
+        for (int i = current_chunk.size() - 1; i >= 0; i--){
+            new_str+=current_chunk[i];
+        }            
+        arr.push_back(stoll(new_str));
+    }
+
+    return arr;
+}
+
 object* int_and(object* self, object* other){
     if (!object_issubclass(other, &IntType) && !object_issubclass(other, &BoolType)){
         return NULL;
@@ -348,9 +378,27 @@ object* int_and(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
-    object* res=new_int_fromint(CAST_INT(self)->val->to_int() & CAST_INT(otherv)->val->to_int());
+    if (*CAST_INT(self)->val<LLONG_MAX && *CAST_INT(other)->val<LLONG_MAX){
+        object* res=new_int_fromint(CAST_INT(self)->val->to_long_long() & CAST_INT(otherv)->val->to_long_long());
+        FPLDECREF(otherv);
+        return res;        
+    }
+    string c="";
+    vector<long long> a=convert_str_to_intarr(CAST_INT(self)->val->to_string());
+    vector<long long> b=convert_str_to_intarr(CAST_INT(other)->val->to_string());
+    if (a.size()<=b.size()){ //a is limitation
+        for (int i=0; i<a.size(); i++){
+            c+=to_string(a[i]&b[i]);
+        }
+    }
+    else{ //a.size()>b.size(), so b is limitation
+        for (int i=0; i<b.size(); i++){
+            c+=to_string(a[i]&b[i]);
+        }
+    }
+    
     FPLDECREF(otherv);
-    return res;
+    return new_int_fromstr(c);
 }
 
 object* int_or(object* self, object* other){
@@ -361,9 +409,27 @@ object* int_or(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
-    object* res=new_int_fromint(CAST_INT(self)->val->to_int() | CAST_INT(otherv)->val->to_int());
+    if (*CAST_INT(self)->val<LLONG_MAX && *CAST_INT(other)->val<LLONG_MAX){
+        object* res=new_int_fromint(CAST_INT(self)->val->to_long_long() | CAST_INT(otherv)->val->to_long_long());
+        FPLDECREF(otherv);
+        return res;        
+    }
+    string c="";
+    vector<long long> a=convert_str_to_intarr(CAST_INT(self)->val->to_string());
+    vector<long long> b=convert_str_to_intarr(CAST_INT(other)->val->to_string());
+    if (a.size()<=b.size()){ //a is limitation
+        for (int i=0; i<a.size(); i++){
+            c+=to_string(a[i]|b[i]);
+        }
+    }
+    else{ //a.size()>b.size(), so b is limitation
+        for (int i=0; i<b.size(); i++){
+            c+=to_string(a[i]|b[i]);
+        }
+    }
+    
     FPLDECREF(otherv);
-    return res;
+    return new_int_fromstr(c);
 }
 
 object* int_xor(object* self, object* other){
@@ -374,9 +440,27 @@ object* int_xor(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
-    object* res=new_int_fromint(CAST_INT(self)->val->to_int() ^ CAST_INT(otherv)->val->to_int());
+    if (*CAST_INT(self)->val<LLONG_MAX && *CAST_INT(other)->val<LLONG_MAX){
+        object* res=new_int_fromint(CAST_INT(self)->val->to_long_long() ^ CAST_INT(otherv)->val->to_long_long());
+        FPLDECREF(otherv);
+        return res;        
+    }
+    string c="";
+    vector<long long> a=convert_str_to_intarr(CAST_INT(self)->val->to_string());
+    vector<long long> b=convert_str_to_intarr(CAST_INT(other)->val->to_string());
+    if (a.size()<=b.size()){ //a is limitation
+        for (int i=0; i<a.size(); i++){
+            c+=to_string(a[i]^b[i]);
+        }
+    }
+    else{ //a.size()>b.size(), so b is limitation
+        for (int i=0; i<b.size(); i++){
+            c+=to_string(a[i]^b[i]);
+        }
+    }
+    
     FPLDECREF(otherv);
-    return res;
+    return new_int_fromstr(c);
 }
 
 object* int_lshift(object* self, object* other){
@@ -388,14 +472,26 @@ object* int_lshift(object* self, object* other){
         return NULL;
     }
     
-    int val=CAST_INT(otherv)->val->to_int();
-    FPLDECREF(otherv);
-    if (val<0){
+    if (*CAST_INT(otherv)->val<0){
         vm_add_err(&ValueError, vm, "Cannot left shift by negative number of bits");
+        FPLDECREF(otherv);  
+        return NULL;
+    } 
+    if (*CAST_INT(otherv)->val==0){
+        FPLINCREF(self);
+        FPLDECREF(otherv);  
+        return self;
+    }
+
+    if (*CAST_INT(otherv)->val>LLONG_MAX){
+        vm_add_err(&ValueError, vm, "Cannot left shift by value greater than %d", LLONG_MAX);
+        FPLDECREF(otherv);  
         return NULL;
     }
-    
-    return new_int_fromint(CAST_INT(self)->val->to_int() << val);
+
+    object* o=new_int_frombigint(new BigInt( (*CAST_INT(self)->val)*pow(2, CAST_INT(otherv)->val->to_long_long())));
+    FPLDECREF(otherv); 
+    return o;
 }
 
 object* int_rshift(object* self, object* other){
@@ -407,14 +503,25 @@ object* int_rshift(object* self, object* other){
         return NULL;
     }
     
-    int val=CAST_INT(otherv)->val->to_int();
-    FPLDECREF(otherv);
-    if (val<0){
+    if (*CAST_INT(otherv)->val<0){
         vm_add_err(&ValueError, vm, "Cannot right shift by negative number of bits");
+        FPLDECREF(otherv);  
+        return NULL;
+    } 
+    if (*CAST_INT(otherv)->val==0){
+        FPLINCREF(self);
+        FPLDECREF(otherv);  
+        return self;
+    }
+    if (*CAST_INT(otherv)->val>LLONG_MAX){
+        vm_add_err(&ValueError, vm, "Cannot right shift by value greater than %d", LLONG_MAX);
+        FPLDECREF(otherv);  
         return NULL;
     }
-    
-    return new_int_fromint(CAST_INT(self)->val->to_int() >> val);
+
+    object* o=new_int_frombigint(new BigInt( (*CAST_INT(self)->val)/pow(2, CAST_INT(otherv)->val->to_long_long())));
+    FPLDECREF(otherv); 
+    return o;
 }
 
 object* int_abs(object* self){
@@ -430,8 +537,7 @@ object* int_neg(object* self){
 }
 
 object* int_not(object* self){
-    long val=CAST_INT(self)->val->to_long();
-    return new_int_frombigint(new BigInt(~val));
+    return new_int_frombigint(new BigInt( ((*CAST_INT(self)->val)+1)*-1 ));
 }
 
 object* int_repr(object* self){
