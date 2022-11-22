@@ -584,5 +584,44 @@ object* builtin_dir(object* self, object* args){
     }
     FPLDECREF(v);
     FPLDECREF(dict);
+    FPLDECREF(o);
     return list;
+}
+
+object* builtin_bin(object* self, object* args){
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* intv=object_int(o);
+    FPLDECREF(o);
+    
+    string s="0b";
+
+    vector<long long> num=convert_str_to_intarr(CAST_INT(intv)->val->to_string());
+    long long mask;
+    for (int i=0; i<num.size(); i++){
+        string binary=bitset<sizeof(long long)>(num[i]).to_string();
+        binary.erase(0, binary.find_first_not_of('0'));
+        s+=binary;
+    }
+
+    FPLDECREF(intv);
+    return str_new_fromstr(s);
+}
+
+object* builtin_hex(object* self, object* args){
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* intv=object_int(o);
+    FPLDECREF(o);
+    
+    string s="0x";
+
+    vector<long long> num=convert_str_to_intarr(CAST_INT(intv)->val->to_string());
+    long long mask;
+    for (int i=0; i<num.size(); i++){
+        std::stringstream stream;
+        stream << std::hex << num[i];
+        s+=stream.str();
+    }
+
+    FPLDECREF(intv);
+    return str_new_fromstr(s);
 }
