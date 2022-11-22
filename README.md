@@ -45,6 +45,10 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - ```sum```
 - ```hasattr```
 - ```dir```
+- ```bin```
+- ```hex```
+- ```ord```
+- ```chr```
 
 ### Builtin libraries ###
 - ```time```
