@@ -466,15 +466,12 @@ class Lexer{
             string output;
 
             while (this->chr!='\0') {
-                if (isdigit(this->chr) && (this->chr=='0' || this->chr=='1') ){
-                    output.push_back(this->chr);
-                }
-                else if (this->chr=='_'){
+                if (this->chr=='_'){
                     this->advance();
                     continue;
                 }
                 else{
-                    break;
+                    output.push_back(this->chr);
                 }
                 this->advance();
             }
@@ -489,17 +486,12 @@ class Lexer{
             string output;
 
             while (this->chr!='\0') {
-                if (isdigit(this->chr) || (this->chr=='a' || this->chr=='b' ||\
-                                            this->chr=='c' || this->chr=='d' ||\
-                                            this->chr=='e' || this->chr=='f') ){
-                    output.push_back(this->chr);
-                }
-                else if (this->chr=='_'){
+                if (this->chr=='_'){
                     this->advance();
                     continue;
                 }
                 else{
-                    break;
+                    output.push_back(this->chr);
                 }
                 this->advance();
             }
@@ -514,15 +506,12 @@ class Lexer{
             string output;
 
             while (this->chr!='\0') {
-                if (isdigit(this->chr) && stoi(string(1, this->chr))<8 ){
-                    output.push_back(this->chr);
-                }
-                else if (this->chr=='_'){
+                if (this->chr=='_'){
                     this->advance();
                     continue;
                 }
                 else{
-                    break;
+                    output.push_back(this->chr);
                 }
                 this->advance();
             }
