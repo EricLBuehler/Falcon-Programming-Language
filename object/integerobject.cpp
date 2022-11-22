@@ -220,6 +220,11 @@ object* int_new(object* type, object* args, object* kwargs){
             return NULL;
         }
 
+        if (!object_istype(list_index_int(args, 0)->type, &StrType)){
+            vm_add_err(&TypeError, vm, "Cannot convert non-string with explicit base");
+            return NULL;
+        }
+
         if (*CAST_INT(obj)->val>36 && *CAST_INT(obj)->val<2 && *CAST_INT(obj)->val!=0){
             vm_add_err(&ValueError, vm, "Base must be >=2 and <=36, or 0");
             return NULL;            
@@ -227,6 +232,9 @@ object* int_new(object* type, object* args, object* kwargs){
 
         base=CAST_INT(obj)->val->to_int();
         FPLDECREF(obj);
+        if (base==0){
+            return object_int(list_index_int(args, 0));
+        }
 
         BigInt* b=new_int_frombase(object_cstr(list_index_int(args, 0)), base);
         if (b==NULL){
