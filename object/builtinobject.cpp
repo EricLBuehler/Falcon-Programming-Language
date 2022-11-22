@@ -215,6 +215,16 @@ void setup_builtins(){
     tuple_append_noinc(hexargs, str_new_fromstr("object"));
     object* hexkwargs=new_tuple();
     builtins[67]=new_builtin((builtinfunc)builtin_hex, str_new_fromstr("hex"), hexargs, hexkwargs, 1, false);
+
+    object* chrargs=new_tuple();
+    tuple_append_noinc(chrargs, str_new_fromstr("object"));
+    object* chrkwargs=new_tuple();
+    builtins[68]=new_builtin((builtinfunc)builtin_chr, str_new_fromstr("chr"), chrargs, chrkwargs, 1, false);
+
+    object* ordargs=new_tuple();
+    tuple_append_noinc(ordargs, str_new_fromstr("object"));
+    object* ordkwargs=new_tuple();
+    builtins[69]=new_builtin((builtinfunc)builtin_ord, str_new_fromstr("ord"), ordargs, ordkwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
