@@ -86,12 +86,10 @@ char int_base_check(string s, int base){
             v=(int)'a'-tolower(s[idx]);
         }
         else{
-            vm_add_err(&ValueError, vm, "Invalid literal for base %d: '%c'", base, s[idx]);
             return s[idx];
         }
 
         if (v>=base){
-            vm_add_err(&ValueError, vm, "Invalid literal for base %d: '%c'", base, s[idx]);
             return s[idx];
         }
     }
