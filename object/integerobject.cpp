@@ -75,6 +75,29 @@ BigInt* new_int_frombase(string s, int base){
     return new BigInt(i);
 }
 
+//Return '\0' if normal, otherwise the character on which the error occured
+char int_base_check(string s, int base){
+    for (int idx=s.size()-1; idx>=0; idx--){
+        int v;
+        if (isdigit(s[idx])){
+            v=stoi(string(1,s[idx]));
+        }
+        else if (isalpha(s[idx])){
+            v=(int)'a'-tolower(s[idx]);
+        }
+        else{
+            vm_add_err(&ValueError, vm, "Invalid literal for base %d: '%c'", base, s[idx]);
+            return s[idx];
+        }
+
+        if (v>=base){
+            vm_add_err(&ValueError, vm, "Invalid literal for base %d: '%c'", base, s[idx]);
+            return s[idx];
+        }
+    }
+    return '\0';
+}
+
 object* new_int_frombin(string v_){
     string v=trim(v_);
     
