@@ -249,7 +249,12 @@ class Parser{
             return node;
         }
 
-        Node* make_bin_literal(){
+        Node* make_bin_literal(parse_ret* ret){
+            char c=int_base_check(this->current_tok.data, 2);
+            if (c!='\0'){
+                this->add_parsing_error(ret, "SyntaxError: invalid digit '%c' in binary literal",c);
+                return NULL;
+            }
             Node* node=make_node(N_BIN);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
@@ -259,7 +264,12 @@ class Parser{
             return node;
         }
 
-        Node* make_hex_literal(){
+        Node* make_hex_literal(parse_ret* ret){
+            char c=int_base_check(this->current_tok.data, 16);
+            if (c!='\0'){
+                this->add_parsing_error(ret, "SyntaxError: invalid digit '%c' in hexadecimal literal",c);
+                return NULL;
+            }
             Node* node=make_node(N_HEX);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
@@ -269,7 +279,12 @@ class Parser{
             return node;
         }
 
-        Node* make_octal_literal(){
+        Node* make_octal_literal(parse_ret* ret){
+            char c=int_base_check(this->current_tok.data, 8);
+            if (c!='\0'){
+                this->add_parsing_error(ret, "SyntaxError: invalid digit '%c' in octal literal",c);
+                return NULL;
+            }
             Node* node=make_node(N_OCTAL);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
             node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
@@ -2192,15 +2207,15 @@ class Parser{
                     break; 
 
                 case T_BIN:
-                    left=make_bin_literal();
+                    left=make_bin_literal(ret);
                     break;
 
                 case T_HEX:
-                    left=make_hex_literal();
+                    left=make_hex_literal(ret);
                     break;   
 
                 case T_OCTAL:
-                    left=make_octal_literal();
+                    left=make_octal_literal(ret);
                     break;        
                     
 
