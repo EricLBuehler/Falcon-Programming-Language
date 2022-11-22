@@ -591,6 +591,11 @@ object* builtin_dir(object* self, object* args){
 object* builtin_bin(object* self, object* args){
     object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
     object* intv=object_int(o);
+    if (intv==NULL || !object_istype(intv->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", o->type->name->c_str());
+        FPLDECREF(o);
+        return NULL; 
+    }
     FPLDECREF(o);
     
     string s="0b";
@@ -610,6 +615,11 @@ object* builtin_bin(object* self, object* args){
 object* builtin_hex(object* self, object* args){
     object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
     object* intv=object_int(o);
+    if (intv==NULL || !object_istype(intv->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", o->type->name->c_str());
+        FPLDECREF(o);
+        return NULL; 
+    }
     FPLDECREF(o);
     
     string s="0x";
@@ -624,4 +634,35 @@ object* builtin_hex(object* self, object* args){
 
     FPLDECREF(intv);
     return str_new_fromstr(s);
+}
+
+object* builtin_chr(object* self, object* args){
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* intv=object_int(o);
+    if (intv==NULL || !object_istype(intv->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", o->type->name->c_str());
+        FPLDECREF(o);
+        return NULL; 
+    }
+    FPLDECREF(o);
+
+    if (*CAST_INT(intv)->val>INT_MAX){
+        vm_add_err(&ValueError, vm, "Character value too large");
+        return NULL; 
+    }
+
+    FPLDECREF(intv);
+    return str_new_fromstr(string(1, CAST_INT(intv)->val->to_int()));
+}
+
+object* builtin_ord(object* self, object* args){
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
+    string s=object_cstr(o);
+    FPLDECREF(o);
+    
+    if (s.size()!=1){
+        vm_add_err(&ValueError, vm, "Expected string of length 1, got string of length %d", s.size());
+        return NULL; 
+    }
+    return new_int_fromint(s[0]);
 }
