@@ -674,12 +674,50 @@ class Lexer{
         }
 
         _tok_data make_string(){
-            string output;
+            string output="";
             this->advance();
             bool escape=false;
 
             while (this->chr!='\0' && (this->chr!='"' || escape) ) {
                 if (escape){
+                    if (this->chr=='u'){ //Unicode literal
+                        escape=false;
+                        this->advance();
+                                    
+                        string unicode;
+
+                        while (this->chr!='\0' && this->chr!='"') {
+                            if (this->chr=='_'){
+                                this->advance();
+                                continue;
+                            }
+                            else if ( (!isdigit(this->chr) && tolower(this->chr)!='a' && tolower(this->chr)!='b' &&\
+                                                            tolower(this->chr)!='c' && tolower(this->chr)!='d' &&\
+                                                            tolower(this->chr)!='e' && tolower(this->chr)!='f') ||\
+                                                            unicode.size()==4){                                
+                                _tok_data res;
+                                res.data=to_string(unicode.size());
+                                res.type=T_ERROR_UNICODE;
+                                return res;
+                            }                                                              
+                            else{
+                                unicode.push_back(this->chr);
+                            }
+                            this->advance();
+                        }
+
+                        uint32_t num = (uint32_t)strtol(unicode.c_str(), NULL, 16);
+                        output+=codept_to_str(num);
+
+                        if (this->chr=='"'){
+                            _tok_data res;
+                            res.data=output;
+                            res.type=T_STR;
+                            return res;
+                        }
+                        this->advance();
+                        continue;
+                    }
                     if (escape_chars.find(this->chr)==escape_chars.end()){
                         output.push_back('\\');
                         output.push_back(this->chr);
@@ -695,7 +733,7 @@ class Lexer{
                         escape=true;
                     }
                     else{
-                        output.push_back(this->chr);
+                        output+=this->chr;
                     }
                 }
 
@@ -714,12 +752,50 @@ class Lexer{
         }
 
         _tok_data make_string_single(){
-            string output;
+            string output="";
             this->advance();
             bool escape=false;
 
-            while (this->chr!='\0' && (this->chr!='\'' || escape) ) {
+            while (this->chr!='\0' && (this->chr!='\'' || escape) ) {                
                 if (escape){
+                    if (this->chr=='u'){ //Unicode literal
+                        escape=false;
+                        this->advance();
+                                    
+                        string unicode;
+
+                        while (this->chr!='\0' && this->chr!='"') {
+                            if (this->chr=='_'){
+                                this->advance();
+                                continue;
+                            }
+                            else if ( (!isdigit(this->chr) && tolower(this->chr)!='a' && tolower(this->chr)!='b' &&\
+                                                            tolower(this->chr)!='c' && tolower(this->chr)!='d' &&\
+                                                            tolower(this->chr)!='e' && tolower(this->chr)!='f') ||\
+                                                            unicode.size()==4){                                
+                                _tok_data res;
+                                res.data=to_string(unicode.size());
+                                res.type=T_ERROR_UNICODE;
+                                return res;
+                            }                                                              
+                            else{
+                                unicode.push_back(this->chr);
+                            }
+                            this->advance();
+                        }
+
+                        uint32_t num = (uint32_t)strtol(unicode.c_str(), NULL, 16);
+                        output+=codept_to_str(num);
+
+                        if (this->chr=='"'){
+                            _tok_data res;
+                            res.data=output;
+                            res.type=T_STR;
+                            return res;
+                        }
+                        this->advance();
+                        continue;
+                    }
                     if (escape_chars.find(this->chr)==escape_chars.end()){
                         output.push_back('\\');
                         output.push_back(this->chr);
@@ -733,7 +809,7 @@ class Lexer{
                         escape=true;
                     }
                     else{
-                        output.push_back(this->chr);
+                        output+=this->chr;
                     }
                 }
 
