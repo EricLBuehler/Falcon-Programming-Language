@@ -215,13 +215,11 @@ object* new_json_module(){
     tuple_append_noinc(decodeargs, str_new_fromstr("string"));
     object* decode=new_builtin(json_decode, str_new_fromstr("decode"), decodeargs, emptykwargs, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("decode"), decode);
-    FPLDECREF(decode);
 
     object* encodeargs=new_tuple();
     tuple_append_noinc(encodeargs, str_new_fromstr("object"));
     object* encode=new_builtin(json_encode, str_new_fromstr("encode"), encodeargs, emptykwargs, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("encode"), encode);
-    FPLDECREF(encode);
 
     return module_new_fromdict(dict, str_new_fromstr("json"));
 }
