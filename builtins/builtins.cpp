@@ -657,12 +657,27 @@ object* builtin_chr(object* self, object* args){
 
 object* builtin_ord(object* self, object* args){
     object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
-    string s=object_cstr(o);
+    uint32_t size;
+    object* res=NULL;
+    if (object_issubclass(o, &BytesType)){
+        size=CAST_BYTES(o)->len;
+        if (size==1){
+            res = new_int_fromint(CAST_BYTES(o)->val[0]);
+        }
+    }
+    else {
+        object* s_=object_str(o);
+        size=STRING_LENGTH(s_);
+        if (size==1){
+            string s=object_cstr(s_);
+            FPLDECREF(s_);
+            res = new_int_fromint(string_get_uval(s.c_str(), 0));
+        }
+    }
     FPLDECREF(o);
-    
-    if (s.size()!=1){
-        vm_add_err(&ValueError, vm, "Expected string of length 1, got string of length %d", s.size());
+    if (size!=1){
+        vm_add_err(&ValueError, vm, "Expected string of length 1, got string of length %d", size);
         return NULL; 
     }
-    return new_int_fromint(s[0]);
+    return res;
 }
