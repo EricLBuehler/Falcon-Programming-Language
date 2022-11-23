@@ -130,23 +130,18 @@ object* new_os_module(){
     
     object* ob=new_builtin(os_chdir, str_new_fromstr("chdir"), dirargs, emptykw_args, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("chdir"), ob);
-    FPLDECREF(ob);    
 
     ob=new_builtin(os_mkdir, str_new_fromstr("mkdir"), dirargs, emptykw_args, 1, false);
-    dict_set_noinc_noret(dict, str_new_fromstr("mkdir"), ob);
-    FPLDECREF(ob);        
+    dict_set_noinc_noret(dict, str_new_fromstr("mkdir"), ob);    
 
     ob=new_builtin(os_getcwd, str_new_fromstr("getcwd"), emptykw_args, emptykw_args, 1, false);
-    dict_set_noinc_noret(dict, str_new_fromstr("getcwd"), ob);
-    FPLDECREF(ob);        
+    dict_set_noinc_noret(dict, str_new_fromstr("getcwd"), ob);    
 
     ob=new_builtin(os_rmdir, str_new_fromstr("rmdir"), dirargs, emptykw_args, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("rmdir"), ob);
-    FPLDECREF(ob);    
 
     ob=new_builtin(os_listdir, str_new_fromstr("listdir"), emptykw_args, emptykw_args, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("listdir"), ob);
-    FPLDECREF(ob);    
 
     object* systemargs=new_tuple();
     tuple_append_noinc(systemargs, str_new_fromstr("cmd"));

@@ -93,20 +93,17 @@ object* new_random_module(){
     tuple_append_noinc(randintargs, str_new_fromstr("hi"));
     object* ob=new_builtin(random_randint, str_new_fromstr("randint"), randintargs, emptykw_args, 2, false);
     dict_set_noinc_noret(dict, str_new_fromstr("randint"), ob);
-    FPLDECREF(ob);    
 
     object* randkwargs=new_tuple();
     tuple_append_noinc(randkwargs, new_int_fromint(0));
     tuple_append_noinc(randkwargs, new_int_fromint(1));
     ob=new_builtin(random_random, str_new_fromstr("random"), randintargs, randkwargs, 2, false);
     dict_set_noinc_noret(dict, str_new_fromstr("random"), ob);
-    FPLDECREF(ob);    
     
     object* randchoiceargs=new_tuple();
     tuple_append_noinc(randchoiceargs, str_new_fromstr("iter"));
     ob=new_builtin(random_choice, str_new_fromstr("choice"), randchoiceargs, emptykw_args, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("choice"), ob);
-    FPLDECREF(ob);    
     
     dict_set_noinc_noret(dict, str_new_fromstr("RAND_MAX"), new_int_fromint(RAND_MAX));
 

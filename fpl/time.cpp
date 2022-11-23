@@ -98,30 +98,20 @@ object* new_time_module(){
     tuple_append_noinc(args, str_new_fromstr("n"));
     object* ob=new_builtin(time_sleep, str_new_fromstr("sleep"), args, emptykw_args, 1, false);
     dict_set_noret(dict, str_new_fromstr("sleep"), ob);
-    FPLDECREF(ob);    
-    
     
     ob=new_builtin(time_sleep_ms, str_new_fromstr("sleep_ms"), args, emptykw_args, 1, false);
     dict_set_noret(dict, str_new_fromstr("sleep_ms"), ob);
-    FPLDECREF(ob);    
-    
 
     ob=new_builtin(time_time, str_new_fromstr("time"), emptykw_args, emptykw_args, 0, false);
     dict_set_noret(dict, str_new_fromstr("time"), ob);
-    FPLDECREF(ob);    
-    
 
     object* strfargs=new_tuple();
     tuple_append_noinc(args, str_new_fromstr("format"));
     ob=new_builtin(time_strftime, str_new_fromstr("strftime"), strfargs, emptykw_args, 1, false);
     dict_set_noret(dict, str_new_fromstr("strftime"), ob);
-    FPLDECREF(ob);    
-    
     
     ob=new_builtin(time_timens, str_new_fromstr("time_ns"), emptykw_args, emptykw_args, 0, false);
     dict_set_noret(dict, str_new_fromstr("time_ns"), ob);
-    FPLDECREF(ob);    
-    
 
     return module_new_fromdict(dict, str_new_fromstr("time"));
 }

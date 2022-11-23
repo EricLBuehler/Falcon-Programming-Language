@@ -31,13 +31,10 @@ object* new_sys_module(){
     object* args=new_tuple();
     tuple_append_noinc(args, str_new_fromstr("obj"));
     object* ob=new_builtin(sys_getsizeof, str_new_fromstr("getsizeof"), args, emptykw_args, 1, false);
-    dict_set_noinc_noret(dict, str_new_fromstr("getsizeof"), ob);
-    FPLDECREF(ob);    
-    
+    dict_set_noinc_noret(dict, str_new_fromstr("getsizeof"), ob);    
     
     ob=new_builtin(sys_getrefcnt, str_new_fromstr("getrefcnt"), args, emptykw_args, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("getrefcnt"), ob);
-    FPLDECREF(ob);    
     
 
     object* getset=slotwrapper_new_fromfunc(sys_getpath, NULL, "path");
@@ -50,7 +47,6 @@ object* new_sys_module(){
         tuple_append_noinc(argv, str_new_fromstr(string(glblargv_raw[i])));
     }
     dict_set_noinc_noret(dict, str_new_fromstr("argv"), argv);
-    FPLDECREF(argv);
     
     dict_set_noinc_noret(dict, str_new_fromstr("version"), str_new_fromstr(FPL_VERSION));
 
