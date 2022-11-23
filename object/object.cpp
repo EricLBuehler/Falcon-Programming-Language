@@ -196,11 +196,17 @@ void object_print(object* obj){
 }
 
 string object_cstr(object* obj){
-    return (*CAST_STRING(object_str(obj))->val);
+    object* str=object_str(obj);
+    string s = (*CAST_STRING(str)->val);
+    FPLDECREF(str);
+    return s;
 }
 
 string object_crepr(object* obj){
-    return (*CAST_STRING(object_repr(obj))->val);
+    object* str=object_repr(obj);
+    string s = (*CAST_STRING(str)->val);
+    FPLDECREF(str);
+    return s;
 }
 
 object* object_cmp(object* self, object* other, uint8_t type){

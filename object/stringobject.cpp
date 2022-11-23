@@ -84,10 +84,16 @@ object* str_slice(object* self, object* idx){
         start_v=CAST_INT(start)->val->to_int();
     }
     if (object_istype(end->type, &NoneType)){
-        end_v=CAST_LIST(self)->size-1;
+        end_v=CAST_STRING(self)->val->size()-1;
     }
     else{
-        end_v=CAST_INT(end)->val->to_int();
+        int target=CAST_INT(end)->val->to_int();
+        const char* arr=CAST_STRING(self)->val->c_str();
+        int raw_len=CAST_STRING(self)->val->size();
+
+        int res=get_index_fromtarget(target, raw_len, arr);
+        
+        end_v=(res>=0) ? res : CAST_STRING(self)->val->size()-1;
     }
     
     if (start<0){
@@ -106,16 +112,39 @@ object* str_get(object* self, object* idx){
     if (object_istype(idx->type, &SliceType)){
         return str_slice(self, idx);
     }
-    if (!object_istype(idx->type, &IntType)){
-        vm_add_err(&TypeError, vm, "String must be indexed by int not '%s'",idx->type->name->c_str());
-        return NULL;
-    }
-    if (CAST_STRING(self)->val->size()<=CAST_INT(idx)->val->to_long_long()){
-        vm_add_err(&IndexError, vm, "String index out of range");
-        return NULL;
-    }
     
-    return str_new_fromstr(string(1,CAST_STRING(self)->val->at(CAST_INT(idx)->val->to_long_long())));
+    object* idx_=object_int(idx);
+    if (idx_==NULL || !object_istype(idx->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx->type->name->c_str());
+        FPLDECREF(idx_);
+        return NULL;
+    }
+    if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
+        vm_add_err(&IndexError, vm, "String index out of range");
+        FPLDECREF(idx_);
+        return NULL;
+    }
+    long lidx=CAST_INT(idx_)->val->to_long();
+    if (lidx<0){
+        lidx=lidx+CAST_STRING(self)->val->size();
+    }
+    if (STRING_LENGTH(self)<=lidx || lidx<0){
+        vm_add_err(&IndexError, vm, "String index out of range");
+        FPLDECREF(idx_);
+        return NULL;
+    }
+    FPLDECREF(idx_);
+    
+    const char* arr=CAST_STRING(self)->val->c_str();
+    int raw_len=CAST_STRING(self)->val->size();
+
+    int res=get_index_fromtarget_min(lidx, raw_len, arr);
+
+    char bytes[]={0, 0, 0, 0, 0};
+    extract_uchar_bytes(CAST_STRING(self)->val->c_str(), bytes, res);
+
+    string s(bytes);
+    return str_new_fromstr(s);
 }
 
 object* str_len(object* self){
@@ -127,6 +156,7 @@ object* str_repr(object* self){
 }
 
 object* str_str(object* self){
+    FPLINCREF(self);
     return self; //str_new_fromstr(new string((*CAST_STRING(self)->val)));
 }
      
@@ -142,7 +172,7 @@ object* str_cmp(object* self, object* other, uint8_t type){
         return NULL;
     }
     if (type==CMP_EQ){
-        if (CAST_STRING(self)->val->size()!=CAST_STRING(other)->val->size()){
+        if (STRING_LENGTH(self)!=STRING_LENGTH(other)){
             return new_bool_false();
         }
         if ((*CAST_STRING(self)->val)==(*CAST_STRING(other)->val)){
@@ -151,7 +181,7 @@ object* str_cmp(object* self, object* other, uint8_t type){
         return new_bool_false();
     }
     if (type==CMP_NE){
-        if (CAST_STRING(self)->val->size()==CAST_STRING(other)->val->size()){
+        if (STRING_LENGTH(self)==STRING_LENGTH(other)){
             return new_bool_false();
         }
         if ((*CAST_STRING(self)->val)!=(*CAST_STRING(other)->val)){
@@ -632,4 +662,209 @@ object* str_in(object* self, object* other){
         return new_bool_true();
     }
     return new_bool_false();
+}
+
+//Unicode-specific macros and functions
+//uchar means unicode character
+//code point is the code for a unicode character
+//uchar_length is the number of bytes a UTF-8 uchar takes up
+
+
+//Get uchar code point at char** 
+int decode_code_point(char** s){
+    int k = **s ?__builtin_clz(~(**s << 24)) : 0;
+    int mask = (1 << (8 - k)) - 1;
+    int value = **s & mask;
+    for (++(*s), --k; k>0 && **s; --k, ++(*s)) {
+        value <<= 6;
+        value += (**s & 0x3f);
+    }
+    return value;
+}
+
+void encode_code_point(char **s, char *end, int code) {
+    char val[4];
+    int lead_byte_max = 0x7F;
+    int val_index = 0;
+    while (code > lead_byte_max) {
+        val[val_index++] = (code & 0x3F) | 0x80;
+        code >>= 6;
+        lead_byte_max >>= (val_index == 1 ? 2 : 1);
+    }
+    val[val_index++] = (code & lead_byte_max) | (~lead_byte_max << 1);
+    while (val_index-- && *s < end) {
+        **s = val[val_index];
+        (*s)++;
+    }
+}
+
+//Number of bytes UTF-8 uchar takes up
+int get_uchar_length(unsigned char c){
+    if (c>=0 && c<=127){
+        return 1;
+    }
+    else if ((c & 0xe0) == 0xc0){
+        return 2;
+    }
+    else if ((c & 0xf0) == 0xe0){
+        return 3;
+    }
+    else if ((c & 0xf8) == 0xf0){
+        return 4;
+    }
+    return -1;
+}
+
+//Extract uchar bytes into arr, which must be 5 char long and be null-initialized.
+//Startidx is the offset to read from 
+void extract_uchar_bytes(char* unicode, char* arr, int startidx){
+    int len=get_uchar_length(unicode[startidx]);
+    if (len>=1){
+        arr[0]=unicode[0+startidx];
+    }    
+    if (len>=2){
+        arr[1]=unicode[1+startidx];
+    }    
+    if (len>=3){
+        arr[2]=unicode[2+startidx];
+    }    
+    if (len==4){
+        arr[3]=unicode[3+startidx];
+    }
+}
+
+//Extract uchar bytes into arr, which must be 5 char long and be null-initialized.
+//Startidx is the offset to read from 
+void extract_uchar_bytes(const char* unicode, char* arr, int startidx){
+    int len=get_uchar_length(unicode[startidx]);
+    if (len>=1){
+        arr[0]=unicode[0+startidx];
+    }    
+    if (len>=2){
+        arr[1]=unicode[1+startidx];
+    }    
+    if (len>=3){
+        arr[2]=unicode[2+startidx];
+    }    
+    if (len==4){
+        arr[3]=unicode[3+startidx];
+    }
+}
+
+//Get unicode code point at index, no error checking performed.
+//self is str and idx_ is int
+int string_get_uval(object* self, object* idx_){
+    const char* c=CAST_STRING(self)->val->c_str();
+    int idx=CAST_INT(idx_)->val->to_int();
+    char bytes[]={0, 0, 0, 0, 0};
+    extract_uchar_bytes(c, bytes, idx);
+    char* ptr=&bytes[0];
+    return decode_code_point(&ptr);
+}
+
+//Get unicode code point at index, no error checking performed.
+//c is str and idx is int
+int string_get_uval(char* c, int idx){
+    char bytes[]={0, 0, 0, 0, 0};
+    extract_uchar_bytes(c, bytes, idx);
+    char* ptr=&bytes[0];
+    return decode_code_point(&ptr);
+}
+
+//Get unicode code point at index, no error checking performed.
+//c is str and idx is int
+int string_get_uval(const char* c, int idx){
+    char bytes[]={0, 0, 0, 0, 0};
+    extract_uchar_bytes(c, bytes, idx);
+    char* ptr=&bytes[0];
+    return decode_code_point(&ptr);
+}
+//Get unicode length of a string
+inline int STRING_LENGTH(object* str){
+    const char* arr=CAST_STRING(str)->val->c_str();
+    int q,i,ix;
+    for (q=0, i=0, ix=CAST_STRING(str)->val->size(); i<ix; q++){
+        unsigned char c=(unsigned char) arr[i];
+        i+=get_uchar_length(c);
+    }
+    return q;
+}
+
+//Get unicode length of a string
+inline int STRING_LENGTH(char* arr, int raw_len){
+    int q,i,ix;
+    for (q=0, i=0, ix=raw_len; i<ix; q++){
+        unsigned char c=(unsigned char) arr[i];
+        i+=get_uchar_length(c);
+    }
+    return q;
+}
+
+//Get real index of target index
+//Return >=0 if found, -1 if not
+int get_index_fromtarget(int target, int raw_len, char* arr){
+    int q,i,ix;
+    for (q=0, i=0, ix=raw_len; i<ix; q++){
+        unsigned char c=(unsigned char) arr[i];
+        i+=get_uchar_length(c);
+        if (q==target){
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+//Get real index of target index
+//Return >=0 if found, -1 if not
+int get_index_fromtarget(int target, int raw_len, const char* arr){
+    int q,i,ix;
+    for (q=0, i=0, ix=raw_len; i<ix; q++){
+        unsigned char c=(unsigned char) arr[i];
+        i+=get_uchar_length(c);
+        if (q==target){
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+//Get real index of target index
+//Return >=0 if found, -1 if not
+int get_index_fromtarget_min(int target, int raw_len, char* arr){
+    int q,i,ix;
+    for (q=0, i=0, ix=raw_len; i<ix; q++){
+        if (q==target){
+            return i;
+        }
+        unsigned char c=(unsigned char) arr[i];
+        i+=get_uchar_length(c);
+    }
+
+    return -1;
+}
+
+//Get real index of target index
+//Return >=0 if found, -1 if not
+int get_index_fromtarget_min(int target, int raw_len, const char* arr){
+    int q,i,ix;
+    for (q=0, i=0, ix=raw_len; i<ix; q++){
+        if (q==target){
+            return i;
+        }
+        unsigned char c=(unsigned char) arr[i];
+        i+=get_uchar_length(c);
+    }
+
+    return -1;
+}
+
+//Convert code point to string representation
+string codept_to_str(uint32_t num){    
+    char c[]={0,0,0,0,0};
+    char* ptr=&c[0];
+    encode_code_point(&ptr, &c[4], num);
+    string s(c);
+    return s;
 }

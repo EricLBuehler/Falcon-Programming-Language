@@ -167,7 +167,7 @@ OffsetMember newtp_offsets[]={{"__dict__", 0, true}, {NULL}};
 
 #define CAST_NEWTYPE(obj) ((NewTypeObject*)(obj))
 
-object* new_type(string* name, object* bases, object* dict);
+object* new_type(string* name, object* bases, object* dict, object* doc);
 
 object* type_new(object* type, object* args, object* kwargs);
 void type_del(object* self);

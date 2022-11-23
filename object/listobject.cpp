@@ -236,20 +236,29 @@ object* list_pop(object* self){
 object* list_get(object* self, object* idx){
     if (object_istype(idx->type, &SliceType)){
         return list_slice(self, idx);
-    }
+    }  
     object* idx_=object_int(idx);
     if (idx_==NULL || !object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx->type->name->c_str());
+        FPLDECREF(idx_);
         return NULL;
     }
-    int lidx=CAST_INT(idx_)->val->to_int();
-    if (lidx<0){
-        lidx=lidx+(int)CAST_LIST(self)->size;
-    }
-    if ((int)CAST_LIST(self)->size<=lidx || lidx<0){
+    if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
         vm_add_err(&IndexError, vm, "List index out of range");
+        FPLDECREF(idx_);
         return NULL;
     }
+    long lidx=CAST_INT(idx_)->val->to_long();
+    if (lidx<0){
+        lidx=lidx+CAST_LIST(self)->size;
+    }
+    if (CAST_LIST(self)->size<=lidx || lidx<0){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        FPLDECREF(idx_);
+        return NULL;
+    }
+    FPLDECREF(idx_);
+
     FPLINCREF(CAST_LIST(self)->array[lidx]);
     return CAST_LIST(self)->array[lidx];
 }
@@ -332,20 +341,29 @@ object* list_set(object* self, object* idx, object* val){
         }
         list_store_slice(self, idx,val);
         return new_none();
-    }
+    } 
+    
     object* idx_=object_int(idx);
     if (idx_==NULL || !object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx->type->name->c_str());
+        FPLDECREF(idx_);
         return NULL;
     }
-    int lidx=CAST_INT(idx_)->val->to_int();
-    if (lidx<0){
-        lidx=lidx+(int)CAST_LIST(self)->size;
-    }
-    if ((int)CAST_LIST(self)->size<=lidx || lidx<0){
+    if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
         vm_add_err(&IndexError, vm, "List index out of range");
+        FPLDECREF(idx_);
         return NULL;
     }
+    long lidx=CAST_INT(idx_)->val->to_long();
+    if (lidx<0){
+        lidx=lidx+CAST_LIST(self)->size;
+    }
+    if (CAST_LIST(self)->size<=lidx || lidx<0){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        FPLDECREF(idx_);
+        return NULL;
+    }
+    FPLDECREF(idx_);
 
     if (val==NULL){
         list_del_item(self, lidx);

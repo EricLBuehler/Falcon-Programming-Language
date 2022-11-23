@@ -25,6 +25,8 @@ object* new_int_fromint(int v);
 object* new_int_fromstr(string* v);
 object* new_int_frombigint(BigInt* v);
 
+vector<long long> convert_str_to_intarr(string num);
+
 typedef struct IntObject{
     OBJHEAD_EXTRA
     BigInt* val;
@@ -141,6 +143,26 @@ object* string_rstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_lstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_contains_meth(object* selftp, object* args, object* kwargs);
 object* str_in(object* self, object* other);
+
+//Unicode
+//Internal
+int decode_code_point(char** s);
+void encode_code_point(char **s, char *end, int code);
+int get_uchar_length(unsigned char head);
+void extract_uchar_bytes(char* unicode, char* arr, int startidx);
+void extract_uchar_bytes(const char* unicode, char* arr, int startidx);
+
+//Exported
+int string_get_uval(object* self, object* idx_);
+int string_get_uval(char* c, int idx);
+int string_get_uval(const char* c, int idx);
+inline int STRING_LENGTH(object* str);
+inline int STRING_LENGTH(char* str, int raw_len);
+int get_index_fromtarget(int target, int raw_len, char* arr);
+int get_index_fromtarget(int target, int raw_len, const char* arr);
+int get_index_fromtarget_min(int target, int raw_len, char* arr);
+int get_index_fromtarget_min(int target, int raw_len, const char* arr);
+string codept_to_str(uint32_t num);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA
@@ -3668,12 +3690,12 @@ void setup_bytesiter_type(){
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-object* new_type(string* name, object* bases, object* dict);
+object* new_type(string* name, object* bases, object* dict, object* doc);
 
 object* type_new(object* type, object* args, object* kwargs){
     //Argument size checking
-    if (CAST_INT(list_len(args))->val->to_long()!=3){
-        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d",CAST_INT(list_len(args))->val->to_long());
+    if (CAST_LIST(args)->size!=3 || CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d",CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size());
         return NULL;
     }
     //
@@ -3698,7 +3720,8 @@ object* type_new(object* type, object* args, object* kwargs){
     o=list_index_int(args, 2);
     FPLINCREF(o);
     object* dict=o;
-    return new_type(name, bases, dict);
+    object* doc=new_none();
+    return new_type(name, bases, dict, doc);
 }
 
 void type_del(object* self){}

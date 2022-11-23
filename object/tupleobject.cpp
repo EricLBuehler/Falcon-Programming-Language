@@ -154,16 +154,25 @@ object* tuple_get(object* self, object* idx){
     object* idx_=object_int(idx);
     if (idx_==NULL || !object_istype(idx->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx->type->name->c_str());
+        FPLDECREF(idx_);
         return NULL;
     }
-    int lidx=CAST_INT(idx_)->val->to_int();
+    if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
+        vm_add_err(&IndexError, vm, "Tuple index out of range");
+        FPLDECREF(idx_);
+        return NULL;
+    }
+    long lidx=CAST_INT(idx_)->val->to_long();
     if (lidx<0){
         lidx=lidx+CAST_TUPLE(self)->size;
     }
     if ((int)CAST_TUPLE(self)->size<=lidx || lidx<0){
-        vm_add_err(&IndexError, vm, "List index out of range");
+        vm_add_err(&IndexError, vm, "Tuple index out of range");
+        FPLDECREF(idx_);
         return NULL;
     }
+    FPLDECREF(idx_);
+    
     FPLINCREF(CAST_TUPLE(self)->array[lidx]);
     return CAST_TUPLE(self)->array[lidx];
 }

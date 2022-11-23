@@ -135,15 +135,28 @@ object* bytes_slice(object* self, object* idx){
 object* bytes_get(object* self, object* idx){
     if (object_istype(idx->type, &SliceType)){
         return bytes_slice(self, idx);
-    }
-    if (!object_istype(idx->type, &IntType)){
-        vm_add_err(&TypeError, vm, "String must be indexed by int not '%s'",idx->type->name->c_str());
+    }     
+    object* idx_=object_int(idx);
+    if (idx_==NULL || !object_istype(idx->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx->type->name->c_str());
+        FPLDECREF(idx_);
         return NULL;
     }
-    if (CAST_BYTES(self)->len<=CAST_INT(idx)->val->to_long_long()){
-        vm_add_err(&IndexError, vm, "String index out of range");
+    if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        FPLDECREF(idx_);
         return NULL;
     }
+    long lidx=CAST_INT(idx_)->val->to_long();
+    if (lidx<0){
+        lidx=lidx+CAST_BYTES(self)->len;
+    }
+    if (CAST_BYTES(self)->len<=lidx || lidx<0){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        FPLDECREF(idx_);
+        return NULL;
+    }
+    FPLDECREF(idx_);
     
     return bytes_new_frombyte(CAST_BYTES(self)->val[CAST_INT(idx)->val->to_long_long()]);
 }
