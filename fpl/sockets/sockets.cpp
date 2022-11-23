@@ -911,6 +911,7 @@ object* new_socket_module(){
 
     object* dict=new_dict();
     dict_set_noinc_noret(dict, str_new_fromstr("socket"), (object*)&SocketType);
+    FPLINCREF(((object*)&SocketType));
     
     //Address family types
     #ifdef AF_UNIX
