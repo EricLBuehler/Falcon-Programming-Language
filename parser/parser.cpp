@@ -2279,7 +2279,13 @@ class Parser{
                     this->backadvance();
                     return left;
                 }
-                this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");//Expected expression, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                if (this->current_tok.type==T_ERROR_UNICODE){
+                    cout<<this->current_tok.data;
+                    this->add_parsing_error(ret, "SyntaxError: Unicode parisng error at index %s.", this->current_tok.data.c_str());
+                    this->backadvance();
+                    return left;
+                }
+                this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
                 this->advance();
                 return left;
             }
