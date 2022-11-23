@@ -45,5 +45,9 @@ object* new_thread_module(){
     dict_set_noinc_noret(dict, str_new_fromstr("Mutex"), (object*)&MutexType);
     dict_set_noinc_noret(dict, str_new_fromstr("Semaphore"), (object*)&SemaphoreType);
 
+    FPLINCREF(((object*)&ThreadType));
+    FPLINCREF(((object*)&MutexType));
+    FPLINCREF(((object*)&SemaphoreType));
+
     return module_new_fromdict(dict, str_new_fromstr("thread"));
 }
