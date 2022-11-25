@@ -2280,8 +2280,12 @@ class Parser{
                     return left;
                 }
                 if (this->current_tok.type==T_ERROR_UNICODE){
-                    cout<<this->current_tok.data;
-                    this->add_parsing_error(ret, "SyntaxError: Unicode parisng error at index %s.", this->current_tok.data.c_str());
+                    this->add_parsing_error(ret, "SyntaxError: Unicode parsing error at index %s.", this->current_tok.data.c_str());
+                    this->backadvance();
+                    return left;
+                }
+                if (this->current_tok.type==T_ERROR_UNICODE_NAME){
+                    this->add_parsing_error(ret, "SyntaxError: Error parsing name '%s' as unicode code point.", this->current_tok.data.c_str());
                     this->backadvance();
                     return left;
                 }
