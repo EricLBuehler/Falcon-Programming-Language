@@ -816,6 +816,7 @@ void setup_types_consts(){
     setup_type_getsets(&SetIterType);
 
     inherit_type_dict(&BytesType); 
+    setup_type_methods(&BytesType);
     setup_type_offsets(&BytesType);
     setup_type_getsets(&BytesType);
     

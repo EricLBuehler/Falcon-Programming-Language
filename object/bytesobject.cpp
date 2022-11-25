@@ -94,7 +94,7 @@ object* bytes_new(object* type, object* args, object* kwargs){
 
 string _byte_repr(char c){
     char arr[50];
-    sprintf(arr, "0x%x\0", (int)c);
+    sprintf(arr, "0x%x\0", (uint8_t)c);
     return string(arr, strlen(arr));
 }
 
@@ -315,4 +315,59 @@ object* bytes_mul(object* self, object* other){
     CAST_BYTES(obj)->val=c;
     CAST_BYTES(obj)->len=len;
     return obj;
+}
+
+object* bytes_decode_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 or 3 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* encoding=tuple_index_int(args, 1);   
+    object* errors=NULL;
+    if (len==3){
+        errors=tuple_index_int(args, 2); 
+    }    
+
+    if (!object_istype(encoding->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", encoding->type->name->c_str());
+        return NULL; 
+    }  
+
+    string enc=*CAST_STRING(encoding)->val;
+    string err="strict";
+    if (len==3){
+        err=*CAST_STRING(errors)->val;
+    }
+    
+    iconv_t cd = iconv_open("UTF-8", enc.c_str());
+    if((int) cd == -1) {
+        if (errno == EINVAL) {
+            vm_add_err(&ValueError, vm, "Invalid conversion");
+            return NULL; 
+        }
+    }
+
+    size_t s_size=CAST_BYTES(self)->len;
+    size_t new_size=s_size;
+    size_t _new_size=new_size;
+
+    const char* orig_str=CAST_BYTES(self)->val;
+    char* converted=(char*)fpl_calloc(new_size, sizeof(char));
+    char* start=converted;
+    
+    int ret = iconv(cd, &orig_str, &s_size, &converted, &new_size);
+    
+    if((iconv_t)ret == (iconv_t)(-1)) {
+        vm_add_err(&ValueError, vm, "Invalid multibyte sequence encountered");
+        return NULL; 
+    }
+    iconv_close(cd);
+
+    string s(start);
+
+    fpl_free(start);
+
+    return str_new_fromstr(s);
 }

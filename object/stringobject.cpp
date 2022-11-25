@@ -664,6 +664,66 @@ object* str_in(object* self, object* other){
     return new_bool_false();
 }
 
+object* string_encode_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 or 3 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* encoding=tuple_index_int(args, 1);   
+    object* errors=NULL;
+    if (len==3){
+        errors=tuple_index_int(args, 2); 
+    }    
+
+    if (!object_istype(encoding->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", encoding->type->name->c_str());
+        return NULL; 
+    }  
+
+    string s=*CAST_STRING(self)->val;
+    string enc=*CAST_STRING(encoding)->val;
+    string err="strict";
+    if (len==3){
+        err=*CAST_STRING(errors)->val;
+    }
+    
+    iconv_t cd = iconv_open(enc.c_str(), "UTF-8");
+    if((int) cd == -1) {
+        if (errno == EINVAL) {
+            vm_add_err(&ValueError, vm, "Invalid conversion");
+            return NULL; 
+        }
+    }
+
+    size_t s_size=s.size();  
+    size_t new_size=(s.size()+1)*sizeof(uint32_t);
+
+    const char* orig_str=s.c_str();
+    char* converted=(char*)fpl_calloc(new_size, sizeof(char));
+    char* start=converted;
+    
+    int ret = iconv(cd, &orig_str, &s_size, &converted, &new_size);
+    
+    if((iconv_t)ret == (iconv_t)(-1)) {
+        vm_add_err(&ValueError, vm, "Invalid multibyte sequence encountered");
+        return NULL; 
+    }
+    iconv_close(cd);
+
+    size_t real_size=abs(start-converted);
+    start=(char*)fpl_realloc(start, real_size);
+
+    return bytes_new_frombytearr(start, real_size);
+}
+
+
+
+
+
+
+
 //Unicode-specific macros and functions
 //uchar means unicode character
 //code point is the code for a unicode character

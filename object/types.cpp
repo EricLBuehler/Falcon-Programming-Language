@@ -142,6 +142,7 @@ object* string_strip_meth(object* selftp, object* args, object* kwargs);
 object* string_rstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_lstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_contains_meth(object* selftp, object* args, object* kwargs);
+object* string_encode_meth(object* selftp, object* args, object* kwargs);
 object* str_in(object* self, object* other);
 
 //Unicode
@@ -205,7 +206,8 @@ Method str_methods[]={{"find", (cwrapperfunc)string_find_meth}, {"replace", (cwr
                     , {"isspace", (cwrapperfunc)string_isspace_meth}, {"isupper", (cwrapperfunc)string_isupper_meth}\
                     , {"islower", (cwrapperfunc)string_islower_meth}, {"count", (cwrapperfunc)string_count_meth}\
                     , {"strip", (cwrapperfunc)string_strip_meth}, {"rstrip", (cwrapperfunc)string_rstrip_meth}\
-                    , {"lstrip", (cwrapperfunc)string_lstrip_meth}, {"contains", (cwrapperfunc)string_contains_meth}, {NULL,NULL}};
+                    , {"lstrip", (cwrapperfunc)string_lstrip_meth}, {"contains", (cwrapperfunc)string_contains_meth}\
+                    , {"encode", (cwrapperfunc)string_encode_meth}, {NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 OffsetMember str_offsets[]={{NULL}};
 
@@ -3514,6 +3516,8 @@ object* bytes_mul(object* self, object* other);
 
 object* bytes_new_frombytearr(char* val, int lne);
 
+object* bytes_decode_meth(object* selftp, object* args, object* kwargs);
+
 typedef struct BytesObject{
     OBJHEAD_EXTRA
     char* val;
@@ -3549,7 +3553,7 @@ static Mappings bytes_mappings{
     bytes_len, //slot_len
 };
 
-Method bytes_methods[]={{NULL,NULL}};
+Method bytes_methods[]={{"decode", (cwrapperfunc)bytes_decode_meth}, {NULL,NULL}};
 GetSets bytes_getsets[]={{NULL,NULL}};
 OffsetMember bytes_offsets[]={{NULL}};
 
