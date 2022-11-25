@@ -49,6 +49,7 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - ```hex```
 - ```ord```
 - ```chr```
+- ```unicode_name```
 
 ### Builtin libraries ###
 - ```time```
