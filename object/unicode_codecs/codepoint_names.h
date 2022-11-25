@@ -8192,7 +8192,7 @@ string _cp_names[] = {
 	"GREEK DASIA",
 };
 
-map<string, int> _cp_names_alt = {
+map<string, int> _cp_names_rev = {
 	{"NULL", 0},
 	{"START OF HEADING", 1},
 	{"START OF TEXT", 2},
