@@ -1362,6 +1362,7 @@ typedef struct FileObject{
     char* mode;
     bool open;
     object* name;
+    char* encoding;
 }FileObject;
 
 static NumberMethods file_num_methods{

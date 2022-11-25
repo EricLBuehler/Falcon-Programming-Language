@@ -319,16 +319,13 @@ object* bytes_mul(object* self, object* other){
 
 object* bytes_decode_meth(object* selftp, object* args, object* kwargs){
     long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
-        vm_add_err(&ValueError, vm, "Expected 2 or 3 arguments, got %d", len);
+    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
     object* self=tuple_index_int(args, 0);  
     object* encoding=tuple_index_int(args, 1);   
-    object* errors=NULL;
-    if (len==3){
-        errors=tuple_index_int(args, 2); 
-    }    
+    
 
     if (!object_istype(encoding->type, &StrType)){
         vm_add_err(&ValueError, vm, "Expected str, got '%s'", encoding->type->name->c_str());
@@ -336,10 +333,6 @@ object* bytes_decode_meth(object* selftp, object* args, object* kwargs){
     }  
 
     string enc=*CAST_STRING(encoding)->val;
-    string err="strict";
-    if (len==3){
-        err=*CAST_STRING(errors)->val;
-    }
     
     iconv_t cd = iconv_open("UTF-8", enc.c_str());
     if((int) cd == -1) {

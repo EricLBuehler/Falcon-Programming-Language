@@ -2,7 +2,7 @@
 
 object* file_new(object* type, object* args, object* kwargs){
     int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
+    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -16,6 +16,14 @@ object* file_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected string type name, got type '%s'", mode_->type->name->c_str());
         return NULL;
     }
+    object* encoding_=NULL;
+    if (len!=3){
+        encoding_=list_index_int(args, 2);
+        if (!object_istype(encoding_->type, &StrType)){
+            vm_add_err(&ValueError, vm, "Expected string type name, got type '%s'", encoding_->type->name->c_str());
+            return NULL;
+        }
+    }
 
     string s=*CAST_STRING(name)->val;
     string mode=*CAST_STRING(mode_)->val;
@@ -28,6 +36,18 @@ object* file_new(object* type, object* args, object* kwargs){
     object* o=new_object(CAST_TYPE(type));
     CAST_FILE(o)->name=name;
     CAST_FILE(o)->file=f;
+    if (encoding_!=NULL){
+        string s=object_cstr(encoding_);
+        CAST_FILE(o)->encoding=(char*)fpl_malloc( (sizeof(char)*strlen(s.c_str())) +1);
+        memset(CAST_FILE(o)->encoding, 0, sizeof(char)*strlen(s.c_str()));
+        memcpy(CAST_FILE(o)->encoding, s.c_str(), sizeof(char)*strlen(s.c_str()));
+    }
+    else{
+        string s="UTF-8";
+        CAST_FILE(o)->encoding=(char*)fpl_malloc( (sizeof(char)*strlen(s.c_str())) +1);
+        memset(CAST_FILE(o)->encoding, 0, sizeof(char)*strlen(s.c_str()));
+        memcpy(CAST_FILE(o)->encoding, s.c_str(), sizeof(char)*strlen(s.c_str()));
+    }
     CAST_FILE(o)->open=true;
     CAST_FILE(o)->mode=(char*)fpl_malloc( (sizeof(char)*strlen(mode.c_str())) +1);
     memset(CAST_FILE(o)->mode, 0, sizeof(char)*strlen(mode.c_str()));
@@ -41,13 +61,23 @@ void file_del(object* self){
         fclose(CAST_FILE(self)->file);
     }
     fpl_free(CAST_FILE(self)->mode);
+    fpl_free(CAST_FILE(self)->encoding);
 }
 
 object* file_repr(object* self){
     string s="";
-    s+="<file '";
+    s+="<file name='";
     s+=object_cstr(CAST_FILE(self)->name);
-    s+="'>";
+    s+="' ";
+    s+=" mode='";
+    string m=CAST_FILE(self)->mode;
+    s+=m;
+    s+="' ";    
+    s+=" encoding='";
+    string e=CAST_FILE(self)->encoding;
+    s+=e;
+    s+="'";    
+    s+=">";
     return str_new_fromstr(s);
 }
 
@@ -167,8 +197,31 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
     }
     
     string s=object_cstr(list_index_int(args, 1));
+    
+    iconv_t cd = iconv_open(CAST_FILE(self)->encoding, "UTF-8");
+    if((int) cd == -1) {
+        if (errno == EINVAL) {
+            vm_add_err(&ValueError, vm, "Invalid conversion");
+            return NULL; 
+        }
+    }
 
-    i=fprintf(CAST_FILE(self)->file, "%s", s.c_str() );
+    size_t s_size=s.size();  
+    size_t new_size=(s.size()+1)*sizeof(uint32_t);
+
+    const char* orig_str=s.c_str();
+    char* converted=(char*)fpl_calloc(new_size, sizeof(char));
+    char* start=converted;
+    
+    int ret = iconv(cd, &orig_str, &s_size, &converted, &new_size);
+    
+    if((iconv_t)ret == (iconv_t)(-1)) {
+        vm_add_err(&ValueError, vm, "Invalid multibyte sequence encountered");
+        return NULL; 
+    }
+    iconv_close(cd);
+
+    i=fprintf(CAST_FILE(self)->file, "%s", start);
     if (i==0 && s.size()>0 && ferror(CAST_FILE(self)->file)){
         vm_add_err(&InvalidOperationError, vm, "Unable to write to file");
         return NULL;
