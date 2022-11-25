@@ -2275,7 +2275,7 @@ class Parser{
                     return left;
                 }
                 if (this->current_tok.type==T_UNKNOWN){
-                    this->add_parsing_error(ret, "SyntaxError: Invalid syntax.");
+                    this->add_parsing_error(ret, "SyntaxError: Unknown character.");
                     this->backadvance();
                     return left;
                 }
