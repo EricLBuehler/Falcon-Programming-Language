@@ -680,6 +680,37 @@ class Lexer{
 
             while (this->chr!='\0' && (this->chr!='"' || escape) ) {
                 if (escape){
+                    if (this->chr=='N'){ //Unicode literal from name
+                        this->advance();
+                        string output_;
+
+                        while (this->chr!='\0' && (isalpha(this->chr) || this->chr==' ' || this->chr=='_') ) {
+                            output_.push_back(toupper(this->chr));
+
+                            this->advance();
+                        }
+                        
+                        output_=trim(output_);
+
+                        int i=get_cp_from_name(output_);
+                        if (i<0){                                                    
+                            _tok_data res;
+                            res.data=output_;
+                            res.type=T_ERROR_UNICODE_NAME;
+                            return res;
+                        }
+
+                        output+=codept_to_str(i);
+
+                        if (this->chr=='"'){
+                            _tok_data res;
+                            res.data=output;
+                            res.type=T_STR;
+                            return res;
+                        }
+                        this->advance();
+                        continue;
+                    }
                     if (this->chr=='u'){ //Unicode literal
                         escape=false;
                         this->advance();
@@ -758,6 +789,38 @@ class Lexer{
 
             while (this->chr!='\0' && (this->chr!='\'' || escape) ) {                
                 if (escape){
+                    if (this->chr=='N'){ //Unicode literal from name
+                        this->advance();
+                        string output_;
+
+                        while (this->chr!='\0' && (isalpha(this->chr) || this->chr==' ' || this->chr=='_') ) {
+                            output_.push_back(toupper(this->chr));
+
+                            this->advance();
+                        }
+                        
+                        output_=trim(output_);
+
+                        int i=get_cp_from_name(output_);
+                        if (i<0){                                                    
+                            _tok_data res;
+                            res.data=output_;
+                            res.type=T_ERROR_UNICODE_NAME;
+                            return res;
+                        }
+
+                        output+=codept_to_str(i);
+                        
+                        if (this->chr=='"'){
+                            _tok_data res;
+                            res.data=output;
+                            res.type=T_STR;
+                            return res;
+                        }
+                        
+                        this->advance();
+                        continue;
+                    }
                     if (this->chr=='u'){ //Unicode literal
                         escape=false;
                         this->advance();

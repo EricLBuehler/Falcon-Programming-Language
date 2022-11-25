@@ -66,6 +66,7 @@ enum token_type{
     T_HEX,
     T_OCTAL,
     T_ERROR_UNICODE,
+    T_ERROR_UNICODE_NAME,
 };
 
 string token_type_to_str(enum token_type type){
@@ -132,6 +133,7 @@ string token_type_to_str(enum token_type type){
     case T_HEX:return "hexadecimal";
     case T_OCTAL:return "octal";
     case T_ERROR_UNICODE:return "error_unicode";
+    case T_ERROR_UNICODE_NAME:return "error_in_unicode_name";
     }
     return "";
 }
