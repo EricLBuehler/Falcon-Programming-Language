@@ -647,12 +647,12 @@ object* builtin_chr(object* self, object* args){
     FPLDECREF(o);
 
     if (*CAST_INT(intv)->val>INT_MAX){
-        vm_add_err(&ValueError, vm, "Character value too large");
+        vm_add_err(&ValueError, vm, "Code point value too large");
         return NULL; 
     }
 
     if (*CAST_INT(intv)->val>INT_MIN){
-        vm_add_err(&ValueError, vm, "Character value too small");
+        vm_add_err(&ValueError, vm, "Code point value too small");
         return NULL; 
     }
 
@@ -686,4 +686,32 @@ object* builtin_ord(object* self, object* args){
         return NULL; 
     }
     return res;
+}
+
+object* builtin_unicode_name(object* self, object* args){
+    object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
+    object* intv=object_int(o);
+    if (intv==NULL || !object_istype(intv->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", o->type->name->c_str());
+        FPLDECREF(o);
+        return NULL; 
+    }
+    FPLDECREF(o);    
+
+    if (*CAST_INT(intv)->val>sizeof(_cp_names)){
+        vm_add_err(&ValueError, vm, "Code point value too large");
+        return NULL; 
+    }
+
+    if (*CAST_INT(intv)->val<0){
+        vm_add_err(&ValueError, vm, "Code point value too small");
+        return NULL; 
+    }
+    
+    int idx=CAST_INT(intv)->val->to_int();
+
+    string s=get_name_from_cp(idx);
+
+    FPLDECREF(intv);
+    return str_new_fromstr(s);
 }
