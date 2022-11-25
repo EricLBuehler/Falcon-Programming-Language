@@ -651,8 +651,14 @@ object* builtin_chr(object* self, object* args){
         return NULL; 
     }
 
+    if (*CAST_INT(intv)->val>INT_MIN){
+        vm_add_err(&ValueError, vm, "Character value too small");
+        return NULL; 
+    }
+
+    string s=codept_to_str(CAST_INT(intv)->val->to_int());
     FPLDECREF(intv);
-    return str_new_fromstr(string(1, CAST_INT(intv)->val->to_int()));
+    return str_new_fromstr(s);
 }
 
 object* builtin_ord(object* self, object* args){
