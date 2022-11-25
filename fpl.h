@@ -25,6 +25,11 @@
 #include <sys/types.h>
 #include <bitset>
 
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <windows.h>
+#endif
+
 #include <iostream>
 
 using namespace std;
@@ -83,7 +88,10 @@ volatile bool hit_sigint=false;
 
 #include <signal.h>
 
-void fpl_startup(){    
+void fpl_startup(){
+    #ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    #endif
     set_new_handler(memory_error);
     new_gc();
     setup_types_consts();
