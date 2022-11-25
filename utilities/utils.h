@@ -2,6 +2,9 @@
 #include "strings.cpp"
 #include "text.cpp"
 
+
+#include "../object/unicode_codecs/unicode_codecs.h"
+
 void memory_error();
 char int_base_check(string s, int base);
 int decode_code_point(char** s);
