@@ -201,6 +201,17 @@ Return ```True``` is needle is found in ```self```, otherwise, ```False```
 #### Returns
 Boolean - ```bool```
 
+### ```str.encode```
+Encodes ```self``` as encoding ```encoding```
+```str.encode(self, encoding)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```encode```  | encoding     |
+#### Returns
+Bytes object containing encoded string - ```bytes```
+
 
 ## ```list```
 
@@ -508,3 +519,17 @@ a == {1,2,3,4} == True
 ```
 #### Returns
 None - ```None```
+
+
+## Bytes
+
+### ```byte.decode```
+Decodes ```self``` into a string, interpreting bytes in ```self```as ```encoding```
+```bytes.encode(self, encoding)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```encode```  | encoding     |
+#### Returns
+Decoded string - ```str```
