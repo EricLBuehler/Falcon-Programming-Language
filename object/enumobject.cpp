@@ -1,5 +1,9 @@
 object* enum_new(object* type, object* args, object* kwargs){
-    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    int len=CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
     if (len!=1 || CAST_LIST(args)->size==0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;

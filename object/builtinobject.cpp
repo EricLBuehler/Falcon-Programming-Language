@@ -225,6 +225,11 @@ void setup_builtins(){
     tuple_append_noinc(ordargs, str_new_fromstr("object"));
     object* ordkwargs=new_tuple();
     builtins[69]=new_builtin((builtinfunc)builtin_ord, str_new_fromstr("ord"), ordargs, ordkwargs, 1, false);
+
+    object* unicode_nameargs=new_tuple();
+    tuple_append_noinc(unicode_nameargs, str_new_fromstr("object"));
+    object* unicode_namewargs=new_tuple();
+    builtins[70]=new_builtin((builtinfunc)builtin_unicode_name, str_new_fromstr("unicode_name"), unicode_nameargs, unicode_namewargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

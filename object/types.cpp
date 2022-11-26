@@ -3699,8 +3699,12 @@ object* new_type(string* name, object* bases, object* dict, object* doc);
 
 object* type_new(object* type, object* args, object* kwargs){
     //Argument size checking
-    if (CAST_LIST(args)->size!=3 || CAST_DICT(kwargs)->val->size()!=0){
-        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d",CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size());
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (CAST_LIST(args)->size!=3){
+        vm_add_err(&ValueError, vm, "Expected 3 arguments, got %d",CAST_LIST(args)->size);
         return NULL;
     }
     //

@@ -245,8 +245,12 @@ object* set_iter_bool(object* self){
 }
 
 object* set_find_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2 ){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -265,8 +269,12 @@ object* set_find_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* set_add_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -277,8 +285,12 @@ object* set_add_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* set_remove_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -299,8 +311,12 @@ object* set_remove_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* set_union_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }

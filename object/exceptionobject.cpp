@@ -1,5 +1,5 @@
 object* exception_new(object* type, object* args, object* kwargs){
-    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    int len=CAST_LIST(args)->size;
     if (len>1 || CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected 0 arguments, got %d", len);
         return NULL;

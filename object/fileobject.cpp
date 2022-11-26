@@ -1,8 +1,12 @@
 #include <sys/stat.h>
 
 object* file_new(object* type, object* args, object* kwargs){
-    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size()!=0){
+    int len=CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if ((len!=2 && len!=3)){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -113,7 +117,11 @@ bool is_binary(char* mode){
 
 object* file_read_meth(object* selftp, object* args, object* kwargs){    
     int len=CAST_LIST(args)->size;
-    if (len!=1 || CAST_DICT(kwargs)->val->size()!=0){
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }
@@ -146,7 +154,11 @@ object* file_read_meth(object* selftp, object* args, object* kwargs){
 
 object* file_seek_meth(object* selftp, object* args, object* kwargs){    
     int len=CAST_LIST(args)->size;
-    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -167,7 +179,11 @@ object* file_seek_meth(object* selftp, object* args, object* kwargs){
 
 object* file_write_meth(object* selftp, object* args, object* kwargs){   
     int len=CAST_LIST(args)->size;
-    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -232,7 +248,11 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
 
 object* file_close_meth(object* selftp, object* args, object* kwargs){   
     int len=CAST_LIST(args)->size;
-    if (len!=1 || CAST_DICT(kwargs)->val->size()!=0){
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }
@@ -245,7 +265,11 @@ object* file_close_meth(object* selftp, object* args, object* kwargs){
 
 object* file_size_meth(object* selftp, object* args, object* kwargs){    
     int len=CAST_LIST(args)->size;
-    if (len!=1 || CAST_DICT(kwargs)->val->size()!=0){
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }
@@ -266,7 +290,11 @@ object* file_size_meth(object* selftp, object* args, object* kwargs){
 
 object* file_flush_meth(object* selftp, object* args, object* kwargs){    
     int len=CAST_LIST(args)->size;
-    if (len!=1 || CAST_DICT(kwargs)->val->size()!=0){
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL;
     }

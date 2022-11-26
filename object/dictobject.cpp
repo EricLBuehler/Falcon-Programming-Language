@@ -532,8 +532,12 @@ object* dict_iter_bool(object* self){
 }
 
 object* dict_keys_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
@@ -547,8 +551,12 @@ object* dict_keys_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* dict_values_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
@@ -562,8 +570,12 @@ object* dict_values_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* dict_flip_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
