@@ -1,0 +1,3 @@
+txt = "ῼ"
+
+print(txt.encode("utf8").decode("utf-8"))
