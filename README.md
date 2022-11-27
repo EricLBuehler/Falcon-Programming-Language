@@ -114,6 +114,7 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - ```<name>``` : ```<type>``` - Type annotations in function arguments or assignment
 - ```<function definition> : <type> {``` - Type annotation for function return value
 - ```f"Text {code}"``` - Format strings using code snippets
+- ```b"Text"``` - Creates a bytes object from string
 - ```\uXXX``` - Unicode escape, where ```XXXX``` represents a 4 digit hexadecimal string (mandatory)
 - ```\N...``` - Unicode name literal, where ```...``` represents a valid name that represents a unicode code point
 
