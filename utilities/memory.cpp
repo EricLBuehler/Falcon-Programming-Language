@@ -1,5 +1,3 @@
-const int sum=0;
-
 inline void* fpl_malloc(size_t size){
     void* ptr=malloc(size);
     if (ptr==NULL){
