@@ -1,8 +1,8 @@
 string loadFile(string name){
-    FILE* file=fopen(name.c_str(), "r");
+    FILE* file=fopen(name.c_str(), "rb");
     if (file==NULL){
         fclose(file);
-        cout<<"Cannot find file '"<<name<<"'";
+        cout<<"Cannot open file '"<<name<<"'.";
         exit(1);
     }
     fclose(file);
