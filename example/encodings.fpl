@@ -1,3 +1,9 @@
 txt = "ῼ"
 
-print(txt.encode("utf8").decode("utf-8"))
+print(txt)
+
+encoded=txt.encode("utf-32")
+
+print(encoded)
+
+print(encoded.decode("utf-32"))
