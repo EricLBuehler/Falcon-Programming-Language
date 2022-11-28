@@ -124,6 +124,7 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - [Equivalent C++ Types to Falcon Types](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPE_CPPBASE.md)
 - [Builtin type methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPE_DOCS.md)
 - [Conventions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/CONVENTIONS.md)
+- [Builtin Functions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/BUILTINS.md)
 
 ### Sample Program ###
 
