@@ -23,9 +23,18 @@ object* random_randint(object* self, object* args){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", high->type->name->c_str());
         return NULL; 
     }
+
+    if (*CAST_INT(low)->val>LONG_MAX || *CAST_INT(low)->val<LONG_MIN){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        return NULL;
+    }
+
+    if (*CAST_INT(high)->val>LONG_MAX || *CAST_INT(high)->val<LONG_MIN){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        return NULL;
+    }    
     
-    
-    object* res=new_int_fromint(iRand(CAST_INT(low)->val->to_int(), CAST_INT(high)->val->to_int()));
+    object* res=new_int_fromint(iRand(CAST_INT(low)->val->to_long(), CAST_INT(high)->val->to_long()));
     
     FPLDECREF(low);
     FPLDECREF(high);
@@ -52,9 +61,19 @@ object* random_random(object* self, object* args){
         FPLDECREF(high);
         return NULL; 
     }
+
+    if (*CAST_INT(low)->val>LONG_MAX || *CAST_INT(low)->val<LONG_MIN){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        return NULL;
+    }
+
+    if (*CAST_INT(high)->val>LONG_MAX || *CAST_INT(high)->val<LONG_MIN){
+        vm_add_err(&IndexError, vm, "List index out of range");
+        return NULL;
+    }    
     
-    lo=CAST_INT(low)->val->to_int();
-    hi=CAST_INT(high)->val->to_int();
+    lo=CAST_INT(low)->val->to_long();
+    hi=CAST_INT(high)->val->to_long();
 
     FPLDECREF(low);
     FPLDECREF(high);
