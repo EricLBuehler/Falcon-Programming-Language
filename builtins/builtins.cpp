@@ -619,7 +619,7 @@ object* builtin_chr(object* self, object* args){
         return NULL; 
     }
 
-    if (*CAST_INT(intv)->val>INT_MIN){
+    if (*CAST_INT(intv)->val<INT_MIN){
         vm_add_err(&ValueError, vm, "Code point value too small");
         return NULL; 
     }
