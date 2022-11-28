@@ -29,4 +29,4 @@ func <name> (cls, <arguments>){<code>}
 ```
 ## Iterators
 ### Generators
-Generators are any functions with a ```yield``` statement.
+Generators are any functions witha ```yield``` statement.
