@@ -22,3 +22,18 @@ Left curly is on the first line of the block. The right curly is positioned afte
 ```__``` ```name```
 
 Access using ```_``` ```class name``` ```__``` ```name```
+
+## Sequences
+Must define
+- ```__getitem__```
+
+Can define
+- ```__setitem__```
+- ```__delitem__```
+
+## Iterators
+Must define
+- ```__iter__```
+
+Can define
+- ```__next__```
