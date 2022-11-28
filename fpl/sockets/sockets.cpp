@@ -54,8 +54,12 @@ int _socket_close(SOCKET_T sock){
 }
 
 object* socket_new(object* type, object* args, object* kwargs){
-    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size()!=0){
+    int len=CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL;
     }
@@ -157,8 +161,12 @@ void socket_del(object* self){
 }
 
 object* socket_connect(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -262,8 +270,12 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_close(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 arguments, got %d", len);
         return NULL; 
     }
@@ -280,8 +292,12 @@ object* socket_close(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_send(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2 && len!=3){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -336,8 +352,12 @@ object* socket_send(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_recv(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if ((len!=2 && len!=3)|| CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2 && len!=3){
         vm_add_err(&ValueError, vm, "Expected 2 or 3 arguments, got %d", len);
         return NULL; 
     }
@@ -417,8 +437,12 @@ object* socket_gethostbyname(object* selftp, object* args){
 }
 
 object* socket_bind(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -517,8 +541,12 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_listen(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=2 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -553,8 +581,12 @@ object* socket_listen(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_accept(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
     }
@@ -607,8 +639,12 @@ object* socket_accept(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_setsockopt(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=4 || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=4){
         vm_add_err(&ValueError, vm, "Expected 4 arguments, got %d", len);
         return NULL; 
     }
@@ -658,8 +694,12 @@ object* socket_setsockopt(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_getsockopt(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if ((len!=4 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=4 && len!=3){
         vm_add_err(&ValueError, vm, "Expected 3 or 4 arguments, got %d", len);
         return NULL; 
     }
@@ -710,7 +750,7 @@ object* socket_getsockopt(object* selftp, object* args, object* kwargs){
         int err=errno;
         errno=0;
         #endif
-        vm_add_err(&OSError, vm, "[Errno %d] setsockopt failed" , err);
+        vm_add_err(&OSError, vm, "[Errno %d] getsockopt failed" , err);
         return NULL;
     }
 
@@ -728,7 +768,7 @@ object* socket_getsockopt(object* selftp, object* args, object* kwargs){
 }
 
 object* socket_getsockname(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
+    long len= CAST_LIST(args)->size;
     if (len!=1 || CAST_DICT(kwargs)->val->size() != 0){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
         return NULL; 
@@ -785,7 +825,9 @@ object* socket_gethostname(object* selftp, object* args){
 
 #ifndef _WIN32
 object* socket_sethostname(object* selftp, object* args){
-    string s=object_cstr(list_index_int(args, 1)).c_str();
+    object* o=dict_get_opti_deref(args, str_new_fromstr(args, "name"));
+    string s=object_cstr(o).c_str();
+    FPLDECREF(o);
     int i=s.size();
     char buf[i+1];
     strcpy(buf, s.c_str());
@@ -807,8 +849,12 @@ object* socket_sethostname(object* selftp, object* args){
 #endif
 
 object* socket_sendall(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if ((len!=2 && len!=3) || CAST_DICT(kwargs)->val->size() != 0){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2 && len!=3){
         vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
         return NULL; 
     }
@@ -927,16 +973,15 @@ object* new_socket_module(){
     dict_set_noinc_noret(dict, str_new_fromstr("SOCK_SEQPACKET"), new_int_fromint(SOCK_SEQPACKET));
     dict_set_noinc_noret(dict, str_new_fromstr("INADDR_ANY"), new_int_fromint(INADDR_ANY));
     dict_set_noinc_noret(dict, str_new_fromstr("INADDR_BROADCAST"), new_int_fromint(INADDR_BROADCAST));
+    dict_set_noinc_noret(dict, str_new_fromstr("INADDR_LOOPBACK"), new_int_fromint(INADDR_LOOPBACK));
 
     //Flags
     #ifndef _WIN32
     dict_set_noinc_noret(dict, str_new_fromstr("MSG_CONFIRM"), new_int_fromint(MSG_CONFIRM));
-    dict_set_noinc_noret(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
     dict_set_noinc_noret(dict, str_new_fromstr("MSG_DONTWAIT"), new_int_fromint(MSG_DONTWAIT));
     dict_set_noinc_noret(dict, str_new_fromstr("MSG_EOR"), new_int_fromint(MSG_EOR));
     dict_set_noinc_noret(dict, str_new_fromstr("MSG_MORE"), new_int_fromint(MSG_MORE));
     dict_set_noinc_noret(dict, str_new_fromstr("MSG_NOSIGNAL"), new_int_fromint(MSG_NOSIGNAL));
-    dict_set_noinc_noret(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
     #endif
     dict_set_noinc_noret(dict, str_new_fromstr("MSG_DONTROUTE"), new_int_fromint(MSG_DONTROUTE));
     dict_set_noinc_noret(dict, str_new_fromstr("MSG_OOB"), new_int_fromint(MSG_OOB));
@@ -972,18 +1017,17 @@ object* new_socket_module(){
 
     object* ob=new_builtin(socket_gethostname, str_new_fromstr("gethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
     dict_set_noinc_noret(dict, str_new_fromstr("gethostname"), ob);
-    FPLDECREF(ob);
 
     object* gethostbyname_args=new_tuple();
     tuple_append_noinc(gethostbyname_args, str_new_fromstr("name"));
     ob=new_builtin(socket_gethostbyname, str_new_fromstr("gethostbyname"), gethostbyname_args, emptyargs_kwargs, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("gethostbyname"), ob);
-    FPLDECREF(ob);    
 
     #ifndef _WIN32
-    ob=new_builtin(socket_sethostname, str_new_fromstr("sethostname"), emptyargs_kwargs, emptyargs_kwargs, 0, false);
+    object* sethostname_args=new_tuple();
+    tuple_append_noinc(sethostname_args, str_new_fromstr("name"));
+    ob=new_builtin(socket_sethostname, str_new_fromstr("sethostname"), sethostname_args, emptyargs_kwargs, 0, false);
     dict_set_noinc_noret(dict, str_new_fromstr("sethostname"), ob);
-    FPLDECREF(ob);    
     #endif
     
 
