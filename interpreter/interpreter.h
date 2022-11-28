@@ -1,6 +1,7 @@
 typedef struct _interpreter{
     unordered_map<int, struct vm*>* vm_map;
     bool eval_breaker;
+    struct object* path;
 }_interpreter;
 
 
