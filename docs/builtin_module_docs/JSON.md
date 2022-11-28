@@ -6,6 +6,7 @@
 
 Converts an object into its JSON counterpart. 
 
+```json.encode``` makes the following conversions:
 - ```None``` -> ```null```
 - ```True``` -> ```true```
 - ```False``` -> ```false```
@@ -37,6 +38,7 @@ Return ```str``` that is encoded JSON string.
 
 Decodes JSON string into a ```dict``` that contains the information.
 
+```json.decode``` makes the following conversions:
 - ```null``` -> ```None```
 - ```true``` -> ```True```
 - ```false``` -> ```False```
