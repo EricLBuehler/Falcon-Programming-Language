@@ -663,14 +663,14 @@ object* new_math_module(){
     object* log10args=new_tuple();
     tuple_append_noinc(log10args, str_new_fromstr("x"));
     object* log10kwargs=new_tuple();
-    object* log10=new_builtin(math_log10, str_new_fromstr("log"), log10args, log10kwargs, 1, false);
+    object* log10=new_builtin(math_log10, str_new_fromstr("log10"), log10args, log10kwargs, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("log10"), log10); 
     
     object* powargs=new_tuple();
     tuple_append_noinc(powargs, str_new_fromstr("x"));
     tuple_append_noinc(powargs, str_new_fromstr("y"));
     object* powkwargs=new_tuple();
-    object* pow=new_builtin(math_pow, str_new_fromstr("log"), powargs, powkwargs, 2, false);
+    object* pow=new_builtin(math_pow, str_new_fromstr("pow"), powargs, powkwargs, 2, false);
     dict_set_noinc_noret(dict, str_new_fromstr("pow"), pow); 
 
     object* sinhargs=new_tuple();
