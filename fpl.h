@@ -97,6 +97,22 @@ void fpl_startup(){
     setup_types_consts();
     setup_modules();
     interpreter_init();
+    
+    
+
+    interpreter.path=new_list();
+    fstream newfile;
+    newfile.open("fplpath.path",ios::in);
+    if (newfile.is_open()){
+        string tp;
+        while(getline(newfile, tp)){
+            tuple_append_noinc(interpreter.path, str_new_fromstr(tp));
+        }
+        newfile.close();
+    }
+    else{
+        tuple_append_noinc(interpreter.path, str_new_fromstr("./"));
+    }
 }
 
 
