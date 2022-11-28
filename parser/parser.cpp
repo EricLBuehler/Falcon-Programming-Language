@@ -1660,6 +1660,7 @@ class Parser{
                 Slice* s=(Slice*)fpl_malloc(sizeof(Slice));
                 s->left=left;
                 s->right=NULL;
+                s->step=NULL;
                 
                 node->node=s;
                 
@@ -1670,16 +1671,19 @@ class Parser{
                 }
                 return node;
             }
-            bool b=this->multi;
-            bool noassign=this->noassign;
-            this->noassign=true;
-            this->multi=false;
-            bool anno=this->anno;
-            this->anno=false;
-            Node* expr=this->expr(ret, LOWEST);
-            this->noassign=noassign;
-            this->multi=b;
-            this->anno=anno;
+            Node* expr=NULL;
+            if (!this->current_tok_is(T_COLON)){
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
+                bool anno=this->anno;
+                this->anno=false;
+                expr=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->multi=b;
+                this->anno=anno;
+            }
             
             Node* node=make_node(N_SLICE);
             node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line); //No guarrantee
@@ -1688,8 +1692,36 @@ class Parser{
             Slice* s=(Slice*)fpl_malloc(sizeof(Slice));
             s->left=left; //If null, same passthrough
             s->right=expr;
+            s->step=NULL;
             
             node->node=s;
+
+            if (this->current_tok_is(T_COLON)){   
+                this->advance();
+
+                bool b=this->multi;
+                bool noassign=this->noassign;
+                this->noassign=true;
+                this->multi=false;
+                bool anno=this->anno;
+                this->anno=false;
+                Node* expr=this->expr(ret, LOWEST);
+                this->noassign=noassign;
+                this->multi=b;
+                this->anno=anno;   
+
+                s->step=expr;             
+            }
+            else{ 
+                Node* node=make_node(N_INT);
+                node->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                node->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+                IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
+                i->literal=new string("1");
+                node->node=i;
+
+                s->step=node;
+            }
             
             if (!this->current_tok_is(T_RSQUARE)){
                 return NULL;

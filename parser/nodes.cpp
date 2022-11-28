@@ -325,6 +325,7 @@ struct From{
 struct Slice{
     Node* left;
     Node* right;
+    Node* step;
 };
 
 struct StoreSlice{
