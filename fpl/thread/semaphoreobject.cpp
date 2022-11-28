@@ -1,6 +1,10 @@
 object* semaphore_new(object* type, object* args, object* kwargs){
-    int len=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if (len!=1 || CAST_DICT(kwargs)->val->size()!=0){
+    int len=CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
         vm_add_err(&ValueError, vm, "Expected 1 argument, got %d",len);
         return NULL;
     }
@@ -42,12 +46,17 @@ object* semaphore_repr(object* self){
 }
 
 object* semaphore_acquire_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if ((len!=1 || CAST_DICT(kwargs)->val->size() != 0) && //No args
-        (len!=2 || CAST_DICT(kwargs)->val->size() != 1)){ //KW arg
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0 && CAST_DICT(kwargs)->val->size()!=1){
+        vm_add_err(&ValueError, vm, "Expected 0 or 1 keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1 && len!=2){
         vm_add_err(&ValueError, vm, "Expected 1 or 2 arguments, got %d", len);
         return NULL; 
     }
+
+    
 
     object* flag=NULL;
     object* self=tuple_index_int(args,0);
@@ -77,9 +86,12 @@ object* semaphore_acquire_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* semaphore_release_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
-    if ((len!=1 || CAST_DICT(kwargs)->val->size() != 0) && //No args
-        (len!=2 || CAST_DICT(kwargs)->val->size() != 1)){ //KW arg
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0 && CAST_DICT(kwargs)->val->size()!=1){
+        vm_add_err(&ValueError, vm, "Expected 0 or 1 keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1 && len!=2){
         vm_add_err(&ValueError, vm, "Expected 1 or 2 arguments, got %d", len);
         return NULL; 
     }
