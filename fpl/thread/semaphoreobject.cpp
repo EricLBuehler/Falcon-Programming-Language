@@ -14,6 +14,11 @@ object* semaphore_new(object* type, object* args, object* kwargs){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
         return NULL; 
     }
+
+    if (*CAST_INT(val)->val<INT_MIN || *CAST_INT(val)->val<0){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
     int v=CAST_INT(val)->val->to_int();
 
     if (v<0){
@@ -100,12 +105,16 @@ object* semaphore_release_meth(object* selftp, object* args, object* kwargs){
     object* self=tuple_index_int(args,0);
 
     if (len==2){
-        object* v=dict_get_opti_deref(kwargs, str_new_fromstr("n"));
+        v=dict_get_opti_deref(kwargs, str_new_fromstr("n"));
     }
 
     int v_=1;
 
     if (v!=NULL){
+        if (*CAST_INT(v)->val<INT_MIN || *CAST_INT(v)->val<INT_MAX){
+            vm_add_err(&OverflowError, vm, "Value out of range of C int");
+            return NULL; 
+        }
         v_=CAST_INT(v)->val->to_int();
         FPLDECREF(v);
     }
