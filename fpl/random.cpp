@@ -25,12 +25,12 @@ object* random_randint(object* self, object* args){
     }
 
     if (*CAST_INT(low)->val>LONG_MAX || *CAST_INT(low)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "List index out of range");
+        vm_add_err(&OverflowError, vm, "Length out of range of C long");
         return NULL;
     }
 
     if (*CAST_INT(high)->val>LONG_MAX || *CAST_INT(high)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "List index out of range");
+        vm_add_err(&OverflowError, vm, "Length out of range of C long");
         return NULL;
     }    
     
@@ -63,12 +63,12 @@ object* random_random(object* self, object* args){
     }
 
     if (*CAST_INT(low)->val>LONG_MAX || *CAST_INT(low)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "List index out of range");
+        vm_add_err(&OverflowError, vm, "Length out of range of C long");
         return NULL;
     }
 
     if (*CAST_INT(high)->val>LONG_MAX || *CAST_INT(high)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "List index out of range");
+        vm_add_err(&OverflowError, vm, "Length out of range of C long");
         return NULL;
     }    
     
@@ -91,6 +91,11 @@ object* random_choice(object* self, object* args){
         return NULL; 
     }
     object* iterlen=ob->type->slot_mappings->slot_len(ob);
+
+    if (*CAST_INT(iterlen)->val<INT_MIN || *CAST_INT(iterlen)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+        return NULL; 
+    }
     
     int len_sub1=CAST_INT(iterlen)->val->to_int()-1;
     FPLDECREF(iterlen);

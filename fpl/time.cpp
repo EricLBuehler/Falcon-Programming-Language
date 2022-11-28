@@ -7,6 +7,10 @@ object* time_sleep(object* self, object* args){
     object* val=dict_get_opti_deref(args, str_new_fromstr("n"));
     double time;
     if (object_istype(val->type, &IntType)){
+        if (*CAST_INT(val)->val>LONG_MAX || *CAST_INT(val)->val<LONG_MIN){
+            vm_add_err(&IndexError, vm, "Time period too large");
+            return NULL;
+        }    
         time=CAST_INT(val)->val->to_long();
         FPLDECREF(val);
     }
@@ -35,6 +39,10 @@ object* time_sleep_ms(object* self, object* args){
     object* val=dict_get_opti_deref(args, str_new_fromstr("n"));
     double time;
     if (object_istype(val->type, &IntType)){
+        if (*CAST_INT(val)->val>LONG_MAX || *CAST_INT(val)->val<LONG_MIN){
+            vm_add_err(&IndexError, vm, "Time period too large");
+            return NULL;
+        }    
         time=CAST_INT(val)->val->to_long();
         FPLDECREF(val);
     }
