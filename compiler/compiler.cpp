@@ -3078,6 +3078,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             Node* base=SUBSCR(SLICE(expr->node)->left->node)->left;
             Node* left=SUBSCR(SLICE(expr->node)->left->node)->expr;
             Node* right=SLICE(expr->node)->right;
+            Node* step=SLICE(expr->node)->step;
 
             uint32_t type=0;
             if (left==NULL && right!=NULL){
@@ -3100,7 +3101,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (type==3){
                 cmpexpr=compile_expr_keep(compiler, left);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
                 cmpexpr=compile_expr_keep(compiler, right);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
+                cmpexpr=compile_expr_keep(compiler, step);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
             else if (type==2){
@@ -3118,6 +3129,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     idx=object_find(compiler->consts, noneobj);
                 }
                 
+                cmpexpr=compile_expr_keep(compiler, step);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
+
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
@@ -3137,11 +3153,42 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
+                
+                cmpexpr=compile_expr_keep(compiler, step);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
             else{
-                //Type 4 needs nothing
-                break;
+                uint32_t idx;
+                if (!object_find_bool(compiler->consts,noneobj)){
+                    //Create object
+                    tuple_append_noinc(compiler->consts, noneobj);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, noneobj);
+                }
+                
+                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                
+                if (!object_find_bool(compiler->consts,noneobj)){
+                    //Create object
+                    tuple_append_noinc(compiler->consts, noneobj);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, noneobj);
+                }
+                
+                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                
+                cmpexpr=compile_expr_keep(compiler, step);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
+                add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
 
             add_instruction(compiler, compiler->instructions, BINOP_SUBSCR, 0, GET_ANNO_N(expr));
@@ -3158,6 +3205,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
             Node* base=SUBSCR(SLICE(STSLICE(expr->node)->left->node)->left->node)->left;
             Node* left=SUBSCR(SLICE(STSLICE(expr->node)->left->node)->left->node)->expr;
             Node* right=SLICE(STSLICE(expr->node)->left->node)->right;
+            Node* step=SLICE(STSLICE(expr->node)->left->node)->step;
 
             uint32_t type=0;
             if (left==NULL && right!=NULL){
@@ -3180,7 +3228,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
             }
             if (type==3){
                 cmpexpr=compile_expr_keep(compiler, left);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
                 cmpexpr=compile_expr_keep(compiler, right);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
+                cmpexpr=compile_expr_keep(compiler, step);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
             else if (type==2){
@@ -3199,6 +3257,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                cmpexpr=compile_expr_keep(compiler, step);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
             else if (type==1) {
@@ -3217,11 +3279,41 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
+                cmpexpr=compile_expr_keep(compiler, step);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
             else{
-                //Type 4 needs nothing
-                break;
+                uint32_t idx;
+                if (!object_find_bool(compiler->consts,noneobj)){
+                    //Create object
+                    tuple_append_noinc(compiler->consts, noneobj);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, noneobj);
+                }
+                
+                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                
+                if (!object_find_bool(compiler->consts,noneobj)){
+                    //Create object
+                    tuple_append_noinc(compiler->consts, noneobj);
+                    idx=NAMEIDX(compiler->consts);
+                }
+                else{
+                    idx=object_find(compiler->consts, noneobj);
+                }
+                
+                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                
+                cmpexpr=compile_expr_keep(compiler, step);
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
+                add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
             
             cmpexpr=compile_expr_keep(compiler, STSLICE(expr->node)->expr);
@@ -3255,6 +3347,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 Node* base=SUBSCR(SLICE(sliceexpr->node)->left->node)->left;
                 Node* left=SUBSCR(SLICE(sliceexpr->node)->left->node)->expr;
                 Node* right=SLICE(sliceexpr->node)->right;
+                Node* step=SLICE(sliceexpr->node)->step;
 
                 uint32_t type=0;
                 if (left==NULL && right!=NULL){
@@ -3276,7 +3369,17 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 }
                 if (type==3){
                     cmpexpr=compile_expr_keep(compiler, left);
+                    if (cmpexpr==COMPILER_ERROR){
+                        return cmpexpr;
+                    }
                     cmpexpr=compile_expr_keep(compiler, right);
+                    if (cmpexpr==COMPILER_ERROR){
+                        return cmpexpr;
+                    }
+                    cmpexpr=compile_expr_keep(compiler, step);
+                    if (cmpexpr==COMPILER_ERROR){
+                        return cmpexpr;
+                    }
                     add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
                 }
                 else if (type==2){
@@ -3295,6 +3398,10 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     }
                     
                     add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                    cmpexpr=compile_expr_keep(compiler, right);
+                    if (cmpexpr==COMPILER_ERROR){
+                        return cmpexpr;
+                    }
                     add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
                 }
                 else if (type==1) {
@@ -3313,11 +3420,41 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     if (cmpexpr==COMPILER_ERROR){
                         return cmpexpr;
                     }
+                    cmpexpr=compile_expr_keep(compiler, right);
+                    if (cmpexpr==COMPILER_ERROR){
+                        return cmpexpr;
+                    }
                     add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
                 }
                 else{
-                    //Type 4 needs nothing
-                    break;
+                    uint32_t idx;
+                    if (!object_find_bool(compiler->consts,noneobj)){
+                        //Create object
+                        tuple_append_noinc(compiler->consts, noneobj);
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, noneobj);
+                    }
+                    
+                    add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                    
+                    if (!object_find_bool(compiler->consts,noneobj)){
+                        //Create object
+                        tuple_append_noinc(compiler->consts, noneobj);
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, noneobj);
+                    }
+                    
+                    add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
+                    
+                    cmpexpr=compile_expr_keep(compiler, step);
+                    if (cmpexpr==COMPILER_ERROR){
+                        return cmpexpr;
+                    }
+                    add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
                 }
 
                 add_instruction(compiler, compiler->instructions, DEL_SUBSCR, 0, GET_ANNO_N(expr));

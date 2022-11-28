@@ -89,7 +89,7 @@ IMPORT_NAME(arg) - Imports library names[arg] and pushes module object onto stac
 
 IMPORT_FROM_MOD - Loads attrs in list on TOS, from module TOS-1
 
-MAKE_SLICE(arg) - Make slice from TOS-2[TOS-1:TOS]
+MAKE_SLICE(arg) - Make slice from TOS-3[TOS-2:TOS-1:TOS]
 
 BINOP_EE - Implements TOS != TOS-1
 
