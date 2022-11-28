@@ -15,15 +15,15 @@ Open a new socket.
 | ```socket```    | socket type    |
 
 ### Returns
-Return ```Socket```
+Return ```Socket``` object
 
 -----------------------
 
-## ```close```
+## ```socket.close```
 
 Close an open socket.
 
-```socket.close(socket)```
+```socket.socket.close(socket)```
 
 ### Arguments
 | Argument      | Information       |
@@ -35,11 +35,11 @@ Return ```None```
 
 -----------------------
 
-## ```connect```
+## ```socket.connect```
 
 Connect to a remote socket server using the address and port.
 
-```socket.connect(socket, info)```
+```socket.socket.connect(socket, info)```
 
 ### Arguments
 | Argument      | Information       |
@@ -52,11 +52,11 @@ Return ```None```
 
 -----------------------
 
-## ```send```
+## ```socket.send```
 
 Send the data encoded in a string or bytes object through an open socket.
 
-```socket.send(socket, data)```
+```socket.socket.send(socket, data)```
 
 ### Arguments
 | Argument      | Information       |
@@ -69,11 +69,11 @@ Return ```int``` number of bytes sent
 
 -----------------------
 
-## ```recv```
+## ```socket.recv```
 
 Recieve data from an open socket.
 
-```socket.recv(socket, len, flags=0)```
+```socket.socket.recv(socket, len, flags=0)```
 
 ### Arguments
 | Argument      | Information       |
@@ -87,11 +87,11 @@ Return ```bytes``` object that contains the recieved information.
 
 -----------------------
 
-## ```gethostbyname```
+## ```socket.gethostbyname```
 
 Get the IP address of a given host name.
 
-```socket.gethostbyname(name)```
+```socket.socket.gethostbyname(name)```
 
 ### Arguments
 | Argument      | Information       |
@@ -103,12 +103,12 @@ Return ```bytes``` object that contains the recieved information.
 
 -----------------------
 
-## ```bind```
+## ```socket.bind```
 
 Bind a socket to an address and port.
 This allows the socket to act as a server.
 
-```socket.bind(socket, info)```
+```socket.socket.bind(socket, info)```
 
 ### Arguments
 | Argument      | Information       |
@@ -121,11 +121,11 @@ Return ```None```
 
 -----------------------
 
-## ```listen```
+## ```socket.listen```
 
 Enable a server to accept ```n``` connections.
 
-```socket.listen(socket, n)```
+```socket.socket.listen(socket, n)```
 
 ### Arguments
 | Argument      | Information       |
@@ -138,11 +138,11 @@ Return ```None```
 
 -----------------------
 
-## ```accept```
+## ```socket.accept```
 
 Enable a server to accept ```n``` connections.
 
-```socket.accept(socket)```
+```socket.socket.accept(socket)```
 
 ### Arguments
 | Argument      | Information       |
@@ -154,11 +154,11 @@ Return ```tuple``` of ```(CLIENT, (IP, PORT) )```
 
 -----------------------
 
-## ```setsockopt```
+## ```socket.setsockopt```
 
 Set socket options at level and name to value.
 
-```socket.setsockopt(socket, level, name, value)```
+```socket.socket.setsockopt(socket, level, name, value)```
 
 ### Arguments
 | Argument      | Information       |
@@ -173,11 +173,11 @@ Return ```None```
 
 -----------------------
 
-## ```getsockopt```
+## ```socket.getsockopt```
 
 Get socket options at level and name, and return the results in a buffer.
 
-```socket.getsockopt(socket, level, name, len=4)```
+```socket.socket.getsockopt(socket, level, name, len=4)```
 
 - Note: len is by default the native size of an integer on the machine (```sizeof(int)``` in ```C```)
 
@@ -194,11 +194,11 @@ Return ```list``` containing the buffer to be interpreted by the caller.
 
 -----------------------
 
-## ```getsockname```
+## ```socket.getsockname```
 
 Get socket information.
 
-```socket.getsockname(socket)```
+```socket.socket.getsockname(socket)```
 
 ### Arguments
 | Argument      | Information       |
@@ -210,24 +210,24 @@ Return ```tuple``` containing the information ```(IP, PORT)```
 
 -----------------------
 
-## ```gethostname```
+## ```socket.gethostname```
 
 Get hostname.
 
-```socket.gethostname()```
+```socket.socket.gethostname()```
 
 ### Returns
 Return ```str``` containing host name
 
 -----------------------
 
-## ```sethostname```
+## ```socket.sethostname```
 
 Set hostname.
 
 - **Only available on Windows**
 
-```socket.sethostname(name)```
+```socket.socket.sethostname(name)```
 
 ### Arguments
 | Argument      | Information       |
@@ -240,11 +240,11 @@ Return ```None```
 
 -----------------------
 
-## ```sendall```
+## ```socket.sendall```
 
 Send all of the data encoded in a string or bytes object through an open socket.
 
-```socket.sendall(socket, data)```
+```socket.socket.sendall(socket, data)```
 
 ### Arguments
 | Argument      | Information       |
