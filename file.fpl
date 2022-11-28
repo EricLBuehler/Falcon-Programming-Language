@@ -1,0 +1,4 @@
+with open("program.fpl","rb") as f:
+    x=f.read()
+    print(x)
+    eval(x)
