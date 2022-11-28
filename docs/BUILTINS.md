@@ -332,13 +332,14 @@ ______________________
 ## ```slice```
 Create slice object, used to slice iterators
 
-```slice(start, stop)```
+```slice(start, stop, step)```
 
 ### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
 | ```start```    | ```int``` start position or ```None```    |
 | ```stop```    | ```int``` stop position or ```None```    |
+| ```step```    | ```int``` step     |
 
 ### Notes
 ```None```

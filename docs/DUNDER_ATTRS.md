@@ -31,6 +31,7 @@
 - ```__floordiv__(self, other)```
 - ```__neg__(self)```
 - ```__abs__(self)```
+- ```__round__(self, precision)```
 
 ## Comparison
 - ```__eq__(self, other)```
@@ -53,7 +54,7 @@
 - ```__rshift__(self, number)```
 
 ## Descriptor
-- ```__get__(self, instance)```
+- ```__get__(self, instance, owner=None)```
 - ```__set__(self, instance, val)```
 - ```__delete__(self, instance)```
 
