@@ -6,9 +6,9 @@
 
 Converts an object into its JSON counterpart. 
 
-- ```None``` ➡ ```null```
-- ```True``` ➡ ```true```
-- ```False``` ➡ ```false```
+- ```None``` -> ```null```
+- ```True``` -> ```true```
+- ```False``` -> ```false```
 
 Expects ```str``` for keys, and the following types for values:
 - ```str```
@@ -37,9 +37,9 @@ Return ```str``` that is encoded JSON string.
 
 Decodes JSON string into a ```dict``` that contains the information.
 
-- ```null``` ➡ ```None```
-- ```true``` ➡ ```True```
-- ```false``` ➡ ```False```
+- ```null``` -> ```None```
+- ```true``` -> ```True```
+- ```false``` -> ```False```
 
 ```json.decode(object)```
 
