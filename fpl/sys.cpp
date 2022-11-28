@@ -2,7 +2,7 @@ object* sys_getsizeof(object* self, object* args){
     object* val=dict_get_opti_deref(args, str_new_fromstr("obj"));
     object* size;
     if (val->type->size==0){
-        size=new_int_frombigint(new BigInt(val->type->var_base_size));        
+        size=new_int_frombigint(new BigInt(CAST_VAR(val)->var_size));        
     }
     else{
         size=new_int_frombigint(new BigInt(val->type->size));
