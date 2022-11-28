@@ -101,22 +101,7 @@ struct vm* new_vm(uint32_t id, object* code, struct instructions* instructions, 
     vm->exception=NULL;
 
     vm->filedata=filedata;
-
-    vm->path=new_list();
     vm->exec=0;
-    
-    fstream newfile;
-    newfile.open("fplpath.path",ios::in);
-    if (newfile.is_open()){
-        string tp;
-        while(getline(newfile, tp)){
-            tuple_append_noinc(vm->path, str_new_fromstr(tp));
-        }
-        newfile.close();
-    }
-    else{
-        tuple_append_noinc(vm->path, str_new_fromstr("./"));
-    }
 
     add_callframe(vm->callstack, new_int_fromint(0), new string("<module>"), code, NULL, &vm->ip);
     vm->globals=new_dict();
@@ -141,21 +126,7 @@ struct vm* new_vm_raw(uint32_t id){
 
     vm->filedata=::vm->filedata;
 
-    vm->path=new_list();
     vm->exec=0;
-    
-    fstream newfile;
-    newfile.open("fplpath.path",ios::in);
-    if (newfile.is_open()){
-        string tp;
-        while(getline(newfile, tp)){
-            tuple_append_noinc(vm->path, str_new_fromstr(tp));
-        }
-        newfile.close();
-    }
-    else{
-        tuple_append_noinc(vm->path, str_new_fromstr("./"));
-    }
     
     return vm;
 }
@@ -1759,9 +1730,9 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     
             string name_plain=nm_plain+".fpl";
 
-            for (size_t i=0; i<CAST_LIST(vm->path)->size; i++){
-                string name_=object_cstr(list_index_int(vm->path, i))+name_plain;
-                string nm=object_cstr(list_index_int(vm->path, i))+nm_plain;
+            for (size_t i=0; i<CAST_LIST(interpreter.path)->size; i++){
+                string name_=object_cstr(list_index_int(interpreter.path, i))+name_plain;
+                string nm=object_cstr(list_index_int(interpreter.path, i))+nm_plain;
                 struct stat st;
                 bool foundfpl=false;
                 if( stat(nm.c_str(),&st) == 0 || stat(name_.c_str(),&st) == 0 ){
