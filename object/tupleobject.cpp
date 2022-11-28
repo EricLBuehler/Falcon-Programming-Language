@@ -107,7 +107,7 @@ object* tuple_slice(object* self, object* idx){
             return NULL;
         }
         if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "Index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         start_v=CAST_INT(start_)->val->to_long();
@@ -123,7 +123,7 @@ object* tuple_slice(object* self, object* idx){
             return NULL;
         }
         if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "Index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         end_v=CAST_INT(end_)->val->to_long();
@@ -145,7 +145,7 @@ object* tuple_slice(object* self, object* idx){
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
         if (start_v<0){
-            vm_add_err(&TypeError, vm, "Index out of range");
+            vm_add_err(&IndexError, vm, "Index out of range");
             return NULL;
         }
     }
@@ -155,7 +155,7 @@ object* tuple_slice(object* self, object* idx){
     if (end_v<0){
         end_v=CAST_LIST(self)->size+start_v;
         if (end_v<0){
-            vm_add_err(&TypeError, vm, "Index out of range");
+            vm_add_err(&IndexError, vm, "Index out of range");
             return NULL;
         }
     }
@@ -182,7 +182,7 @@ object* tuple_get(object* self, object* idx){
         return NULL;
     }
     if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "Tuple index out of range");
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
         FPLDECREF(idx_);
         return NULL;
     }
@@ -363,6 +363,10 @@ object* tuple_mul(object* self, object* other){
         vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
         return NULL;
     }
+    if (*CAST_INT(other)->val>LONG_MAX || *CAST_INT(other)->val<LONG_MIN){
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
+        return NULL;
+    }    
     long nrepeat=CAST_INT(other)->val->to_long();
     size_t orig_size=CAST_TUPLE(self)->size;
     CAST_TUPLE(self)->size*=nrepeat;

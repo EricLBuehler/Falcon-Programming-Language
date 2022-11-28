@@ -15,6 +15,11 @@ object* range_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "%s object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
         return arg;
     }
+
+    if (*CAST_INT(arg)->val<INT_MIN || *CAST_INT(arg)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
     CAST_RANGE(range)->start=CAST_INT(arg)->val->to_int();
     if (len==2){
         arg=object_int(list_index_int(args, 1));
@@ -22,6 +27,11 @@ object* range_new(object* type, object* args, object* kwargs){
             FPLDECREF(range);
             vm_add_err(&ValueError, vm, "%s object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
             return arg;
+        }
+
+        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val<LLONG_MAX){
+            vm_add_err(&OverflowError, vm, "Value out of range of C long long");
+            return NULL; 
         }
         CAST_RANGE(range)->end=CAST_INT(arg)->val->to_long_long();
         CAST_RANGE(range)->step=1;
@@ -33,6 +43,11 @@ object* range_new(object* type, object* args, object* kwargs){
             vm_add_err(&ValueError, vm, "%s object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
             return arg;
         }
+
+        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val<LLONG_MAX){
+            vm_add_err(&OverflowError, vm, "Value out of range of C long long");
+            return NULL; 
+        }
         CAST_RANGE(range)->end=CAST_INT(arg)->val->to_long_long();
         
         arg=object_int(list_index_int(args, 2));
@@ -40,6 +55,11 @@ object* range_new(object* type, object* args, object* kwargs){
             FPLDECREF(range);
             vm_add_err(&ValueError, vm, "%s object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
             return arg;
+        }
+
+        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val<LLONG_MAX){
+            vm_add_err(&OverflowError, vm, "Value out of range of C long long");
+            return NULL; 
         }
         CAST_RANGE(range)->step=CAST_INT(arg)->val->to_long_long();
     }

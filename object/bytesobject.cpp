@@ -61,7 +61,7 @@ object* bytes_new(object* type, object* args, object* kwargs){
                     return NULL; 
                 }
                 
-                if (CAST_INT(intob)->val->to_int()>255 || CAST_INT(intob)->val->to_int()<0){
+                if (*CAST_INT(intob)->val>INT_MAX || CAST_INT(intob)->val->to_int()>255 || CAST_INT(intob)->val->to_int()<0){
                     vm_add_err(&ValueError, vm, "Expected value in range(0, 256), got %d", CAST_INT(intob)->val->to_int());
                     return NULL;
                 }
@@ -120,7 +120,7 @@ object* bytes_slice(object* self, object* idx){
             return NULL;
         }
         if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "Index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         start_v=CAST_INT(start_)->val->to_long();
@@ -136,7 +136,7 @@ object* bytes_slice(object* self, object* idx){
             return NULL;
         }
         if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "Index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         end_v=CAST_INT(end_)->val->to_long();
@@ -149,7 +149,7 @@ object* bytes_slice(object* self, object* idx){
         return NULL;
     }
     if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
-        vm_add_err(&IndexError, vm, "Index out of range");
+        vm_add_err(&IndexError, vm, "Value out of range of C long");
         return NULL;
     }
     step_v=CAST_INT(step_)->val->to_long();
@@ -158,7 +158,7 @@ object* bytes_slice(object* self, object* idx){
     if (start_v<0){
         start_v=CAST_BYTES(self)->len=+start_v;
         if (start_v<0){
-            vm_add_err(&TypeError, vm, "Index out of range");
+            vm_add_err(&IndexError, vm, "Index out of range");
             return NULL;
         }
     }
@@ -168,7 +168,7 @@ object* bytes_slice(object* self, object* idx){
     if (end_v<0){
         end_v=CAST_BYTES(self)->len+start_v;
         if (end_v<0){
-            vm_add_err(&TypeError, vm, "Index out of range");
+            vm_add_err(&IndexError, vm, "Index out of range");
             return NULL;
         }
     }
@@ -196,7 +196,7 @@ object* bytes_get(object* self, object* idx){
         return NULL;
     }
     if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "Index out of range");
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
         FPLDECREF(idx_);
         return NULL;
     }
@@ -355,6 +355,11 @@ object* bytes_mul(object* self, object* other){
     }
 
     int len_=CAST_BYTES(self)->len;
+
+    if (*CAST_INT(other)->val<INT_MIN || *CAST_INT(other)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
     int len=CAST_INT(other)->val->to_int();
         
     char* c=(char*)fpl_malloc(len_*len);

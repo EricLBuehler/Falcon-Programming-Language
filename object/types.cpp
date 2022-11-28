@@ -1355,6 +1355,11 @@ void setup_exception_type(){
     importerr_bases->type->slot_mappings->slot_append(importerr_bases, (object*)&FileNotFoundError);
     ImportError=(*(TypeObject*)new_type_exception(new string("ImportError"), importerr_bases, new_dict()));
     fplbases.push_back(&ImportError);
+
+    object* overflowerr_bases=new_tuple();
+    overflowerr_bases->type->slot_mappings->slot_append(overflowerr_bases, (object*)&ValueError);
+    OverflowError=(*(TypeObject*)new_type_exception(new string("OverflowError"), overflowerr_bases, new_dict()));
+    fplbases.push_back(&OverflowError);
 }
 
 

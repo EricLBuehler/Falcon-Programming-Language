@@ -103,7 +103,7 @@ object* list_slice(object* self, object* idx){
             return NULL;
         }
         if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "List index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         start_v=CAST_INT(start_)->val->to_long();
@@ -119,7 +119,7 @@ object* list_slice(object* self, object* idx){
             return NULL;
         }
         if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "List index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         end_v=CAST_INT(end_)->val->to_long();
@@ -141,7 +141,7 @@ object* list_slice(object* self, object* idx){
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
         if (start_v<0){
-            vm_add_err(&TypeError, vm, "List index out of range");
+            vm_add_err(&IndexError, vm, "List index out of range");
             return NULL;
         }
     }
@@ -151,7 +151,7 @@ object* list_slice(object* self, object* idx){
     if (end_v<0){
         end_v=CAST_LIST(self)->size+start_v;
         if (end_v<0){
-            vm_add_err(&TypeError, vm, "List index out of range");
+            vm_add_err(&IndexError, vm, "List index out of range");
             return NULL;
         }
     }
@@ -185,7 +185,7 @@ object* list_store_slice(object* self, object* idx, object* val){
             return NULL;
         }
         if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "List index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         start_v=CAST_INT(start_)->val->to_long();
@@ -201,7 +201,7 @@ object* list_store_slice(object* self, object* idx, object* val){
             return NULL;
         }
         if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "List index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         end_v=CAST_INT(end_)->val->to_long();
@@ -223,7 +223,7 @@ object* list_store_slice(object* self, object* idx, object* val){
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
         if (start_v<0){
-            vm_add_err(&TypeError, vm, "List index out of range");
+            vm_add_err(&IndexError, vm, "List index out of range");
             return NULL;
         }
     }
@@ -233,7 +233,7 @@ object* list_store_slice(object* self, object* idx, object* val){
     if (end_v<0){
         end_v=CAST_LIST(self)->size+start_v;
         if (end_v<0){
-            vm_add_err(&TypeError, vm, "List index out of range");
+            vm_add_err(&IndexError, vm, "List index out of range");
             return NULL;
         }
     }
@@ -322,7 +322,7 @@ object* list_get(object* self, object* idx){
         return NULL;
     }
     if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "List index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
         FPLDECREF(idx_);
         return NULL;
     }
@@ -359,7 +359,7 @@ object* list_del_slice(object* self, object* index){
             return NULL;
         }
         if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "List index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         start_v=CAST_INT(start_)->val->to_long();
@@ -375,7 +375,7 @@ object* list_del_slice(object* self, object* index){
             return NULL;
         }
         if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "List index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         end_v=CAST_INT(end_)->val->to_long();
@@ -397,7 +397,7 @@ object* list_del_slice(object* self, object* index){
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
         if (start_v<0){
-            vm_add_err(&TypeError, vm, "List index out of range");
+            vm_add_err(&IndexError, vm, "List index out of range");
             return NULL;
         }
     }
@@ -407,7 +407,7 @@ object* list_del_slice(object* self, object* index){
     if (end_v<0){
         end_v=CAST_LIST(self)->size+start_v;
         if (end_v<0){
-            vm_add_err(&TypeError, vm, "List index out of range");
+            vm_add_err(&IndexError, vm, "List index out of range");
             return NULL;
         }
     }
@@ -461,7 +461,7 @@ object* list_set(object* self, object* idx, object* val){
         return NULL;
     }
     if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "List index out of range");
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
         FPLDECREF(idx_);
         return NULL;
     }
@@ -694,6 +694,10 @@ object* list_mul(object* self, object* other){
         vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
         return NULL;
     }
+    if (*CAST_INT(other)->val>LONG_MAX || *CAST_INT(other)->val<LONG_MIN){
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
+        return NULL;
+    }    
     long nrepeat=CAST_INT(other)->val->to_long();
     size_t orig_size=CAST_LIST(self)->size;
     CAST_LIST(self)->size*=nrepeat;
@@ -830,6 +834,10 @@ object* list_insert_meth(object* selftp, object* args, object* kwargs){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",idx_->type->name->c_str());
         return NULL;
     }
+    if (*CAST_INT(idx_new)->val>LLONG_MAX || *CAST_INT(idx_new)->val<LLONG_MIN){
+        vm_add_err(&OverflowError, vm, "Value out of range of C long long");
+        return NULL;
+    }   
 
     size_t idx=CAST_INT(idx_new)->val->to_long_long();
     if (idx>CAST_LIST(self)->size){

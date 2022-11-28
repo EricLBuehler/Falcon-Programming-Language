@@ -160,6 +160,11 @@ object* bool_and(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
+
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
     object* res=new_int_fromint(CAST_BOOL(self)->val & CAST_INT(otherv)->val->to_int());
     FPLDECREF(otherv);
     return res;
@@ -172,6 +177,11 @@ object* bool_or(object* self, object* other){
     object* otherv=object_int(other);
     if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
+    }
+
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
     }
     object* res=new_int_fromint(CAST_BOOL(self)->val | CAST_INT(otherv)->val->to_int());
     FPLDECREF(otherv);
@@ -186,6 +196,11 @@ object* bool_xor(object* self, object* other){
     if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
     }
+
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
     object* res=new_int_fromint(CAST_BOOL(self)->val ^ CAST_INT(otherv)->val->to_int());
     FPLDECREF(otherv);
     return res;
@@ -198,8 +213,12 @@ object* bool_lshift(object* self, object* other){
     object* otherv=object_int(other);
     if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
+    }    
+
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
     }
-    
     int val=CAST_INT(otherv)->val->to_int();
     FPLDECREF(otherv);
     if (val<0){
@@ -217,6 +236,11 @@ object* bool_rshift(object* self, object* other){
     object* otherv=object_int(other);
     if (otherv==NULL || !object_istype(otherv->type, &IntType)){
         return NULL;
+    }
+
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
     }
     int val=CAST_INT(otherv)->val->to_int();
     FPLDECREF(otherv);

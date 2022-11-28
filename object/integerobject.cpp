@@ -755,7 +755,7 @@ object* int_round(object* self, object* prec){
         return NULL; 
     }
     if (*CAST_INT(prec_)->val>LONG_MAX || *CAST_INT(prec_)->val<LONG_MIN || *CAST_INT(prec_)->val<0){
-        vm_add_err(&IndexError, vm, "Precision out of range");
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
         return NULL;
     }
 

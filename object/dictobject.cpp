@@ -52,9 +52,9 @@ object* dict_new(object* type, object* args, object* kwargs){
             if (o->type->slot_mappings->slot_len==NULL || *CAST_INT(o->type->slot_mappings->slot_len(o))->val!=2){
                 object* len=o->type->slot_mappings->slot_len(o);
                 if (*CAST_INT(len)->val!=2){
-                    FPLDECREF(len);
                     FPLDECREF((object*)obj);
-                    vm_add_err(&ValueError, vm, "Expected 2 values (key/value) for dictionary update, got '%d'",CAST_INT(len)->val->to_int());
+                    vm_add_err(&ValueError, vm, "Expected 2 values (key/value) for dictionary update, got '%s'",object_cstr(len));
+                    FPLDECREF(len);
                     return NULL;
                 }
                 FPLDECREF(len);

@@ -88,7 +88,7 @@ object* str_slice(object* self, object* idx){object* start=CAST_SLICE(idx)->star
             return NULL;
         }
         if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "Index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         start_v=CAST_INT(start_)->val->to_long();
@@ -104,7 +104,7 @@ object* str_slice(object* self, object* idx){object* start=CAST_SLICE(idx)->star
             return NULL;
         }
         if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
-            vm_add_err(&IndexError, vm, "Index out of range");
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
             return NULL;
         }
         int target=CAST_INT(end_)->val->to_long();
@@ -132,7 +132,7 @@ object* str_slice(object* self, object* idx){object* start=CAST_SLICE(idx)->star
     if (start_v<0){
         start_v=STRING_LENGTH(self)+start_v;
         if (start_v<0){
-            vm_add_err(&TypeError, vm, "Index out of range");
+            vm_add_err(&IndexError, vm, "Index out of range");
             return NULL;
         }
     }
@@ -142,7 +142,7 @@ object* str_slice(object* self, object* idx){object* start=CAST_SLICE(idx)->star
     if (end_v<0){
         end_v=STRING_LENGTH(self)+start_v;
         if (end_v<0){
-            vm_add_err(&TypeError, vm, "Index out of range");
+            vm_add_err(&IndexError, vm, "Index out of range");
             return NULL;
         }
     }
@@ -172,7 +172,7 @@ object* str_get(object* self, object* idx){
         return NULL;
     }
     if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "String index out of range");
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
         FPLDECREF(idx_);
         return NULL;
     }
@@ -330,6 +330,10 @@ object* string_join_meth(object* selftp, object* args, object* kwargs){
     string s="";
     int i=0;
     object* len_=arg->type->slot_mappings->slot_len(arg);
+    if (*CAST_INT(len_)->val<LONG_MIN || *CAST_INT(len_)->val<LONG_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
+        return NULL; 
+    }
     len=CAST_INT(len_)->val->to_long()-1;
     while (vm->exception==NULL){
         object* o=iter->type->slot_next(iter);
@@ -365,7 +369,10 @@ object* str_mul(object* self, object* other){
         vm_add_err(&TypeError, vm, "Invalid operand types for *: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
         return NULL;
     }
-        
+    if (*CAST_INT(other)->val>LONG_MAX || *CAST_INT(other)->val<LONG_MIN){
+        vm_add_err(&OverflowError, vm, "Value out of range of C long");
+        return NULL;
+    }    
     return str_new_fromstr(repeat(*CAST_STRING(self)->val,(CAST_INT(other)->val->to_long())));
 }
 

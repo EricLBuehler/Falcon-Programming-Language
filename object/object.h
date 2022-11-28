@@ -148,7 +148,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=71;
+const size_t nbuiltins=72;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -167,6 +167,7 @@ TypeObject KeyboardInterrupt;
 TypeObject AssertionError;
 TypeObject ZeroDivisionError;
 TypeObject OSError;
+TypeObject OverflowError;
 
 bool setup_memory_error=false;
 bool hit_memory_error=false;
@@ -389,7 +390,6 @@ struct vm{
     string* filedata;
 
     object* globals;
-    object* path;
     object* global_annotations;
 };
 
