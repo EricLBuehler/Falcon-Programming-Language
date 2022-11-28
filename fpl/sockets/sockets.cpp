@@ -70,6 +70,11 @@ object* socket_new(object* type, object* args, object* kwargs){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 0)->type->name->c_str());
         return NULL;
     }
+
+    if (*CAST_INT(family)->val<INT_MIN || *CAST_INT(family)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
     int af_family=CAST_INT(family)->val->to_int();
     if (af_family>AF_MAX){
         vm_add_err(&TypeError, vm, "Invalid address family value");
@@ -81,6 +86,11 @@ object* socket_new(object* type, object* args, object* kwargs){
     if (sock==NULL || !object_istype(sock->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
         return NULL;
+    }
+
+    if (*CAST_INT(sock)->val<INT_MIN || *CAST_INT(sock)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
     }
     int sock_kind=CAST_INT(sock)->val->to_int();
 
@@ -251,6 +261,11 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
+
+    if (*CAST_INT(port_)->val<INT_MIN || *CAST_INT(port_)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
 	CAST_SOCKET(self)->server->sin_port = htons(CAST_INT(port_)->val->to_int());
 
     struct addrinfo hints,*res;
@@ -316,6 +331,10 @@ object* socket_send(object* selftp, object* args, object* kwargs){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
             return NULL;
         }
+        if (*CAST_INT(flags)->val>LONG_MAX || *CAST_INT(flags)->val<LONG_MIN){
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
+            return NULL;
+        }    
     }
 
     int i;
@@ -374,6 +393,11 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
         return NULL;
     }
+
+    if (*CAST_INT(len_)->val<INT_MIN || *CAST_INT(len_)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
     int buflen=CAST_INT(len_)->val->to_int();
 
     char* buf=(char*)fpl_malloc(buflen);
@@ -386,6 +410,10 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
             return NULL;
         }
+        if (*CAST_INT(flags)->val>LONG_MAX || *CAST_INT(flags)->val<LONG_MIN){
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
+            return NULL;
+        }    
     }
     
     int i=recv(CAST_SOCKET(self)->fd, buf, buflen-1, (flags==NULL)? 0 : CAST_INT(flags)->val->to_long());
@@ -523,6 +551,11 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
+
+    if (*CAST_INT(port_)->val<INT_MIN || *CAST_INT(port_)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
 	CAST_SOCKET(self)->server->sin_port = htons(CAST_INT(port_)->val->to_int());
     
     int i=bind(CAST_SOCKET(self)->fd, (sockaddr *)CAST_SOCKET(self)->server, sizeof(sockaddr));
@@ -562,6 +595,11 @@ object* socket_listen(object* selftp, object* args, object* kwargs){
     if (v==NULL || !object_istype(v->type, &IntType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 1)->type->name->c_str());
         return NULL;
+    }
+
+    if (*CAST_INT(v)->val<INT_MIN || *CAST_INT(v)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
     }
     int max=CAST_INT(v)->val->to_int();
     
@@ -677,6 +715,20 @@ object* socket_setsockopt(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
+
+    if (*CAST_INT(lvl)->val<INT_MIN || *CAST_INT(lvl)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
+
+    if (*CAST_INT(nm)->val<INT_MIN || *CAST_INT(nm)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
+    if (*CAST_INT(val)->val<INT_MIN || *CAST_INT(val)->val<0){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
     int i=CAST_INT(val)->val->to_int();
     int res=setsockopt(CAST_SOCKET(self)->fd, CAST_INT(lvl)->val->to_int(), CAST_INT(nm)->val->to_int(), (char*)&i, sizeof(int));
     if (res<0){
@@ -734,6 +786,21 @@ object* socket_getsockopt(object* selftp, object* args, object* kwargs){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 3)->type->name->c_str());
             return NULL;
         }
+    }
+
+    if (*CAST_INT(lenv)->val<INT_MIN || *CAST_INT(lenv)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
+
+    if (*CAST_INT(lvl)->val<INT_MIN || *CAST_INT(lvl)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
+    }
+
+    if (*CAST_INT(nm)->val<INT_MIN || *CAST_INT(nm)->val<INT_MAX){
+        vm_add_err(&OverflowError, vm, "Value out of range of C int");
+        return NULL; 
     }
 
     socklen_t i=sizeof(int);
@@ -873,6 +940,10 @@ object* socket_sendall(object* selftp, object* args, object* kwargs){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", list_index_int(args, 2)->type->name->c_str());
             return NULL;
         }
+        if (*CAST_INT(flags)->val>LONG_MAX || *CAST_INT(flags)->val<LONG_MIN){
+            vm_add_err(&OverflowError, vm, "Value out of range of C long");
+            return NULL;
+        }    
     }
 
     //Inspiration https://beej.us/guide/bgnet/html/
