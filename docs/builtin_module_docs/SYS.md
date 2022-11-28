@@ -11,10 +11,26 @@ Get the number of bytes occupied by the object in memory. This excludes referenc
 ### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
-| ```object```    | object to get reference count of    |
+| ```object```    | object to get size of    |
 
 ### Returns
 Return ```int``` containing the size occupied by the object in memory
+
+-----------------------
+
+## ```getrefcnt```
+
+Get the reference count of an object.
+
+```sys.getrefcnt(object)```
+
+### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```object```    | object to get reference count of    |
+
+### Returns
+Return ```int``` containing the reference count
 
 -----------------------
 
