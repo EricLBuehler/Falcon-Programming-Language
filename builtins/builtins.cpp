@@ -126,46 +126,15 @@ object* builtin_next(object* self, object* args){
 object* builtin_round(object* self, object* args){
     object* obj=dict_get_opti_deref(args, str_new_fromstr("object"));
     object* digits=dict_get_opti_deref(args, str_new_fromstr("digits"));
-    
-    object* floatval=object_float(obj);
-    if (floatval==NULL || !object_istype(floatval->type, &FloatType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", obj->type->name->c_str());
-        FPLDECREF(obj);
-        FPLDECREF(digits);
-        return NULL; 
-    }
-    object* ndigits=object_int(digits);
-    if (ndigits==NULL || !object_istype(ndigits->type, &IntType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", digits->type->name->c_str());
-        FPLDECREF(obj);
-        FPLDECREF(digits);
-        return NULL; 
-    }
 
-    char buf[to_string(CAST_FLOAT(floatval)->val).size()];
-    sprintf(buf, "%g", CAST_FLOAT(floatval)->val);
-
-    string orig_val(buf);
-    size_t pos=orig_val.find('.');
-    
-    string substr;
-    if (pos==-1){
-        return new_int_fromint(stod(orig_val));
+    object* res=object_round(obj, digits);
+    if (res==NULL){
+        vm_add_err(&TypeError, vm, "'%s' object does not define __round__", obj->type->name->c_str());
+        return NULL;
     }
-    if (CAST_INT(ndigits)->val->to_int()==0){
-        substr=orig_val.substr(0, pos+2);
-        FPLDECREF(ndigits);
-        FPLDECREF(floatval);
-        FPLDECREF(obj);
-        FPLDECREF(digits);
-        return new_int_fromint(round(stod(substr)));
-    }
-    substr=orig_val.substr(0, pos+2+CAST_INT(ndigits)->val->to_int());
-    FPLDECREF(ndigits);
-    FPLDECREF(floatval);
     FPLDECREF(obj);
     FPLDECREF(digits);    
-    return new_float_fromdouble(round_double(stod(substr), CAST_INT(ndigits)->val->to_int()));
+    return res;
 }
 
 object* builtin_globals(object* self, object* args){
@@ -190,7 +159,6 @@ object* builtin_exit(object* self, object* args){
 }
     
 object* builtin_copyright(object* self, object* args){
-    cout<<FPL_LICENSE<<endl;
     return str_new_fromstr(FPL_LICENSE);
 }
     

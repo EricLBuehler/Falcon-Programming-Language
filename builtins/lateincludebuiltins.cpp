@@ -3,6 +3,22 @@ object* builtin_eval(object* self, object* args){
     object* glbls=dict_get_opti_deref(args, str_new_fromstr("globals"));
     object* locals=dict_get_opti_deref(args, str_new_fromstr("locals"));
 
+    if (!object_issubclass(peek_dataframe(vm->objstack), &ExceptionType)){
+        vm_add_err(&TypeError, vm, "Exceptions must be subclass of Exception");
+        return NULL;
+    }
+
+    
+    if (!object_issubclass(glbls, &DictType)){
+        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object.", glbls->type->name->c_str());
+        return NULL;
+    }
+    
+    if (!object_issubclass(locals, &DictType)){
+        vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object.", locals->type->name->c_str());
+        return NULL;
+    }
+
     string data=*CAST_STRING(str)->val;
 
     Lexer lexer(data,kwds);
