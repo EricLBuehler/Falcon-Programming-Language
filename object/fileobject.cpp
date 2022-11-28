@@ -12,19 +12,19 @@ object* file_new(object* type, object* args, object* kwargs){
     }
     object* name=list_index_int(args, 0);
     if (!object_istype(name->type, &StrType)){
-        vm_add_err(&ValueError, vm, "Expected string type name, got type '%s'", name->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Expected string object for name, got type '%s'", name->type->name->c_str());
         return NULL;
     }
     object* mode_=list_index_int(args, 1);
     if (!object_istype(mode_->type, &StrType)){
-        vm_add_err(&ValueError, vm, "Expected string type name, got type '%s'", mode_->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Expected string object for mode, got type '%s'", mode_->type->name->c_str());
         return NULL;
     }
     object* encoding_=NULL;
     if (len!=3){
         encoding_=list_index_int(args, 2);
         if (!object_istype(encoding_->type, &StrType)){
-            vm_add_err(&ValueError, vm, "Expected string type name, got type '%s'", encoding_->type->name->c_str());
+            vm_add_err(&ValueError, vm, "Expected string object for encoding, got type '%s'", encoding_->type->name->c_str());
             return NULL;
         }
     }

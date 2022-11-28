@@ -821,6 +821,13 @@ object* object_abs(object* left){
     return left->type->slot_number->slot_abs(left);
 }
 
+object* object_round(object* self, object* prec){
+    if (self->type->slot_number==NULL || self->type->slot_number->slot_round==NULL){
+        return NULL;
+    }
+    return self->type->slot_number->slot_round(self, prec);
+}
+
 object* generic_iter_iter(object* self){
     FPLINCREF(self);
     return self;

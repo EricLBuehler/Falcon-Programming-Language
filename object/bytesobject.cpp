@@ -105,24 +105,72 @@ string _byte_repr(char c){
 object* bytes_slice(object* self, object* idx){
     object* start=CAST_SLICE(idx)->start;
     object* end=CAST_SLICE(idx)->end;
+    object* step=CAST_SLICE(idx)->step;
 
     int start_v;
     int end_v;
+    int step_v;
     if (object_istype(start->type, &NoneType)){
         start_v=0;
     }
     else{
-        start_v=CAST_INT(start)->val->to_int();
+        object* start_=object_int(start);
+        if (start_==NULL || !object_istype(start_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
+            return NULL;
+        }
+        if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
+            vm_add_err(&IndexError, vm, "Index out of range");
+            return NULL;
+        }
+        start_v=CAST_INT(start_)->val->to_long();
+        FPLDECREF(start_);
     }
     if (object_istype(end->type, &NoneType)){
-        end_v=CAST_LIST(self)->size-1;
+        end_v=CAST_BYTES(self)->len-1;
     }
     else{
-        end_v=CAST_INT(end)->val->to_int();
+        object* end_=object_int(end);
+        if (end_==NULL || !object_istype(end_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
+            return NULL;
+        }
+        if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
+            vm_add_err(&IndexError, vm, "Index out of range");
+            return NULL;
+        }
+        end_v=CAST_INT(end_)->val->to_long();
+        FPLDECREF(end_);
     }
     
-    if (start<0){
-        start_v=0;
+    object* step_=object_int(step);
+    if (step_==NULL || !object_istype(step_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
+        return NULL;
+    }
+    if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
+        vm_add_err(&IndexError, vm, "Index out of range");
+        return NULL;
+    }
+    step_v=CAST_INT(step_)->val->to_long();
+    FPLDECREF(step_);
+
+    if (start_v<0){
+        start_v=CAST_BYTES(self)->len=+start_v;
+        if (start_v<0){
+            vm_add_err(&TypeError, vm, "Index out of range");
+            return NULL;
+        }
+    }
+    if (start_v>=CAST_BYTES(self)->len){
+        start_v=CAST_BYTES(self)->len=-1;
+    }
+    if (end_v<0){
+        end_v=CAST_BYTES(self)->len+start_v;
+        if (end_v<0){
+            vm_add_err(&TypeError, vm, "Index out of range");
+            return NULL;
+        }
     }
     if (end_v>=CAST_BYTES(self)->len){
         end_v=CAST_BYTES(self)->len-1;
@@ -130,9 +178,10 @@ object* bytes_slice(object* self, object* idx){
 
     char* c=(char*)fpl_malloc(end_v-start_v);
     int index=0;
-    for (int i=start_v; i<=end_v; i++){
+    for (int i=start_v; i<=end_v; i+=step_v){
         c[index++]=CAST_BYTES(self)->val[i];
     }
+    c=(char*)fpl_realloc(c, index);
     return bytes_new_frombytearr(c, index);
 }
 
@@ -147,7 +196,7 @@ object* bytes_get(object* self, object* idx){
         return NULL;
     }
     if (*CAST_INT(idx_)->val>LONG_MAX || *CAST_INT(idx_)->val<LONG_MIN){
-        vm_add_err(&IndexError, vm, "List index out of range");
+        vm_add_err(&IndexError, vm, "Index out of range");
         FPLDECREF(idx_);
         return NULL;
     }
@@ -156,7 +205,7 @@ object* bytes_get(object* self, object* idx){
         lidx=lidx+CAST_BYTES(self)->len;
     }
     if (CAST_BYTES(self)->len<=lidx || lidx<0){
-        vm_add_err(&IndexError, vm, "List index out of range");
+        vm_add_err(&IndexError, vm, "Index out of range");
         FPLDECREF(idx_);
         return NULL;
     }

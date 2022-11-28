@@ -106,6 +106,7 @@ object* newtp_lshift(object* self, object* other);
 object* newtp_rshift(object* self, object* other);
 object* newtp_fldiv(object* self, object* other);
 object* newtp_xor(object* self, object* other);
+object* newtp_round(object* self, object* other);
 
 object* newtp_neg(object* self);
 object* newtp_not(object* self);
@@ -148,6 +149,7 @@ NumberMethods newtp_number={
     newtp_bool,
     newtp_int,
     newtp_float,
+    newtp_round,
 };
 
 typedef struct NewTypeObject{

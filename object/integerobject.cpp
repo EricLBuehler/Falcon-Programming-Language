@@ -747,3 +747,19 @@ void int_del(object* obj){
     int_map.erase(*((IntObject*)obj)->val);
     delete ((IntObject*)obj)->val;
 }
+
+object* int_round(object* self, object* prec){
+    object* prec_=object_int(prec);
+    if (prec_==NULL || !object_istype(prec_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", prec_->type->name->c_str());
+        return NULL; 
+    }
+    if (*CAST_INT(prec_)->val>LONG_MAX || *CAST_INT(prec_)->val<LONG_MIN || *CAST_INT(prec_)->val<0){
+        vm_add_err(&IndexError, vm, "Precision out of range");
+        return NULL;
+    }
+
+    FPLDECREF(prec_);
+    FPLINCREF(self);
+    return self;
+}

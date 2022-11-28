@@ -92,11 +92,11 @@ object* tuple_len(object* self){
 object* tuple_slice(object* self, object* idx){
     object* start=CAST_SLICE(idx)->start;
     object* end=CAST_SLICE(idx)->end;
-
-    object* result=new_list();
+    object* step=CAST_SLICE(idx)->step;
 
     int start_v;
     int end_v;
+    int step_v;
     if (object_istype(start->type, &NoneType)){
         start_v=0;
     }
@@ -106,7 +106,12 @@ object* tuple_slice(object* self, object* idx){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
             return NULL;
         }
-        start_v=CAST_INT(start_)->val->to_int();
+        if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
+            vm_add_err(&IndexError, vm, "Index out of range");
+            return NULL;
+        }
+        start_v=CAST_INT(start_)->val->to_long();
+        FPLDECREF(start_);
     }
     if (object_istype(end->type, &NoneType)){
         end_v=CAST_LIST(self)->size-1;
@@ -114,16 +119,33 @@ object* tuple_slice(object* self, object* idx){
     else{
         object* end_=object_int(end);
         if (end_==NULL || !object_istype(end_->type, &IntType)){
-            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",end->type->name->c_str());
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
             return NULL;
         }
-        end_v=CAST_INT(end_)->val->to_int();
+        if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
+            vm_add_err(&IndexError, vm, "Index out of range");
+            return NULL;
+        }
+        end_v=CAST_INT(end_)->val->to_long();
+        FPLDECREF(end_);
     }
+    
+    object* step_=object_int(step);
+    if (step_==NULL || !object_istype(step_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
+        return NULL;
+    }
+    if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
+        vm_add_err(&IndexError, vm, "Index out of range");
+        return NULL;
+    }
+    step_v=CAST_INT(step_)->val->to_long();
+    FPLDECREF(step_);
 
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
         if (start_v<0){
-            vm_add_err(&TypeError, vm, "List index out of range");
+            vm_add_err(&TypeError, vm, "Index out of range");
             return NULL;
         }
     }
@@ -133,13 +155,15 @@ object* tuple_slice(object* self, object* idx){
     if (end_v<0){
         end_v=CAST_LIST(self)->size+start_v;
         if (end_v<0){
-            vm_add_err(&TypeError, vm, "List index out of range");
+            vm_add_err(&TypeError, vm, "Index out of range");
             return NULL;
         }
     }
     if (end_v>=CAST_LIST(self)->size){
         end_v=CAST_LIST(self)->size-1;
     }
+
+    object* result=new_list();
     
     for (int i=start_v; i<=end_v; i++){
         list_append(result, tuple_index_int(self, i));

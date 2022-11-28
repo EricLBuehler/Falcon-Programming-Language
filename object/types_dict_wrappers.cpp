@@ -615,3 +615,17 @@ object* type_wrapper_not(object* self, object* args, object* kwargs){
     }
     return ret;
 }
+
+object* type_wrapper_round(object* self, object* args, object* kwargs){
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (CAST_LIST(args)->size!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d",CAST_LIST(args)->size);
+        return NULL;
+    }
+    
+    object* ret=CAST_TYPE(self)->slot_number->slot_round(list_index_int(args, 0), list_index_int(args, 1));
+    return ret;
+}

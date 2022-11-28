@@ -70,40 +70,92 @@ object* str_new(object* type, object* args, object* kwargs){
     return obj;
 }
 
-object* str_slice(object* self, object* idx){
-    object* start=CAST_SLICE(idx)->start;
+object* str_slice(object* self, object* idx){object* start=CAST_SLICE(idx)->start;
     object* end=CAST_SLICE(idx)->end;
+    object* step=CAST_SLICE(idx)->step;
 
     string s="";
     int start_v;
     int end_v;
+    int step_v;
     if (object_istype(start->type, &NoneType)){
         start_v=0;
     }
     else{
-        start_v=CAST_INT(start)->val->to_int();
+        object* start_=object_int(start);
+        if (start_==NULL || !object_istype(start_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
+            return NULL;
+        }
+        if (*CAST_INT(start_)->val>LONG_MAX || *CAST_INT(start_)->val<LONG_MIN){
+            vm_add_err(&IndexError, vm, "Index out of range");
+            return NULL;
+        }
+        start_v=CAST_INT(start_)->val->to_long();
+        FPLDECREF(start_);
     }
     if (object_istype(end->type, &NoneType)){
         end_v=CAST_STRING(self)->val->size()-1;
     }
     else{
-        int target=CAST_INT(end)->val->to_int();
+        object* end_=object_int(end);
+        if (end_==NULL || !object_istype(end_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",start->type->name->c_str());
+            return NULL;
+        }
+        if (*CAST_INT(end_)->val>LONG_MAX || *CAST_INT(end_)->val<LONG_MIN){
+            vm_add_err(&IndexError, vm, "Index out of range");
+            return NULL;
+        }
+        int target=CAST_INT(end_)->val->to_long();
+        FPLDECREF(end_);
         const char* arr=CAST_STRING(self)->val->c_str();
         int raw_len=CAST_STRING(self)->val->size();
 
         int res=get_index_fromtarget(target, raw_len, arr);
         
-        end_v=(res>=0) ? res : CAST_STRING(self)->val->size()-1;
+        end_v=(res>=0) ? res : STRING_LENGTH(self)-1;
     }
     
-    if (start<0){
-        start_v=0;
+    object* step_=object_int(step);
+    if (step_==NULL || !object_istype(step_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
+        return NULL;
     }
-    if (end_v>=CAST_STRING(self)->val->size()){
-        end_v=CAST_STRING(self)->val->size()-1;
+    if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
+        vm_add_err(&IndexError, vm, "Index out of range");
+        return NULL;
     }
-    for (int i=start_v; i<=end_v; i++){
-        s+=CAST_STRING(self)->val->at(i);
+    step_v=CAST_INT(step_)->val->to_long();
+    FPLDECREF(step_);
+
+    if (start_v<0){
+        start_v=STRING_LENGTH(self)+start_v;
+        if (start_v<0){
+            vm_add_err(&TypeError, vm, "Index out of range");
+            return NULL;
+        }
+    }
+    if (start_v>=STRING_LENGTH(self)){
+        start_v=STRING_LENGTH(self)-1;
+    }
+    if (end_v<0){
+        end_v=STRING_LENGTH(self)+start_v;
+        if (end_v<0){
+            vm_add_err(&TypeError, vm, "Index out of range");
+            return NULL;
+        }
+    }
+    if (end_v>=STRING_LENGTH(self)){
+        end_v=STRING_LENGTH(self)-1;
+    }
+
+    for (int i=start_v; i<=end_v; i+=step_v){
+        object* intv=new_int_fromint(i);
+        object* o=str_get(self, intv);
+        s+=object_cstr(o);
+        FPLDECREF(o);
+        FPLDECREF(intv);
     }
     return str_new_fromstr(s);
 }
@@ -148,7 +200,7 @@ object* str_get(object* self, object* idx){
 }
 
 object* str_len(object* self){
-    return new_int_fromint(CAST_STRING(self)->val->size());
+    return new_int_fromint(STRING_LENGTH(self));
 }
 
 object* str_repr(object* self){

@@ -297,6 +297,23 @@ void float_del(object* obj){
 }
 
 double round_double(double value, size_t prec){
-  double pow_10 = pow(10.0d, (double)prec);
-  return round(value * pow_10) / pow_10;
+    double pow_10 = pow(10.0d, (double)prec);
+    return round(value * pow_10) / pow_10;
+}
+
+object* float_round(object* self, object* prec){
+    object* prec_=object_int(prec);
+    if (prec_==NULL || !object_istype(prec_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", prec_->type->name->c_str());
+        return NULL; 
+    }
+    if (*CAST_INT(prec_)->val>LONG_MAX || *CAST_INT(prec_)->val<LONG_MIN || *CAST_INT(prec_)->val<0){
+        vm_add_err(&IndexError, vm, "Precision out of range");
+        return NULL;
+    }
+
+    object* o=new_float_fromdouble(round_double(CAST_FLOAT(self)->val, CAST_INT(prec_)->val->to_long()));
+    FPLDECREF(prec_);
+
+    return o;
 }

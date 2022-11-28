@@ -51,6 +51,7 @@ typedef struct{
     unaryfunc slot_bool;
     unaryfunc slot_int;
     unaryfunc slot_float;
+    binopfunc slot_round;
 }NumberMethods;
 
 typedef struct{
@@ -291,6 +292,7 @@ object* type_wrapper_bool(object* self, object* args, object* kwargs);
 object* type_wrapper_neg(object* self, object* args, object* kwargs);
 object* type_wrapper_int(object* self, object* args, object* kwargs);
 object* type_wrapper_float(object* self, object* args, object* kwargs);
+object* type_wrapper_round(object* self, object* args, object* kwargs);
 object* type_wrapper_abs(object* self, object* args, object* kwargs);
 object* type_wrapper_not(object* self, object* args, object* kwargs);
 

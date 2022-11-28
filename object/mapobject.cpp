@@ -40,6 +40,7 @@ void map_del(object* self){
     for (uint32_t i=0; i<CAST_MAP(self)->n_iterators; i++){
         FPLDECREF(CAST_MAP(self)->iterators[i]);
     }
+    FPLDECREF(CAST_MAP(self)->func);
 }
 
 object* map_next(object* self){
@@ -50,19 +51,6 @@ object* map_next(object* self){
         object* o=CAST_MAP(self)->iterators[i]->type->slot_next(CAST_MAP(self)->iterators[i]);
         ERROR_RET(o);
         
-        if (o->type->slot_mappings->slot_len==NULL){
-            v=o;
-            goto cont;
-        }
-        if (o->type->slot_mappings==NULL || o->type->slot_mappings->slot_get==NULL){
-            FPLDECREF(one);
-            vm_add_err(&TypeError, vm, "'%s' object is not subscriptable", o->type->name->c_str());
-            return NULL;
-        }
-        v=o->type->slot_mappings->slot_get(o, one);
-        ERROR_RET(v);
-        
-        cont:
         object* args=new_tuple();
         tuple_append_noinc(args, v);
         object* ret=object_call_nokwargs(CAST_MAP(self)->func, args);

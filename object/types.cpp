@@ -20,6 +20,7 @@ object* int_rshift(object* self, object* other);
 object* int_fldiv(object* self, object* other);
 object* int_abs(object* self);
 object* int_xor(object* self, object* other);
+object* int_round(object* self, object* other);
 
 object* new_int_fromint(int v);
 object* new_int_fromstr(string* v);
@@ -53,6 +54,7 @@ static NumberMethods int_num_methods{
     (unaryfunc)int_bool, //slot_bool
     (unaryfunc)int_int, //slot_int
     (unaryfunc)int_float, //slot_float
+    (binopfunc)int_round, //slot_round
 };
 
 static Mappings int_mappings{
@@ -1600,6 +1602,7 @@ object* float_mod(object* self, object* other);
 object* float_pow(object* self, object* other);
 object* float_fldiv(object* self, object* other);
 object* float_abs(object* self);
+object* float_round(object* self, object* other);
 
 object* new_float_fromdouble(double v);
 object* new_float_fromstr(string* v);
@@ -1633,6 +1636,7 @@ static NumberMethods float_num_methods{
     (unaryfunc)float_bool, //slot_bool
     (unaryfunc)float_int, //slot_int
     (unaryfunc)float_float, //slot_float
+    (binopfunc)float_round, //slot_round
 };
 
 static Mappings float_mappings{
@@ -2130,12 +2134,13 @@ object* slice_new(object* type, object* args, object* kwargs);
 void slice_del(object* self);
 object* slice_repr(object* self);
 object* slice_cmp(object* self, object* other, uint8_t type);
-object* slice_new_fromnums(object* start, object* end);
+object* slice_new_fromnums(object* start, object* end, object* step);
 
 typedef struct SliceObject{
     OBJHEAD_EXTRA
     object* start;
     object* end;
+    object* step;
 }SliceObject;
 
 static NumberMethods slice_num_methods{
@@ -2161,7 +2166,9 @@ static NumberMethods slice_num_methods{
 
 Method slice_methods[]={{NULL,NULL}};
 GetSets slice_getsets[]={{NULL,NULL}};
-OffsetMember slice_offsets[]={{NULL}};
+OffsetMember slice_offsets[]={{"start", offsetof(SliceObject, start), true}, \
+                            {"end", offsetof(SliceObject, end), true}, \
+                            {"step", offsetof(SliceObject, step), true}, {NULL}};
 
 static Mappings slice_mappings{
     0, //slot_get
@@ -3712,13 +3719,13 @@ object* type_new(object* type, object* args, object* kwargs){
         vm_add_err(&ValueError, vm, "Expected first argument to be string, got type '%s'",list_index_int(args, 0)->type->name->c_str());
         return NULL;
     }
-    if (!object_istype(list_index_int(args, 1)->type, &ListType) || \
+    if (!object_istype(list_index_int(args, 1)->type, &ListType) && \
     !object_istype(list_index_int(args, 1)->type, &TupleType)){
-        vm_add_err(&ValueError, vm, "Expected first argument to be list or tuple, got type '%s'",list_index_int(args, 0)->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Expected second argument to be list or tuple, got type '%s'",list_index_int(args, 1)->type->name->c_str());
         return NULL;
     }
     if (!object_istype(list_index_int(args, 2)->type, &DictType)){
-        vm_add_err(&ValueError, vm, "Expected first argument to be dict, got type '%s'",list_index_int(args, 0)->type->name->c_str());
+        vm_add_err(&ValueError, vm, "Expected third argument to be dict, got type '%s'",list_index_int(args, 2)->type->name->c_str());
         return NULL;
     }
     //
@@ -3747,23 +3754,29 @@ object* type_call(object* self, object* args, object* kwargs){
             return (object*)(list_index_int(args, 0)->type);
         }
         if (CAST_INT(list_len(args))->val->to_long()==3){
-            object* args_=new_dict();
-            object* res=dict_set_noinc(args_, str_new_fromstr("func"), list_index_int(args, 0));
-            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
-                FPLDECREF(res);
+            if (!object_istype(list_index_int(args, 0)->type, &StrType)){
+                vm_add_err(&ValueError, vm, "Expected first argument to be string, got type '%s'",list_index_int(args, 0)->type->name->c_str());
+                return NULL;
             }
-            res=dict_set_noinc(args_, str_new_fromstr("name"), list_index_int(args, 1));
-            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
-                FPLDECREF(res);
+            if (!object_istype(list_index_int(args, 1)->type, &ListType) && \
+            !object_istype(list_index_int(args, 1)->type, &TupleType)){
+                vm_add_err(&ValueError, vm, "Expected second argument to be list or tuple, got type '%s'",list_index_int(args, 1)->type->name->c_str());
+                return NULL;
             }
-            res=dict_set_noinc(args_, str_new_fromstr("bases"), list_index_int(args, 2));
-            if (res!=NULL && res!=SUCCESS && res!=TERM_PROGRAM){
-                FPLDECREF(res);
+            if (!object_istype(list_index_int(args, 2)->type, &DictType)){
+                vm_add_err(&ValueError, vm, "Expected third argument to be dict, got type '%s'",list_index_int(args, 2)->type->name->c_str());
+                return NULL;
             }
-            FPLINCREF(list_index_int(args, 0));
-            FPLINCREF(list_index_int(args, 1));
-            FPLINCREF(list_index_int(args, 2));
-            return builtin___build_class__(NULL, args_);
+            //
+            string* name=CAST_STRING(list_index_int(args, 0))->val;
+            object* o=list_index_int(args, 1);
+            FPLINCREF(o);
+            object* bases=o;
+            o=list_index_int(args, 2);
+            FPLINCREF(o);
+            object* dict=o;
+            object* doc=new_none();
+            return new_type(name, bases, dict, doc);
         }
         vm_add_err(&ValueError, vm, "'type' takes 1 or 3 arguments");
         return NULL;
@@ -3904,6 +3917,7 @@ void _inherit_number_slots(NumberMethods* m, TypeObject* base_tp){
     m->slot_bool=base_tp->slot_number->slot_bool;
     m->slot_int=base_tp->slot_number->slot_int;
     m->slot_float=base_tp->slot_number->slot_float;
+    m->slot_round=base_tp->slot_number->slot_round;
 }
 
 void _inherit_mapping_slots(Mappings* m, TypeObject* base_tp){
@@ -4086,6 +4100,9 @@ void inherit_type_dict(TypeObject* tp){
         }
         if (tp_tp->slot_number->slot_float){
             type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_float, "__float__");
+        }
+        if (tp_tp->slot_number->slot_round){
+            type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_round, "__round__");
         }
         if (tp_tp->slot_number->slot_abs){
             type_set_cwrapper(tp, (cwrapperfunc)type_wrapper_abs, "__abs__");
@@ -4543,6 +4560,15 @@ object* new_type(string* name, object* bases, object* dict, object* doc){
         }
         else{
             number.slot_xor=(binopfunc)newtp_xor;
+        }      
+
+        n=dict_get_opti_deref(dict, str_new_fromstr("__round__"));
+        if (n==NULL){
+            FPLDECREF(vm->exception);
+            vm->exception=NULL;
+        }
+        else{
+            number.slot_round=(binopfunc)newtp_round;
         }   
     }
     if (NEWTP_MAPPINGS_COPY){
