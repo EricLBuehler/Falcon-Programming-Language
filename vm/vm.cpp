@@ -1962,12 +1962,14 @@ object* run_vm(object* codeobj, uint32_t* ip){
         }
 
         MAKE_SLICE: {
+            object* step=pop_dataframe(vm->objstack);
             object* end=pop_dataframe(vm->objstack);
             object* start=pop_dataframe(vm->objstack);
             object* base=peek_dataframe(vm->objstack);
-            add_dataframe(vm, vm->objstack, slice_new_fromnums(start, end));
+            add_dataframe(vm, vm->objstack, slice_new_fromnums(start, end, step));
             FPLDECREF(end);
             FPLDECREF(start);
+            FPLDECREF(step);
             DISPATCH();
         }
 
