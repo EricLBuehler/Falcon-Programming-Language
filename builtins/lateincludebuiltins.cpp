@@ -2,12 +2,6 @@ object* builtin_eval(object* self, object* args){
     object* str=dict_get_opti_deref(args, str_new_fromstr("string"));
     object* glbls=dict_get_opti_deref(args, str_new_fromstr("globals"));
     object* locals=dict_get_opti_deref(args, str_new_fromstr("locals"));
-
-    if (!object_issubclass(peek_dataframe(vm->objstack), &ExceptionType)){
-        vm_add_err(&TypeError, vm, "Exceptions must be subclass of Exception");
-        return NULL;
-    }
-
     
     if (!object_issubclass(glbls, &DictType)){
         vm_add_err(&TypeError, vm, "Expected dict object, got '%s' object.", glbls->type->name->c_str());
@@ -61,8 +55,8 @@ object* builtin_eval(object* self, object* args){
     }
     
     struct vm* vm_=::vm;
-    struct vm* vm=new_vm(interpreter.vm_map->size(), code, compiler->instructions, &data); //data is still in scope...
-    interpreter_add_vm(interpreter.vm_map->size(), vm);
+    ::vm=new_vm(interpreter.vm_map->size(), code, compiler->instructions, &data); //data is still in scope...
+    interpreter_add_vm(::vm->id, ::vm);
     
     ::vm->globals=glbls;
     ::callstack_head(vm->callstack).locals=locals;
@@ -74,6 +68,7 @@ object* builtin_eval(object* self, object* args){
     
     vm_del(::vm);
     ::vm=vm_;
+    
 
     FPLDECREF(str);
     FPLDECREF(glbls); //vm_del DECREFs, so this deletes
