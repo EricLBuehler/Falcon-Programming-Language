@@ -103,6 +103,10 @@ string _byte_repr(char c){
 }
 
 object* bytes_slice(object* self, object* idx){
+    if (CAST_BYTES(self)->len==0){
+        FPLINCREF(self);
+        return self;
+    }
     object* start=CAST_SLICE(idx)->start;
     object* end=CAST_SLICE(idx)->end;
     object* step=CAST_SLICE(idx)->step;

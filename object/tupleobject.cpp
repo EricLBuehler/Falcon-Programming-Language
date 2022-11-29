@@ -90,6 +90,10 @@ object* tuple_len(object* self){
 }
 
 object* tuple_slice(object* self, object* idx){
+    if (CAST_TUPLE(self)->size==0){
+        FPLINCREF(self);
+        return self;
+    }
     object* start=CAST_SLICE(idx)->start;
     object* end=CAST_SLICE(idx)->end;
     object* step=CAST_SLICE(idx)->step;

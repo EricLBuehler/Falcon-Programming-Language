@@ -70,7 +70,12 @@ object* str_new(object* type, object* args, object* kwargs){
     return obj;
 }
 
-object* str_slice(object* self, object* idx){object* start=CAST_SLICE(idx)->start;
+object* str_slice(object* self, object* idx){
+    if (STRING_LENGTH(self)==0){
+        FPLINCREF(self);
+        return self;
+    }
+    object* start=CAST_SLICE(idx)->start;
     object* end=CAST_SLICE(idx)->end;
     object* step=CAST_SLICE(idx)->step;
 
