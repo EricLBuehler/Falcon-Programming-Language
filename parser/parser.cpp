@@ -1656,7 +1656,15 @@ class Parser{
                 Slice* s=(Slice*)fpl_malloc(sizeof(Slice));
                 s->left=left;
                 s->right=NULL;
-                s->step=NULL;
+
+                Node* n=make_node(N_INT);
+                n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+                IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
+                i->literal=new string("1");
+                n->node=i;
+
+                s->step=n;
                 
                 node->node=s;
                 
@@ -1692,7 +1700,8 @@ class Parser{
             
             node->node=s;
 
-            if (this->current_tok_is(T_COLON)){   
+            if (this->current_tok_is(T_COLON) && this->get_next().type!=T_RSQUARE\
+                && !this->current_tok_is(T_RSQUARE)){   
                 this->advance();
 
                 bool b=this->multi;
@@ -1708,7 +1717,19 @@ class Parser{
 
                 s->step=expr;             
             }
-            else if (s->step==NULL){
+            else if (this->get_next().type==T_RSQUARE){
+                Node* n=make_node(N_INT);
+                n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
+                n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
+                IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
+                i->literal=new string("1");
+                n->node=i;
+
+                s->step=n;
+
+                this->advance();
+            }
+            else{
                 Node* n=make_node(N_INT);
                 n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
                 n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
