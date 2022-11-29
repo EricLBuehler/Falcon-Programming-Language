@@ -219,7 +219,7 @@ The ```from``` keyword may also be used to import objects from a module:
 
 Imported modules may also be stored under an alternative, specified name:
 
-```import MODULE as NAME```
+```import MODULE NAME```
 
 ### ```del```
 The ```del``` keyword facilitates deleting variables, items, and slices.
