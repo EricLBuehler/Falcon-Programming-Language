@@ -2008,8 +2008,6 @@ class Parser{
                 (*ret)=code;
             }    
             if (!this->current_tok_is(T_RCURLY)){
-                this->backadvance();
-                this->backadvance();
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 delete args;
@@ -2032,7 +2030,7 @@ class Parser{
                 this->noassign=noassign;
                 this->multi=b;
                 this->anno=anno;
-                // this->advance(); // BACKADVANCE would cancel out
+                this->backadvance();
             }
 
             Node* node=make_node(N_FUNC);
@@ -2673,6 +2671,7 @@ class Parser{
             Node* doc=NULL;
             if (this->current_tok_is(T_STR)){
                 doc=this->atom(ret);
+                this->advance();
             }
 
             bool inloop=this->inloop;
@@ -2685,8 +2684,6 @@ class Parser{
                 (*ret)=code;
             }    
             if (!this->current_tok_is(T_RCURLY)){
-                this->backadvance();
-                this->backadvance();
                 this->add_parsing_error(ret, "SyntaxError: Expected }, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 delete args;
@@ -2718,6 +2715,7 @@ class Parser{
             f->doc=doc;
 
             node->node=f;
+            this->advance();
             return node;
         }
 
@@ -2790,6 +2788,7 @@ class Parser{
             Node* doc=NULL;
             if (this->current_tok_is(T_STR)){
                 doc=this->atom(ret);
+                this->advance();
             }
 
             bool inloop=this->inloop;
@@ -2826,6 +2825,7 @@ class Parser{
             c->doc=doc;
 
             node->node=c;
+            this->advance();
             return node;
         }
 
@@ -3896,6 +3896,7 @@ class Parser{
             w->name=name;
 
             node->node=w;
+            this->advance();
             
             return node;
         }
