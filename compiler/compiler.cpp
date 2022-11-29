@@ -2635,6 +2635,8 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             tuple_append_noinc(compiler->lines, tuple);
                         }
                     }
+
+                    add_instruction(compiler, compiler->instructions,JUMP_DELTA,2, GET_ANNO_N(tryn));
                     
                     continue;
                 }
@@ -2746,7 +2748,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         tuple_append_noinc(tuple, new_int_fromint(line));
                         tuple_append_noinc(compiler->lines, tuple);
                     }
-                }            
+                }
                     
                 instrs+=2;
                 add_instruction(compiler, compiler->instructions,JUMP_DELTA,target-instrs, GET_ANNO_N(tryn));
