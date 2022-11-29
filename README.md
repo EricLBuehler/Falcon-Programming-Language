@@ -108,16 +108,6 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - ```yield```
 - ```with```
 
-### Other syntax ###
-- ```:``` - Global variable access
-- ```::``` - Nonlocal variable access
-- ```<name>``` : ```<type>``` - Type annotations in function arguments or assignment
-- ```<function definition> : <type> {``` - Type annotation for function return value
-- ```f"Text {code}"``` - Format strings using code snippets
-- ```b"Text"``` - Creates a bytes object from string
-- ```\uXXX``` - Unicode escape, where ```XXXX``` represents a 4 digit hexadecimal string (mandatory)
-- ```\N...``` - Unicode name literal, where ```...``` represents a valid name that represents a unicode code point
-
 ### Documentation ##
 - [Dunder Attributes](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/DUNDER_ATTRS.md)
 - [Types of functions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/FUNCTIONS.md)
@@ -125,6 +115,7 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - [Builtin type methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPE_DOCS.md)
 - [Conventions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/CONVENTIONS.md)
 - [Builtin Functions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/BUILTINS.md)
+- [Syntax](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/SYNTAX.md)
 
 ### Sample Program ###
 
