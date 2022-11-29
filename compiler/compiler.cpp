@@ -3231,9 +3231,24 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 
-                cmpexpr=compile_expr_keep(compiler, step);
-                if (cmpexpr==COMPILER_ERROR){
-                    return cmpexpr;
+                if (step!=NULL){
+                    cmpexpr=compile_expr_keep(compiler, step);
+                    if (cmpexpr==COMPILER_ERROR){
+                        return cmpexpr;
+                    }
+                }
+                else{
+                    uint32_t idx;
+                    if (!object_find_bool(compiler->consts,noneobj)){
+                        //Create object
+                        tuple_append_noinc(compiler->consts, new_none());
+                        idx=NAMEIDX(compiler->consts);
+                    }
+                    else{
+                        idx=object_find(compiler->consts, new_none());
+                    }
+
+                    add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 }
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
