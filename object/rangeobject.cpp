@@ -16,7 +16,7 @@ object* range_new(object* type, object* args, object* kwargs){
         return arg;
     }
 
-    if (*CAST_INT(arg)->val<INT_MIN || *CAST_INT(arg)->val<INT_MAX){
+    if (*CAST_INT(arg)->val<INT_MIN || *CAST_INT(arg)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -29,7 +29,7 @@ object* range_new(object* type, object* args, object* kwargs){
             return arg;
         }
 
-        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val<LLONG_MAX){
+        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val>LLONG_MAX){
             vm_add_err(&OverflowError, vm, "Value out of range of C long long");
             return NULL; 
         }
@@ -44,7 +44,7 @@ object* range_new(object* type, object* args, object* kwargs){
             return arg;
         }
 
-        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val<LLONG_MAX){
+        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val>LLONG_MAX){
             vm_add_err(&OverflowError, vm, "Value out of range of C long long");
             return NULL; 
         }
@@ -57,7 +57,7 @@ object* range_new(object* type, object* args, object* kwargs){
             return arg;
         }
 
-        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val<LLONG_MAX){
+        if (*CAST_INT(arg)->val<LLONG_MIN || *CAST_INT(arg)->val>LLONG_MAX){
             vm_add_err(&OverflowError, vm, "Value out of range of C long long");
             return NULL; 
         }

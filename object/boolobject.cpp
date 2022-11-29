@@ -161,7 +161,7 @@ object* bool_and(object* self, object* other){
         return NULL;
     }
 
-    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -179,7 +179,7 @@ object* bool_or(object* self, object* other){
         return NULL;
     }
 
-    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -197,7 +197,7 @@ object* bool_xor(object* self, object* other){
         return NULL;
     }
 
-    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -215,7 +215,7 @@ object* bool_lshift(object* self, object* other){
         return NULL;
     }    
 
-    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -238,7 +238,7 @@ object* bool_rshift(object* self, object* other){
         return NULL;
     }
 
-    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val<INT_MAX){
+    if (*CAST_INT(otherv)->val<INT_MIN || *CAST_INT(otherv)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }

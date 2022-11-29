@@ -356,7 +356,7 @@ object* bytes_mul(object* self, object* other){
 
     int len_=CAST_BYTES(self)->len;
 
-    if (*CAST_INT(other)->val<INT_MIN || *CAST_INT(other)->val<INT_MAX){
+    if (*CAST_INT(other)->val<INT_MIN || *CAST_INT(other)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }

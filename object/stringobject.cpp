@@ -330,7 +330,7 @@ object* string_join_meth(object* selftp, object* args, object* kwargs){
     string s="";
     int i=0;
     object* len_=arg->type->slot_mappings->slot_len(arg);
-    if (*CAST_INT(len_)->val<LONG_MIN || *CAST_INT(len_)->val<LONG_MAX){
+    if (*CAST_INT(len_)->val<LONG_MIN || *CAST_INT(len_)->val>LONG_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C long");
         return NULL; 
     }
