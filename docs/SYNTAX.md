@@ -132,7 +132,18 @@ Next, ```except``` blocks may be chained to handle any raised exceptions.
 try {
     CODE
 }
-except EXCEPTION {
+except EXCEPTION NAME{
+    CODE
+}
+```
+
+Where the exception is optionally stored in ```NAME```. See below for the other option, where the exception is not stored.
+
+```
+try {
+    CODE
+}
+except EXCEPTION{
     CODE
 }
 ```
@@ -160,12 +171,33 @@ for NAME in ITERATOR {
 }
 ```
 
+An else statement may be placed below a for loop to execute if the for loop runs without ```break```ing out.
+```
+for NAME in ITERATOR {
+    CODE
+}
+else{
+    CODE
+}
+```
+
 ### ```while```
 The ```while``` loop provides a method to conditionally loop while the given expression is truthy.
 
 ```
 CODE
 while EXPRESSION {
+    CODE
+}
+```
+
+An else statement may be placed below a while loop to execute if the for loop runs without ```break```ing out.
+```
+CODE
+while EXPRESSION {
+    CODE
+}
+else{
     CODE
 }
 ```
