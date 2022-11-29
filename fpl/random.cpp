@@ -92,7 +92,7 @@ object* random_choice(object* self, object* args){
     }
     object* iterlen=ob->type->slot_mappings->slot_len(ob);
 
-    if (*CAST_INT(iterlen)->val<INT_MIN || *CAST_INT(iterlen)->val<INT_MAX){
+    if (*CAST_INT(iterlen)->val<INT_MIN || *CAST_INT(iterlen)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Length out of range of C int");
         return NULL; 
     }
