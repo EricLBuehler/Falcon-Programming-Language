@@ -130,17 +130,22 @@ object* list_slice(object* self, object* idx){
         FPLDECREF(end_);
     }
     
-    object* step_=object_int(step);
-    if (step_==NULL || !object_istype(step_->type, &IntType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
-        return NULL;
+    if (object_istype(step->type, &NoneType)){
+        step_v=1;
     }
-    if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
-        vm_add_err(&IndexError, vm, "List index out of range");
-        return NULL;
+    else{
+        object* step_=object_int(step);
+        if (step_==NULL || !object_istype(step_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
+            return NULL;
+        }
+        if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
+            vm_add_err(&IndexError, vm, "Value out of range of C long");
+            return NULL;
+        }
+        step_v=CAST_INT(step_)->val->to_long();
+        FPLDECREF(step_);
     }
-    step_v=CAST_INT(step_)->val->to_long();
-    FPLDECREF(step_);
 
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
@@ -212,17 +217,22 @@ object* list_store_slice(object* self, object* idx, object* val){
         FPLDECREF(end_);
     }
     
-    object* step_=object_int(step);
-    if (step_==NULL || !object_istype(step_->type, &IntType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
-        return NULL;
+    if (object_istype(step->type, &NoneType)){
+        step_v=1;
     }
-    if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
-        vm_add_err(&IndexError, vm, "List index out of range");
-        return NULL;
+    else{
+        object* step_=object_int(step);
+        if (step_==NULL || !object_istype(step_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
+            return NULL;
+        }
+        if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
+            vm_add_err(&IndexError, vm, "Value out of range of C long");
+            return NULL;
+        }
+        step_v=CAST_INT(step_)->val->to_long();
+        FPLDECREF(step_);
     }
-    step_v=CAST_INT(step_)->val->to_long();
-    FPLDECREF(step_);
 
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
@@ -386,17 +396,22 @@ object* list_del_slice(object* self, object* index){
         FPLDECREF(end_);
     }
     
-    object* step_=object_int(step);
-    if (step_==NULL || !object_istype(step_->type, &IntType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
-        return NULL;
+    if (object_istype(step->type, &NoneType)){
+        step_v=1;
     }
-    if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
-        vm_add_err(&IndexError, vm, "List index out of range");
-        return NULL;
+    else{
+        object* step_=object_int(step);
+        if (step_==NULL || !object_istype(step_->type, &IntType)){
+            vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int",step_->type->name->c_str());
+            return NULL;
+        }
+        if (*CAST_INT(step_)->val>LONG_MAX || *CAST_INT(step_)->val<LONG_MIN || *CAST_INT(step_)->val<0){
+            vm_add_err(&IndexError, vm, "Value out of range of C long");
+            return NULL;
+        }
+        step_v=CAST_INT(step_)->val->to_long();
+        FPLDECREF(step_);
     }
-    step_v=CAST_INT(step_)->val->to_long();
-    FPLDECREF(step_);
 
     if (start_v<0){
         start_v=CAST_LIST(self)->size+start_v;
