@@ -5,6 +5,28 @@ Note: **Words in all-caps may be substituted by the user**
 
 ## Keywords
 
+- ```func```
+- ```class```
+- ```return```
+- ```if```
+- ```else```
+- ```elif```
+- ```raise```
+- ```try```
+- ```except```
+- ```finally```
+- ```for```
+- ```break```
+- ```while```
+- ```import```
+- ```from```
+- ```del```
+- ```assert```
+- ```continue```
+- ```lambda```
+- ```yield```
+- ```with```
+
 ______________________
 
 ### ```func```

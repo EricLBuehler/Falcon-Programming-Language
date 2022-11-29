@@ -1,5 +1,66 @@
 # Falcon Builtin Functions
 
+### Builtins
+- ```print```
+- ```__build_class__```
+- ```id```
+- ```input```
+- ```repr```
+- ```iter```
+- ```next```
+- ```round```
+- ```enumerate```
+- ```range```
+- ```zip```
+- ```globals```
+- ```locals```
+- ```alllocals```
+- ```len```
+- ```copyright```
+- ```exit```
+- ```isinstance```
+- ```eval```
+- ```super```
+- ```getattr```
+- ```setattr```
+- ```iscallable```
+- ```reverse```
+- ```isiter```
+- ```min```
+- ```max```
+- ```map```
+- ```abs```
+- ```method```
+- ```classmethod```
+- ```staticmethod```
+- ```property```
+- ```getannotation```
+- ```sum```
+- ```hasattr```
+- ```dir```
+- ```bin```
+- ```hex```
+- ```ord```
+- ```chr```
+- ```unicode_name```
+
+### Exceptions
+- ```Exception```
+- ```TypeError```
+- ```ValueError```
+- ```AttributeError```
+- ```KeyError```
+- ```NameError```
+- ```IndexError```
+- ```MemoryError```
+- ```RecursionError```
+- ```StopIteration```
+- ```FileNotFoundError```
+- ```InvalidOperationError```
+- ```ImportError```
+- ```KeyboardInterrupt```
+- ```AssertionError```
+- ```ZeroDivisionError```
 
 
 ______________________
