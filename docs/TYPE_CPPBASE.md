@@ -10,3 +10,5 @@
 | ```tuple```      | ```object**```                   |
 | ```dict```       | ```std::unordered_map<object*, object*>``` |
 | ```bool```       | ```bool```                       |
+| ```bytes```       | ```char*```                       |
+| ```set```       | ```std::vector<object*>```         |
