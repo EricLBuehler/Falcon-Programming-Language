@@ -111,7 +111,7 @@ object* semaphore_release_meth(object* selftp, object* args, object* kwargs){
     int v_=1;
 
     if (v!=NULL){
-        if (*CAST_INT(v)->val<INT_MIN || *CAST_INT(v)->val<INT_MAX){
+        if (*CAST_INT(v)->val<INT_MIN || *CAST_INT(v)->val>INT_MAX){
             vm_add_err(&OverflowError, vm, "Value out of range of C int");
             return NULL; 
         }
