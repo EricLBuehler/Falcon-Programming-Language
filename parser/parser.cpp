@@ -3210,9 +3210,12 @@ class Parser{
             
             this->advance();
             skip_newline;
-            
+            if (this->current_tok_is(T_KWD) && this->current_tok.data=="finally"){
+                goto finally_shortcut;
+            }
+
             if (!(this->current_tok_is(T_KWD) && this->current_tok.data=="except")){
-                this->add_parsing_error(ret, "SyntaxError: Expected except, got '%s'",token_type_to_str(this->current_tok.type).c_str());
+                this->add_parsing_error(ret, "SyntaxError: Expected except or finally, got '%s'",token_type_to_str(this->current_tok.type).c_str());
                 this->advance();
                 fpl_free(n);
                 fpl_free(f);
@@ -3278,6 +3281,7 @@ class Parser{
                 this->advance();
             }
             
+            finally_shortcut:
             skip_newline;
 
             if (this->current_tok_is(T_KWD) && this->current_tok.data=="finally"){
