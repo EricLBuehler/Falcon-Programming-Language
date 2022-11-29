@@ -1656,15 +1656,7 @@ class Parser{
                 Slice* s=(Slice*)fpl_malloc(sizeof(Slice));
                 s->left=left;
                 s->right=NULL;
-
-                Node* n=make_node(N_INT);
-                n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-                n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
-                IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
-                i->literal=new string("1");
-                n->node=i;
-
-                s->step=n;
+                s->step=NULL;
                 
                 node->node=s;
                 
@@ -1718,26 +1710,7 @@ class Parser{
                 s->step=expr;             
             }
             else if (this->get_next().type==T_RSQUARE){
-                Node* n=make_node(N_INT);
-                n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-                n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
-                IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
-                i->literal=new string("1");
-                n->node=i;
-
-                s->step=n;
-
                 this->advance();
-            }
-            else{
-                Node* n=make_node(N_INT);
-                n->start=new Position(this->current_tok.start.infile, this->current_tok.start.index, this->current_tok.start.col, this->current_tok.start.line);
-                n->end=new Position(this->current_tok.end.infile, this->current_tok.end.index, this->current_tok.end.col, this->current_tok.end.line);
-                IntLiteral* i=(IntLiteral*)fpl_malloc(sizeof(IntLiteral));
-                i->literal=new string("1");
-                n->node=i;
-
-                s->step=n;
             }
             
             if (!this->current_tok_is(T_RSQUARE)){
