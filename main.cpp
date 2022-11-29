@@ -95,8 +95,12 @@ int main(int argc, char** argv) {
 
                 callstack_head(vm->callstack).code=code;
                 vm->ip=0;
+
+                vm->exec=0;
                 
                 object* returned=run_vm(code, &vm->ip);
+                
+                CLEAR_EVALBREAKER();
 
                 while (vm->blockstack->size>0){
                     if (blockstack_head(vm->blockstack).type==WITH_BLOCK){
