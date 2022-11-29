@@ -1803,7 +1803,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 idx=NAMEIDX(compiler->consts);
             }
             else{
-                idx=object_find(compiler->consts, trueobj);
+                idx=object_find(compiler->consts, new_bool_true());
             }
             
             add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -1829,11 +1829,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
             uint32_t idx;
             if (!object_find_bool(compiler->consts,noneobj)){
                 //Create object
-                tuple_append_noinc(compiler->consts, noneobj);
+                tuple_append_noinc(compiler->consts, new_none());
                 idx=NAMEIDX(compiler->consts);
             }
             else{
-                idx=object_find(compiler->consts, noneobj);
+                idx=object_find(compiler->consts, new_none());
             }
             
             add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3124,30 +3124,30 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    tuple_append_noinc(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, new_none());
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
-                    idx=object_find(compiler->consts, noneobj);
+                    idx=object_find(compiler->consts, new_none());
                 }
+
+                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 
                 cmpexpr=compile_expr_keep(compiler, step);
                 if (cmpexpr==COMPILER_ERROR){
                     return cmpexpr;
                 }
-
-                add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 add_instruction(compiler, compiler->instructions, MAKE_SLICE, 0, GET_ANNO_N(expr));
             }
             else if (type==1) {
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    tuple_append_noinc(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, new_none());
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
-                    idx=object_find(compiler->consts, noneobj);
+                    idx=object_find(compiler->consts, new_none());
                 }
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3166,22 +3166,22 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    tuple_append_noinc(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, new_none());
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
-                    idx=object_find(compiler->consts, noneobj);
+                    idx=object_find(compiler->consts, new_none());
                 }
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    tuple_append_noinc(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, new_none());
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
-                    idx=object_find(compiler->consts, noneobj);
+                    idx=object_find(compiler->consts, new_none());
                 }
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3251,11 +3251,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    tuple_append_noinc(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, new_none());
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
-                    idx=object_find(compiler->consts, noneobj);
+                    idx=object_find(compiler->consts, new_none());
                 }
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3269,11 +3269,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    tuple_append_noinc(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, new_none());
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
-                    idx=object_find(compiler->consts, noneobj);
+                    idx=object_find(compiler->consts, new_none());
                 }
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3291,22 +3291,22 @@ int compile_expr(struct compiler* compiler, Node* expr){
                 uint32_t idx;
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    tuple_append_noinc(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, new_none());
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
-                    idx=object_find(compiler->consts, noneobj);
+                    idx=object_find(compiler->consts, new_none());
                 }
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                 
                 if (!object_find_bool(compiler->consts,noneobj)){
                     //Create object
-                    tuple_append_noinc(compiler->consts, noneobj);
+                    tuple_append_noinc(compiler->consts, new_none());
                     idx=NAMEIDX(compiler->consts);
                 }
                 else{
-                    idx=object_find(compiler->consts, noneobj);
+                    idx=object_find(compiler->consts, new_none());
                 }
                 
                 add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3392,11 +3392,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!object_find_bool(compiler->consts,noneobj)){
                         //Create object
-                        tuple_append_noinc(compiler->consts, noneobj);
+                        tuple_append_noinc(compiler->consts, new_none());
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
-                        idx=object_find(compiler->consts, noneobj);
+                        idx=object_find(compiler->consts, new_none());
                     }
                     
                     add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3410,11 +3410,11 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!object_find_bool(compiler->consts,noneobj)){
                         //Create object
-                        tuple_append_noinc(compiler->consts, noneobj);
+                        tuple_append_noinc(compiler->consts, new_none());
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
-                        idx=object_find(compiler->consts, noneobj);
+                        idx=object_find(compiler->consts, new_none());
                     }
                     
                     add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3432,22 +3432,22 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     uint32_t idx;
                     if (!object_find_bool(compiler->consts,noneobj)){
                         //Create object
-                        tuple_append_noinc(compiler->consts, noneobj);
+                        tuple_append_noinc(compiler->consts, new_none());
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
-                        idx=object_find(compiler->consts, noneobj);
+                        idx=object_find(compiler->consts, new_none());
                     }
                     
                     add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
                     
                     if (!object_find_bool(compiler->consts,noneobj)){
                         //Create object
-                        tuple_append_noinc(compiler->consts, noneobj);
+                        tuple_append_noinc(compiler->consts, new_none());
                         idx=NAMEIDX(compiler->consts);
                     }
                     else{
-                        idx=object_find(compiler->consts, noneobj);
+                        idx=object_find(compiler->consts, new_none());
                     }
                     
                     add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
@@ -3646,7 +3646,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
-                            idx=object_find(compiler->consts, trueobj);
+                            idx=object_find(compiler->consts, new_bool_true());
                         }
                     }
                     else{
@@ -3656,7 +3656,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                             idx=NAMEIDX(compiler->consts);
                         }
                         else{
-                            idx=object_find(compiler->consts, falseobj);
+                            idx=object_find(compiler->consts, new_bool_false());
                         }
                     }
                     add_instruction(compiler, compiler->instructions,LOAD_CONST, idx, GET_ANNO_N(expr));
@@ -4832,7 +4832,7 @@ struct object* compile(struct compiler* compiler, parse_ret ast, int fallback_li
     }        
     
     uint32_t idx;
-    if (!object_find_bool(compiler->consts, noneobj)){
+    if (!object_find_bool(compiler->consts,noneobj)){
         //Create object
         tuple_append_noinc(compiler->consts, new_none());
         idx=NAMEIDX(compiler->consts);
