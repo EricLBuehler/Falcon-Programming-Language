@@ -71,7 +71,7 @@ object* socket_new(object* type, object* args, object* kwargs){
         return NULL;
     }
 
-    if (*CAST_INT(family)->val<INT_MIN || *CAST_INT(family)->val<INT_MAX){
+    if (*CAST_INT(family)->val<INT_MIN || *CAST_INT(family)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -88,7 +88,7 @@ object* socket_new(object* type, object* args, object* kwargs){
         return NULL;
     }
 
-    if (*CAST_INT(sock)->val<INT_MIN || *CAST_INT(sock)->val<INT_MAX){
+    if (*CAST_INT(sock)->val<INT_MIN || *CAST_INT(sock)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -262,7 +262,7 @@ object* socket_connect(object* selftp, object* args, object* kwargs){
     }
 
 
-    if (*CAST_INT(port_)->val<INT_MIN || *CAST_INT(port_)->val<INT_MAX){
+    if (*CAST_INT(port_)->val<INT_MIN || *CAST_INT(port_)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -394,7 +394,7 @@ object* socket_recv(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
-    if (*CAST_INT(len_)->val<INT_MIN || *CAST_INT(len_)->val<INT_MAX){
+    if (*CAST_INT(len_)->val<INT_MIN || *CAST_INT(len_)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -552,7 +552,7 @@ object* socket_bind(object* selftp, object* args, object* kwargs){
     }
 
 
-    if (*CAST_INT(port_)->val<INT_MIN || *CAST_INT(port_)->val<INT_MAX){
+    if (*CAST_INT(port_)->val<INT_MIN || *CAST_INT(port_)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -597,7 +597,7 @@ object* socket_listen(object* selftp, object* args, object* kwargs){
         return NULL;
     }
 
-    if (*CAST_INT(v)->val<INT_MIN || *CAST_INT(v)->val<INT_MAX){
+    if (*CAST_INT(v)->val<INT_MIN || *CAST_INT(v)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -716,12 +716,12 @@ object* socket_setsockopt(object* selftp, object* args, object* kwargs){
     }
 
 
-    if (*CAST_INT(lvl)->val<INT_MIN || *CAST_INT(lvl)->val<INT_MAX){
+    if (*CAST_INT(lvl)->val<INT_MIN || *CAST_INT(lvl)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
 
-    if (*CAST_INT(nm)->val<INT_MIN || *CAST_INT(nm)->val<INT_MAX){
+    if (*CAST_INT(nm)->val<INT_MIN || *CAST_INT(nm)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
@@ -788,17 +788,17 @@ object* socket_getsockopt(object* selftp, object* args, object* kwargs){
         }
     }
 
-    if (*CAST_INT(lenv)->val<INT_MIN || *CAST_INT(lenv)->val<INT_MAX){
+    if (*CAST_INT(lenv)->val<INT_MIN || *CAST_INT(lenv)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
 
-    if (*CAST_INT(lvl)->val<INT_MIN || *CAST_INT(lvl)->val<INT_MAX){
+    if (*CAST_INT(lvl)->val<INT_MIN || *CAST_INT(lvl)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
 
-    if (*CAST_INT(nm)->val<INT_MIN || *CAST_INT(nm)->val<INT_MAX){
+    if (*CAST_INT(nm)->val<INT_MIN || *CAST_INT(nm)->val>INT_MAX){
         vm_add_err(&OverflowError, vm, "Value out of range of C int");
         return NULL; 
     }
