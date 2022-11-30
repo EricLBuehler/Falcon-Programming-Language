@@ -435,3 +435,27 @@ object* bytes_decode_meth(object* selftp, object* args, object* kwargs){
 
     return str_new_fromstr(s);
 }
+
+object* bytes_hex_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    object* self=list_index_int(args, 0);
+    
+    string s="0x";
+    
+    for (int i=0; i<CAST_BYTES(self)->len; i++){
+        char arr[]="\0\0\0";
+        sprintf(arr, "%.2x", (int)(CAST_BYTES(self)->val[i]));
+        s+=string(arr);
+    }
+
+    return str_new_fromstr(s);
+}

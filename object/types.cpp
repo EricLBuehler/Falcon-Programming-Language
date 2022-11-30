@@ -145,6 +145,9 @@ object* string_rstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_lstrip_meth(object* selftp, object* args, object* kwargs);
 object* string_contains_meth(object* selftp, object* args, object* kwargs);
 object* string_encode_meth(object* selftp, object* args, object* kwargs);
+object* string_startswith_meth(object* selftp, object* args, object* kwargs);
+object* string_endswith_meth(object* selftp, object* args, object* kwargs);
+object* string_rfind_meth(object* selftp, object* args, object* kwargs);
 object* str_in(object* self, object* other);
 
 //Unicode
@@ -209,7 +212,8 @@ Method str_methods[]={{"find", (cwrapperfunc)string_find_meth}, {"replace", (cwr
                     , {"islower", (cwrapperfunc)string_islower_meth}, {"count", (cwrapperfunc)string_count_meth}\
                     , {"strip", (cwrapperfunc)string_strip_meth}, {"rstrip", (cwrapperfunc)string_rstrip_meth}\
                     , {"lstrip", (cwrapperfunc)string_lstrip_meth}, {"contains", (cwrapperfunc)string_contains_meth}\
-                    , {"encode", (cwrapperfunc)string_encode_meth}, {NULL,NULL}};
+                    , {"encode", (cwrapperfunc)string_encode_meth}, {"startswith", (cwrapperfunc)string_startswith_meth}\
+                    , {"endswith", (cwrapperfunc)string_endswith_meth}, {"rfind", (cwrapperfunc)string_rfind_meth},   {NULL,NULL}};
 GetSets str_getsets[]={{NULL,NULL}};
 OffsetMember str_offsets[]={{NULL}};
 
@@ -3533,6 +3537,7 @@ object* bytes_mul(object* self, object* other);
 object* bytes_new_frombytearr(char* val, int lne);
 
 object* bytes_decode_meth(object* selftp, object* args, object* kwargs);
+object* bytes_hex_meth(object* selftp, object* args, object* kwargs);
 
 typedef struct BytesObject{
     OBJHEAD_EXTRA
@@ -3569,7 +3574,7 @@ static Mappings bytes_mappings{
     bytes_len, //slot_len
 };
 
-Method bytes_methods[]={{"decode", (cwrapperfunc)bytes_decode_meth}, {NULL,NULL}};
+Method bytes_methods[]={{"decode", (cwrapperfunc)bytes_decode_meth}, {"hex", (cwrapperfunc)bytes_hex_meth}, {NULL,NULL}};
 GetSets bytes_getsets[]={{NULL,NULL}};
 OffsetMember bytes_offsets[]={{NULL}};
 
@@ -3715,6 +3720,7 @@ void bytesarray_append_obj(object* self, object* val);
 object* bytesarray_new(object* type, object* args, object* kwargs);
 object* bytesarray_set(object* self, object* idx, object* val);
 object* bytesarray_repr(object* self);
+object* bytesarray_str(object* self);
 object* bytesarray_next(object* self);
 object* bytesarray_cmp(object* self, object* other, uint8_t type);
 object* bytesarray_bool(object* self);
@@ -3727,6 +3733,8 @@ object* bytesarray_find_meth(object* selftp, object* args, object* kwargs);
 object* bytesarray_remove_meth(object* selftp, object* args, object* kwargs);
 object* bytesarray_insert_meth(object* selftp, object* args, object* kwargs);
 object* bytesarray_extend_meth(object* selftp, object* args, object* kwargs);
+object* bytesarray_hex_meth(object* selftp, object* args, object* kwargs);
+object* bytesarray_decode_meth(object* selftp, object* args, object* kwargs);
 
 object* bytesarray_add(object* self, object* other);
 object* bytesarray_mul(object* self, object* other);
@@ -3739,7 +3747,7 @@ typedef struct BytesarrayObject{
 
 Method bytesarray_methods[]={{"find", (cwrapperfunc)bytesarray_find_meth}, {"replace", (cwrapperfunc)bytesarray_replace_meth}, {"append", (cwrapperfunc)bytesarray_append_meth},\
                     {"pop", (cwrapperfunc)bytesarray_pop_meth}, {"remove", (cwrapperfunc)bytesarray_remove_meth}, {"insert", (cwrapperfunc)bytesarray_insert_meth},\
-                    {"extend", (cwrapperfunc)bytesarray_extend_meth}, {NULL,NULL}};
+                    {"extend", (cwrapperfunc)bytesarray_extend_meth}, {"hex", (cwrapperfunc)bytesarray_hex_meth}, {"decode", (cwrapperfunc)bytesarray_decode_meth}, {NULL,NULL}};
 GetSets bytesarray_getsets[]={{NULL,NULL}};
 OffsetMember bytesarray_offsets[]={{NULL}};
 
@@ -3795,7 +3803,7 @@ TypeObject BytesarrayType={
     (unaryfunc)bytesarray_iter, //slot_iter
 
     (reprfunc)bytesarray_repr, //slot_repr
-    (reprfunc)bytesarray_repr, //slot_str
+    (reprfunc)bytesarray_str, //slot_str
     0, //slot_call
 
     &bytesarray_num_methods, //slot_number

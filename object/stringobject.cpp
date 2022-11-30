@@ -849,6 +849,94 @@ object* string_encode_meth(object* selftp, object* args, object* kwargs){
     return bytes_new_frombytearr(start, real_size);
 }
 
+object* string_startswith_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* val=tuple_index_int(args, 1);   
+
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", val->type->name->c_str());
+        return NULL; 
+    }  
+
+    string s=*CAST_STRING(self)->val;
+    string v=*CAST_STRING(val)->val;
+    
+    bool res=s.rfind(v,0)==0;
+    
+    if (!res){
+        return new_bool_false();
+    }
+    return new_bool_true();
+}
+
+bool endsWith(std::string s, std::string suffix){
+    return s.rfind(suffix) == std::abs((long)(s.size()-suffix.size()));
+}
+
+object* string_endswith_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* val=tuple_index_int(args, 1);   
+
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", val->type->name->c_str());
+        return NULL; 
+    }  
+
+    string s=*CAST_STRING(self)->val;
+    string v=*CAST_STRING(val)->val;
+    
+    bool res=endsWith(s, v);
+    
+    if (!res){
+        return new_bool_false();
+    }
+    return new_bool_true();
+}
+
+object* string_rfind_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* val=tuple_index_int(args, 1);   
+
+    if (!object_istype(val->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", val->type->name->c_str());
+        return NULL; 
+    }  
+
+    string s=*CAST_STRING(self)->val;
+    string v=*CAST_STRING(val)->val;
+    
+    size_t idx=s.rfind(v);
+    
+    return new_int_fromint(idx);
+}
+
 
 
 

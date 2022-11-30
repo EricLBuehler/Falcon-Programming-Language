@@ -7,7 +7,7 @@ object* new_bytesarray(){
 }
 
 object* bytesarray_new(object* type, object* args, object* kwargs){
-    if (CAST_BYTESARRAY(args)->size==0){
+    if (CAST_LIST(args)->size==0){
         return new_bytesarray();
     }
     if (CAST_DICT(kwargs)->val->size()>0){
@@ -642,7 +642,7 @@ object* bytesarray_cmp(object* self, object* other, uint8_t type){
 }
 
 object* bytesarray_append_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_BYTESARRAY(args)->size;
+    long len= CAST_LIST(args)->size;
     if (CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
@@ -728,7 +728,7 @@ object* bytesarray_iter_bool(object* self){
 }
 
 object* bytesarray_pop_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_BYTESARRAY(args)->size;
+    long len= CAST_LIST(args)->size;
     if (CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
@@ -795,7 +795,7 @@ object* bytesarray_add(object* self, object* other){
 }
 
 object* bytesarray_replace_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_BYTESARRAY(args)->size;
+    long len= CAST_LIST(args)->size;
     if (CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
@@ -861,7 +861,7 @@ object* bytesarray_replace_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* bytesarray_find_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_BYTESARRAY(args)->size;
+    long len= CAST_LIST(args)->size;
     if (CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
@@ -904,7 +904,7 @@ object* bytesarray_find_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* bytesarray_remove_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_BYTESARRAY(args)->size;
+    long len= CAST_LIST(args)->size;
     if (CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
@@ -955,7 +955,7 @@ object* bytesarray_remove_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* bytesarray_insert_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_BYTESARRAY(args)->size;
+    long len= CAST_LIST(args)->size;
     if (CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
@@ -1022,7 +1022,7 @@ object* bytesarray_insert_meth(object* selftp, object* args, object* kwargs){
 }
 
 object* bytesarray_extend_meth(object* selftp, object* args, object* kwargs){
-    long len= CAST_BYTESARRAY(args)->size;
+    long len= CAST_LIST(args)->size;
     if (CAST_DICT(kwargs)->val->size()!=0){
         vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
         return NULL;
@@ -1080,4 +1080,80 @@ object* bytesarray_extend_meth(object* selftp, object* args, object* kwargs){
 
 
     return new_none();
+}
+
+object* bytesarray_hex_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=1){
+        vm_add_err(&ValueError, vm, "Expected 1 argument, got %d", len);
+        return NULL; 
+    }
+
+    object* self=list_index_int(args, 0);
+    
+    string s="0x";
+    
+    for (int i=0; i<CAST_BYTESARRAY(self)->size; i++){
+        char arr[]="\0\0\0";
+        sprintf(arr, "%.2x", (int)(bytesarr_index_int(self, i)));
+        s+=string(arr);
+    }
+
+    return str_new_fromstr(s);
+}
+
+object* bytesarray_decode_meth(object* selftp, object* args, object* kwargs){
+    long len= CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=2){
+        vm_add_err(&ValueError, vm, "Expected 2 arguments, got %d", len);
+        return NULL; 
+    }
+    object* self=tuple_index_int(args, 0);  
+    object* encoding=tuple_index_int(args, 1);   
+    
+
+    if (!object_istype(encoding->type, &StrType)){
+        vm_add_err(&ValueError, vm, "Expected str, got '%s'", encoding->type->name->c_str());
+        return NULL; 
+    }  
+
+    string enc=*CAST_STRING(encoding)->val;
+    
+    iconv_t cd = iconv_open("UTF-8", enc.c_str());
+    if((int) cd == -1) {
+        if (errno == EINVAL) {
+            vm_add_err(&ValueError, vm, "Invalid conversion");
+            return NULL; 
+        }
+    }
+
+    size_t s_size=CAST_BYTESARRAY(self)->size;
+    size_t new_size=s_size;
+    size_t _new_size=new_size;
+
+    const char* orig_str=CAST_BYTESARRAY(self)->array;
+    char* converted=(char*)fpl_calloc(new_size, sizeof(char));
+    char* start=converted;
+    
+    int ret = iconv(cd, &orig_str, &s_size, &converted, &new_size);
+    
+    if((iconv_t)ret == (iconv_t)(-1)) {
+        vm_add_err(&ValueError, vm, "Invalid multibyte sequence encountered");
+        return NULL; 
+    }
+    iconv_close(cd);
+
+    string s(start);
+
+    fpl_free(start);
+
+    return str_new_fromstr(s);
 }
