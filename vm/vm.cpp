@@ -194,15 +194,20 @@ void print_traceback(){
         
 
         cout<<"    ";
-        int diff=snippet.size();
-        snippet=remove_spaces(snippet);
-        diff-=snippet.size();
-        for (int i=0; i<snippet.size(); i++){
-            if (i>=startcol-diff && i<=endcol-diff){
-                red_color();
+        if (interpreter.has_color){
+            int diff=snippet.size();
+            snippet=remove_spaces(snippet);
+            diff-=snippet.size();
+            for (int i=0; i<snippet.size(); i++){
+                if (i>=startcol-diff && i<=endcol-diff){
+                    red_color();
+                }
+                cout<<snippet.at(i);
+                reset_color();
             }
-            cout<<snippet.at(i);
-            reset_color();
+        }
+        else{
+            cout<<snippet;
         }
         cout<<endl;
     }
