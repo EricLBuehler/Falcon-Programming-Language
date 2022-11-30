@@ -8,4 +8,4 @@ JSON object containing config information used by Falcon.
 
 | Config     | Description                         |
 | ---------------- | -------------------------------- |
-| ```TERMINAL_HAS_COLOR_SUPPORT```        | ```Print errors snippets in color at the appropriate locations, or no color if false or the statement the error occured on spans multiple lines```                     |
+| ```TERMINAL_HAS_COLOR_SUPPORT```        | ```If True, this will enable the printing of error snippets in color at the appropriate locations, or no color if the statement the error occured on spans multiple lines. Otherwise, the error snippets will be printed without color.```                     |
