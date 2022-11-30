@@ -232,6 +232,7 @@ void setup_builtins(){
     builtins[70]=new_builtin((builtinfunc)builtin_unicode_name, str_new_fromstr("unicode_name"), unicode_nameargs, unicode_namewargs, 1, false);
 
     builtins[71]=(object*)&OverflowError;
+    builtins[72]=(object*)&NotImplementedError;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

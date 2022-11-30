@@ -1360,6 +1360,9 @@ void setup_exception_type(){
     overflowerr_bases->type->slot_mappings->slot_append(overflowerr_bases, (object*)&ValueError);
     OverflowError=(*(TypeObject*)new_type_exception(new string("OverflowError"), overflowerr_bases, new_dict()));
     fplbases.push_back(&OverflowError);
+    
+    NotImplementedError=(*(TypeObject*)new_type_exception(new string("NotImplementedError"), new_tuple(), new_dict()));
+    fplbases.push_back(&NotImplementedError);
 }
 
 
