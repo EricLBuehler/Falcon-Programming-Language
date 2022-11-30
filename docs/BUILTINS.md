@@ -61,6 +61,8 @@
 - ```KeyboardInterrupt```
 - ```AssertionError```
 - ```ZeroDivisionError```
+- ```OverflowError```
+- ```NotImplementedError```
 
 
 ______________________
