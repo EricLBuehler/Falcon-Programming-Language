@@ -1123,6 +1123,7 @@ ______________________
 
 ## ```bytearray```
 Create a bytearray object from an iterator.
+The bytearray object is a mutable version of the bytes object.
 
 ```bytearray(iterator)```
 

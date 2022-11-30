@@ -212,6 +212,39 @@ Encodes ```self``` as encoding ```encoding```
 #### Returns
 Bytes object containing encoded string - ```bytes```
 
+### ```str.startswith```
+Return ```True``` if the string starts with needle, otherwise, ```False```.
+```str.startswith(self, needle)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle     |
+#### Returns
+Boolean - ```bool```
+
+### ```str.endswith```
+Return ```True``` if the string ends with needle, otherwise, ```False```.
+```str.endswith(self, needle)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle     |
+#### Returns
+Boolean - ```bool```
+
+### ```str.rfind```
+Return the last occurence of needle, or -1;
+```str.rfind(self, needle)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle     |
+#### Returns
+Index - ```int```
+
 
 ## ```list```
 
@@ -523,7 +556,7 @@ None - ```None```
 
 ## Bytes
 
-### ```byte.decode```
+### ```bytes.decode```
 Decodes ```self``` into a string, interpreting bytes in ```self```as ```encoding```
 ```bytes.encode(self, encoding)```
 #### Arguments
@@ -533,6 +566,16 @@ Decodes ```self``` into a string, interpreting bytes in ```self```as ```encoding
 | ```encode```  | encoding     |
 #### Returns
 Decoded string - ```str```
+
+### ```bytes.hex```
+Converts byte object to a hexadecimal string.
+```bytes.hex(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+#### Returns
+Hexadecimal string - ```str```
 
 
 
@@ -547,7 +590,7 @@ Find and return index of first occurance of argument ```needle```, or -1.
 | ```self```    | self argument     |
 | ```needle```  | needle     |
 ### Example
-```[1,2,3].find(2) == 1 == True```
+```bytearray([1,2,3]).find(2) == 1 == True```
 #### Returns
 Index - ```int```
 
@@ -561,7 +604,7 @@ Replaces all occurances of argument ```needle``` with ```val```.
 | ```needle```  | needle to be replace     |
 | ```val```  | value to replace     |
 ### Example
-```[1,2,3].replace(2,3) == [1,3,3] == True```
+```bytearray([1,2,3]).replace(2,3) == bytearray([1,3,3]) == True```
 #### Returns
 Same object, altered - ```bytearray```
 
@@ -574,7 +617,7 @@ Appends argument ```val``` to bytearray.
 | ```self```    | self argument     |
 | ```val```  | value to append     |
 ### Example
-```[1,2,3].append(4) == [1,2,3,4] == True```
+```bytearray([1,2,3]).append(4) == bytearray([1,2,3,4]) == True```
 #### Returns
 ```None```
 
@@ -587,7 +630,7 @@ Pops element at idx from bytearray and returns item.
 | ```self```    | self argument     |
 | ```idx```    | index to pop from     |
 ### Example
-```[1,2,3].pop() == 3 == True```
+```bytearray([1,2,3]).pop() == 3 == True```
 #### Returns
 Popped value
 
@@ -602,7 +645,7 @@ Inserts value into bytearray at specified index
 | ```val```    | value to insert     |
 ### Example
 ```
-a=[1,2,3]
+a=bytearray([1,2,3])
 a.insert(0, "A")
 a == ["A",1,2,3] == True
 ```
@@ -619,9 +662,9 @@ Removes first occurrence of value from bytearray
 | ```val```    | value to insert     |
 ### Example
 ```
-a=[1,2,3]
+a=bytearray([1,2,3])
 a.remove(1)
-a == [2,3] == True
+a == bytearray([2,3]) == True
 ```
 #### Returns
 ```None```
@@ -636,9 +679,19 @@ Extends bytearray by passed iterator
 | ```it```    | iterator     |
 ### Example
 ```
-a=[1,2,3]
+a=bytearray([1,2,3])
 a.extend({4,5,6})
-a == [1,2,3,4,5,6] == True
+a == bytearray([1,2,3,4,5,6]) == True
 ```
 #### Returns
 ```None```
+
+### ```bytearray.hex```
+Converts bytearray object to a hexadecimal string.
+```bytearray.hex(self)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+#### Returns
+Hexadecimal string - ```str```
