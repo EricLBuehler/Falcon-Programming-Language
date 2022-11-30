@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     glblargv_raw=argv;
     if (argc==1){
         try{
-            cout<<"Falcon Programming Language V"<<FPL_VERSION<<endl;
+            cout<<"Falcon Programming Language "<<FPL_VERSION<<endl;
             cout<<"Eric Buehler 2022"<<endl;
             cout<<"Type copyright() for copyright and license information, exit() to exit"<<endl<<endl;
             
