@@ -253,7 +253,7 @@ Appends argument ```val``` to list.
 ### Example
 ```[1,2,3].append(4) == [1,2,3,4] == True```
 #### Returns
-Same objet, altered - ```list```
+```None```
 
 ### ```list.pop```
 Pops element at idx from list and returns item.
@@ -576,7 +576,7 @@ Appends argument ```val``` to bytearray.
 ### Example
 ```[1,2,3].append(4) == [1,2,3,4] == True```
 #### Returns
-Same object, altered - ```bytearray```
+```None```
 
 ### ```bytearray.pop```
 Pops element at idx from bytearray and returns item.
