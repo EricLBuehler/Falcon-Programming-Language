@@ -86,7 +86,7 @@ object* random_choice(object* self, object* args){
     object* ob=dict_get_opti_deref(args, str_new_fromstr("iter"));
     if (ob->type->slot_mappings==NULL || ob->type->slot_mappings->slot_get==NULL\
      || ob->type->slot_mappings->slot_len==NULL){
-        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+        vm_add_err(&TypeError, vm, "Expected sequence, got '%s' object", ob->type->name->c_str());
         FPLDECREF(ob);
         return NULL; 
     }
@@ -109,8 +109,7 @@ object* random_choice(object* self, object* args){
 
 object* random_shuffle(object* self, object* args){
     object* ob=dict_get_opti_deref(args, str_new_fromstr("iter"));
-    if (ob->type->slot_mappings==NULL || ob->type->slot_mappings->slot_get==NULL\
-     || ob->type->slot_mappings->slot_len==NULL){
+    if (ob->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
         FPLDECREF(ob);
         return NULL; 
@@ -120,7 +119,7 @@ object* random_shuffle(object* self, object* args){
 
     FPLDECREF(ob);
     
-    if (iter==NULL){
+    if (iter==NULL || iter->type->slot_iter==NULL){
         vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
         return NULL;
     }
@@ -140,10 +139,7 @@ object* random_shuffle(object* self, object* args){
     }
     FPLDECREF(iter);
 
-    std::random_shuffle(arr.begin(), arr.end(),
-                        [&](int i) {
-                            return rand();
-                        });
+    std::random_shuffle(arr.begin(), arr.end());
 
     object* list=new_list();
 
