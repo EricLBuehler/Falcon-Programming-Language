@@ -148,7 +148,7 @@ static object* trueobj=NULL;
 static object* falseobj=NULL;
 static object* noneobj=NULL;
 
-const size_t nbuiltins=73;
+const size_t nbuiltins=74;
 object* builtins[nbuiltins];
 
 TypeObject TypeError;
@@ -226,6 +226,7 @@ object* object_setattr_deref(object* obj, object* attr, object* val);
 object* builtin___build_class__(object* self, object* args);
 
 #define list_index_int(self, i) CAST_LIST(self)->array[i]
+#define bytesarr_index_int(self, i) CAST_BYTESARRAY(self)->array[i]
 #define tuple_index_int(self, i) CAST_TUPLE(self)->array[i]
 
 const bool NEWTP_PRIMARY_COPY=true;
@@ -532,6 +533,8 @@ enum opcode{
 #define CAST_SETITER(obj) ((SetIterObject*)obj)
 #define CAST_BYTES(obj) ((BytesObject*)obj)
 #define CAST_BYTESITER(obj) ((BytesIterObject*)obj)
+#define CAST_BYTESARRAY(obj) ((BytesarrayObject*)obj)
+#define CAST_BYTESARRAYITER(obj) ((BytesarrayIterObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
@@ -606,6 +609,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "genobject.cpp"
 #include "setobject.cpp"
 #include "bytesobject.cpp"
+#include "bytesarrayobject.cpp"
 
 
 void setup_types_consts(){
@@ -660,6 +664,8 @@ void setup_types_consts(){
     setup_setiter_type();
     setup_bytes_type();
     setup_bytesiter_type();
+    setup_bytesarray_type();
+    setup_bytesarrayiter_type();
 
     setup_builtins();
     
@@ -826,4 +832,13 @@ void setup_types_consts(){
     inherit_type_dict(&BytesIterType); 
     setup_type_offsets(&BytesIterType);
     setup_type_getsets(&BytesIterType);
+
+    inherit_type_dict(&BytesarrayType); 
+    setup_type_methods(&BytesarrayType);
+    setup_type_offsets(&BytesarrayType);
+    setup_type_getsets(&BytesarrayType);
+    
+    inherit_type_dict(&BytesarrayIterType); 
+    setup_type_offsets(&BytesarrayIterType);
+    setup_type_getsets(&BytesarrayIterType);
 }

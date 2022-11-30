@@ -3706,6 +3706,203 @@ void setup_bytesiter_type(){
 
 
 
+object* bytesarray_init(object* self, object* args, object* kwargs);
+void bytesarray_del(object* self);
+object* bytesarray_len(object* self);
+object* bytesarray_get(object* self, object* idx);
+void bytesarray_append(object* self, int val);
+void bytesarray_append_obj(object* self, object* val);
+object* bytesarray_new(object* type, object* args, object* kwargs);
+object* bytesarray_set(object* self, object* idx, object* val);
+object* bytesarray_repr(object* self);
+object* bytesarray_next(object* self);
+object* bytesarray_cmp(object* self, object* other, uint8_t type);
+object* bytesarray_bool(object* self);
+object* bytesarray_append_meth(object* selftp, object* args, object* kwargs);
+object* bytesarray_iter(object* self);
+object* bytesarray_pop(object* self);
+object* bytesarray_pop_meth(object* selftp, object* args, object* kwargs);
+object* bytesarray_replace_meth(object* selftp, object* args, object* kwargs);
+object* bytesarray_find_meth(object* selftp, object* args, object* kwargs);
+object* bytesarray_remove_meth(object* selftp, object* args, object* kwargs);
+object* bytesarray_insert_meth(object* selftp, object* args, object* kwargs);
+object* bytesarray_extend_meth(object* selftp, object* args, object* kwargs);
+
+object* bytesarray_add(object* self, object* other);
+object* bytesarray_mul(object* self, object* other);
+
+typedef struct BytesarrayObject{
+    OBJHEAD_VAR
+    char* array;
+    size_t size;
+}BytesarrayObject;
+
+Method bytesarray_methods[]={{"find", (cwrapperfunc)bytesarray_find_meth}, {"replace", (cwrapperfunc)bytesarray_replace_meth}, {"append", (cwrapperfunc)bytesarray_append_meth},\
+                    {"pop", (cwrapperfunc)bytesarray_pop_meth}, {"remove", (cwrapperfunc)bytesarray_remove_meth}, {"insert", (cwrapperfunc)bytesarray_insert_meth},\
+                    {"extend", (cwrapperfunc)bytesarray_extend_meth}, {NULL,NULL}};
+GetSets bytesarray_getsets[]={{NULL,NULL}};
+OffsetMember bytesarray_offsets[]={{NULL}};
+
+static NumberMethods bytesarray_num_methods{
+    (binopfunc)bytesarray_add, //slot_add
+    0, //slot_sub
+    (binopfunc)bytesarray_mul, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+    0, //slot_xor
+
+    0, //slot_neg
+    0, //slot_not
+    0, //slot_abs
+
+    (unaryfunc)bytesarray_bool, //slot_bool
+};
+
+static Mappings bytesarray_mappings{
+    bytesarray_get, //slot_get
+    bytesarray_set, //slot_set
+    bytesarray_len, //slot_len
+    bytesarray_append_obj, //slot_append
+};
+
+TypeObject BytesarrayType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("bytearray"), //name
+    sizeof(BytesarrayObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    (newfunc)bytesarray_new, //slot_new
+    (delfunc)bytesarray_del, //slot_del
+
+    0, //slot_next
+    (unaryfunc)bytesarray_iter, //slot_iter
+
+    (reprfunc)bytesarray_repr, //slot_repr
+    (reprfunc)bytesarray_repr, //slot_str
+    0, //slot_call
+
+    &bytesarray_num_methods, //slot_number
+    &bytesarray_mappings, //slot_mapping
+
+    bytesarray_methods, //slot_methods
+    bytesarray_getsets, //slot_getsets
+    bytesarray_offsets, //slot_offsests
+
+    (compfunc)bytesarray_cmp, //slot_cmp
+};
+
+void setup_bytesarray_type(){
+    BytesarrayType=(*(TypeObject*)finalize_type(&BytesarrayType));
+    fplbases.push_back(&BytesarrayType);
+}
+
+
+void bytesarray_iter_del(object* self);
+object* bytesarray_iter_next(object* self);
+object* bytesarray_iter_cmp(object* self, object* other, uint8_t type);
+object* bytesarray_iter_bool(object* self);
+
+typedef struct BytesarrayIterObject{
+    OBJHEAD_EXTRA
+    char* val;
+    size_t len;
+    size_t idx;
+}BytesarrayIterObject;
+
+Method bytesarray_iter_methods[]={{NULL,NULL}};
+GetSets bytesarray_iter_getsets[]={{NULL,NULL}};
+
+static NumberMethods bytesarray_iter_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+    0, //slot_xor
+
+    0, //slot_neg
+    0, //slot_not
+    0, //slot_abs
+
+    0, //slot_bool
+};
+
+static Mappings bytesarray_iter_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+    0, //slot_append
+};
+
+TypeObject BytesarrayIterType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("bytearray_iter"), //name
+    sizeof(BytesarrayIterObject), //size
+    0, //var_base_size
+    true, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    object_genericgetattr, //slot_getattr
+    object_genericsetattr, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    (delfunc)bytesarray_iter_del, //slot_del
+
+    (iternextfunc)bytesarray_iter_next, //slot_next
+    (unaryfunc)generic_iter_iter, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &bytesarray_iter_num_methods, //slot_number
+    &bytesarray_iter_mappings, //slot_mapping
+
+    bytesarray_iter_methods, //slot_methods
+    bytesarray_iter_getsets, //slot_getsets
+    0, //slot_offsets
+
+    (compfunc)bytesarray_iter_cmp, //slot_cmp
+};
+
+void setup_bytesarrayiter_type(){
+    BytesarrayIterType=(*(TypeObject*)finalize_type(&BytesarrayIterType));
+    BytesarrayIterType.slot_new=NULL;
+    fplbases.push_back(&BytesarrayIterType);
+}
+
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////

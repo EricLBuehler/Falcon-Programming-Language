@@ -233,6 +233,7 @@ void setup_builtins(){
 
     builtins[71]=(object*)&OverflowError;
     builtins[72]=(object*)&NotImplementedError;
+    builtins[73]=(object*)&BytesarrayType;
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){

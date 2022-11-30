@@ -61,8 +61,8 @@ object* bytes_new(object* type, object* args, object* kwargs){
                     return NULL; 
                 }
                 
-                if (*CAST_INT(intob)->val>INT_MAX || CAST_INT(intob)->val->to_int()>255 || CAST_INT(intob)->val->to_int()<0){
-                    vm_add_err(&ValueError, vm, "Expected value in range(0, 256), got %d", CAST_INT(intob)->val->to_int());
+                if (*CAST_INT(intob)->val>INT_MAX || *CAST_INT(intob)->val>INT_MIN || CAST_INT(intob)->val->to_int()>255 || CAST_INT(intob)->val->to_int()<0){
+                    vm_add_err(&ValueError, vm, "Expected value in range(0, 256), got %s", CAST_INT(intob)->val->to_string());
                     return NULL;
                 }
                 CAST_BYTES(obj)->val[i++]=(char)(CAST_INT(intob)->val->to_int());
@@ -276,7 +276,7 @@ object* bytes_cmp(object* self, object* other, uint8_t type){
         if (CAST_BYTES(self)->len==CAST_BYTES(other)->len){
             return new_bool_false();
         }
-        if (!memcmp(CAST_BYTES(self)->val, CAST_BYTES(other)->val, CAST_BYTES(self)->len)==0){
+        if (memcmp(CAST_BYTES(self)->val, CAST_BYTES(other)->val, CAST_BYTES(self)->len)!=0){
             return new_bool_true();
         }
         return new_bool_false();
@@ -327,7 +327,7 @@ object* bytes_iter_cmp(object* self, object* other, uint8_t type){
         if (CAST_BYTESITER(self)->len==CAST_BYTESITER(other)->len){
             return new_bool_false();
         }
-        if (!memcmp(CAST_BYTESITER(self)->val, CAST_BYTESITER(other)->val, CAST_BYTESITER(self)->len)==0){
+        if (memcmp(CAST_BYTESITER(self)->val, CAST_BYTESITER(other)->val, CAST_BYTESITER(self)->len)!=0){
             return new_bool_true();
         }
         return new_bool_false();

@@ -219,7 +219,7 @@ object* int_new(object* type, object* args, object* kwargs){
         object* val=list_index_int(args, 1);
         
         object* obj=object_int(val);
-        if (obj==NULL && !object_istype(val->type, &IntType)){
+        if (obj==NULL || !object_istype(obj->type, &IntType)){
             vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", val->type->name->c_str());
             return NULL;
         }

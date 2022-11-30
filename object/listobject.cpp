@@ -738,23 +738,12 @@ object* list_add(object* self, object* other){
         vm_add_err(&TypeError, vm, "Invalid operand types for +: '%s', and '%s'.", self->type->name->c_str(), other->type->name->c_str());
         return NULL;
     }
-    
 
-    object* list=new_list();
-    CAST_LIST(list)->size=CAST_LIST(self)->size+CAST_LIST(other)->size;
-    list_resize(CAST_LIST(list), CAST_LIST(list)->size);
-
-    for (size_t i=0; i<CAST_LIST(self)->size; i++){
-        object* o=CAST_LIST(self)->array[i];
-        FPLINCREF(o);
-        CAST_LIST(list)->array[i]=o;
+    for (size_t i=0; i<CAST_LIST(other)->size; i++){
+        list_append(self, list_index_int(other, i));
     }
-    for (size_t i=CAST_LIST(self)->size; i<CAST_LIST(list)->size; i++){
-        object* o=CAST_LIST(other)->array[i-CAST_LIST(self)->size];
-        FPLINCREF(o);
-        CAST_LIST(list)->array[i]=o;
-    }
-    return list;
+    FPLINCREF(self);
+    return self;
 }
 
 object* list_replace_meth(object* selftp, object* args, object* kwargs){
