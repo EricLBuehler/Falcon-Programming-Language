@@ -23,6 +23,19 @@ object* sys_getpath(object* sys){
     return interpreter.path;
 }
 
+object* sys_getterm_color(object* sys){
+    if (interpreter.has_color){
+        return new_bool_true();
+    }
+    return new_bool_false();
+}
+
+object* sys_setterm_color(object* sys, object* val){
+    FPLINCREF(val);
+    interpreter.has_color=istrue(val);
+    return new_none();
+}
+
 object* new_sys_module(){
     object* dict=new_dict();
 
@@ -39,6 +52,10 @@ object* new_sys_module(){
 
     object* getset=slotwrapper_new_fromfunc(sys_getpath, NULL, "path");
     dict_set_noinc_noret(dict, str_new_fromstr("path"), getset);
+    
+
+    getset=slotwrapper_new_fromfunc(sys_getterm_color, sys_setterm_color, "has_color");
+    dict_set_noinc_noret(dict, str_new_fromstr("has_color"), getset);
 
     //Argc and argv
     dict_set_noinc_noret(dict, str_new_fromstr("argc"), new_int_fromint(glblargc_raw));
