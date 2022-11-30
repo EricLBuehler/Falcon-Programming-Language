@@ -115,8 +115,8 @@ void fpl_startup(){
     
     interpreter.has_color=false;
     fstream cfgfile;
-    cfgfile.open("fplconfig",ios::in);
-    if (newfile.is_open()){
+    cfgfile.open("fplconfig.json",ios::in);
+    if (cfgfile.is_open()){
         string config="";
         string tp;
         while(getline(cfgfile, tp)){
