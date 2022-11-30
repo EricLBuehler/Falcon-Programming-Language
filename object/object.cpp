@@ -929,6 +929,17 @@ object* object_exit_with(object* self){
     return object_call_nokwargs(o, args);
 }
 
+void interpreter_load_config(object* json){
+    object* o=dict_get_opti_deref(json, str_new_fromstr("CONFIG"));
+    if (o!=NULL && object_istype(o->type, &BoolType)){
+        interpreter.has_color=istrue(o);
+    }
+    if (o==NULL && vm!=NULL && vm->exception!=NULL){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+    }
+}
+
 
 
 //I have setup memory_error to be a fatal exception
