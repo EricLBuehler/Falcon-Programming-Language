@@ -40,15 +40,31 @@ Return ```float``` random value.
 
 Choose a random element in a sequence.
 
+```random.choice(seq)```
+
+### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```seq```    | sequence to choose item from    |
+
+### Returns
+Return choice.
+
+-----------------------
+
+## ```shuffle```
+
+Shuffle an iterator
+
 ```random.choice(iter)```
 
 ### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
-| ```choice```    | iterator to choose item from    |
+| ```iter```    | iterator to shuffle    |
 
 ### Returns
-Return choice.
+Return ```list``` shuffled iterator.
 
 -----------------------
 
