@@ -100,9 +100,57 @@ object* random_choice(object* self, object* args){
     int len_sub1=CAST_INT(iterlen)->val->to_int()-1;
     FPLDECREF(iterlen);
 
-    object* o=dict_get_opti_deref(ob, new_int_fromint(iRand(0,len_sub1)));
+    object* idx=new_int_fromint(iRand(0,len_sub1));
+    object* o=object_get(ob, idx);
     FPLDECREF(ob);
+    FPLDECREF(idx);
     return o;
+}
+
+object* random_shuffle(object* self, object* args){
+    object* ob=dict_get_opti_deref(args, str_new_fromstr("iter"));
+    if (ob->type->slot_mappings==NULL || ob->type->slot_mappings->slot_get==NULL\
+     || ob->type->slot_mappings->slot_len==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", ob->type->name->c_str());
+        FPLDECREF(ob);
+        return NULL; 
+    }
+
+    object* iter=ob->type->slot_iter(ob);
+
+    FPLDECREF(ob);
+    
+    if (iter==NULL){
+        vm_add_err(&TypeError, vm, "Expected iterator, got '%s' object", iter->type->name->c_str());
+        return NULL;
+    }
+
+    vector<object*> arr;
+    arr.clear();
+    
+    object* o=iter->type->slot_next(iter);
+    while (vm->exception==NULL){
+        arr.push_back(o);
+        
+        o=iter->type->slot_next(iter);
+    }
+    if (vm->exception!=NULL){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+    }
+    FPLDECREF(iter);
+
+    std::random_shuffle(arr.begin(), arr.end(),
+                        [&](int i) {
+                            return rand();
+                        });
+
+    object* list=new_list();
+
+    for (object* o: arr){
+        list_append(list, o);
+    }
+    return list;
 }
 
 object* new_random_module(){
@@ -128,6 +176,9 @@ object* new_random_module(){
     tuple_append_noinc(randchoiceargs, str_new_fromstr("iter"));
     ob=new_builtin(random_choice, str_new_fromstr("choice"), randchoiceargs, emptykw_args, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("choice"), ob);
+    
+    ob=new_builtin(random_shuffle, str_new_fromstr("shuffle"), randchoiceargs, emptykw_args, 1, false);
+    dict_set_noinc_noret(dict, str_new_fromstr("shuffle"), ob);
     
     dict_set_noinc_noret(dict, str_new_fromstr("RAND_MAX"), new_int_fromint(RAND_MAX));
 
