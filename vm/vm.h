@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#define DISPATCH()  if (hit_sigint || GET_EVALBREAKER()){goto exc;};\
+#define DISPATCH()  if (GET_EVALBREAKER() || hit_sigint){goto exc;};\
                     if(vm->exec++%GIL_MAX_SWITCH==0 && vm->exec>0){\
                         vm->exec=0;\
                         gil_lock(gil_unlock());\
