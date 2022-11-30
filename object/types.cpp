@@ -169,6 +169,8 @@ int get_index_fromtarget(int target, int raw_len, const char* arr);
 int get_index_fromtarget_min(int target, int raw_len, char* arr);
 int get_index_fromtarget_min(int target, int raw_len, const char* arr);
 string codept_to_str(uint32_t num);
+int get_target_from_index(int idx, const char* arr);
+int get_target_from_index(int idx, char* arr);
 
 typedef struct StrObject{
     OBJHEAD_EXTRA

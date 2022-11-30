@@ -455,7 +455,14 @@ object* string_find_meth(object* selftp, object* args, object* kwargs){
     string v=*CAST_STRING(val)->val;
     
     size_t idx=s.find(v);
+
+    if (idx<0){
+        goto done;
+    }
     
+    idx=get_target_from_index(idx, CAST_STRING(self)->val->c_str());
+    
+    done:
     return new_int_fromint(idx);
 }
 
@@ -933,7 +940,14 @@ object* string_rfind_meth(object* selftp, object* args, object* kwargs){
     string v=*CAST_STRING(val)->val;
     
     size_t idx=s.rfind(v);
+
+    if (idx<0){
+        goto done;
+    }
     
+    idx=get_target_from_index(idx, CAST_STRING(self)->val->c_str());
+    
+    done:    
     return new_int_fromint(idx);
 }
 
@@ -1137,6 +1151,30 @@ int get_index_fromtarget_min(int target, int raw_len, const char* arr){
     }
 
     return -1;
+}
+
+//Get fake index of real index
+int get_target_from_index(int idx, const char* arr){
+    int i=0;
+    int len=0;
+    while (i<idx){
+        unsigned char c=(unsigned char) arr[i];
+        i+=get_uchar_length(c);
+        len++;
+    }
+    return len;
+}
+
+//Get fake index of real index
+int get_target_from_index(int idx, char* arr){
+    int i=0;
+    int len=0;
+    while (i<idx){
+        unsigned char c=(unsigned char) arr[i];
+        i+=get_uchar_length(c);
+        len++;
+    }
+    return len;
 }
 
 //Convert code point to string representation
