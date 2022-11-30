@@ -36,7 +36,13 @@ Return ```int``` containing the reference count
 
 ## ```path```
 
-Interpreter path variable
+Interpreter path variable - **readonly**
+
+-----------------------
+
+## ```has_color```
+
+Interpreter has_color variable - **read and write**
 
 -----------------------
 
