@@ -1,2 +1,2 @@
 cls
-fpl.exe program.fpl
+falcon program.fpl

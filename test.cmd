@@ -1,4 +1,4 @@
 :label
-fpl program.fpl
+falcon program.fpl
 TIMEOUT /T 1 /NOBREAK
 goto label

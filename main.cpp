@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
             fpl_startup();
 
             struct compiler* compiler = new_compiler();
-            struct vm* vm=new_vm(interpreter.vm_map->size(), NULL, compiler->instructions, NULL); //data is still in scope...
+            ::vm=new_vm(interpreter.vm_map->size(), NULL, compiler->instructions, NULL); //data is still in scope...
             interpreter_add_vm(interpreter.vm_map->size(), vm);
             gil_lock(vm->id);
             dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
                 vm->exec=0;
                 
                 object* returned=run_vm(code, &vm->ip);
-                
+
                 CLEAR_EVALBREAKER();
 
                 while (vm->blockstack->size>0){
