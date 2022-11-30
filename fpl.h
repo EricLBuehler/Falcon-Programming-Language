@@ -40,7 +40,7 @@ using namespace std;
 
 #define ERROR_RET(v) if (v==NULL){return NULL;};if (v==TERM_PROGRAM){return TERM_PROGRAM;};
 
-#define GIL_MAX_SWITCH 2
+#define GIL_MAX_SWITCH 256
 
 #define FPL_VERSION "1.2.4"
 
@@ -99,7 +99,6 @@ void fpl_startup(){
     interpreter_init();
     
     
-
     interpreter.path=new_list();
     fstream newfile;
     newfile.open("fplpath.path",ios::in);
