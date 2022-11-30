@@ -217,13 +217,13 @@ Build Falcon in release mode
 ```./release.cmd```
 
 Run a script
-```./fpl program```
+```falcon program```
 
 Enter REPL
-```./fpl```
+```falcon```
 
 Help
-```./fpl -h```
+```falcon -h```
 
 ### Links ###
 - <a href='https://github.com/dannyvankooten/pepper-lang'>Pepper Lang</a>
