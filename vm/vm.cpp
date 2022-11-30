@@ -1858,7 +1858,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* names=pop_dataframe(vm->objstack);
             object* lib=pop_dataframe(vm->objstack);
             object* len_=names->type->slot_mappings->slot_len(names);
-            uint32_t len=CAST_INT(len)->val->to_int();
+            uint32_t len=CAST_INT(len_)->val->to_int();
             if (len==0){
                 for (auto k: *CAST_DICT(CAST_MODULE(lib)->dict)->val){
                     object* name=k.first;
