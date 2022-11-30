@@ -98,7 +98,7 @@ object* bytes_new(object* type, object* args, object* kwargs){
 
 string _byte_repr(char c){
     char arr[50];
-    sprintf(arr, "0x%x\0", (uint8_t)c);
+    sprintf(arr, "0x%x%c", (uint8_t)c, '\0');
     return string(arr, strlen(arr));
 }
 
@@ -406,7 +406,7 @@ object* bytes_decode_meth(object* selftp, object* args, object* kwargs){
     string enc=*CAST_STRING(encoding)->val;
     
     iconv_t cd = iconv_open("UTF-8", enc.c_str());
-    if((int) cd == -1) {
+    if( cd == (iconv_t)-1) {
         if (errno == EINVAL) {
             vm_add_err(&ValueError, vm, "Invalid conversion");
             return NULL; 
@@ -421,9 +421,9 @@ object* bytes_decode_meth(object* selftp, object* args, object* kwargs){
     char* converted=(char*)fpl_calloc(new_size, sizeof(char));
     char* start=converted;
     
-    int ret = iconv(cd, &orig_str, &s_size, &converted, &new_size);
+    int ret = iconv(cd, (char**)&orig_str, &s_size, &converted, &new_size);
     
-    if((iconv_t)ret == (iconv_t)(-1)) {
+    if(ret == -1) {
         vm_add_err(&ValueError, vm, "Invalid multibyte sequence encountered");
         return NULL; 
     }

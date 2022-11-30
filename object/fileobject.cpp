@@ -215,7 +215,7 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
     string s=object_cstr(list_index_int(args, 1));
     
     iconv_t cd = iconv_open(CAST_FILE(self)->encoding, "UTF-8");
-    if((int) cd == -1) {
+    if( cd == (iconv_t)-1) {
         if (errno == EINVAL) {
             vm_add_err(&ValueError, vm, "Invalid conversion");
             return NULL; 
@@ -229,9 +229,9 @@ object* file_write_meth(object* selftp, object* args, object* kwargs){
     char* converted=(char*)fpl_calloc(new_size, sizeof(char));
     char* start=converted;
     
-    int ret = iconv(cd, &orig_str, &s_size, &converted, &new_size);
+    int ret = iconv(cd, (char**)&orig_str, &s_size, &converted, &new_size);
     
-    if((iconv_t)ret == (iconv_t)(-1)) {
+    if(ret == -1) {
         vm_add_err(&ValueError, vm, "Invalid multibyte sequence encountered");
         return NULL; 
     }
