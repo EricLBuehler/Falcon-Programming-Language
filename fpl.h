@@ -112,6 +112,32 @@ void fpl_startup(){
     else{
         tuple_append_noinc(interpreter.path, str_new_fromstr("./"));
     }
+    
+    interpreter.has_color=false;
+    fstream cfgfile;
+    cfgfile.open("fplconfig",ios::in);
+    if (newfile.is_open()){
+        string config="";
+        string tp;
+        while(getline(cfgfile, tp)){
+            config+=tp;
+        }
+
+        const nx_json* json=nx_json_parse_utf8((char*)config.c_str());
+        if (json==NULL){
+            goto jsonerr;
+        }
+        object* o = json_decode_object(json);
+
+        interpreter_load_config(o);
+        FPLDECREF(o);
+        
+        cfgfile.close();
+    }
+    jsonerr:
+    
+    
+    return;
 }
 
 
