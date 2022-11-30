@@ -1117,3 +1117,22 @@ Get the unicode name of an ordinal value.
 
 ### Returns
 Return new ```str``` that is the name.
+
+
+______________________
+
+## ```bytearray```
+Create a bytearray object from an iterator.
+
+```bytearray(iterator)```
+
+### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```iterator``` | iterator  |
+
+### Notes
+Iterator must define ```__iter__``` method.
+
+### Returns
+Return new ```bytearray```.

@@ -253,7 +253,7 @@ Appends argument ```val``` to list.
 ### Example
 ```[1,2,3].append(4) == [1,2,3,4] == True```
 #### Returns
-New list - ```list```
+Same objet, altered - ```list```
 
 ### ```list.pop```
 Pops element at idx from list and returns item.
@@ -288,7 +288,7 @@ a == ["A",1,2,3] == True
 
 ### ```list.remove```
 Removes first occurrence of value from list
-```list.insert(self, val)```
+```list.remove(self, val)```
 #### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
@@ -533,3 +533,112 @@ Decodes ```self``` into a string, interpreting bytes in ```self```as ```encoding
 | ```encode```  | encoding     |
 #### Returns
 Decoded string - ```str```
+
+
+
+## ```bytearray```
+
+### ```bytearray.find```
+Find and return index of first occurance of argument ```needle```, or -1.
+```bytearray.find(self, needle)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle     |
+### Example
+```[1,2,3].find(2) == 1 == True```
+#### Returns
+Index - ```int```
+
+### ```bytearray.replace```
+Replaces all occurances of argument ```needle``` with ```val```.
+```bytearray.replace(self, needle, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```needle```  | needle to be replace     |
+| ```val```  | value to replace     |
+### Example
+```[1,2,3].replace(2,3) == [1,3,3] == True```
+#### Returns
+Same object, altered - ```bytearray```
+
+### ```bytearray.append```
+Appends argument ```val``` to bytearray.
+```bytearray.append(self, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```val```  | value to append     |
+### Example
+```[1,2,3].append(4) == [1,2,3,4] == True```
+#### Returns
+Same object, altered - ```bytearray```
+
+### ```bytearray.pop```
+Pops element at idx from bytearray and returns item.
+```bytearray.pop(self, idx=-1)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```idx```    | index to pop from     |
+### Example
+```[1,2,3].pop() == 3 == True```
+#### Returns
+Popped value
+
+### ```bytearray.insert```
+Inserts value into bytearray at specified index
+```bytearray.insert(self, idx, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```idx```    | index to insert at    |
+| ```val```    | value to insert     |
+### Example
+```
+a=[1,2,3]
+a.insert(0, "A")
+a == ["A",1,2,3] == True
+```
+#### Returns
+```None```
+
+### ```bytearray.remove```
+Removes first occurrence of value from bytearray
+```bytearray.remove(self, val)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```val```    | value to insert     |
+### Example
+```
+a=[1,2,3]
+a.remove(1)
+a == [2,3] == True
+```
+#### Returns
+```None```
+
+### ```bytearray.extend```
+Extends bytearray by passed iterator
+```bytearray.extend(self, it)```
+#### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```self```    | self argument     |
+| ```it```    | iterator     |
+### Example
+```
+a=[1,2,3]
+a.extend({4,5,6})
+a == [1,2,3,4,5,6] == True
+```
+#### Returns
+```None```
