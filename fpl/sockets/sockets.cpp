@@ -892,7 +892,7 @@ object* socket_gethostname(object* selftp, object* args){
 
 #ifndef _WIN32
 object* socket_sethostname(object* selftp, object* args){
-    object* o=dict_get_opti_deref(args, str_new_fromstr(args, "name"));
+    object* o=dict_get_opti_deref(args, str_new_fromstr("name"));
     string s=object_cstr(o).c_str();
     FPLDECREF(o);
     int i=s.size();
