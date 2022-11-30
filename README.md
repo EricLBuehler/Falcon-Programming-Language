@@ -14,6 +14,7 @@ Falcon is implemented in C++. However, although the compiler and virtual machine
 - [Builtin type methods](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/TYPE_DOCS.md)
 - [Conventions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/CONVENTIONS.md)
 - [Builtin Functions](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/BUILTINS.md)
+- [Builtin Modules](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/builtin_module_docs/BUILTIN_MODULES.MD)
 - [Syntax](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/SYNTAX.md)
 
 ### Sample Program ###
