@@ -348,6 +348,11 @@ class Parser{
                         }
 
                     }
+
+                    if (segment.back()!='}'){
+                        this->add_parsing_error(ret, "SyntaxError: Expected '}' for format string");
+                        return NULL;
+                    }
                     if (data[i]!='\0'){
                         i++;
                     }
