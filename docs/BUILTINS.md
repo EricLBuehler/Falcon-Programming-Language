@@ -1137,3 +1137,19 @@ Iterator must define ```__iter__``` method.
 
 ### Returns
 Return new ```bytearray```.
+
+
+______________________
+
+## ```function```
+Type of a function. The ```function``` type has the following "special" attributes:
+- ```__annotations__```
+- ```__doc__```
+- ```__args__```
+- ```__defaults__```
+
+### Notes
+```None```
+
+### Returns
+Does not return.
