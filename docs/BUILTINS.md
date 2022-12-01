@@ -43,6 +43,7 @@
 - ```ord```
 - ```chr```
 - ```unicode_name```
+- ```compile```
 
 ### Exceptions
 - ```Exception```
@@ -1162,3 +1163,22 @@ Type of a function. The ```function``` type has the following "special" attribut
 
 ### Returns
 Does not return.
+
+
+______________________
+
+## ```compile```
+Compile code snippet.
+
+```compile(snippet)```
+
+### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```snippet``` | ```str``` object containing code snippet    |
+
+### Notes
+```None```
+
+### Returns
+Return ```code``` object
