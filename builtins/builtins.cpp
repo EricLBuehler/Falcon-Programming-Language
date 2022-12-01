@@ -628,6 +628,11 @@ object* builtin_chr(object* self, object* args){
         return NULL; 
     }
 
+    if (*CAST_INT(intv)->val>=_cp_names_rev.size()){
+        vm_add_err(&ValueError, vm, "Code point value too large");
+        return NULL; 
+    }
+
     string s=codept_to_str(CAST_INT(intv)->val->to_int());
     FPLDECREF(intv);
     return str_new_fromstr(s);
@@ -670,7 +675,7 @@ object* builtin_unicode_name(object* self, object* args){
     }
     FPLDECREF(o);    
 
-    if (*CAST_INT(intv)->val>sizeof(_cp_names)){
+    if (*CAST_INT(intv)->val>=_cp_names_rev.size()){
         vm_add_err(&ValueError, vm, "Code point value too large");
         return NULL; 
     }
