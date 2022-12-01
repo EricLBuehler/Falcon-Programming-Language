@@ -568,13 +568,17 @@ object* builtin_bin(object* self, object* args){
     
     string s="0b";
 
+    string s_="";
+
     vector<long long> num=convert_str_to_intarr(CAST_INT(intv)->val->to_string());
     long long mask;
     for (int i=0; i<num.size(); i++){
         string binary=bitset<sizeof(long long)>(num[i]).to_string();
-        binary.erase(0, binary.find_first_not_of('0'));
-        s+=binary;
+        s_+=binary;
     }
+    s_.erase(0, s_.find_first_not_of('0'));
+
+    s+=s_;
 
     FPLDECREF(intv);
     return str_new_fromstr(s);
@@ -683,3 +687,5 @@ object* builtin_unicode_name(object* self, object* args){
     FPLDECREF(intv);
     return str_new_fromstr(s);
 }
+
+object* builtin_compile(object* self, object* args);

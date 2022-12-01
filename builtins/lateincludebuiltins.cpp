@@ -80,3 +80,48 @@ object* builtin_eval(object* self, object* args){
 
     return new_none();
 }
+
+object* builtin_compile(object* self, object* args){
+    object* str=dict_get_opti_deref(args, str_new_fromstr("string"));
+
+    string data=*CAST_STRING(str)->val;
+
+    Lexer lexer(data,kwds);
+    lexer.pos=Position(program);
+
+    Position end=lexer.tokenize();
+
+    Parser p=parser;
+    parser=Parser(lexer.tokens, data);
+    parse_ret ast=parser.parse();
+    parser=p;
+
+    if (ast.errornum>0){
+        cout<<ast.header<<endl;
+        cout<<ast.snippet<<endl;
+        cout<<ast.arrows<<endl;
+        printf("%s\n",ast.error);
+        FPLDECREF(str);
+        return NULL;
+    }
+
+    struct compiler* compiler = new_compiler();
+
+    string* g=glblfildata;
+    glblfildata=new string(data);
+    object* code=compile(compiler, ast, 0);
+    glblfildata=g;
+    
+    if (code==NULL){
+        cout<<parseretglbl.header<<endl;
+        cout<<parseretglbl.snippet<<endl;
+        cout<<parseretglbl.arrows<<endl;
+        printf("%s\n",parseretglbl.error);
+        FPLDECREF(str);
+        return NULL;
+    }
+    
+
+    FPLDECREF(str);
+    return code;
+}
