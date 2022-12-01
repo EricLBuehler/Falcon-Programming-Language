@@ -124,20 +124,16 @@ void fpl_startup(){
         }
 
         const nx_json* json=nx_json_parse_utf8((char*)config.c_str());
-        if (json==NULL){
-            goto jsonerr;
-        }
-        object* o = json_decode_object(json);
+        if (json!=NULL){
+            object* o = json_decode_object(json);
 
-        interpreter_load_config(o);
-        FPLDECREF(o);
+            interpreter_load_config(o);
+            FPLDECREF(o);
+        }
         
         cfgfile.close();
     }
-    jsonerr:
     
-    
-    return;
 }
 
 
