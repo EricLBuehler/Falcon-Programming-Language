@@ -8,7 +8,7 @@
 
 //Get name of unicode chr from codepoint
 string get_name_from_cp(int cp){
-    if (cp>=sizeof(_cp_names)){
+    if (cp>=_cp_names_rev.size()){
         return "";
     }
     return _cp_names[cp];
