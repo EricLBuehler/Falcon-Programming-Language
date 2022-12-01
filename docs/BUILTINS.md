@@ -1148,6 +1148,15 @@ Type of a function. The ```function``` type has the following "special" attribut
 - ```__args__```
 - ```__defaults__```
 
+```function(name, code, globals)```
+
+### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```name``` | name of function  |
+| ```code``` | code object for  function  |
+| ```globals``` | globals to use during execution of function  |
+
 ### Notes
 ```None```
 
