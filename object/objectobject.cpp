@@ -15,6 +15,7 @@ object* object_repr_(object* self){
     return str_new_fromstr(s);
 }
 object* object_init(object* self, object* args, object* kwargs){
+    FPLINCREF(self);
     return self;
 }
 

@@ -809,7 +809,7 @@ object* func_cmp(object* self, object* other, uint8_t type);
 object* func_call(object* self, object* args, object* callfunc);
 object* func_bool(object* self);
 object* func_call_nostack(object* self, object* args, object* kwargs);
-object* func_run(object* self, object* args, object* kwargs);
+object* func_init(object* self, object* args, object* kwargs);
 object* func_descrget(object* obj, object* self, object* owner);
 
 typedef struct FuncObject{
@@ -884,7 +884,7 @@ TypeObject FuncType={
     (getattrfunc)object_genericgetattr, //slot_getattr
     (setattrfunc)object_genericsetattr, //slot_setattr
 
-    0, //slot_init
+    func_init, //slot_init
     0, //slot_new
     (delfunc)func_del, //slot_del
 
@@ -3999,7 +3999,7 @@ object* type_call(object* self, object* args, object* kwargs){
         return NULL;
     }
     if (CAST_TYPE(self)->slot_new==NULL){
-        vm_add_err(&TypeError, vm, "Cannot create instances of type '%s'", CAST_TYPE(self)->name);
+        vm_add_err(&TypeError, vm, "Cannot create instances of type '%s'", CAST_TYPE(self)->name->c_str());
         return NULL;
     }
     

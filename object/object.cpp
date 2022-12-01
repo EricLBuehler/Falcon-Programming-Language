@@ -930,7 +930,7 @@ object* object_exit_with(object* self){
 }
 
 void interpreter_load_config(object* json){
-    object* o=dict_get_opti_deref(json, str_new_fromstr("TERMINAL_HAS_COLOR"));
+    object* o=dict_get_opti_deref(json, str_new_fromstr("TERMINAL_HAS_COLOR_SUPPORT"));
     if (o!=NULL && object_istype(o->type, &BoolType)){
         interpreter.has_color=istrue(o);
     }

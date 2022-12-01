@@ -22,6 +22,60 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     return obj;
 }
 
+object* func_init(object* self, object* args, object* kwargs){
+    int len=CAST_LIST(args)->size;
+    if (CAST_DICT(kwargs)->val->size()!=0){
+        vm_add_err(&ValueError, vm, "Expected no keyword arguments, got %d", CAST_DICT(kwargs)->val->size());
+        return NULL;
+    }
+    if (len!=3){
+        vm_add_err(&ValueError, vm, "Expected at 3 arguments, got %d", len);
+        return NULL;
+    }
+    CAST_FUNC(self)->dict=new_dict();
+    CAST_FUNC(self)->args=new_tuple();
+    CAST_FUNC(self)->kwargs=new_tuple();
+    CAST_FUNC(self)->argc=0;
+    CAST_FUNC(self)->closure=NULL;
+    CAST_FUNC(self)->functype=FUNCTION_NORMAL;
+    CAST_FUNC(self)->flags=FUNC_STRICTARGS;
+    CAST_FUNC(self)->stargs=new_tuple();
+    CAST_FUNC(self)->stkwargs=new_tuple();
+    CAST_FUNC(self)->annotations=new_dict();
+    CAST_FUNC(self)->isgen=false;
+    CAST_FUNC(self)->closure_annotations=NULL;
+    CAST_FUNC(self)->global_anno=vm->global_annotations;
+    CAST_FUNC(self)->doc=new_none();
+
+    if (!object_istype(list_index_int(args, 0)->type, &StrType)){
+        vm_add_err(&TypeError, vm, "Expected string type name, got type '%s'", list_index_int(args, 0)->type->name->c_str());
+        return NULL;
+    }
+
+    FPLINCREF(list_index_int(args, 0));
+
+    if (!object_istype(list_index_int(args, 1)->type, &StrType)){
+        vm_add_err(&TypeError, vm, "Expected code type, got type '%s'", list_index_int(args, 1)->type->name->c_str());
+        return NULL;
+    }
+
+    FPLINCREF(list_index_int(args, 1));
+
+    if (!object_istype(list_index_int(args, 2)->type, &StrType)){
+        vm_add_err(&TypeError, vm, "Expected dict type globals, got type '%s'", list_index_int(args, 2)->type->name->c_str());
+        return NULL;
+    }
+
+    FPLINCREF(list_index_int(args, 2));
+
+    CAST_FUNC(self)->code=list_index_int(args, 1);
+    CAST_FUNC(self)->name=list_index_int(args, 0);
+    CAST_FUNC(self)->globals=list_index_int(args, 2);
+
+    FPLINCREF(self);
+    return self;
+}
+
 object* func_call(object* self, object* args, object* kwargs){
     uint32_t argc=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
     uint32_t posargc=CAST_LIST(args)->size;

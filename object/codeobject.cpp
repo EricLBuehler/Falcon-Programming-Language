@@ -1,4 +1,5 @@
 object* code_init(object* self, object* args, object* kwargs){
+    FPLINCREF(self);
     return self;
 }
 
