@@ -863,8 +863,10 @@ static Mappings func_mappings{
 Method func_methods[]={{NULL,NULL}};
 GetSets func_getsets[]={{NULL,NULL}};
 OffsetMember func_offsets[]={{"__annotations__", offsetof(FuncObject, annotations), true}, \
-                            {"__doc__", offsetof(FuncObject, doc), true}, 
-                            {"__dict__", offsetof(FuncObject, dict), true}, {NULL}};
+                            {"__doc__", offsetof(FuncObject, doc), true}, \
+                            {"__dict__", offsetof(FuncObject, dict), true}, \
+                            {"__args__", offsetof(FuncObject, args), true}, \
+                            {"__defaults__", offsetof(FuncObject, kwargs), true}, {NULL}};
 
 TypeObject FuncType={
     0, //refcnt
