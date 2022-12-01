@@ -349,8 +349,13 @@ class Parser{
 
                     }
 
-                    if (segment.back()!='}'){
+                    if (data[i]!='}'){
                         this->add_parsing_error(ret, "SyntaxError: Expected '}' for format string");
+                        return NULL;
+                    }
+
+                    if (trim(segment).size()==0){
+                        this->add_parsing_error(ret, "SyntaxError: Empty expression in format string is not allowed");
                         return NULL;
                     }
                     if (data[i]!='\0'){
