@@ -234,6 +234,11 @@ void setup_builtins(){
     builtins[71]=(object*)&OverflowError;
     builtins[72]=(object*)&NotImplementedError;
     builtins[73]=(object*)&BytesarrayType;
+
+    object* compileargs=new_tuple();
+    tuple_append_noinc(compileargs, str_new_fromstr("string"));
+    object* compilekwargs=new_tuple();
+    builtins[74]=new_builtin((builtinfunc)builtin_compile, str_new_fromstr("ord"), compileargs, compilekwargs, 1, false);
 }
 
 object* new_builtin(builtinfunc function, object* name, object* args, object* kwargs, uint32_t argc, bool nargs){
