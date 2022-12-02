@@ -430,6 +430,42 @@ Return ```float``` or ```int``` as result.
 
 -----------------------
 
+## ```gcd```
+
+Find the greatest common divisor of 2 numbers using the Euclidian Algorithm.
+
+```math.gcd(a, b)```
+
+
+### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```a```    | input value a    |
+| ```b```    | input value b   |
+
+### Returns
+Return ```int``` as result.
+
+-----------------------
+
+## ```lcm```
+
+Find the least  common multiple of 2 numbers using the Euclidian Algorithm.
+
+```math.lcm(a, b)```
+
+
+### Arguments
+| Argument      | Information       |
+| ------------- | ----------------- |
+| ```a```    | input value a    |
+| ```b```    | input value b   |
+
+### Returns
+Return ```int``` as result.
+
+-----------------------
+
 ## ```pi```
 
 Constant for pi.
