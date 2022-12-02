@@ -158,7 +158,7 @@ class Parser{
         }
 
         bool isname_literal(nodetype type){
-            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_NONLOCAL  || type==N_MULTIIDENT || type==N_DOT || type==N_SUBSCR || type==N_SLICE || type==N_DOTCALL){
+            if (type==N_IDENT || type==N_GLBL_IDENT || type==N_NONLOCAL  || type==N_MULTIIDENT || type==N_DOT || type==N_SUBSCR || type==N_SLICE){
                 return true;
             }
             return false;
@@ -1496,7 +1496,7 @@ class Parser{
                 kwargs->push_back(expr);
             }
             else {
-                if (expr->type!=N_IDENT){
+                if (isname(expr->type)){
                     this->backadvance();
                     this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                     this->advance();
@@ -1554,7 +1554,7 @@ class Parser{
                         delete unpackkwargs;
                         return NULL;
                     }
-                    if (expr->type!=N_IDENT){
+                    if (isname(expr->type)){
                         this->backadvance();
                         this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
@@ -2001,7 +2001,7 @@ class Parser{
                         delete kwargs;
                         return NULL;
                     }
-                    if (expr->type!=N_IDENT){
+                    if (isname(expr->type)){
                         this->backadvance();
                         this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
@@ -2656,7 +2656,7 @@ class Parser{
                         delete kwargs;
                         return NULL;
                     }
-                    if (expr->type!=N_IDENT){
+                    if (isname(expr->type)){
                         this->backadvance();
                         this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
