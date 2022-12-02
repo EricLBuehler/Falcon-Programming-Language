@@ -66,6 +66,11 @@ object* new_sys_module(){
     dict_set_noinc_noret(dict, str_new_fromstr("argv"), argv);
     
     dict_set_noinc_noret(dict, str_new_fromstr("version"), str_new_fromstr(FPL_VERSION));
+    
+    FPLINCREF(Stdout);
+    FPLINCREF(Stdin);
+    dict_set_noinc_noret(dict, str_new_fromstr("stdout"), Stdout);
+    dict_set_noinc_noret(dict, str_new_fromstr("stdin"), Stdin);
 
     return module_new_fromdict(dict, str_new_fromstr("sys"));
 }
