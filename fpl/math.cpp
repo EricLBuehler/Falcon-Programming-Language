@@ -548,68 +548,40 @@ object* math_todeg(object* self, object* args){
 }
 
 
-long gcd(long a, long b){
+BigInt gcd(BigInt a, BigInt b){
     if (a == 0)
         return b;
     return gcd(b % a, a);
 }
 
 object* math_gcd(object* self, object* args){
-    object* a_=dict_get_opti_deref(args, str_new_fromstr("a"));
-    if (!object_istype(a_->type, &IntType)){
-        vm_add_err(&TypeError, vm, "Expected int, got '%s'", a_->type->name->c_str());
+    object* a=dict_get_opti_deref(args, str_new_fromstr("a"));
+    if (!object_istype(a->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", a->type->name->c_str());
         return NULL; 
     }
-    object* b_=dict_get_opti_deref(args, str_new_fromstr("b"));
-    if (!object_istype(b_->type, &IntType)){
-        vm_add_err(&TypeError, vm, "Expected int, got '%s'", b_->type->name->c_str());
+    object* b=dict_get_opti_deref(args, str_new_fromstr("b"));
+    if (!object_istype(b->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", b->type->name->c_str());
         return NULL; 
     }
     
-
-    if (*CAST_INT(a_)->val>LONG_MAX || *CAST_INT(a_)->val<LONG_MIN){
-        vm_add_err(&OverflowError, vm, "Length out of range of C long");
-        return NULL;
-    }
-
-    if (*CAST_INT(b_)->val>LONG_MAX || *CAST_INT(b_)->val<LONG_MIN){
-        vm_add_err(&OverflowError, vm, "Length out of range of C long");
-        return NULL;
-    }    
-
-    long a=CAST_INT(a_)->val->to_long();
-    long b=CAST_INT(b_)->val->to_long();
-    
-    return new_int_fromint(gcd(a,b));
+    return new_int_frombigint(new BigInt(gcd(*CAST_INT(a)->val,*CAST_INT(b)->val)));
 }
 
 object* math_lcm(object* self, object* args){
-    object* a_=dict_get_opti_deref(args, str_new_fromstr("a"));
-    if (!object_istype(a_->type, &IntType)){
-        vm_add_err(&TypeError, vm, "Expected int, got '%s'", a_->type->name->c_str());
+    object* a=dict_get_opti_deref(args, str_new_fromstr("a"));
+    if (!object_istype(a->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", a->type->name->c_str());
         return NULL; 
     }
-    object* b_=dict_get_opti_deref(args, str_new_fromstr("b"));
-    if (!object_istype(b_->type, &IntType)){
-        vm_add_err(&TypeError, vm, "Expected int, got '%s'", b_->type->name->c_str());
+    object* b=dict_get_opti_deref(args, str_new_fromstr("b"));
+    if (!object_istype(b->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", b->type->name->c_str());
         return NULL; 
     }
     
-
-    if (*CAST_INT(a_)->val>LONG_MAX || *CAST_INT(a_)->val<LONG_MIN){
-        vm_add_err(&OverflowError, vm, "Length out of range of C long");
-        return NULL;
-    }
-
-    if (*CAST_INT(b_)->val>LONG_MAX || *CAST_INT(b_)->val<LONG_MIN){
-        vm_add_err(&OverflowError, vm, "Length out of range of C long");
-        return NULL;
-    }    
-
-    long a=CAST_INT(a_)->val->to_long();
-    long b=CAST_INT(b_)->val->to_long();
-    
-    return new_int_fromint((a*b)/gcd(a,b));
+    return new_int_frombigint(new BigInt((*CAST_INT(a)->val * *CAST_INT(b)->val)/gcd(*CAST_INT(a)->val,*CAST_INT(b)->val)));
 }
 
 object* new_math_module(){
