@@ -138,10 +138,12 @@ object* builtin_round(object* self, object* args){
 }
 
 object* builtin_globals(object* self, object* args){
+    FPLINCREF(vm->globals);
     return vm->globals;
 }
     
 object* builtin_locals(object* self, object* args){
+    FPLINCREF(callstack_head(vm->callstack).locals);
     return callstack_head(vm->callstack).locals;
 }
     
@@ -542,17 +544,26 @@ object* builtin_hasattr(object* self, object* args){
 
 object* builtin_dir(object* self, object* args){
     object* o=dict_get_opti_deref(args, str_new_fromstr("object"));
-    object* v=str_new_fromstr("__dict__");
-    object* dict=object_getattr(o, v);
-    ERROR_RET(dict);
+
+    object* dict;
+    if (object_istype(o->type, &NoneType)){
+        FPLINCREF(callstack_head(vm->callstack).locals);
+        dict=callstack_head(vm->callstack).locals;
+    }
+    else{
+        object* v=str_new_fromstr("__dict__");
+        dict=object_getattr(o, v);
+        ERROR_RET(dict);
+        FPLDECREF(v);
+    }
     
-    object* list=new_list();
+    object*  list=new_list();
     for (object* o: *CAST_DICT(dict)->keys){
         list_append(list, o);
     }
-    FPLDECREF(v);
-    FPLDECREF(dict);
+    
     FPLDECREF(o);
+    FPLDECREF(dict);
     return list;
 }
 
