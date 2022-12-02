@@ -5,17 +5,75 @@ object* builtin_print(object* self, object* args){
     object* tupargs=dict_get_opti_deref(args, str_new_fromstr("args"));
     object* sep_=dict_get_opti_deref(args, str_new_fromstr("sep"));
     object* end=dict_get_opti_deref(args, str_new_fromstr("end"));
-    string sep=object_cstr(sep_);
+    object* file=dict_get_opti_deref(args, str_new_fromstr("file"));
+
+    object* o=object_getattr_deref(file, str_new_fromstr("read"));
+    if (o==NULL){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+        vm_add_err(&TypeError, vm, "Expected file-like object, got '%s' object", file->type->name->c_str());
+        FPLDECREF(sep_);
+        FPLDECREF(end);
+        FPLDECREF(tupargs);
+        FPLDECREF(file);
+        return NULL;
+    }
+    FPLDECREF(o);
+
+    o=object_getattr_deref(file, str_new_fromstr("flush"));
+    if (o==NULL){
+        FPLDECREF(vm->exception);
+        vm->exception=NULL;
+        vm_add_err(&TypeError, vm, "Expected file-like object, got '%s' object", file->type->name->c_str());
+        FPLDECREF(sep_);
+        FPLDECREF(end);
+        FPLDECREF(tupargs);
+        FPLDECREF(file);
+        return NULL;
+    }
+    FPLDECREF(o);
+
+    object* write=object_getattr_deref(file, str_new_fromstr("write"));
+    FPLDECREF(file);
+
+    
+    object* args_=new_list();
+    tuple_append_noinc(args_, object_str(sep_));
+    
     for (int n=0; n<CAST_TUPLE(tupargs)->size; n++){
-        cout<<object_cstr(tuple_index_int(tupargs, n));
+        object* args_=new_list();
+        tuple_append_noinc(args_, object_str(tuple_index_int(tupargs, n)));
+        object* res=object_call_nokwargs(write, args_);
+        if (res==NULL){
+            return NULL;
+        }
+        FPLDECREF(res);
+        FPLDECREF(args_);
         if (n+1!=CAST_TUPLE(tupargs)->size){
-            cout<<sep;
+            object* res=object_call_nokwargs(write, args_);
+            if (res==NULL){
+                return NULL;
+            }
+            FPLDECREF(res);
         }
     }
-    printf("%s",object_cstr(end).c_str());
+    
+    FPLDECREF(args_);
+
+    args_=new_list();
+    tuple_append_noinc(args_, object_str(end));
+    object* res=object_call_nokwargs(write, args_);
+    if (res==NULL){
+        return NULL;
+    }
+    FPLDECREF(res);
+    FPLDECREF(args_);
+
+
     FPLDECREF(sep_);
     FPLDECREF(end);
     FPLDECREF(tupargs);
+    FPLDECREF(write);
     return new_none();
 }
 
@@ -89,6 +147,7 @@ object* builtin_id(object* self, object* args){
 object* builtin_input(object* self, object* args){
     object* obj=dict_get_opti_deref(args, str_new_fromstr("object"));
     cout<<object_cstr(obj);
+
     string s="";
     getline(cin,s);
     if(!cin){
