@@ -3788,7 +3788,7 @@ class Parser{
             this->multi=b;
             this->anno=anno;
 
-            if (!this->expr->type==N_DOTASSIGN){
+            if (!isname(expr->type)){
                 this->add_parsing_error(ret, "Expected name, got non-name");
                 return NULL;
             }
