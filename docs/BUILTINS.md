@@ -71,7 +71,7 @@ ______________________
 ## ```print```
 Print objects with specified seperator and end.
 
-```print(..., sep=' ', end='\n')```
+```print(..., sep=' ', end='\n', file=sys.stdout)```
 
 ### Arguments
 | Argument      | Information       |
@@ -79,6 +79,7 @@ Print objects with specified seperator and end.
 | ```...```    | objects to print     |
 | ```sep```  | object to print that seperates objects |
 | ```end``` | object to print last     |
+| ```file``` | file-like object to print to     |
 
 ### Notes
 Calls ```__str__``` on all objects passed before printing.

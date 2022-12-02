@@ -37,3 +37,13 @@ Must define
 
 Can define
 - ```__next__```
+
+## Bytes-like
+Must define
+- ```__bytes__```
+
+## File-like
+Must define
+- ```write```
+- ```read```
+- ```flush```
