@@ -204,6 +204,7 @@ void setup_builtins(){
     object* dirargs=new_tuple();
     tuple_append_noinc(dirargs, str_new_fromstr("object"));
     object* dirkwargs=new_tuple();
+    tuple_append_noinc(dirkwargs, new_none());
     builtins[65]=new_builtin((builtinfunc)builtin_dir, str_new_fromstr("dir"), dirargs, dirkwargs, 1, false);
 
     object* binargs=new_tuple();
