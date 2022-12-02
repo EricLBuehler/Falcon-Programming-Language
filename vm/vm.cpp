@@ -519,7 +519,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                     object* closure=CAST_FUNC(frame.callable)->closure;
                     //Check if name in closure
                     if (find(CAST_DICT(closure)->keys->begin(), CAST_DICT(closure)->keys->end(), name) != CAST_DICT(closure)->keys->end()){
-                        FPLINCREF(CAST_DICT(frame.locals)->val->at(name));
+                        FPLINCREF(CAST_DICT(closure)->val->at(name));
                         add_dataframe(vm, vm->objstack, CAST_DICT(closure)->val->at(name));
                         DISPATCH();
                     }
@@ -2081,7 +2081,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 strs.push_back(object_cstr(o));
                 FPLDECREF(o);
             }
-            
             for (int i=strs.size(); i>0; i--){
                 s+=strs.at(i-1);
             }
