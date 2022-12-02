@@ -41,14 +41,14 @@ object* builtin_print(object* self, object* args){
     tuple_append_noinc(args_, object_str(sep_));
     
     for (int n=0; n<CAST_TUPLE(tupargs)->size; n++){
-        object* args_=new_list();
-        tuple_append_noinc(args_, object_str(tuple_index_int(tupargs, n)));
-        object* res=object_call_nokwargs(write, args_);
+        object* args_itm=new_list();
+        tuple_append_noinc(args_itm, object_str(tuple_index_int(tupargs, n)));
+        object* res=object_call_nokwargs(write, args_itm);
         if (res==NULL){
             return NULL;
         }
         FPLDECREF(res);
-        FPLDECREF(args_);
+        FPLDECREF(args_itm);
         if (n+1!=CAST_TUPLE(tupargs)->size){
             object* res=object_call_nokwargs(write, args_);
             if (res==NULL){
