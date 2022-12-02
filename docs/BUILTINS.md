@@ -1009,14 +1009,15 @@ Return the sum.
 ______________________
 
 ## ```dir```
-Get the keys of the ```__dict__``` of an object
+Get the keys of the ```__dict__``` of an object, or the keys of locals().
 
-```dir(object)```
+```dir(object)``` - Default
+```dir()``` - Get the keys of locals().
 
 ### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
-| ```object``` | object to get ```__dict__```  |
+| ```object``` | object to get ```__dict__```.   |
 
 ### Notes
 ```None```
