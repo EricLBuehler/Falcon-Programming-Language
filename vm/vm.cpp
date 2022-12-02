@@ -254,6 +254,7 @@ object* import_name(string data, object* name){
     struct vm* vm_=::vm;
     struct vm* vm=new_vm(interpreter.vm_map->size(), code, compiler->instructions, &data); //data is still in scope...
     interpreter_add_vm(interpreter.vm_map->size(), vm);
+    ::vm=vm;
     
     ::vm->globals=new_dict();
     FPLINCREF(::vm->globals);
@@ -263,7 +264,6 @@ object* import_name(string data, object* name){
     ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
 
     object* ret=run_vm(code, &::vm->ip);
-
     ERROR_RET(ret);
 
     FPLINCREF(::callstack_head(vm->callstack).locals);
