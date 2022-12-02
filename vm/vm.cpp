@@ -2482,11 +2482,11 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* expr2=pop_dataframe(vm->objstack);
             object* left=pop_dataframe(vm->objstack);
             if (istrue(object_bool(left))){
-                add_dataframe(vm, vm->objstack, expr2);
+                add_dataframe(vm, vm->objstack, expr1);
                 FPLDECREF(expr1);
             }
             else{
-                add_dataframe(vm, vm->objstack, expr1);
+                add_dataframe(vm, vm->objstack, expr2);
                 FPLDECREF(expr2);
             }
             DISPATCH();
