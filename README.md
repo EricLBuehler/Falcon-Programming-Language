@@ -211,6 +211,8 @@ False
 
 </details>
 
+Other [examples](https://github.com/EricLBuehler/Falcon-Programming-Language/tree/main/example).
+
 ### Usage ###
 Build Falcon in debug mode
 ```./build.cmd```
