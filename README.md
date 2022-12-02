@@ -211,7 +211,7 @@ False
 
 </details>
 
-Other [examples](https://github.com/EricLBuehler/Falcon-Programming-Language/tree/main/example).
+Click [here](https://github.com/EricLBuehler/Falcon-Programming-Language/tree/main/example) for more example programs.
 
 ### Usage ###
 Build Falcon in debug mode
