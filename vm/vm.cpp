@@ -2414,7 +2414,12 @@ object* run_vm(object* codeobj, uint32_t* ip){
             object* res=object_in(left, right);
 
             if (res!=NULL){
-                add_dataframe(vm, vm->objstack, res);
+                if (!istrue(res)){
+                    add_dataframe(vm, vm->objstack, new_bool_true());
+                }
+                else{
+                    add_dataframe(vm, vm->objstack, new_bool_false());
+                }
                 FPLDECREF(right);
                 FPLDECREF(left);
                 DISPATCH();
