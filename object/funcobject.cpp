@@ -162,7 +162,9 @@ object* func_call(object* self, object* args, object* kwargs){
     
     FPLDECREF(callstack_head(vm->callstack).locals);
     
-    pop_callframe(vm->callstack);
+    if (ret!=NULL){
+        pop_callframe(vm->callstack);
+    }
     
     vm->globals=globals;
     vm->global_annotations=global_anno;
