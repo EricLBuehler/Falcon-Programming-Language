@@ -321,3 +321,7 @@ object* file_exit(object* self){
     CAST_FILE(self)->open=false;
     return new_none();
 }
+
+object* file_get_encoding(object* self){
+    return str_new_fromstr(string(CAST_FILE(self)->encoding));
+}
