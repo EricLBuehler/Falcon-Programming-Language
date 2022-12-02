@@ -156,7 +156,7 @@ inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
 }
 
 void print_traceback(){
-    for (int i=0; i<vm->callstack->size; i++){    
+    for (int i=0; i<vm->callstack->size; i++){
         struct callframe callframe=vm->callstack->data[i];
         object* tup=dict_get_opti_deref(CAST_CODE(callframe.code)->co_detailed_lines, new_int_fromint((*callframe.ip)));
         int line_=CAST_INT(tuple_index_int(tup, 2))->val->to_int();
@@ -2742,9 +2742,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 return NULL;
             }
             cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
-        }
-        if (vm->callstack->size>1){
-            return NULL;
         }
         
         print_traceback();
