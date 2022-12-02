@@ -170,6 +170,9 @@ TypeObject OSError;
 TypeObject OverflowError;
 TypeObject NotImplementedError;
 
+object* Stdout;
+object* Stdin;
+
 bool setup_memory_error=false;
 bool hit_memory_error=false;
 
@@ -535,6 +538,7 @@ enum opcode{
 #define CAST_BYTESITER(obj) ((BytesIterObject*)obj)
 #define CAST_BYTESARRAY(obj) ((BytesarrayObject*)obj)
 #define CAST_BYTESARRAYITER(obj) ((BytesarrayIterObject*)obj)
+#define CAST_CWRAPPERFILE(obj) ((CWrapperFileObject*)obj)
 
 #define object_istype(this, other) (this==other)
 
@@ -610,6 +614,7 @@ ostream& operator<<(ostream& os, TypeObject* o){
 #include "setobject.cpp"
 #include "bytesobject.cpp"
 #include "bytesarrayobject.cpp"
+#include "cwrapperfileobject.cpp"
 
 
 void setup_types_consts(){
@@ -666,6 +671,10 @@ void setup_types_consts(){
     setup_bytesiter_type();
     setup_bytesarray_type();
     setup_bytesarrayiter_type();
+    setup_cwrapperfile_type();
+
+    Stdout=cwrapperfile_new_fromfile(stdout, false, true);
+    Stdin=cwrapperfile_new_fromfile(stdin, true, false);
 
     setup_builtins();
     
@@ -841,4 +850,9 @@ void setup_types_consts(){
     inherit_type_dict(&BytesarrayIterType); 
     setup_type_offsets(&BytesarrayIterType);
     setup_type_getsets(&BytesarrayIterType);
+
+    inherit_type_dict(&CWrapperFileType); 
+    setup_type_methods(&CWrapperFileType);
+    setup_type_offsets(&CWrapperFileType);
+    setup_type_getsets(&CWrapperFileType);
 }

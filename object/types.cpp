@@ -577,7 +577,6 @@ TypeObject CodeType={
 void setup_code_type(){
     CodeType=(*(TypeObject*)finalize_type(&CodeType));
     CodeType.slot_new=NULL;
-    fplbases.push_back(&CodeType);
 }
 
 
@@ -1088,7 +1087,6 @@ TypeObject BuiltinType={
 void setup_builtin_type(){
     BuiltinType=(*(TypeObject*)finalize_type(&BuiltinType));
     BuiltinType.slot_new=NULL;
-    fplbases.push_back(&BuiltinType);
 }
 
 
@@ -1539,7 +1537,6 @@ TypeObject CWrapperType={
 void setup_cwrapper_type(){
     CWrapperType=(*(TypeObject*)finalize_type(&CWrapperType));
     CWrapperType.slot_new=NULL;
-    fplbases.push_back(&CWrapperType);
 }
 
 object* slotwrapper_new_fromfunc(getter get, setter set, string name);
@@ -1793,7 +1790,6 @@ TypeObject ListIterType={
 void setup_listiter_type(){
     ListIterType=(*(TypeObject*)finalize_type(&ListIterType));
     ListIterType.slot_new=NULL;
-    fplbases.push_back(&ListIterType);
 }
 
 
@@ -1882,7 +1878,6 @@ TypeObject TupleIterType={
 void setup_tupleiter_type(){
     TupleIterType=(*(TypeObject*)finalize_type(&TupleIterType));
     TupleIterType.slot_new=NULL;
-    fplbases.push_back(&TupleIterType);
 }
 
 
@@ -1970,7 +1965,6 @@ TypeObject DictIterType={
 void setup_dictiter_type(){
     DictIterType=(*(TypeObject*)finalize_type(&DictIterType));
     DictIterType.slot_new=NULL;
-    fplbases.push_back(&DictIterType);
 }
 
 void str_iter_del(object* self);
@@ -2056,7 +2050,6 @@ TypeObject StrIterType={
 void setup_striter_type(){
     StrIterType=(*(TypeObject*)finalize_type(&StrIterType));
     StrIterType.slot_new=NULL;
-    fplbases.push_back(&StrIterType);
 }
 
 
@@ -2143,7 +2136,6 @@ TypeObject ModuleType={
 void setup_module_type(){
     ModuleType=(*(TypeObject*)finalize_type(&ModuleType));
     ModuleType.slot_new=NULL;
-    fplbases.push_back(&ModuleType);
 }
 
 
@@ -2587,13 +2579,11 @@ TypeObject OffsetWrapperReadonlyType={
 void setup_offsetwrapper_type(){
     OffsetWrapperType=(*(TypeObject*)finalize_type(&OffsetWrapperType));
     OffsetWrapperType.slot_new=NULL;
-    fplbases.push_back(&OffsetWrapperType);
 }
 
 void setup_offsetwrapperreadonly_type(){
     OffsetWrapperReadonlyType=(*(TypeObject*)finalize_type(&OffsetWrapperReadonlyType));
     OffsetWrapperReadonlyType.slot_new=NULL;
-    fplbases.push_back(&OffsetWrapperReadonlyType);
 }
 
 
@@ -3523,7 +3513,6 @@ TypeObject SetIterType={
 void setup_setiter_type(){
     SetIterType=(*(TypeObject*)finalize_type(&SetIterType));
     SetIterType.slot_new=NULL;
-    fplbases.push_back(&SetIterType);
 }
 
 object* bytes_new(object* type, object* args, object* kwargs);
@@ -3710,7 +3699,6 @@ TypeObject BytesIterType={
 void setup_bytesiter_type(){
     BytesIterType=(*(TypeObject*)finalize_type(&BytesIterType));
     BytesIterType.slot_new=NULL;
-    fplbases.push_back(&BytesIterType);
 }
 
 
@@ -3910,7 +3898,100 @@ TypeObject BytesarrayIterType={
 void setup_bytesarrayiter_type(){
     BytesarrayIterType=(*(TypeObject*)finalize_type(&BytesarrayIterType));
     BytesarrayIterType.slot_new=NULL;
-    fplbases.push_back(&BytesarrayIterType);
+}
+
+
+typedef struct CWrapperFileObject{
+    OBJHEAD_EXTRA
+    FILE* file;
+    bool readable;
+    bool writable;
+}CWrapperFileObject;
+
+
+
+static NumberMethods cwrapperfile_num_methods{
+    0, //slot_add
+    0, //slot_sub
+    0, //slot_mul
+    0, //slot_div
+    0, //slot_mod
+    0, //slot_pow
+    0, //slot_and
+    0, //slot_or
+    0, //slot_lshift
+    0, //slot_rshift
+    0, //slot_fldiv
+    0, //slot_xor
+
+    0, //slot_neg
+    0, //slot_not
+    0, //slot_abs
+
+    0, //slot_bool
+};
+static Mappings cwrapperfile_mappings{
+    0, //slot_get
+    0, //slot_set
+    0, //slot_len
+};
+
+object* cwrapperfile_new_fromfile(FILE* file, bool readable, bool writable);
+object* cwrapperfile_read_meth(object* selftp, object* args, object* kwargs);
+object* cwrapperfile_write_meth(object* selftp, object* args, object* kwargs);
+object* cwrapperfile_flush_meth(object* selftp, object* args, object* kwargs);
+
+Method cwrapperfile_methods[]={{"read", (cwrapperfunc)cwrapperfile_read_meth}, {"write", (cwrapperfunc)cwrapperfile_write_meth}, \
+                            {"flush", (cwrapperfunc)cwrapperfile_flush_meth}, {NULL,NULL}};
+GetSets cwrapperfile_getsets[]={{"encoding", (getter)file_get_encoding, 0}, {NULL,NULL}};
+OffsetMember cwrapperfile_offsets[]={{NULL}};
+
+TypeObject CWrapperFileType={
+    0, //refcnt
+    0, //ob_prev
+    0, //ob_next
+    0, //gen
+    &TypeType, //type
+    new string("CWrapperFile"), //name
+    sizeof(CWrapperFileObject), //size
+    0, //var_base_size
+    false, //gc_trackable
+    NULL, //bases
+    0, //dict_offset
+    NULL, //dict
+    0, //slot_getattr
+    0, //slot_setattr
+
+    0, //slot_init
+    0, //slot_new
+    0, //slot_del
+
+    0, //slot_next
+    0, //slot_iter
+
+    0, //slot_repr
+    0, //slot_str
+    0, //slot_call
+
+    &cwrapperfile_num_methods, //slot_number
+    &cwrapperfile_mappings, //slot_mapping
+
+    cwrapperfile_methods, //slot_methods
+    cwrapperfile_getsets, //slot_getsets
+    cwrapperfile_offsets, //slot_offsests
+
+    0, //slot_cmp
+
+    0, //slot_descrget
+    0, //slot_descrset
+
+    0, //slot_enter
+    0, //slot_exit
+};
+
+void setup_cwrapperfile_type(){
+    CWrapperFileType=(*(TypeObject*)finalize_type(&CWrapperFileType));
+    CWrapperFileType.slot_new=NULL;
 }
 
 
