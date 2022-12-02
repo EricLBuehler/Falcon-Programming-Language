@@ -532,8 +532,8 @@ object* math_todeg(object* self, object* args){
     
     FPLDECREF(val_);
     
-    if (val==NULL || !object_istype(val->type, &IntType)){
-        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to int", val->type->name->c_str());
+    if (val==NULL || !object_istype(val->type, &FloatType)){
+        vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
     }
 
@@ -545,6 +545,71 @@ object* math_todeg(object* self, object* args){
         return new_int_fromint(ires);
     }
     return new_float_fromdouble(res);
+}
+
+
+int gcd(int a, int b){
+    if (a == 0)
+        return b;
+    return gcd(b % a, a);
+}
+
+object* math_gcd(object* self, object* args){
+    object* a_=dict_get_opti_deref(args, str_new_fromstr("a"));
+    if (!object_istype(a_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", a_->type->name->c_str());
+        return NULL; 
+    }
+    object* b_=dict_get_opti_deref(args, str_new_fromstr("b"));
+    if (!object_istype(b_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", b_->type->name->c_str());
+        return NULL; 
+    }
+    
+
+    if (*CAST_INT(a_)->val>INT_MAX || *CAST_INT(a_)->val<INT_MIN){
+        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+        return NULL;
+    }
+
+    if (*CAST_INT(b_)->val>INT_MAX || *CAST_INT(b_)->val<INT_MIN){
+        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+        return NULL;
+    }    
+
+    int a=CAST_INT(a_)->val->to_int();
+    int b=CAST_INT(b_)->val->to_int();
+    
+    return new_int_fromint(gcd(a,b));
+}
+
+object* math_lcm(object* self, object* args){
+    object* a_=dict_get_opti_deref(args, str_new_fromstr("a"));
+    if (!object_istype(a_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", a_->type->name->c_str());
+        return NULL; 
+    }
+    object* b_=dict_get_opti_deref(args, str_new_fromstr("b"));
+    if (!object_istype(b_->type, &IntType)){
+        vm_add_err(&TypeError, vm, "Expected int, got '%s'", b_->type->name->c_str());
+        return NULL; 
+    }
+    
+
+    if (*CAST_INT(a_)->val>INT_MAX || *CAST_INT(a_)->val<INT_MIN){
+        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+        return NULL;
+    }
+
+    if (*CAST_INT(b_)->val>INT_MAX || *CAST_INT(b_)->val<INT_MIN){
+        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+        return NULL;
+    }    
+
+    int a=CAST_INT(a_)->val->to_int();
+    int b=CAST_INT(b_)->val->to_int();
+    
+    return new_int_fromint((a*b)/gcd(a,b));
 }
 
 object* new_math_module(){
@@ -708,6 +773,20 @@ object* new_math_module(){
     object* todegkwargs=new_tuple();
     object* todeg=new_builtin(math_todeg, str_new_fromstr("todeg"), todegargs, todegkwargs, 1, false);
     dict_set_noinc_noret(dict, str_new_fromstr("todeg"), todeg); 
+
+    object* gcdargs=new_tuple();
+    tuple_append_noinc(gcdargs, str_new_fromstr("a"));
+    tuple_append_noinc(gcdargs, str_new_fromstr("b"));
+    object* gcdkwargs=new_tuple();
+    object* gcd=new_builtin(math_gcd, str_new_fromstr("gcd"), gcdargs, gcdkwargs, 2, false);
+    dict_set_noinc_noret(dict, str_new_fromstr("gcd"), gcd); 
+
+    object* lcmargs=new_tuple();
+    tuple_append_noinc(lcmargs, str_new_fromstr("a"));
+    tuple_append_noinc(lcmargs, str_new_fromstr("b"));
+    object* lcmkwargs=new_tuple();
+    object* lcm=new_builtin(math_lcm, str_new_fromstr("lcm"), lcmargs, lcmkwargs, 2, false);
+    dict_set_noinc_noret(dict, str_new_fromstr("lcm"), lcm); 
 
 
     dict_set_noinc_noret(dict, str_new_fromstr("pi"), new_float_fromdouble(M_PI));
