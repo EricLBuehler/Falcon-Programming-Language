@@ -111,6 +111,11 @@ object* builtin_compile(object* self, object* args){
     glblfildata=new string(data);
     object* code=compile(compiler, ast, 0);
     glblfildata=g;
+
+    FPLDECREF(CAST_CODE(code)->co_file);
+    object* o=dict_get_opti_deref(args, str_new_fromstr("name"));
+    CAST_CODE(code)->co_file=object_repr(o);
+    FPLDECREF(o);
     
     if (code==NULL){
         cout<<parseretglbl.header<<endl;
