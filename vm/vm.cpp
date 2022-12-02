@@ -164,7 +164,7 @@ void print_traceback(){
         int endcol=CAST_INT(tuple_index_int(tup, 1))->val->to_int();
         FPLDECREF(tup);
 
-        cout<<"In file '"+object_cstr(CAST_CODE(callframe.code)->co_file)+"', line "+to_string(line_+1)+", in "+(*callframe.name)<<endl;
+        cout<<"In file "+object_cstr(CAST_CODE(callframe.code)->co_file)+", line "+to_string(line_+1)+", in "+(*callframe.name)<<endl;
         
         int line=0;
         int target=line_;
