@@ -1171,12 +1171,13 @@ ______________________
 ## ```compile```
 Compile code snippet.
 
-```compile(snippet)```
+```compile(snippet, name)```
 
 ### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
 | ```snippet``` | ```str``` object containing code snippet    |
+| ```name``` | ```str``` object contaiing the name for the code snippet    |
 
 ### Notes
 ```None```
