@@ -54,14 +54,14 @@ object* func_init(object* self, object* args, object* kwargs){
 
     FPLINCREF(list_index_int(args, 0));
 
-    if (!object_istype(list_index_int(args, 1)->type, &StrType)){
+    if (!object_istype(list_index_int(args, 1)->type, &CodeType)){
         vm_add_err(&TypeError, vm, "Expected code type, got type '%s'", list_index_int(args, 1)->type->name->c_str());
         return NULL;
     }
 
     FPLINCREF(list_index_int(args, 1));
 
-    if (!object_istype(list_index_int(args, 2)->type, &StrType)){
+    if (!object_istype(list_index_int(args, 2)->type, &DictType)){
         vm_add_err(&TypeError, vm, "Expected dict type globals, got type '%s'", list_index_int(args, 2)->type->name->c_str());
         return NULL;
     }
