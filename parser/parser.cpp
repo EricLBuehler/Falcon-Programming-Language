@@ -1496,7 +1496,7 @@ class Parser{
                 kwargs->push_back(expr);
             }
             else {
-                if (isname(expr->type)){
+                if (expr->type==N_DOTASSIGN){
                     this->backadvance();
                     this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                     this->advance();
@@ -1554,7 +1554,7 @@ class Parser{
                         delete unpackkwargs;
                         return NULL;
                     }
-                    if (isname(expr->type)){
+                    if (expr->type==N_DOTASSIGN){
                         this->backadvance();
                         this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
@@ -2001,7 +2001,7 @@ class Parser{
                         delete kwargs;
                         return NULL;
                     }
-                    if (isname(expr->type)){
+                    if (expr->type==N_DOTASSIGN){
                         this->backadvance();
                         this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
@@ -2656,7 +2656,7 @@ class Parser{
                         delete kwargs;
                         return NULL;
                     }
-                    if (isname(expr->type)){
+                    if (expr->type==N_DOTASSIGN){
                         this->backadvance();
                         this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
@@ -3788,7 +3788,7 @@ class Parser{
             this->multi=b;
             this->anno=anno;
 
-            if (!this->isname(expr->type)){
+            if (!this->expr->type==N_DOTASSIGN){
                 this->add_parsing_error(ret, "Expected name, got non-name");
                 return NULL;
             }
