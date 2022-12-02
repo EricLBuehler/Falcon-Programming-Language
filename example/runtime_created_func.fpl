@@ -1,0 +1,1 @@
+print(type(lambda {})("func", compile("print(1+2)","ABC"), {})())
