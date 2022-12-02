@@ -548,7 +548,7 @@ object* math_todeg(object* self, object* args){
 }
 
 
-int gcd(int a, int b){
+long gcd(long a, long b){
     if (a == 0)
         return b;
     return gcd(b % a, a);
@@ -567,18 +567,18 @@ object* math_gcd(object* self, object* args){
     }
     
 
-    if (*CAST_INT(a_)->val>INT_MAX || *CAST_INT(a_)->val<INT_MIN){
-        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+    if (*CAST_INT(a_)->val>LONG_MAX || *CAST_INT(a_)->val<LONG_MIN){
+        vm_add_err(&OverflowError, vm, "Length out of range of C long");
         return NULL;
     }
 
-    if (*CAST_INT(b_)->val>INT_MAX || *CAST_INT(b_)->val<INT_MIN){
-        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+    if (*CAST_INT(b_)->val>LONG_MAX || *CAST_INT(b_)->val<LONG_MIN){
+        vm_add_err(&OverflowError, vm, "Length out of range of C long");
         return NULL;
     }    
 
-    int a=CAST_INT(a_)->val->to_int();
-    int b=CAST_INT(b_)->val->to_int();
+    long a=CAST_INT(a_)->val->to_long();
+    long b=CAST_INT(b_)->val->to_long();
     
     return new_int_fromint(gcd(a,b));
 }
@@ -596,18 +596,18 @@ object* math_lcm(object* self, object* args){
     }
     
 
-    if (*CAST_INT(a_)->val>INT_MAX || *CAST_INT(a_)->val<INT_MIN){
-        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+    if (*CAST_INT(a_)->val>LONG_MAX || *CAST_INT(a_)->val<LONG_MIN){
+        vm_add_err(&OverflowError, vm, "Length out of range of C long");
         return NULL;
     }
 
-    if (*CAST_INT(b_)->val>INT_MAX || *CAST_INT(b_)->val<INT_MIN){
-        vm_add_err(&OverflowError, vm, "Length out of range of C int");
+    if (*CAST_INT(b_)->val>LONG_MAX || *CAST_INT(b_)->val<LONG_MIN){
+        vm_add_err(&OverflowError, vm, "Length out of range of C long");
         return NULL;
     }    
 
-    int a=CAST_INT(a_)->val->to_int();
-    int b=CAST_INT(b_)->val->to_int();
+    long a=CAST_INT(a_)->val->to_long();
+    long b=CAST_INT(b_)->val->to_long();
     
     return new_int_fromint((a*b)/gcd(a,b));
 }
