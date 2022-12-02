@@ -1496,6 +1496,16 @@ class Parser{
                 kwargs->push_back(expr);
             }
             else {
+                if (expr->type!=N_IDENT){
+                    this->backadvance();
+                    this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
+                    this->advance();
+                    delete args;
+                    delete kwargs;
+                    delete unpackargs;
+                    delete unpackkwargs;
+                    return NULL;
+                }
                 args->push_back(expr);
             }
             idx++;
@@ -1537,6 +1547,16 @@ class Parser{
                     if (kwargs->size()>0){
                         this->backadvance();
                         this->add_parsing_error(ret, "SyntaxError: Positional argument follows keyword argument");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        delete unpackargs;
+                        delete unpackkwargs;
+                        return NULL;
+                    }
+                    if (expr->type!=N_IDENT){
+                        this->backadvance();
+                        this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
                         delete args;
                         delete kwargs;
@@ -1976,6 +1996,14 @@ class Parser{
                 else{
                     if (kwargs->size()>0){
                         this->add_parsing_error(ret, "SyntaxError: Positional argument follows keyword argument");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }
+                    if (expr->type!=N_IDENT){
+                        this->backadvance();
+                        this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
                         delete args;
                         delete kwargs;
@@ -2623,6 +2651,14 @@ class Parser{
                 else{
                     if (kwargs->size()>0){
                         this->add_parsing_error(ret, "SyntaxError: Positional argument follows keyword argument");
+                        this->advance();
+                        delete args;
+                        delete kwargs;
+                        return NULL;
+                    }
+                    if (expr->type!=N_IDENT){
+                        this->backadvance();
+                        this->add_parsing_error(ret, "SyntaxError: Assignment not allowed in call");
                         this->advance();
                         delete args;
                         delete kwargs;
