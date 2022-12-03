@@ -341,7 +341,7 @@ class Lexer{
                 }
 
                 else if (this->chr=='\\'){
-                    while (this->chr!='\n'){
+                    while (this->chr!='\n' && this->chr!='\0'){
                         this->advance();
                     }
                 }
