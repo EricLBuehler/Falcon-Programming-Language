@@ -8,7 +8,7 @@ struct datastack* new_datastack(int size){
 
 struct callstack* new_callstack(){
     struct callstack* call=(struct callstack*)fpl_malloc(sizeof(struct callstack));
-    call->data=(callframe*)fpl_malloc(sizeof(object*)*MAX_RECURSION);
+    call->data=(callframe*)fpl_malloc(sizeof(callframe)*MAX_RECURSION);
     call->size=0;
     return call;
 }
@@ -2742,6 +2742,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
         }
+        
         print_traceback();
         
         cout<<vm->exception->type->name->c_str();
