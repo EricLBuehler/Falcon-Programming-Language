@@ -158,7 +158,7 @@ inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
 void print_traceback(){
     for (int i=0; i<vm->callstack->size; i++){
         struct callframe callframe=vm->callstack->data[i];
-        object* tup=dict_get_opti_deref(CAST_CODE(callframe.code)->co_detailed_lines, new_int_fromint((*callframe.ip)));
+        object* tup=dict_get_opti_deref(CAST_CODE(callframe.code)->co_detailed_lines, new_int_fromint((*callframe.ip)-2));
         int line_=CAST_INT(tuple_index_int(tup, 2))->val->to_int();
         int startcol=CAST_INT(tuple_index_int(tup, 0))->val->to_int();
         int endcol=CAST_INT(tuple_index_int(tup, 1))->val->to_int();
@@ -2699,7 +2699,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             return NULL;
         }
         
-        (*ip)-=2;
         struct blockframe* frame=in_blockstack(vm->blockstack, TRY_BLOCK);
         if (frame!=NULL && frame->arg%2==0){
             if (vm->callstack->size-frame->callstack_size!=0){
@@ -2719,7 +2718,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 FPLDECREF(vm->exception);
                 vm->exception=NULL;
             }
-            frame->start_ip=(*ip)+2;
+            frame->start_ip=(*ip);
             (*ip)=frame->arg; //skip jump
             frame->arg=1;
             DISPATCH();
@@ -2743,7 +2742,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
         }
-        
         print_traceback();
         
         cout<<vm->exception->type->name->c_str();
