@@ -1,5 +1,7 @@
 # Falcon Config Files
 
+Config files must be placed in the execution path.
+
 ## ```fplpath.path```
 Paths to search for modules in. Seperated by ```\n```.
 
