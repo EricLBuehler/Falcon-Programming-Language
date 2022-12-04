@@ -27,7 +27,7 @@ Expects ```str``` for keys, and the following types for values:
 ### Arguments
 | Argument      | Information       |
 | ------------- | ----------------- |
-| ```object```    | object to encode    |
+| ```object```    | ```dict``` object to encode    |
 
 ### Returns
 Return ```str``` that is encoded JSON string.
