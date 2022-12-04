@@ -5,7 +5,7 @@ void setup_builtins(){
     tuple_append_noinc(printargs, str_new_fromstr("file"));
     object* printkwargs=new_tuple();
     tuple_append_noinc(printkwargs, str_new_fromstr("\n"));
-    tuple_append(printkwargs, Stdout);
+    tuple_append_noinc(printkwargs, str_new_fromstr(" "));
     builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr("print"), printargs, printkwargs, 3, true);
 
     object* buildclassargs=new_tuple();
