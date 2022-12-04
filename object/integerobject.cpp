@@ -309,6 +309,10 @@ object* int_mod(object* self, object* other){
     if (object_istype(other->type, &IntType)){
         BigInt selfv =*CAST_INT(self)->val;
         BigInt otherv=*CAST_INT(other)->val;
+        if (otherv==0){
+            vm_add_err(&ZeroDivisionError, vm, "Modulus by zero");
+            return NULL;
+        }
         return new_int_frombigint(new BigInt(selfv%otherv));
     }
     object* otherv=object_float(other);
@@ -319,8 +323,12 @@ object* int_mod(object* self, object* other){
     double selfv =CAST_FLOAT(selfv_)->val;
     FPLDECREF(selfv_);
     double otherval=CAST_FLOAT(otherv)->val;
-    double res=fmod(selfv,otherval);
     FPLDECREF(otherv);
+    if (otherval==0){
+        vm_add_err(&ZeroDivisionError, vm, "Modulus by zero");
+        return NULL;
+    }
+    double res=fmod(selfv,otherval);
     int ires=(int)res;
     if (res-ires==0){
         return new_int_fromint(ires);

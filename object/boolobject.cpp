@@ -63,6 +63,11 @@ object* bool_mod(object* self, object* other){
     }
     double selfv=(double)CAST_BOOL(self)->val;
     double otherval=CAST_FLOAT(otherv)->val;
+    if (CAST_FLOAT(otherv)->val==0){
+        vm_add_err(&ZeroDivisionError, vm, "Modulus by zero");
+        FPLDECREF(otherv);
+        return NULL;
+    }
     double res=fmod(selfv, otherval);
     FPLDECREF(otherv);
     int ires=(int)res;

@@ -114,6 +114,11 @@ object* float_mod(object* self, object* other){
     if (otherfloat==NULL || !object_istype(otherfloat->type, &FloatType)){
         return NULL;
     }
+    if (CAST_FLOAT(otherfloat)->val==0){
+        vm_add_err(&ZeroDivisionError, vm, "Divison by zero");
+        FPLDECREF(otherfloat);
+        return NULL;
+    }
     double res=fmod(CAST_FLOAT(self)->val,CAST_FLOAT(otherfloat)->val);
     FPLDECREF(otherfloat);
     int ires=(int)res;

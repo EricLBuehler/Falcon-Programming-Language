@@ -123,16 +123,29 @@ object* func_call(object* self, object* args, object* kwargs){
         pop_callframe(vm->callstack);
         return new_generator_impl(self, callstack_head(vm->callstack).locals);
     }
+
+    uint32_t datastack_size;
+    uint32_t callstack_size;
+    uint32_t blockstack_size;
+
+    uint32_t datastack_size_;
+    uint32_t callstack_size_;
+    uint32_t blockstack_size_;
+
+    if (vm->exception!=NULL){
+        ret=NULL;
+        goto done;
+    }
     
-    uint32_t datastack_size=vm->objstack->size;
-    uint32_t callstack_size=vm->callstack->size;
-    uint32_t blockstack_size=vm->blockstack->size;
+    datastack_size=vm->objstack->size;
+    callstack_size=vm->callstack->size;
+    blockstack_size=vm->blockstack->size;
     
     ret=run_vm(CAST_FUNC(self)->code, &ip);
 
-    uint32_t datastack_size_=vm->objstack->size;
-    uint32_t callstack_size_=vm->callstack->size;
-    uint32_t blockstack_size_=vm->blockstack->size;
+    datastack_size_=vm->objstack->size;
+    callstack_size_=vm->callstack->size;
+    blockstack_size_=vm->blockstack->size;
 
     if (datastack_size_>datastack_size){
         while (vm->objstack->size>datastack_size){
@@ -159,12 +172,12 @@ object* func_call(object* self, object* args, object* kwargs){
             ((object_var*)k.second)->gc_ref--;
         }
     }
-    
+
+    done:
+
     FPLDECREF(callstack_head(vm->callstack).locals);
     
-    if (ret!=NULL){
-        pop_callframe(vm->callstack);
-    }
+    pop_callframe(vm->callstack);
     
     vm->globals=globals;
     vm->global_annotations=global_anno;
