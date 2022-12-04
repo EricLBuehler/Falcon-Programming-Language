@@ -6,6 +6,7 @@ void setup_builtins(){
     object* printkwargs=new_tuple();
     tuple_append_noinc(printkwargs, str_new_fromstr("\n"));
     tuple_append_noinc(printkwargs, str_new_fromstr(" "));
+    tuple_append(printkwargs, Stdout);
     builtins[0]=new_builtin((builtinfunc)builtin_print, str_new_fromstr("print"), printargs, printkwargs, 3, true);
 
     object* buildclassargs=new_tuple();

@@ -171,6 +171,7 @@ TypeObject OverflowError;
 TypeObject NotImplementedError;
 
 object* Stdout;
+object* orig_Stdout;
 object* Stdin;
 
 bool setup_memory_error=false;
@@ -674,6 +675,7 @@ void setup_types_consts(){
     setup_cwrapperfile_type();
 
     Stdout=cwrapperfile_new_fromfile(stdout, false, true);
+    orig_Stdout=Stdout;
     Stdin=cwrapperfile_new_fromfile(stdin, true, false);
 
     setup_builtins();
