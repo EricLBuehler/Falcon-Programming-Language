@@ -6,13 +6,12 @@ object* builtin_print(object* self, object* args){
     object* sep_=dict_get_opti_deref(args, str_new_fromstr("sep"));
     object* end=dict_get_opti_deref(args, str_new_fromstr("end"));
     object* file=dict_get_opti_deref(args, str_new_fromstr("file"));
-    if (file==NULL){
-        FPLDECREF(vm->exception);
-        vm->exception=NULL;
+    if (file==orig_Stdout){
+        FPLDECREF(file);
         FPLINCREF(Stdout);
         file=Stdout;
     }
-
+    
     object* o=object_getattr_deref(file, str_new_fromstr("read"));
     if (o==NULL){
         FPLDECREF(vm->exception);
