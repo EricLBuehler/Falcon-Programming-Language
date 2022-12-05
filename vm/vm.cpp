@@ -56,7 +56,7 @@ void vm_add_err(TypeObject* exception, struct vm* vm, const char *_format, ...) 
     if (vm->exception!=NULL && CAST_EXCEPTION(vm->exception)->err!=NULL){
         FPLDECREF(CAST_EXCEPTION(vm->exception)->err);
     }
-    CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(msg);
+    CAST_EXCEPTION(vm->exception)->err=str_new_fromstr(string(msg));
     fpl_free(msg);
 }
 
@@ -85,7 +85,8 @@ object* vm_setup_err(TypeObject* exception, struct vm* vm, const char *_format, 
     if (vm->exception!=NULL && CAST_EXCEPTION(vm->exception)->err!=NULL){
         FPLDECREF(CAST_EXCEPTION(vm->exception)->err);
     }
-    CAST_EXCEPTION(exc)->err=str_new_fromstr(msg);
+    CAST_EXCEPTION(exc)->err=str_new_fromstr(string(msg));
+    fpl_free(msg);
     return exc;
 }
 
@@ -233,7 +234,6 @@ object* import_name(string data, object* name){
         printf("%s\n",ast.error);
         return TERM_PROGRAM;
     }
-
     struct compiler* compiler = new_compiler();
 
     string* g=glblfildata;
@@ -252,23 +252,19 @@ object* import_name(string data, object* name){
 
     CAST_CODE(code)->co_file=object_repr(name);
     struct vm* vm_=::vm;
-    struct vm* vm=new_vm(interpreter.vm_map->size(), code, compiler->instructions, &data); //data is still in scope...
-    interpreter_add_vm(interpreter.vm_map->size(), vm);
-    ::vm=vm;
+    struct vm* vm_new=new_vm(interpreter.vm_map->size(), code, compiler->instructions, new string(data)); //data is still in scope...
+    interpreter_add_vm(interpreter.vm_map->size(), vm_new);
+    ::vm=vm_new;
     
-    ::vm->globals=new_dict();
-    FPLINCREF(::vm->globals);
-    ::callstack_head(vm->callstack).locals=::vm->globals;
-    dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), ::callstack_head(vm->callstack).annotations);
+    dict_set_noret(::vm->globals, str_new_fromstr("__annotations__"), callstack_head(::vm->callstack).annotations);
     dict_set_noret_opti(::vm->globals, str_new_fromstr("__name__"), name);
-    ::vm->global_annotations=::callstack_head(vm->callstack).annotations;
 
     object* ret=run_vm(code, &::vm->ip);
     ERROR_RET(ret);
 
-    FPLINCREF(::callstack_head(vm->callstack).locals);
-    object* dict=::callstack_head(vm->callstack).locals;
-
+    FPLINCREF(callstack_head(::vm->callstack).locals);
+    object* dict=callstack_head(::vm->callstack).locals;
+    
     object* o=module_new_fromdict(dict, name);
     
     vm_del(::vm);
