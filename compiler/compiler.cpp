@@ -559,10 +559,37 @@ int compile_expr(struct compiler* compiler, Node* expr){
     nodetype type=expr->type;
     switch (expr->type){
         case N_ASSIGN: {
-            int cmpexpr=compile_expr_keep(compiler, ASSIGN(expr->node)->right); //Push data
-            if (cmpexpr==COMPILER_ERROR){
-                return cmpexpr;
+            if (ASSIGN(expr->node)->right->type==N_MULTIIDENT){
+                for (int i=MULTIIDENT(ASSIGN(expr->node)->right->node)->name->size(); i>0; i--){
+                    string* s=MULTIIDENT(ASSIGN(expr->node)->right->node)->name->at(i-1);
+                    uint32_t idx;
+                    if (!_list_contains(compiler->names, s)){
+                        //Create object
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*s));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(*s));
+                    }
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler, compiler->instructions,LOAD_GLOBAL, idx, GET_ANNO_N(expr));
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler, compiler->instructions,LOAD_NAME, idx, GET_ANNO_N(expr));
+                            break;
+                    }
+                }
+                add_instruction(compiler, compiler->instructions, BUILD_LIST, MULTIIDENT(ASSIGN(expr->node)->right->node)->name->size(), GET_ANNO_N(expr));
             }
+            else{ 
+                int cmpexpr=compile_expr_keep(compiler, ASSIGN(expr->node)->right); //Push data
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
+            }
+
             if (ASSIGN(expr->node)->name->type==N_MULTIIDENT){
                 add_instruction(compiler, compiler->instructions,DUP_TOS,0, GET_ANNO_N(ASSIGN(expr->node)->name));
                 add_instruction(compiler, compiler->instructions,UNPACK_SEQ,  MULTIIDENT(ASSIGN(expr->node)->name->node)->name->size(), GET_ANNO_N(ASSIGN(expr->node)->name));
@@ -2016,9 +2043,35 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_DOTASSIGN: {
-            int cmpexpr=compile_expr_keep(compiler, DOTASSIGN(expr->node)->right);
-            if (cmpexpr==COMPILER_ERROR){
-                return cmpexpr;
+            if (DOTASSIGN(expr->node)->right->type==N_MULTIIDENT){
+                for (int i=MULTIIDENT(DOTASSIGN(expr->node)->right->node)->name->size(); i>0; i--){
+                    string* s=MULTIIDENT(DOTASSIGN(expr->node)->right->node)->name->at(i-1);
+                    uint32_t idx;
+                    if (!_list_contains(compiler->names, s)){
+                        //Create object
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*s));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(*s));
+                    }
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler, compiler->instructions,LOAD_GLOBAL, idx, GET_ANNO_N(expr));
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler, compiler->instructions,LOAD_NAME, idx, GET_ANNO_N(expr));
+                            break;
+                    }
+                }
+                add_instruction(compiler, compiler->instructions, BUILD_LIST, MULTIIDENT(DOTASSIGN(expr->node)->right->node)->name->size(), GET_ANNO_N(expr));
+            }
+            else{ 
+                int cmpexpr=compile_expr_keep(compiler, DOTASSIGN(expr->node)->right); //Push data
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
             }
             vector<Node*>* names=DOT(DOTASSIGN(expr->node)->dot->node)->names;
             
@@ -4282,9 +4335,35 @@ int compile_expr(struct compiler* compiler, Node* expr){
         }
 
         case N_ANONASSIGN: {
-            int cmpexpr=compile_expr_keep(compiler, ASSIGN(expr->node)->right); //Push data
-            if (cmpexpr==COMPILER_ERROR){
-                return cmpexpr;
+            if (ASSIGN(expr->node)->right->type==N_MULTIIDENT){
+                for (int i=MULTIIDENT(ASSIGN(expr->node)->right->node)->name->size(); i>0; i--){
+                    string* s=MULTIIDENT(ASSIGN(expr->node)->right->node)->name->at(i-1);
+                    uint32_t idx;
+                    if (!_list_contains(compiler->names, s)){
+                        //Create object
+                        tuple_append_noinc(compiler->names, str_new_fromstr(*s));
+                        idx = NAMEIDX(compiler->names);
+                    }
+                    else{
+                        idx=object_find(compiler->names, str_new_fromstr(*s));
+                    }
+                    switch (compiler->scope){
+                        case SCOPE_GLOBAL:
+                            add_instruction(compiler, compiler->instructions,LOAD_GLOBAL, idx, GET_ANNO_N(expr));
+                            break;
+
+                        case SCOPE_LOCAL:
+                            add_instruction(compiler, compiler->instructions,LOAD_NAME, idx, GET_ANNO_N(expr));
+                            break;
+                    }
+                }
+                add_instruction(compiler, compiler->instructions, BUILD_LIST, MULTIIDENT(ASSIGN(expr->node)->right->node)->name->size(), GET_ANNO_N(expr));
+            }
+            else{ 
+                int cmpexpr=compile_expr_keep(compiler, ASSIGN(expr->node)->right); //Push data
+                if (cmpexpr==COMPILER_ERROR){
+                    return cmpexpr;
+                }
             }
 
             uint32_t idx;
@@ -4303,7 +4382,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     case SCOPE_GLOBAL: {
                         add_instruction(compiler, compiler->instructions,STORE_GLOBAL, idx, GET_ANNO_N(ASSIGN(expr->node)->name));
                         
-                        cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
+                        int cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
                         if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
                         }
@@ -4316,7 +4395,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
                     case SCOPE_LOCAL: {
                         add_instruction(compiler, compiler->instructions,STORE_NAME, idx, GET_ANNO_N(ASSIGN(expr->node)->name));
                         
-                        cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
+                        int cmpexpr=compile_expr_keep(compiler, ANONIDENT(ASSIGN(expr->node)->name->node)->tp);
                         if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
                         }
