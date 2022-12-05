@@ -55,7 +55,7 @@ object* builtin_eval(object* self, object* args){
     }
     
     struct vm* vm_=::vm;
-    ::vm=new_vm(interpreter.vm_map->size(), code, compiler->instructions, &data); //data is still in scope...
+    ::vm=new_vm(interpreter.vm_map->size(), code, compiler->instructions, new string(data)); //data is still in scope...
     interpreter_add_vm(::vm->id, ::vm);
     
     ::vm->globals=glbls;
