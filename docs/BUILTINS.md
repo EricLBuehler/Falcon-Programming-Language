@@ -205,7 +205,7 @@ Return value from ```__str__``` method call.
 ______________________
 
 ## ```dict```
-Create a new ```divt``` object.
+Create a new ```dict``` object.
 
 ```dict(iterator)```
 
