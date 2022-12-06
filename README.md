@@ -219,7 +219,7 @@ Build Falcon in release mode
 ```./release.cmd```
 
 Run a script
-```falcon <program>```
+```falcon program```
 
 Manual compilation
 ```g++ main.cpp -o falcon -static-libstdc++ -static -lws2_32 -O3 -fno-gcse```
