@@ -365,6 +365,10 @@ object* math_log(object* self, object* args){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
     }        
+    if (CAST_FLOAT(flval)->val<=0){
+        vm_add_err(&ValueError, vm, "value must be greater than 0", val->type->name->c_str());
+        return NULL; 
+    }        
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=log(otherval);
@@ -384,7 +388,11 @@ object* math_log10(object* self, object* args){
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
-    }        
+    }         
+    if (CAST_FLOAT(flval)->val<=0){
+        vm_add_err(&ValueError, vm, "value must be greater than 0", val->type->name->c_str());
+        return NULL; 
+    }      
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=log10(otherval);
@@ -451,7 +459,11 @@ object* math_sqrt(object* self, object* args){
     if (flval==NULL || !object_istype(flval->type, &FloatType)){
         vm_add_err(&TypeError, vm, "'%s' object cannot be coerced to float", val->type->name->c_str());
         return NULL; 
-    }        
+    }             
+    if (CAST_FLOAT(flval)->val<=0){
+        vm_add_err(&ValueError, vm, "value must be greater than 0", val->type->name->c_str());
+        return NULL; 
+    }  
     
     double otherval=CAST_FLOAT(flval)->val;
     double res=sqrt(otherval);
@@ -565,8 +577,11 @@ object* math_gcd(object* self, object* args){
         vm_add_err(&TypeError, vm, "Expected int, got '%s'", b->type->name->c_str());
         return NULL; 
     }
-    
-    return new_int_frombigint(new BigInt(gcd(*CAST_INT(a)->val,*CAST_INT(b)->val)));
+    object* res=new_int_frombigint(new BigInt(gcd(*CAST_INT(a)->val,*CAST_INT(b)->val)));
+
+    FPLDECREF(a);
+    FPLDECREF(b);
+    return res;
 }
 
 object* math_lcm(object* self, object* args){
@@ -580,8 +595,11 @@ object* math_lcm(object* self, object* args){
         vm_add_err(&TypeError, vm, "Expected int, got '%s'", b->type->name->c_str());
         return NULL; 
     }
+    object* res=new_int_frombigint(new BigInt((*CAST_INT(a)->val * *CAST_INT(b)->val)/gcd(*CAST_INT(a)->val,*CAST_INT(b)->val)));;
     
-    return new_int_frombigint(new BigInt((*CAST_INT(a)->val * *CAST_INT(b)->val)/gcd(*CAST_INT(a)->val,*CAST_INT(b)->val)));
+    FPLDECREF(a);
+    FPLDECREF(b);
+    return res;
 }
 
 object* new_math_module(){
