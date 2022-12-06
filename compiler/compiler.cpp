@@ -3936,7 +3936,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_ASSERT: {
             compile_expr_keep(compiler, ASSERT(expr->node)->expr);
-            add_instruction(compiler, compiler->instructions,POP_JMP_TOS_TRUE, (compiler->instructions->count*2)+2, GET_ANNO_N(expr));
+            add_instruction(compiler, compiler->instructions,POP_JMP_TOS_TRUE, (compiler->instructions->count*2)+4, GET_ANNO_N(expr));
             add_instruction(compiler, compiler->instructions,RAISE_ASSERTIONERR, 0, GET_ANNO_N(expr));
             break;            
         }
