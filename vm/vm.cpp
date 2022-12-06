@@ -2103,7 +2103,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             FPLDECREF(CAST_EXCEPTION(exc)->err);
             CAST_EXCEPTION(exc)->err=NULL;
             vm->exception=exc;
-            DISPATCH();
+            goto exc;
         }        
 
         DEL_GLBL: {
