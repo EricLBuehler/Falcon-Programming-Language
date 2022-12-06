@@ -219,7 +219,6 @@ void print_traceback(){
 }
 
 object* import_name(string data, object* name){
-    FPLINCREF(name);
     program=object_cstr(name);
 
     Lexer lexer(data,kwds);
@@ -1849,7 +1848,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
 
                     continue;
                 }
-                object* o=import_name(data, name);
+                object* o=import_name(data, str_new_fromstr(name_));
                 ERROR_RET(o);
                 add_dataframe(vm, vm->objstack, o);
                 DISPATCH();
