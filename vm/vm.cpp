@@ -133,9 +133,9 @@ struct vm* new_vm_raw(uint32_t id){
 }
 
 void vm_del(struct vm* vm){
-    free(vm->objstack->data);
-    free(vm->callstack->data);
-    free(vm->blockstack->data);
+    fpl_free(vm->objstack->data);
+    fpl_free(vm->callstack->data);
+    fpl_free(vm->blockstack->data);
 
     FPLDECREF(vm->globals);
     delete vm->filedata;
@@ -159,7 +159,11 @@ inline int calculate_line_fromip(uint32_t ip, callframe* callframe){
 void print_traceback(){
     for (int i=0; i<vm->callstack->size; i++){
         struct callframe callframe=vm->callstack->data[i];
-        object* tup=dict_get_opti_deref(CAST_CODE(callframe.code)->co_detailed_lines, new_int_fromint((*callframe.ip)-2));
+        int v=(*callframe.ip)-2;
+        if (v<0){
+            break; //Invalid argc
+        }
+        object* tup=dict_get_opti_deref(CAST_CODE(callframe.code)->co_detailed_lines, new_int_fromint(v));
         int line_=CAST_INT(tuple_index_int(tup, 2))->val->to_int();
         int startcol=CAST_INT(tuple_index_int(tup, 0))->val->to_int();
         int endcol=CAST_INT(tuple_index_int(tup, 1))->val->to_int();
@@ -215,6 +219,7 @@ void print_traceback(){
 }
 
 object* import_name(string data, object* name){
+    FPLINCREF(name);
     program=object_cstr(name);
 
     Lexer lexer(data,kwds);
@@ -252,7 +257,7 @@ object* import_name(string data, object* name){
 
     CAST_CODE(code)->co_file=object_repr(name);
     struct vm* vm_=::vm;
-    struct vm* vm_new=new_vm(interpreter.vm_map->size(), code, compiler->instructions, new string(data)); //data is still in scope...
+    struct vm* vm_new=new_vm(interpreter.vm_map->size(), code, compiler->instructions, new string(data));
     interpreter_add_vm(interpreter.vm_map->size(), vm_new);
     ::vm=vm_new;
     
@@ -264,7 +269,6 @@ object* import_name(string data, object* name){
 
     FPLINCREF(callstack_head(::vm->callstack).locals);
     object* dict=callstack_head(::vm->callstack).locals;
-    
     object* o=module_new_fromdict(dict, name);
     
     vm_del(::vm);
@@ -437,6 +441,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
         STORE_GLOBAL:{
             object* name=list_index_int(CAST_CODE(callstack_head(vm->callstack).code)->co_names, arg);
             object* value=peek_dataframe(vm->objstack);
+            
             if (CAST_DICT(vm->globals)->val->find(name)!=CAST_DICT(vm->globals)->val->end()){
                 object* o=CAST_DICT(vm->globals)->val->at(name);
                 if (o->type->size==0){
@@ -1339,7 +1344,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
                 tuple_append_noinc(args, pop_dataframe(vm->objstack));
             }
             //
-
             
             object* function=pop_dataframe(vm->objstack);
             if (function->type->slot_call==NULL){
@@ -2017,7 +2021,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             struct object* left=pop_dataframe(vm->objstack);
             
             right=right->type->slot_number->slot_bool(right);
-            left=right->type->slot_number->slot_bool(left);
+            left=left->type->slot_number->slot_bool(left);
             bool r=CAST_BOOL(right)->val;
             bool l=CAST_BOOL(left)->val;
             FPLDECREF(right);
@@ -2035,7 +2039,7 @@ object* run_vm(object* codeobj, uint32_t* ip){
             struct object* left=pop_dataframe(vm->objstack);
             
             right=right->type->slot_number->slot_bool(right);
-            left=right->type->slot_number->slot_bool(left);
+            left=left->type->slot_number->slot_bool(left);
             bool r=CAST_BOOL(right)->val;
             bool l=CAST_BOOL(left)->val;
             FPLDECREF(right);
@@ -2738,7 +2742,6 @@ object* run_vm(object* codeobj, uint32_t* ip){
             }
             cout<<endl<<"While handling the above exception, another exception was raised."<<endl<<endl;
         }
-        
         print_traceback();
         
         cout<<vm->exception->type->name->c_str();
