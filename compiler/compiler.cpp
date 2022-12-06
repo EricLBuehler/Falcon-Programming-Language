@@ -2141,17 +2141,30 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
                     add_instruction(compiler, compiler->instructions,LOAD_ATTR, idx, GET_ANNO_N(names->at(i)));
 
+                       
+                    object* stargs=new_tuple();
+                    object* stkwargs=new_tuple();
                     object* kwargs=new_tuple();
 
+                    int i_=0;
+                    size_t argsize=CALL(expr->node)->args->size();
+
                     //Args (iterate backwards)
-                    for (auto it =  (*DOTCALL(expr->node)->args).rbegin(); it != (*DOTCALL(expr->node)->args).rend(); ++it){
+                    for (auto it =  (*CALL(expr->node)->args).rbegin(); it != (*CALL(expr->node)->args).rend(); ++it){
                         int cmpexpr=compile_expr_keep(compiler, *it);
                         if (cmpexpr==COMPILER_ERROR){
                             return cmpexpr;
                         }
+                        if (find(CALL(expr->node)->stargs->begin(), CALL(expr->node)->stargs->end(), i_)!=CALL(expr->node)->stargs->end()){
+                            tuple_append_noinc(stargs, new_int_fromint(i_));
+                        }
+                        if (find(CALL(expr->node)->stkwargs->begin(), CALL(expr->node)->stkwargs->end(), i_+argsize-1)!=CALL(expr->node)->stkwargs->end()){
+                            tuple_append_noinc(stkwargs, new_int_fromint(i_+argsize-1));
+                        }
+                        i_++;
                     }
                     //Kwargs (iterate backwards)
-                    for (auto it =  (*DOTCALL(expr->node)->kwargs).rbegin(); it != (*DOTCALL(expr->node)->kwargs).rend(); ++it){
+                    for (auto it =  (*CALL(expr->node)->kwargs).rbegin(); it != (*CALL(expr->node)->kwargs).rend(); ++it){
                         tuple_append_noinc(kwargs, str_new_fromstr(*IDENTI(ASSIGN((*it)->node)->name->node)->name));
                         int cmpexpr=compile_expr_keep(compiler, ASSIGN((*it)->node)->right);
                         if (cmpexpr==COMPILER_ERROR){
@@ -2172,15 +2185,6 @@ int compile_expr(struct compiler* compiler, Node* expr){
                         }
                         
                         add_instruction(compiler, compiler->instructions,LOAD_CONST,idx, GET_ANNO_N(expr));
-                    }
-
-                    object* stargs=new_tuple();
-                    for (int i: *DOTCALL(expr->node)->stargs){
-                        tuple_append_noinc(stargs, new_int_fromint(i));
-                    }
-                    object* stkwargs=new_tuple();
-                    for (int i: *DOTCALL(expr->node)->stkwargs){
-                        tuple_append_noinc(stkwargs, new_int_fromint(i));
                     }
 
                     if (CAST_TUPLE(stargs)->size != 0 || CAST_TUPLE(stkwargs)->size != 0){
@@ -3932,7 +3936,7 @@ int compile_expr(struct compiler* compiler, Node* expr){
 
         case N_ASSERT: {
             compile_expr_keep(compiler, ASSERT(expr->node)->expr);
-            add_instruction(compiler, compiler->instructions,POP_JMP_TOS_TRUE, 2, GET_ANNO_N(expr));
+            add_instruction(compiler, compiler->instructions,POP_JMP_TOS_TRUE, (compiler->instructions->count*2)+2, GET_ANNO_N(expr));
             add_instruction(compiler, compiler->instructions,RAISE_ASSERTIONERR, 0, GET_ANNO_N(expr));
             break;            
         }
