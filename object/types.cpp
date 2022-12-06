@@ -914,6 +914,7 @@ void setup_func_type(){
 
 
 
+
 void none_del(object* self);
 object* none_repr(object* self);
 object* none_bool(object* self);
@@ -995,6 +996,8 @@ void setup_none_type(){
     NoneType=(*(TypeObject*)finalize_type(&NoneType));
     fplbases.push_back(&NoneType);
 }
+
+
 
 
 void builtin_del(object* self);

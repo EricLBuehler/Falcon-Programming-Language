@@ -222,7 +222,7 @@ object* str_repr(object* self){
 
 object* str_str(object* self){
     FPLINCREF(self);
-    return self; //str_new_fromstr(new string((*CAST_STRING(self)->val)));
+    return self;
 }
      
 object* str_bool(object* self){
