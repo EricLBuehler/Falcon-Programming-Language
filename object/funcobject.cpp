@@ -19,6 +19,7 @@ object* func_new_code(object* code, object* args, object* kwargs, uint32_t argc,
     CAST_FUNC(obj)->globals=globals;
     CAST_FUNC(obj)->global_anno=global_anno;
     CAST_FUNC(obj)->doc=doc;
+    CAST_FUNC(obj)->ip=new uint32_t(0);
     return obj;
 }
 
@@ -46,6 +47,7 @@ object* func_init(object* self, object* args, object* kwargs){
     CAST_FUNC(self)->closure_annotations=NULL;
     CAST_FUNC(self)->global_anno=vm->global_annotations;
     CAST_FUNC(self)->doc=new_none();
+    CAST_FUNC(self)->ip=new uint32_t(0);
 
     if (!object_istype(list_index_int(args, 0)->type, &StrType)){
         vm_add_err(&TypeError, vm, "Expected string type name, got type '%s'", list_index_int(args, 0)->type->name->c_str());
@@ -80,9 +82,9 @@ object* func_call(object* self, object* args, object* kwargs){
     uint32_t argc=CAST_LIST(args)->size+CAST_DICT(kwargs)->val->size();
     uint32_t posargc=CAST_LIST(args)->size;
     uint32_t kwargc=argc-posargc;
-    uint32_t ip=0;
+    *CAST_FUNC(self)->ip=0;
     
-    add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, &ip);
+    add_callframe(vm->callstack, tuple_index_int(list_index_int(CAST_CODE(CAST_FUNC(self)->code)->co_lines, 0),2),  CAST_STRING(CAST_FUNC(self)->name)->val, CAST_FUNC(self)->code, self, CAST_FUNC(self)->ip);
 
     callstack_head(vm->callstack).locals=new_dict();
     dict_set_noret(callstack_head(vm->callstack).locals, str_new_fromstr("__annotations__"), callstack_head(vm->callstack).annotations);
@@ -141,7 +143,7 @@ object* func_call(object* self, object* args, object* kwargs){
     callstack_size=vm->callstack->size;
     blockstack_size=vm->blockstack->size;
     
-    ret=run_vm(CAST_FUNC(self)->code, &ip);
+    ret=run_vm(CAST_FUNC(self)->code, CAST_FUNC(self)->ip);
 
     datastack_size_=vm->objstack->size;
     callstack_size_=vm->callstack->size;
@@ -262,6 +264,7 @@ void func_del(object* obj){
     FPLDECREF(CAST_FUNC(obj)->kwargs);
     FPLDECREF(CAST_FUNC(obj)->dict);
     FPLDECREF(CAST_FUNC(obj)->doc);
+    delete CAST_FUNC(obj)->ip;
     if (CAST_FUNC(obj)->closure!=NULL){
         FPLDECREF(CAST_FUNC(obj)->closure);
     }

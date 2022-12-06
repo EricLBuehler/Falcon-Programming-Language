@@ -17,7 +17,7 @@ object* str_new_fromstr(string val){
 
 object* str_int(object* self){
     if (trim((*CAST_STRING(self)->val)).size()==0){
-        NULL;
+        return NULL;
     }
     BigInt* b;
     try{

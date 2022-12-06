@@ -830,6 +830,7 @@ typedef struct FuncObject{
     object* globals;
     object* global_anno;
     object* doc;
+    uint32_t* ip;
 }FuncObject;
 
 static NumberMethods func_num_methods{

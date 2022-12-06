@@ -115,7 +115,7 @@ object* float_mod(object* self, object* other){
         return NULL;
     }
     if (CAST_FLOAT(otherfloat)->val==0){
-        vm_add_err(&ZeroDivisionError, vm, "Divison by zero");
+        vm_add_err(&ZeroDivisionError, vm, "Modulus by zero");
         FPLDECREF(otherfloat);
         return NULL;
     }
