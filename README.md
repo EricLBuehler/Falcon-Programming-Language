@@ -3,7 +3,7 @@
 
 <img src="logo.png"/>
 
-Falcon is a multithreaded, multi-paradigm interpreted programming language, with a focus on readability and simplicity. It is both strongly and dynamically typed, and has automatic garbage collection based on reference counting and a tri-generational garbage collector. In comparison to other languages, it a hybrid of Python and C, with the benefits of Python and the syntax of C.
+Falcon is a multithreaded, multi-paradigm interpreted programming language, with a strong focus on readability and simplicity. It is both strongly and dynamically typed, and has automatic garbage collection based on reference counting and a tri-generational garbage collector. In comparison to other languages, it a hybrid of Python and C, with the benefits of Python and the syntax of C.
 
 ### Documentation ##
 - [Dunder Attributes](https://github.com/EricLBuehler/Falcon-Programming-Language/blob/main/docs/DUNDER_ATTRS.md)
